@@ -1,0 +1,20 @@
+joint_map:
+  11: arm_2_joint_1
+  12: arm_2_joint_2
+  13: arm_2_joint_3
+  14: arm_2_joint_4
+  15: arm_2_joint_5
+  16: arm_2_joint_6
+  21: arm_1_joint_1
+  22: arm_1_joint_2
+  23: arm_1_joint_3
+  24: arm_1_joint_4
+  25: arm_1_joint_5
+  26: arm_1_joint_6
+  31: arm_3_joint_1
+  32: arm_3_joint_2
+  33: arm_3_joint_3
+  34: arm_3_joint_4
+  35: arm_3_joint_5
+  36: arm_3_joint_6
+  201: power_board

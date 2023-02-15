@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>ec_gui_start.ui</file>
+        <file>slider_widget.ui</file>
+        <file>slider_widget_calib.ui</file>
+    </qresource>
+</RCC>

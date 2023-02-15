@@ -1,0 +1,389 @@
+[10:53:56.068] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.068] [server] [info] mean refs freq mean 0.004301998720000006
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.069] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.069] [server] [info] periodicActivity tDiff 0.000999617
+[10:53:56.073] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.073] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.073] [server] [info] mean refs freq mean 0.004301125220000006
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.074] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.077] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.077] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.077] [server] [info] mean refs freq mean 0.004301914300000006
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.078] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.079] [server] [info] periodicActivity tDiff 0.002239063
+[10:53:56.081] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.081] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.081] [server] [info] mean refs freq mean 0.004299903600000006
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.082] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.085] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.085] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.085] [server] [info] mean refs freq mean 0.004297947460000006
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.087] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.089] [server] [info] periodicActivity tDiff 0.003759532
+[10:53:56.090] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.090] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.090] [server] [info] mean refs freq mean 0.004298227980000006
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.091] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.094] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.094] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.094] [server] [info] mean refs freq mean 0.004300948600000005
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.095] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.098] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.098] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.098] [server] [info] mean refs freq mean 0.004297839600000005
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.100] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.100] [server] [info] periodicActivity tDiff 0.001702323
+[10:53:56.103] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.103] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.103] [server] [info] mean refs freq mean 0.004297806980000005
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.104] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.107] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.107] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.107] [server] [info] mean refs freq mean 0.004300991440000005
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.108] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.110] [server] [info] periodicActivity tDiff 0.003006452
+[10:53:56.111] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.111] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.111] [server] [info] mean refs freq mean 0.004301702380000005
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.113] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.116] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.116] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.116] [server] [info] mean refs freq mean 0.004300049040000004
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.117] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.120] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.120] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.120] [server] [info] mean refs freq mean 0.004302387160000004
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.121] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.121] [server] [info] periodicActivity tDiff 0.000854692
+[10:53:56.124] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.124] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.124] [server] [info] mean refs freq mean 0.0043008990600000045
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.125] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.128] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.128] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.128] [server] [info] mean refs freq mean 0.004297954940000005
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.130] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.131] [server] [info] periodicActivity tDiff 0.002602312
+[10:53:56.133] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.133] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.133] [server] [info] mean refs freq mean 0.004302726880000005
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.134] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.137] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.137] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.137] [server] [info] mean refs freq mean 0.004303516540000005
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.138] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.141] [server] [info] periodicActivity tDiff 0.003929574
+[10:53:56.142] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.142] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.142] [server] [info] mean refs freq mean 0.004308246740000005
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.143] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.146] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.146] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.146] [server] [info] mean refs freq mean 0.004308014700000005
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.147] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.150] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.150] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.150] [server] [info] mean refs freq mean 0.004308045760000005
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.152] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.152] [server] [info] periodicActivity tDiff 0.001624996
+[10:53:56.155] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.155] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.155] [server] [info] mean refs freq mean 0.004314696540000005
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.156] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.159] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.159] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.159] [server] [info] mean refs freq mean 0.004316152940000004
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.160] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.162] [server] [info] periodicActivity tDiff 0.002841659
+[10:53:56.164] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.164] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.164] [server] [info] mean refs freq mean 0.004319779380000004
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.165] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.168] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.168] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.168] [server] [info] mean refs freq mean 0.004319320180000004
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.169] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.172] [server] [info] periodicActivity tDiff 0.004091264
+[10:53:56.172] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.172] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.172] [server] [info] mean refs freq mean 0.004310208200000004
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.174] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.177] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.177] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.177] [server] [info] mean refs freq mean 0.004318702300000004
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.178] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.181] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.181] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.181] [server] [info] mean refs freq mean 0.004320844980000004
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.182] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.182] [server] [info] periodicActivity tDiff 0.000934691
+[10:53:56.186] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.186] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.186] [server] [info] mean refs freq mean 0.004325407120000004
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.187] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.190] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.190] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.190] [server] [info] mean refs freq mean 0.004325505440000004
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.191] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.192] [server] [info] periodicActivity tDiff 0.002073236
+[10:53:56.194] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.194] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.194] [server] [info] mean refs freq mean 0.004325557320000004
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.196] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.199] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.199] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.199] [server] [info] mean refs freq mean 0.0043292410400000035
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.200] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.202] [server] [info] periodicActivity tDiff 0.00334844
+[10:53:56.203] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.203] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.203] [server] [info] mean refs freq mean 0.004329688500000003
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.204] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.208] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.208] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.208] [server] [info] mean refs freq mean 0.004333683060000003
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.209] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.212] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.212] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.212] [server] [info] mean refs freq mean 0.004338451740000003
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.213] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.213] [server] [info] periodicActivity tDiff 0.000846548
+[10:53:56.216] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.216] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.216] [server] [info] mean refs freq mean 0.004339460960000003
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.218] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.221] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.221] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.221] [server] [info] mean refs freq mean 0.004341261520000003
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.222] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.223] [server] [info] periodicActivity tDiff 0.002035644
+[10:53:56.225] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.225] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.225] [server] [info] mean refs freq mean 0.004342834700000003
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.226] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.229] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.229] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.230] [server] [info] mean refs freq mean 0.004344404920000003
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.231] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.233] [server] [info] periodicActivity tDiff 0.003431796
+[10:53:56.234] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.234] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.234] [server] [info] mean refs freq mean 0.004346680840000003
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.235] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.238] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.238] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.238] [server] [info] mean refs freq mean 0.004345606440000003
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.240] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.243] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.243] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.243] [server] [info] mean refs freq mean 0.004351622380000003
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.244] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.244] [server] [info] periodicActivity tDiff 0.00111785
+[10:53:56.247] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.247] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.247] [server] [info] mean refs freq mean 0.004354473520000003
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.248] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.252] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.252] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.252] [server] [info] mean refs freq mean 0.004355204500000004
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.253] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.254] [server] [info] periodicActivity tDiff 0.002428365
+[10:53:56.256] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.256] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.256] [server] [info] mean refs freq mean 0.004359950860000004
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.257] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.260] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.260] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.260] [server] [info] mean refs freq mean 0.004359156040000004
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.262] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.264] [server] [info] periodicActivity tDiff 0.003646664
+[10:53:56.265] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.265] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.265] [server] [info] mean refs freq mean 0.004357996760000003
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.266] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.269] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.269] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.269] [server] [info] mean refs freq mean 0.004361752360000003
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.270] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.274] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.274] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.274] [server] [info] mean refs freq mean 0.004367311260000003
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.275] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.275] [server] [info] periodicActivity tDiff 0.001178417
+[10:53:56.278] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.278] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.278] [server] [info] mean refs freq mean 0.004369024740000003
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.279] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.282] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.282] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.282] [server] [info] mean refs freq mean 0.004368504240000003
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.284] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.285] [server] [info] periodicActivity tDiff 0.002666812
+[10:53:56.287] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.287] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.287] [server] [info] mean refs freq mean 0.004374191820000003
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.288] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.291] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.291] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.291] [server] [info] mean refs freq mean 0.004372034480000003
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.292] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.295] [server] [info] periodicActivity tDiff 0.00378806
+[10:53:56.296] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.296] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.296] [server] [info] mean refs freq mean 0.004375509680000003
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.297] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.300] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.300] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.300] [server] [info] mean refs freq mean 0.0043787636400000034
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.301] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.304] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.304] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.304] [server] [info] mean refs freq mean 0.004376168480000003
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.306] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.306] [server] [info] periodicActivity tDiff 0.001724343
+[10:53:56.309] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.309] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.309] [server] [info] mean refs freq mean 0.004376360360000003
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.310] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.313] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.313] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.313] [server] [info] mean refs freq mean 0.004381256000000003
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.314] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.316] [server] [info] periodicActivity tDiff 0.002917993
+[10:53:56.318] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.318] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.318] [server] [info] mean refs freq mean 0.004386776700000003
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.319] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.322] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.322] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.322] [server] [info] mean refs freq mean 0.004388826260000003
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.323] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.326] [server] [info] periodicActivity tDiff 0.004022474
+[10:53:56.326] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.326] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.326] [server] [info] mean refs freq mean 0.0043869176200000025
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.328] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.331] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.331] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.331] [server] [info] mean refs freq mean 0.0043886958400000025
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.332] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.335] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.335] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.335] [server] [info] mean refs freq mean 0.004389571440000003
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.336] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.336] [server] [info] periodicActivity tDiff 0.000990709
+[10:53:56.339] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.339] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.339] [server] [info] mean refs freq mean 0.004389649460000002
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.341] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.344] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.344] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.344] [server] [info] mean refs freq mean 0.004394832480000002
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.345] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.346] [server] [info] periodicActivity tDiff 0.002115223
+[10:53:56.348] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.348] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.348] [server] [info] mean refs freq mean 0.004397471540000002
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:53:56.350] [server] [info]  send request reply SET_MOTOR_REFS
+[10:53:56.353] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.353] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:53:56.353] [server] [info] mean refs freq mean 0.004403285060000002
+[10:53:56.353] [server] [error] do_cmd(SET_MOTOR_REFS) ZCmdError REFS_FREQ_ERROR : check_motors_refs_freq_update TOO SLOW motor refs frequency update 0.004403285060000002
+
+
+
+
+
+OTHER TEST:
+
+[10:59:38.924] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:59:38.924] [server] [info] mean refs freq mean 0.004387871239999977
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:59:38.925] [server] [info]  send request reply SET_MOTOR_REFS
+[10:59:38.928] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:59:38.928] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:59:38.928] [server] [info] mean refs freq mean 0.0043932160199999775
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:59:38.929] [server] [info]  send request reply SET_MOTOR_REFS
+[10:59:38.932] [server] [info] periodicActivity tDiff 0.003386614
+[10:59:38.933] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:59:38.933] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:59:38.933] [server] [info] mean refs freq mean 0.004394232819999977
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:59:38.933] [server] [info]  send request reply SET_MOTOR_REFS
+[10:59:38.937] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:59:38.937] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:59:38.937] [server] [info] mean refs freq mean 0.004399280319999977
+[0MQ Req] connect to ipc:///tmp/ecat_master:5555
+[10:59:38.938] [server] [info]  send request reply SET_MOTOR_REFS
+[10:59:38.942] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:59:38.942] [server] [info]  REPL REQ : SET_MOTOR_REFS
+[10:59:38.942] [server] [info] mean refs freq mean 0.0044000516999999776
+[10:59:38.942] [server] [error] do_cmd(SET_MOTOR_REFS) ZCmdError REFS_FREQ_ERROR : check_motors_refs_freq_update TOO SLOW motor refs frequency update 0.0044000516999999776
+
+
