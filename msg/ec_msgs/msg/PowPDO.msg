@@ -1,0 +1,10 @@
+string[] slave_name
+float32[] v_batt
+float32[] v_load
+float32[] i_load
+float32[] temp_batt
+float32[] temp_heatsink
+float32[] temp_pcb
+float32[] status 
+string[]  fault
+uint32[]  fault_numb

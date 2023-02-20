@@ -1,0 +1,3 @@
+string[] slave_name
+---
+ec_msgs/SlaveDescription[]  slaves_descr

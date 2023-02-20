@@ -1,0 +1,6 @@
+string[] slave_name
+float32[] current
+---
+ec_msgs/SlaveCmdInfo[]  slaves_info
+ec_msgs/CmdStatus cmd_status
+

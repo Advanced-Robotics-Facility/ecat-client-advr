@@ -1,0 +1,12 @@
+string[] motor_name
+float32[] position
+float32[] velocity
+float32[] torque
+float32[] amperage
+float32[] homing_position
+bool[] fan
+bool[] led
+---
+ec_msgs/SlaveCmdInfo[]  slaves_info
+ec_msgs/CmdStatus cmd_status
+

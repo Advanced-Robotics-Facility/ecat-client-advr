@@ -1,0 +1,7 @@
+string motor_name
+string trajectory_name
+float32[] x_home
+---
+ec_msgs/SlaveCmdInfo[]  slaves_info
+ec_msgs/CmdStatus cmd_status
+

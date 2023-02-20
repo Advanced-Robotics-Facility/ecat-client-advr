@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>slave_cmd_widget.ui</file>
+        <file>joint_widget.ui</file>
+        <file>slider_widget.ui</file>
+        <file>sliders_widget.ui</file>
+        <file>slave_widget.ui</file>
+    </qresource>
+</RCC>

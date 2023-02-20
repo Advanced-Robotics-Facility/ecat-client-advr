@@ -1,0 +1,13 @@
+string[] slave_name
+float32[] link_pos
+float32[] motor_pos
+float32[] link_vel
+float32[] motor_vel
+float32[] torque
+float32[] motor_temp
+float32[] board_temp 
+string[]  fault
+uint32[]  fault_numb
+float32[] pos_ref
+float32[] vel_ref
+float32[] tor_ref

@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>master_cmd_widget.ui</file>
+    </qresource>
+</RCC>

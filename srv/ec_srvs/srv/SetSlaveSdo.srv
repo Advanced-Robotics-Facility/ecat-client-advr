@@ -1,0 +1,7 @@
+string sdo_name
+string[] slave_name
+float32[] sdo_value
+---
+ec_msgs/SlaveCmdInfo[] slaves_info
+ec_msgs/CmdStatus cmd_status
+
