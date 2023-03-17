@@ -1,522 +1,547 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Form</class>
- <widget class="QWidget" name="Form">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>885</width>
-    <height>752</height>
+    <width>1015</width>
+    <height>893</height>
    </rect>
   </property>
-  <property name="maximumSize">
-   <size>
-    <width>1600</width>
-    <height>1000</height>
-   </size>
-  </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>MainWindow</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
-    <widget class="QGroupBox" name="groupBox_2">
-     <property name="maximumSize">
-      <size>
-       <width>700</width>
-       <height>100</height>
-      </size>
-     </property>
-     <property name="title">
-      <string/>
-     </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_4">
-      <item>
-       <widget class="QLabel" name="text">
-        <property name="font">
-         <font>
-          <family>Ubuntu</family>
-          <pointsize>17</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>EtherCAT Command</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QComboBox" name="SelectFieldComboBox">
-        <item>
-         <property name="text">
-          <string>Start motors</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Stop motors</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item>
-       <widget class="QComboBox" name="ModeType">
-        <item>
-         <property name="text">
-          <string>Position</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Velocity</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Impedance</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Idle</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item>
-       <widget class="QDialogButtonBox" name="CmdManager">
-        <property name="maximumSize">
-         <size>
-          <width>80</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="standardButtons">
-         <set>QDialogButtonBox::Apply</set>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QGroupBox" name="groupBox">
-     <property name="maximumSize">
-      <size>
-       <width>1000</width>
-       <height>120</height>
-      </size>
-     </property>
-     <property name="title">
-      <string/>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_6">
-      <property name="spacing">
-       <number>0</number>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QGroupBox" name="groupBox_2">
+      <property name="maximumSize">
+       <size>
+        <width>700</width>
+        <height>100</height>
+       </size>
       </property>
-      <property name="leftMargin">
-       <number>0</number>
+      <property name="title">
+       <string/>
       </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
-       <number>0</number>
-      </property>
-      <item>
-       <widget class="QLabel" name="label_4">
-        <property name="maximumSize">
-         <size>
-          <width>80</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_8">
-        <item>
-         <widget class="QLabel" name="label">
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>30</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>17</pointsize>
-           </font>
-          </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <item>
+        <widget class="QLabel" name="text">
+         <property name="font">
+          <font>
+           <family>Ubuntu</family>
+           <pointsize>17</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>EtherCAT Command</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="SelectFieldComboBox">
+         <item>
           <property name="text">
-           <string>UDP Communication Setting         </string>
+           <string>Start motors</string>
           </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QComboBox" name="UDPFreq">
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>19</pointsize>
-           </font>
-          </property>
-          <property name="layoutDirection">
-           <enum>Qt::RightToLeft</enum>
-          </property>
-          <item>
-           <property name="text">
-            <string>300</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>400</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>500</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>600</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>700</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>800</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>900</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>1000</string>
-           </property>
-          </item>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_2">
-          <property name="maximumSize">
-           <size>
-            <width>30</width>
-            <height>30</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>19</pointsize>
-           </font>
-          </property>
+         </item>
+         <item>
           <property name="text">
-           <string>Hz</string>
+           <string>Stop motors</string>
           </property>
-         </widget>
-        </item>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="ModeType">
+         <item>
+          <property name="text">
+           <string>Position</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Velocity</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Impedance</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Idle</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDialogButtonBox" name="CmdManager">
+         <property name="maximumSize">
+          <size>
+           <width>80</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="standardButtons">
+          <set>QDialogButtonBox::Apply</set>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="groupBox">
+      <property name="maximumSize">
+       <size>
+        <width>1000</width>
+        <height>120</height>
+       </size>
+      </property>
+      <property name="title">
+       <string/>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_6">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="label_4">
+         <property name="maximumSize">
+          <size>
+           <width>80</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_8">
+         <item>
+          <widget class="QLabel" name="label">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>17</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>UDP Communication Setting         </string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="UDPFreq">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>19</pointsize>
+            </font>
+           </property>
+           <property name="layoutDirection">
+            <enum>Qt::RightToLeft</enum>
+           </property>
+           <item>
+            <property name="text">
+             <string>300</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>400</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>500</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>600</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>700</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>800</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>900</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>1000</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="maximumSize">
+            <size>
+             <width>30</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>19</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Hz</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_5">
+           <property name="minimumSize">
+            <size>
+             <width>1</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_3">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>17</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>          Battery Level  </string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_4">
+           <item>
+            <widget class="QScrollArea" name="scrollArea_4">
+             <property name="maximumSize">
+              <size>
+               <width>200</width>
+               <height>80</height>
+              </size>
+             </property>
+             <property name="widgetResizable">
+              <bool>true</bool>
+             </property>
+             <widget class="QWidget" name="scrollAreaWidgetContents_5">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>193</width>
+                <height>76</height>
+               </rect>
+              </property>
+              <layout class="QGridLayout" name="gridLayout">
+               <item row="1" column="0">
+                <widget class="QLCDNumber" name="BatteryLevel">
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>200</height>
+                  </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <family>Ubuntu Condensed</family>
+                   <pointsize>17</pointsize>
+                   <weight>75</weight>
+                   <italic>false</italic>
+                   <bold>true</bold>
+                  </font>
+                 </property>
+                 <property name="lineWidth">
+                  <number>1</number>
+                 </property>
+                 <property name="midLineWidth">
+                  <number>0</number>
+                 </property>
+                 <property name="digitCount">
+                  <number>4</number>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
+        <string>Motor Reference</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="QLabel" name="label_5">
+         <widget class="QTabWidget" name="tabControl">
           <property name="minimumSize">
            <size>
-            <width>1</width>
+            <width>0</width>
             <height>0</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>16777215</width>
-            <height>30</height>
+            <height>16777215</height>
            </size>
           </property>
-          <property name="text">
-           <string/>
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
+          <widget class="QWidget" name="PositionTab">
+           <attribute name="title">
+            <string>Position</string>
+           </attribute>
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <item>
+             <widget class="QScrollArea" name="scrollArea">
+              <property name="widgetResizable">
+               <bool>true</bool>
+              </property>
+              <widget class="QWidget" name="scrollAreaWidgetContents">
+               <property name="geometry">
+                <rect>
+                 <x>0</x>
+                 <y>0</y>
+                 <width>951</width>
+                 <height>477</height>
+                </rect>
+               </property>
+               <layout class="QHBoxLayout" name="horizontalLayout_6">
+                <item>
+                 <layout class="QVBoxLayout" name="positionSliders"/>
+                </item>
+               </layout>
+              </widget>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="VelocityTab">
+           <attribute name="title">
+            <string>Velocity</string>
+           </attribute>
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <item>
+             <widget class="QScrollArea" name="scrollArea_2">
+              <property name="widgetResizable">
+               <bool>true</bool>
+              </property>
+              <widget class="QWidget" name="scrollAreaWidgetContents_2">
+               <property name="geometry">
+                <rect>
+                 <x>0</x>
+                 <y>0</y>
+                 <width>951</width>
+                 <height>477</height>
+                </rect>
+               </property>
+               <layout class="QHBoxLayout" name="horizontalLayout_10">
+                <item>
+                 <layout class="QVBoxLayout" name="velocitySliders"/>
+                </item>
+               </layout>
+              </widget>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="TorqueTab">
+           <attribute name="title">
+            <string>Impedance</string>
+           </attribute>
+           <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <item>
+             <widget class="QScrollArea" name="scrollArea_3">
+              <property name="widgetResizable">
+               <bool>true</bool>
+              </property>
+              <widget class="QWidget" name="scrollAreaWidgetContents_3">
+               <property name="geometry">
+                <rect>
+                 <x>0</x>
+                 <y>0</y>
+                 <width>951</width>
+                 <height>477</height>
+                </rect>
+               </property>
+               <layout class="QHBoxLayout" name="horizontalLayout_13">
+                <item>
+                 <layout class="QVBoxLayout" name="torqueSliders"/>
+                </item>
+               </layout>
+              </widget>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDialogButtonBox" name="DisEnableSlaves">
+          <property name="layoutDirection">
+           <enum>Qt::RightToLeft</enum>
+          </property>
+          <property name="standardButtons">
+           <set>QDialogButtonBox::NoToAll|QDialogButtonBox::YesToAll</set>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="label_3">
+         <widget class="QPushButton" name="SendStopBtn">
           <property name="maximumSize">
            <size>
-            <width>16777215</width>
-            <height>30</height>
+            <width>100</width>
+            <height>16777215</height>
            </size>
           </property>
-          <property name="font">
-           <font>
-            <pointsize>17</pointsize>
-           </font>
+          <property name="layoutDirection">
+           <enum>Qt::RightToLeft</enum>
           </property>
           <property name="text">
-           <string>          Battery Level  </string>
+           <string>Send</string>
           </property>
          </widget>
-        </item>
-        <item>
-         <layout class="QVBoxLayout" name="verticalLayout_4">
-          <item>
-           <widget class="QScrollArea" name="scrollArea_4">
-            <property name="maximumSize">
-             <size>
-              <width>200</width>
-              <height>80</height>
-             </size>
-            </property>
-            <property name="widgetResizable">
-             <bool>true</bool>
-            </property>
-            <widget class="QWidget" name="scrollAreaWidgetContents_5">
-             <property name="geometry">
-              <rect>
-               <x>0</x>
-               <y>0</y>
-               <width>73</width>
-               <height>62</height>
-              </rect>
-             </property>
-             <layout class="QGridLayout" name="gridLayout">
-              <item row="1" column="0">
-               <widget class="QLCDNumber" name="BatteryLevel">
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>200</height>
-                 </size>
-                </property>
-                <property name="font">
-                 <font>
-                  <family>Ubuntu Condensed</family>
-                  <pointsize>17</pointsize>
-                  <weight>75</weight>
-                  <italic>false</italic>
-                  <bold>true</bold>
-                 </font>
-                </property>
-                <property name="lineWidth">
-                 <number>1</number>
-                </property>
-                <property name="midLineWidth">
-                 <number>0</number>
-                </property>
-                <property name="digitCount">
-                 <number>4</number>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </widget>
-          </item>
-         </layout>
         </item>
        </layout>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QTabWidget" name="tabWidget">
-     <property name="currentIndex">
-      <number>0</number>
-     </property>
-     <widget class="QWidget" name="tab">
-      <attribute name="title">
-       <string>Motor Reference</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <widget class="QTabWidget" name="tabControl">
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="currentIndex">
-          <number>0</number>
-         </property>
-         <widget class="QWidget" name="PositionTab">
-          <attribute name="title">
-           <string>Position</string>
-          </attribute>
-          <layout class="QHBoxLayout" name="horizontalLayout">
-           <item>
-            <widget class="QScrollArea" name="scrollArea">
-             <property name="widgetResizable">
-              <bool>true</bool>
-             </property>
-             <widget class="QWidget" name="scrollAreaWidgetContents">
-              <property name="geometry">
-               <rect>
-                <x>0</x>
-                <y>0</y>
-                <width>821</width>
-                <height>378</height>
-               </rect>
-              </property>
-              <layout class="QHBoxLayout" name="horizontalLayout_6">
-               <item>
-                <layout class="QVBoxLayout" name="positionSliders"/>
-               </item>
-              </layout>
-             </widget>
-            </widget>
-           </item>
-          </layout>
+      </widget>
+      <widget class="QWidget" name="tab_2">
+       <attribute name="title">
+        <string>Motor Measured Data</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <widget class="QTreeWidget" name="MotorData">
+          <column>
+           <property name="text">
+            <string>Time</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string> Motor Name</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Data</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Dir</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Raw Data</string>
+           </property>
+          </column>
          </widget>
-         <widget class="QWidget" name="VelocityTab">
-          <attribute name="title">
-           <string>Velocity</string>
-          </attribute>
-          <layout class="QHBoxLayout" name="horizontalLayout_2">
-           <item>
-            <widget class="QScrollArea" name="scrollArea_2">
-             <property name="widgetResizable">
-              <bool>true</bool>
-             </property>
-             <widget class="QWidget" name="scrollAreaWidgetContents_2">
-              <property name="geometry">
-               <rect>
-                <x>0</x>
-                <y>0</y>
-                <width>821</width>
-                <height>378</height>
-               </rect>
-              </property>
-              <layout class="QHBoxLayout" name="horizontalLayout_10">
-               <item>
-                <layout class="QVBoxLayout" name="velocitySliders"/>
-               </item>
-              </layout>
-             </widget>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-         <widget class="QWidget" name="TorqueTab">
-          <attribute name="title">
-           <string>Impedance</string>
-          </attribute>
-          <layout class="QHBoxLayout" name="horizontalLayout_3">
-           <item>
-            <widget class="QScrollArea" name="scrollArea_3">
-             <property name="widgetResizable">
-              <bool>true</bool>
-             </property>
-             <widget class="QWidget" name="scrollAreaWidgetContents_3">
-              <property name="geometry">
-               <rect>
-                <x>0</x>
-                <y>0</y>
-                <width>821</width>
-                <height>378</height>
-               </rect>
-              </property>
-              <layout class="QHBoxLayout" name="horizontalLayout_13">
-               <item>
-                <layout class="QVBoxLayout" name="torqueSliders"/>
-               </item>
-              </layout>
-             </widget>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </widget>
-       </item>
-       <item>
-        <widget class="QDialogButtonBox" name="DisEnableSlaves">
-         <property name="layoutDirection">
-          <enum>Qt::RightToLeft</enum>
-         </property>
-         <property name="standardButtons">
-          <set>QDialogButtonBox::NoToAll|QDialogButtonBox::YesToAll</set>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="SendStopBtn">
-         <property name="maximumSize">
-          <size>
-           <width>100</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="layoutDirection">
-          <enum>Qt::RightToLeft</enum>
-         </property>
-         <property name="text">
-          <string>Send</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
+        </item>
+       </layout>
+      </widget>
      </widget>
-     <widget class="QWidget" name="tab_2">
-      <attribute name="title">
-       <string>Motor Measured Data</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_3">
-       <item>
-        <widget class="QTreeWidget" name="MotorData">
-         <column>
-          <property name="text">
-           <string>Time</string>
-          </property>
-         </column>
-         <column>
-          <property name="text">
-           <string> Motor Name</string>
-          </property>
-         </column>
-         <column>
-          <property name="text">
-           <string>Data</string>
-          </property>
-         </column>
-         <column>
-          <property name="text">
-           <string>Dir</string>
-          </property>
-         </column>
-         <column>
-          <property name="text">
-           <string>Raw Data</string>
-          </property>
-         </column>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </widget>
-   </item>
-  </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1015</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionOpen"/>
+   </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionOpen">
+   <property name="text">
+    <string>Open</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

@@ -11,8 +11,9 @@
 #include "client.h"
 #include "ec_pdo_read.h"
 #include "ec_client_utils.h"
+#include <QMainWindow>
 
-class EcGuiStart : public QWidget
+class EcGuiStart : public QMainWindow
 {
     Q_OBJECT
 
@@ -33,7 +34,7 @@ public:
 
     };
 
-    explicit EcGuiStart(std::map<int ,joint_info_t > joint_info_map,
+    EcGuiStart(std::map<int ,joint_info_t > joint_info_map,
                         EC_Client_Utils::EC_CONFIG ec_config,
                         std::shared_ptr<Client> client,
                         QWidget *parent = nullptr);

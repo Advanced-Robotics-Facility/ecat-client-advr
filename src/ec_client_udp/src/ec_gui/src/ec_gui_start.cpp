@@ -44,13 +44,12 @@ EcGuiStart::EcGuiStart(std::map<int ,joint_info_t > joint_info_map,EC_Client_Uti
     _joint_info_map(joint_info_map),
     _ec_config(ec_config),
     _client(client),
-    QWidget(parent)
+    QMainWindow(parent)
 {
 
     /* Load ui */
     auto wid = LoadUiFile(this);
-
-    _l = new QVBoxLayout;
+    wid->show();
 
     /*  EtherCAT Master commands */
     _fieldtype_combobox = findChild<QComboBox *>("SelectFieldComboBox");
@@ -271,9 +270,6 @@ EcGuiStart::EcGuiStart(std::map<int ,joint_info_t > joint_info_map,EC_Client_Uti
     _ec_pdo_read = std::make_shared<EcPDORead>(_client,_tree_wid);
 
     OnUDPFreqChanged();
-
-    _l->addWidget(wid);
-    setLayout(_l);
 }
 
 std::string EcGuiStart::getFieldType() const
