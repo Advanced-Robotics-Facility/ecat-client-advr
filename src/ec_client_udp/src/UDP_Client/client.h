@@ -40,6 +40,12 @@ enum class ClientStatus : uint32_t
     
 };
 
+enum class MotorRefFlags : uint32_t
+{
+    FLAG_NONE           = 0x0,        //
+    FLAG_MULTI_REF      = 1 << 0,
+    FLAG_LAST_REF       = 1 << 1,
+};
 
 /////////////////////////////////////////////////////
 
@@ -64,6 +70,7 @@ public:
     void get_slaves_info();
     void getAndset_slaves_sdo(uint32_t esc_id, const RD_SDO &rd_sdo, const WR_SDO &wr_sdo);
     MotorStatusMap get_motors_status();
+    void set_motors_references(const MotorRefFlags &,const std::vector<MR> &);
     FtStatusMap get_ft6_status();
     PwrStatusMap get_pow_status();
     bool start_motors(const MST &);
@@ -94,6 +101,7 @@ private:
     void set_wait_reply_time(uint32_t wait_reply_time);
     void restore_wait_reply_time();
     std::shared_ptr<std::mutex> _mutex_motor_status;
+    std::shared_ptr<std::mutex> _mutex_motor_reference;
     std::shared_ptr<std::mutex> _mutex_ft6_status;
     std::shared_ptr<std::mutex> _mutex_pow_status;
     std::shared_ptr<std::condition_variable> _cv_repl_reply;
@@ -121,6 +129,9 @@ private:
     std::string _reply_err_msg;
     ReplReqRep _repl_req_rep;
     ServerStatus _actual_server_status;
+
+    MotorRefFlags _motor_ref_flags;
+    std::vector<MR> _motors_references;
 };
 
 #endif // REPL_SERVER_H

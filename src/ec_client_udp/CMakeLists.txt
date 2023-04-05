@@ -10,16 +10,18 @@ find_package(Git REQUIRED)
 execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive -- ${CMAKE_SOURCE_DIR}
 WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 
-include(cmake/CPM.cmake)
-
-CPMAddPackage(
-    NAME magic_enum
-    GITHUB_REPOSITORY Neargye/magic_enum
-    GIT_TAG v0.8.1 # Where `x.y.z` is the release version you want to use.
-)
-
-set(MAGIC_ENUM_OPT_INSTALL ON CACHE BOOL "Enable option to install Magic Enum" FORCE)
 set(EXTERNAL "${PROJECT_SOURCE_DIR}/external")
+
+find_package(magic_enum)
+if(NOT ${magic_enum_FOUND})
+    set(MAGIC_ENUM_OPT_INSTALL ON CACHE BOOL "Enable option to install Magic Enum" FORCE)
+    include(cmake/CPM.cmake)
+    CPMAddPackage(
+        NAME magic_enum
+        GITHUB_REPOSITORY Neargye/magic_enum
+        GIT_TAG v0.8.1 # Where `x.y.z` is the release version you want to use.
+    )
+endif()
 
 find_package(ecat_master REQUIRED)
 

@@ -41,7 +41,11 @@ Client::Client(std::string host_address,uint32_t host_port) :
 
     
     _mutex_motor_status= std::make_shared<std::mutex>();
-    
+    _mutex_motor_reference= std::make_shared<std::mutex>();
+
+    _motor_ref_flags=MotorRefFlags::FLAG_NONE;
+    _motors_references.clear();
+
     _mutex_ft6_status= std::make_shared<std::mutex>();
     
     _mutex_pow_status= std::make_shared<std::mutex>();
@@ -589,7 +593,6 @@ void Client::feed_motors(const MSR & m_ref)
     }
 }
 
-
 void Client::set_motors_gains(const MSG &motors_gains)
 {
     if(_client_alive)
@@ -627,6 +630,10 @@ void Client::periodicActivity()
         {
              // Stop to receive motors, imu, ft, power board pdo information // 
             _client_alive =false;
+            // reset motors references
+            _motor_ref_flags = MotorRefFlags::FLAG_NONE;
+            _motors_references.clear();
+            // stop client
             stop_client();
         }
     }
@@ -636,6 +643,24 @@ void Client::periodicActivity()
         _client_alive_time = steady_clock::now();
         
         // Receive motors, imu, ft, power board pdo information // 
+
+        // Send motors references
+        _mutex_motor_reference->lock();
+
+        if(_motor_ref_flags!=MotorRefFlags::FLAG_NONE &&
+           !_motors_references.empty())
+        {
+            if(_motor_ref_flags==MotorRefFlags::FLAG_MULTI_REF )
+            {
+                feed_motors(std::make_tuple(1, _motors_references));
+            }
+            else
+            {
+                feed_motors(std::make_tuple(2, _motors_references));
+            }
+        }
+
+        _mutex_motor_reference->unlock();
     }
         
 }
@@ -652,6 +677,44 @@ void Client::stop_client()
     
     this->stop();
     
+}
+
+void Client::set_motors_references(const MotorRefFlags & motor_ref_flags,const std::vector<MR> &motors_references)
+{
+    _mutex_motor_reference->lock();
+
+    _motor_ref_flags=MotorRefFlags::FLAG_NONE;
+    _motors_references.clear();
+
+    if(_client_alive)
+    {
+       if(motor_ref_flags==MotorRefFlags::FLAG_MULTI_REF ||
+          motor_ref_flags==MotorRefFlags::FLAG_LAST_REF)
+       {
+           if(!_motors_references.empty())
+           {
+                _motor_ref_flags = motor_ref_flags;
+                _motors_references = motors_references;
+           }
+           else
+           {
+                consoleLog->error("Motors references vector is empy!, please fill the vector");
+           }
+       }
+       else
+       {
+           if(motor_ref_flags!=MotorRefFlags::FLAG_NONE)
+           {
+                consoleLog->error("Wrong motors references flag!");
+           }
+       }
+    }
+    else
+    {
+        consoleLog->error("UDP client not alive, please stop the main process");
+    }
+
+    _mutex_motor_reference->unlock();
 }
 
 MotorStatusMap Client::get_motors_status()

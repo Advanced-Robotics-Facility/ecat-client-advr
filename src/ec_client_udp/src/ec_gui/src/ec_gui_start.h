@@ -111,7 +111,7 @@ private:
 
   std::shared_ptr<Client> _client;
   std::vector<MR> _motors_ref;
-  uint32_t _motor_ref_flags;
+  MotorRefFlags _motor_ref_flags;
   
   std::shared_ptr<EcPDORead> _ec_pdo_read;
 };

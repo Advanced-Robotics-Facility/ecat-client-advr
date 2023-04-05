@@ -771,7 +771,7 @@ double  EcGuiStart::filtering(SecondOrderFilter<double>::Ptr filter,double actua
 void EcGuiStart::UDP_Communication_send()
 {
     _motors_ref.clear();
-    _motor_ref_flags = 1;
+    _motor_ref_flags = MotorRefFlags::FLAG_MULTI_REF;
 
     for (auto& [slave_id, slider_wid]:_sw_map_selected)
     {
@@ -818,7 +818,7 @@ void EcGuiStart::UDP_Communication_send()
     }
     if(!_motors_ref.empty())
     {
-       _client->feed_motors(std::make_tuple(_motor_ref_flags, _motors_ref));
+       _client->set_motors_references(_motor_ref_flags, _motors_ref);
     }
 
     _first_send_udp_comm=false;
