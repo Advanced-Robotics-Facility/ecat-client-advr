@@ -13,7 +13,7 @@
 #include "ec_client_utils.h"
 #include <QMainWindow>
 
-class EcGuiStart : public QMainWindow
+class EcGuiStart : public QWidget
 {
     Q_OBJECT
 
@@ -34,7 +34,7 @@ public:
 
     };
 
-    EcGuiStart(std::map<int ,joint_info_t > joint_info_map,
+    explicit EcGuiStart(std::map<int ,joint_info_t > joint_info_map,
                         EC_Client_Utils::EC_CONFIG ec_config,
                         std::shared_ptr<Client> client,
                         QWidget *parent = nullptr);
