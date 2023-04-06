@@ -435,6 +435,39 @@ bool Client::retrieve_rr_sdo(uint32_t esc_id,
     return ret_cmd_status;
 }
 
+bool Client::set_wr_sdo(uint32_t esc_id,
+                        const RD_SDO &rd_sdo,
+                        const WR_SDO &wr_sdo)
+
+{
+    int attemps_cnt = 0;
+    bool ret_cmd_status=false;
+
+    while(attemps_cnt < _max_cmd_attemps)
+    {
+        if(_client_alive)
+        {
+            getAndset_slaves_sdo(esc_id,rd_sdo,wr_sdo);
+
+            ret_cmd_status = get_reply_from_server(ReplReqRep::SDO_CMD);
+            if(ret_cmd_status)
+            {
+                attemps_cnt = _max_cmd_attemps;
+            }
+            else
+            {
+                attemps_cnt++;
+            }
+        }
+        else
+        {
+            consoleLog->error("UDP client not alive, please stop the main process");
+            return false;
+        }
+    }
+    return ret_cmd_status;
+}
+
 bool Client::start_motors(const MST &motors_start)
 {
     bool ret_cmd_status=false;

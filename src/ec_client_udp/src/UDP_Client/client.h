@@ -86,6 +86,9 @@ public:
                          const RD_SDO &rd_sdo, 
                          const WR_SDO &wr_sdo,
                          RR_SDO &rr_sdo);
+    bool set_wr_sdo(uint32_t esc_id,
+                    const RD_SDO &rd_sdo,
+                    const WR_SDO &wr_sdo);
     bool is_client_alive();
 
 private:
