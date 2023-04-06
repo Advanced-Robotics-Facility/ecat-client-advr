@@ -258,20 +258,36 @@ void Client::pwr_status_handler(char *buf, size_t size)
 //******************************* COMMANDS *****************************************************//
 void Client::connect()
 {
-    CBuff sendBuffer{};
-    CCA client_args = std::make_tuple(CLIENT_PORT, get_period_ms());
-    auto sizet = proto.packClientRequest(sendBuffer, CliReqSrvRep::CONNECT, client_args);
-    do_send(sendBuffer.data(),  sendBuffer.size() );
-    consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
+    if(_client_status==ClientStatus::IDLE)
+    {
+        CBuff sendBuffer{};
+        CCA client_args = std::make_tuple(CLIENT_PORT, get_period_ms());
+        auto sizet = proto.packClientRequest(sendBuffer, CliReqSrvRep::CONNECT, client_args);
+        do_send(sendBuffer.data(),  sendBuffer.size() );
+        consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
+    }
+    else
+    {
+        consoleLog->info("Client already connected, cannot perform the connect command");
+    }
+
 }
 
 void Client::disconnect()
 {
-    CBuff sendBuffer{};
-    uint32_t payload = 0xCACA0;
-    auto sizet = proto.packClientRequest(sendBuffer, CliReqSrvRep::DISCONNECT, payload);
-    do_send(sendBuffer.data(),  sendBuffer.size() );
-    consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
+    if(_client_status!=ClientStatus::IDLE)
+    {
+        CBuff sendBuffer{};
+        uint32_t payload = 0xCACA0;
+        auto sizet = proto.packClientRequest(sendBuffer, CliReqSrvRep::DISCONNECT, payload);
+        do_send(sendBuffer.data(),  sendBuffer.size() );
+        consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
+    }
+    else
+    {
+        consoleLog->info("Client not connected, cannot perform the disconnect command");
+    }
+
 }
 
 void Client::ping(bool test)
@@ -338,7 +354,7 @@ bool Client::retrieve_slaves_info(SSI &slave_info)
 {
     int attemps_cnt = 0;
     bool ret_cmd_status=false;
-    
+
     _slave_info.clear();
     while(slave_info.empty() && attemps_cnt < _max_cmd_attemps)
     {
@@ -351,7 +367,11 @@ bool Client::retrieve_slaves_info(SSI &slave_info)
             {
                 slave_info = _slave_info;
                 attemps_cnt = _max_cmd_attemps;
-                _client_status=ClientStatus::MOTORS_MAPPED;
+                if(_client_status!=ClientStatus::MOTORS_STARTED ||
+                   _client_status!=ClientStatus::MOTORS_CTRL)
+                {
+                    _client_status=ClientStatus::MOTORS_MAPPED;
+                }
             }
             else
             {
@@ -417,41 +437,62 @@ bool Client::retrieve_rr_sdo(uint32_t esc_id,
 
 bool Client::start_motors(const MST &motors_start)
 {
-    int attemps_cnt=0;
     bool ret_cmd_status=false;
-    
-    restore_wait_reply_time(); //restore default wait reply time.
-    uint32_t extend_wait_reply_time = _wait_reply_time + 1000 * (motors_start.size() / 10 );
-    set_wait_reply_time(extend_wait_reply_time);
-    
-    while(attemps_cnt < _max_cmd_attemps)
+
+    if(_client_status==ClientStatus::MOTORS_STARTED)
     {
-        if(_client_alive)
+        consoleLog->error("Motors already started, stop the motors before performing start motors command");
+        return ret_cmd_status;
+    }
+    else if(_client_status==ClientStatus::MOTORS_CTRL)
+    {
+        consoleLog->error("Motors are controlled, stop the motors before performing start motors command");
+        return ret_cmd_status;
+    }
+    else
+    {
+        int attemps_cnt=0;
+        restore_wait_reply_time(); //restore default wait reply time.
+        uint32_t extend_wait_reply_time = _wait_reply_time + 1000 * (motors_start.size() / 10 );
+        set_wait_reply_time(extend_wait_reply_time);
+
+        while(attemps_cnt < _max_cmd_attemps)
         {
-            CBuffT<4096u> sendBuffer{};
-            auto sizet = proto.packReplRequestMotorsStart(sendBuffer, motors_start);
-            do_send(sendBuffer.data(), sendBuffer.size() );
-            consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
-            ret_cmd_status = get_reply_from_server(ReplReqRep::START_MOTOR);
-            
-            if(ret_cmd_status)
+            if(_client_alive)
             {
-                attemps_cnt = _max_cmd_attemps;
-                _client_status=ClientStatus::MOTORS_STARTED;
+                _mutex_motor_reference->lock();
+
+                // clear motors references
+                _motor_ref_flags=MotorRefFlags::FLAG_NONE;
+                _motors_references.clear();
+
+                _mutex_motor_reference->unlock();
+
+                CBuffT<4096u> sendBuffer{};
+                auto sizet = proto.packReplRequestMotorsStart(sendBuffer, motors_start);
+                do_send(sendBuffer.data(), sendBuffer.size() );
+                consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
+                ret_cmd_status = get_reply_from_server(ReplReqRep::START_MOTOR);
+
+                if(ret_cmd_status)
+                {
+                    attemps_cnt = _max_cmd_attemps;
+                    _client_status=ClientStatus::MOTORS_STARTED;
+                }
+                else
+                {
+                    attemps_cnt++;
+                }
             }
             else
             {
-                attemps_cnt++;
+                consoleLog->error("UDP client not alive, please stop the main process");
+                return false;
             }
         }
-        else
-        {
-            consoleLog->error("UDP client not alive, please stop the main process");
-            return false;
-        }
+
+        restore_wait_reply_time();
     }
-    
-    restore_wait_reply_time();
     
     return ret_cmd_status;
 }
@@ -474,7 +515,15 @@ bool Client::stop_motors()
             if(ret_cmd_status)
             {
                 attemps_cnt = _max_cmd_attemps;
+
+                _mutex_motor_reference->lock();
                 _client_status=ClientStatus::MOTORS_STOPPED;
+
+                // clear motors references
+                _motor_ref_flags=MotorRefFlags::FLAG_NONE;
+                _motors_references.clear();
+
+                _mutex_motor_reference->unlock();
             }
             else
             {
@@ -670,11 +719,8 @@ void Client::stop_client()
 {
     spdlog::get("console")->info("That's all folks");
     
-    if(_client_status!=ClientStatus::IDLE)
-    {
-        disconnect();
-    }
-    
+    disconnect();
+
     this->stop();
     
 }
