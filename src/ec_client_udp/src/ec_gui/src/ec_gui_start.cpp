@@ -587,68 +587,78 @@ void EcGuiStart::onApplyCmdReleased()
                             _gains.push_back(0);
                             _gains.push_back(0);
                         }
+                        _motors_start.push_back(std::make_tuple(slave_id,_value,_gains));
                     }
-                    else
-                    {
-                        _value=0x3B;
-                        _gains.clear();
-                        for(int i=0;i<5;i++)
-                        {
-                            _gains.push_back(0.0);
-                        }
-                    }
-                    _motors_start.push_back(std::make_tuple(slave_id,_value,_gains));
                     _brake_cmds.push_back(std::make_tuple(slave_id,to_underlying(PdoAuxCmdType::BRAKE_RELEASE)));
                 }
             }
 
             if(!_motors_start.empty())
             {
-                if(!_motors_start.empty())
+                _motor_start_req=_client->start_motors(_motors_start);
+                if(!_motor_start_req)
                 {
-                     _motor_start_req=_client->start_motors(_motors_start);
-                     if(!_motor_start_req)
-                     {
-                            QMessageBox msgBox;
-                            msgBox.setText("Cannot perform the start command on the slaves requested");
-                            msgBox.exec();
-                     }
+                        QMessageBox msgBox;
+                        msgBox.setText("Cannot perform the start command on the slaves requested");
+                        msgBox.exec();
                 }
-                
-                if(!_brake_cmds.empty())
+            }
+
+            if(!_brake_cmds.empty())
+            {
+                bool release_breke_req=false;
+
+                if(_motor_start_req)
                 {
-                    if(_motor_start_req || _motors_start.empty())
+                    release_breke_req=_client->pdo_aux_cmd(_brake_cmds);  // USE PDO COMMAND
+                }
+                else
+                {
+                    RD_SDO rd_sdo{};
+                    for(int i=0;i<_brake_cmds.size();i++)
                     {
-                        if(_client->pdo_aux_cmd(_brake_cmds))
-                        {
-                            std::this_thread::sleep_for(1000ms);
-                            if(_client->pdo_aux_cmd_sts(_brake_cmds))
-                            {
-                                _mode_type_combobox->setEnabled(false);
-                                _send_ref=true;
-                                _motor_start_req = true; // motors started in IDLE
-
-                                _notallbtn->setEnabled(false);
-                                _allbtn->setEnabled(false);
-
-                                for (auto& [slave_id, slider_wid]:_sw_map_selected)
-                                {
-                                    slider_wid->disable_joint_enabled();
-                                }
-
-
-                                QMessageBox msgBox;
-                                msgBox.setText("All slaves requested have performed the command successfully");
-                                msgBox.exec();  
-                            }
-                            else
-                            {
-                                QMessageBox msgBox;
-                                msgBox.setText("Cannot perform the release brake command on the slaves requested");
-                                msgBox.exec();
-                            }
-                        }
+                        int esc_id,brake_req;
+                        std::tie(esc_id,brake_req) = _brake_cmds[i];
+                        WR_SDO wr_sdo{};
+                        wr_sdo.push_back(std::make_tuple("ctrl_status_cmd",std::to_string(brake_req)));
+                        release_breke_req &= _client->set_wr_sdo(esc_id,rd_sdo,wr_sdo); // USE SDO COMMAND
                     }
+                }
+
+                if(release_breke_req)
+                {
+                    std::this_thread::sleep_for(1000ms);
+                    if(_client->pdo_aux_cmd_sts(_brake_cmds))
+                    {
+                        _mode_type_combobox->setEnabled(false);
+                        _send_ref=true;
+                        _motor_start_req = true; // motors started in IDLE
+
+                        _notallbtn->setEnabled(false);
+                        _allbtn->setEnabled(false);
+
+                        for (auto& [slave_id, slider_wid]:_sw_map_selected)
+                        {
+                            slider_wid->disable_joint_enabled();
+                        }
+
+
+                        QMessageBox msgBox;
+                        msgBox.setText("All slaves requested have performed the command successfully");
+                        msgBox.exec();
+                    }
+                    else
+                    {
+                        QMessageBox msgBox;
+                        msgBox.setText("Wrong status of the brakes requested");
+                        msgBox.exec();
+                    }
+                }
+                else
+                {
+                    QMessageBox msgBox;
+                    msgBox.setText("Cannot perform the release brake command on the slaves requested");
+                    msgBox.exec();
                 }
             }
         }
