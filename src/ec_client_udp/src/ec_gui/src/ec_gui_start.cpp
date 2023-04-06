@@ -702,7 +702,7 @@ void EcGuiStart::onSendStopBtnReleased()
 
         _UDPTimer_send->start(_udp_ms_req);
         _udp_freq_combobox->setEnabled(false);
-        //_send_stop_btn->setText("Stop"); Note Avoid stopping to send references for jitter requirement.
+        _send_stop_btn->setText("Stop");
 
         for (auto& [slave_id, slider_wid]:_sw_map_selected)
         {
