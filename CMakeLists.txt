@@ -1,34 +1,42 @@
 cmake_minimum_required(VERSION 3.0)
 
+project(ec_client_udp)
 
-project(ecat-client-advr)
+option(COMPILE_EXAMPLE "Enable to compile an example for the UDP communication" ON)
+option(COMPILE_GUI "Enable to compile the client GUI" ON)
+option(COMPILE_GRAVITY_COMPENSATION "Enable to compile an example of the gravity compensation" OFF)
 
-# c++17 support
-set(CMAKE_CXX_STANDARD 17)
+find_package(Git REQUIRED)
+execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive -- ${CMAKE_SOURCE_DIR}
+WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 
-option(EC_CLIENT_ENABLE "Enable to compile the ROS etherCAT client" ON)
-option(EC_CLIENT_ENABLE_GUI "Enable ROS etherCAT client GUI" OFF)
-option(EC_CLIENT_UDP "Enable to compile the UDP etherCAT client and GUI" ON)
+set(EXTERNAL "${PROJECT_SOURCE_DIR}/external")
 
-set(USE_ECAT_CORE ON CACHE BOOL "Use ECAT CORE LIBRARY" FORCE)
-set(ECAT_LIB_TYPE _nrt)
+find_package(magic_enum)
+if(NOT ${magic_enum_FOUND})
+    set(MAGIC_ENUM_OPT_INSTALL ON CACHE BOOL "Enable option to install Magic Enum" FORCE)
+    include(cmake/CPM.cmake)
+    CPMAddPackage(
+        NAME magic_enum
+        GITHUB_REPOSITORY Neargye/magic_enum
+        GIT_TAG v0.8.1 # Where `x.y.z` is the release version you want to use.
+    )
+endif()
 
-#compile messages
-add_subdirectory(msg/ec_msgs)
+find_package(ecat_master REQUIRED)
 
-#compile services
-add_subdirectory(srv/ec_srvs)
-
-if(${EC_CLIENT_ENABLE})
-	# compile ec client
-	add_subdirectory(src/ec_client_ros/ec_client)
+if(${COMPILE_EXAMPLE})
+	# compile example
+	add_subdirectory(src/ec_client_main)
 endif()
 
 
-if(${EC_CLIENT_ENABLE_GUI})
-	add_subdirectory(src/ec_client_ros/ec_gui)
+if(${COMPILE_GUI})
+	  # compile ec gui
+	  add_subdirectory(src/ec_gui)
 endif()
 
-if(${EC_CLIENT_UDP})
-	add_subdirectory(src/ec_client_udp)
+if(${COMPILE_GRAVITY_COMPENSATION})
+	  # compile ec gui
+	  add_subdirectory(src/ec_gravity_compensation)
 endif()

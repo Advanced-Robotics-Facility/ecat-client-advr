@@ -7,6 +7,7 @@ add_service_files(
     GetGainsCurrentInfo.srv
     GetSlaveInfo.srv
     GetSlaveInfoStartMaster.srv
+    GetSlaveSdo.srv
     PrintMotorInfo.srv
     SelectSlave.srv
     SetMotorImpGains.srv
