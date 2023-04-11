@@ -13,8 +13,8 @@ OPTION(TEST_MAIN "Testing Main concepts" OFF)
 
 # set includes
 include_directories(
-    ${PROJECT_SOURCE_DIR}/../UDP_Client
-    ${PROJECT_SOURCE_DIR}/../Utils
+    ${PROJECT_SOURCE_DIR}/../../protocols/udp
+    ${PROJECT_SOURCE_DIR}/../../utils
     )
 
 find_package(Boost REQUIRED system)
@@ -30,8 +30,8 @@ ENDIF(TEST_MAIN)
 # compile gravity_compensation
 add_executable(ec_gravity_compensation
                src/ec_gravity_compensation.cpp
-               ${PROJECT_SOURCE_DIR}/../UDP_Client/client.cpp
-               ${PROJECT_SOURCE_DIR}/../Utils/ec_client_utils.cpp)
+               ${PROJECT_SOURCE_DIR}/../../protocols/udp/ec_udp_comm.cpp
+               ${PROJECT_SOURCE_DIR}/../../utils/ec_utils.cpp)
                
 target_include_directories(ec_gravity_compensation
     PRIVATE

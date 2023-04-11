@@ -8,9 +8,9 @@
 #include "slider_widget.h"
 
 #include "cmn_utils.h"
-#include "client.h"
+#include "ec_udp_comm.h"
 #include "ec_pdo_read.h"
-#include "ec_client_utils.h"
+#include "ec_utils.h"
 #include <QMainWindow>
 
 class EcGuiStart : public QWidget

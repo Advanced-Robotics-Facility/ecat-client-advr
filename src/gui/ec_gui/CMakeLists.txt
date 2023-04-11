@@ -18,9 +18,8 @@ OPTION(TEST_GUI "Testing GUI concepts" OFF)
     
 # set includes
 include_directories(
-    ../ec_client_library/command
-    ${PROJECT_SOURCE_DIR}/../UDP_Client
-    ${PROJECT_SOURCE_DIR}/../Utils
+    ${PROJECT_SOURCE_DIR}/../../protocols/udp
+    ${PROJECT_SOURCE_DIR}/../../utils
     )
 
 # set qt to automatically run MOC and RCC pre-compilers
@@ -45,8 +44,8 @@ add_library(ec_gui_lib STATIC
     src/ec_gui_start_resources.qrc
     src/slider_widget.cpp
     src/slider_widget_calib.cpp
-    ${PROJECT_SOURCE_DIR}/../UDP_Client/client.cpp
-    ${PROJECT_SOURCE_DIR}/../Utils/ec_client_utils.cpp
+    ${PROJECT_SOURCE_DIR}/../../protocols/udp/ec_udp_comm.cpp
+    ${PROJECT_SOURCE_DIR}/../../utils/ec_utils.cpp
     )
 
 target_include_directories(ec_gui_lib
@@ -75,17 +74,14 @@ ENDIF(TEST_GUI)
 
 
 # compile main
-add_executable(ec_gui_mirror src/ec_gui_main.cpp)
+add_executable(ec_gui src/ec_gui_main.cpp)
 
-target_include_directories(ec_gui_mirror
+target_include_directories(ec_gui
     PRIVATE
     ${EXTERNAL}/spdlog/include
 )
 
-target_link_libraries(ec_gui_mirror ec_gui_lib)
-install(TARGETS ec_gui_mirror
-    DESTINATION bin)
+target_link_libraries(ec_gui ec_gui_lib)
 
-
-install(TARGETS ec_gui_mirror
+install(TARGETS ec_gui
     DESTINATION bin)

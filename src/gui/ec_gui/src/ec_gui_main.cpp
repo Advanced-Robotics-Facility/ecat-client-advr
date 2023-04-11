@@ -6,8 +6,8 @@
 #include "ec_gui_start.h"
 #include <QApplication>
 
-#include "client.h"
-#include "ec_client_utils.h"
+#include "ec_udp_comm.h"
+#include "ec_utils.h"
 
 #define CENT_AC 0x15
 

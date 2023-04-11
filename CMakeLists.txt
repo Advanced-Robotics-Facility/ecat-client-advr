@@ -1,10 +1,14 @@
 cmake_minimum_required(VERSION 3.0)
 
-project(ec_client_udp)
+
+project(ecat-client-advr)
+
+# c++17 support
+set(CMAKE_CXX_STANDARD 17)
 
 option(COMPILE_EXAMPLE "Enable to compile an example for the UDP communication" ON)
 option(COMPILE_GUI "Enable to compile the client GUI" ON)
-option(COMPILE_GRAVITY_COMPENSATION "Enable to compile an example of the gravity compensation" OFF)
+#option(COMPILE_GRAVITY_COMPENSATION "Enable to compile an example of the gravity compensation" OFF)
 
 find_package(Git REQUIRED)
 execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive -- ${CMAKE_SOURCE_DIR}
@@ -27,16 +31,11 @@ find_package(ecat_master REQUIRED)
 
 if(${COMPILE_EXAMPLE})
 	# compile example
-	add_subdirectory(src/ec_client_main)
+	add_subdirectory(src/examples)
 endif()
 
 
 if(${COMPILE_GUI})
 	  # compile ec gui
-	  add_subdirectory(src/ec_gui)
-endif()
-
-if(${COMPILE_GRAVITY_COMPENSATION})
-	  # compile ec gui
-	  add_subdirectory(src/ec_gravity_compensation)
+	  add_subdirectory(src/gui/ec_gui)
 endif()

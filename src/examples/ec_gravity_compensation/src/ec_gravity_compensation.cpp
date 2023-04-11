@@ -6,9 +6,13 @@
 
 #include <atomic>
 
-#include "ec_client_utils.h"
+#include "ec_utils.h"
 
-#include "client.h"
+#include "ec_udp_comm.h"
+
+#include <XBotInterface/ModelInterface.h>
+#include <XBotInterface/ConfigOptions.h>
+
 
 // EtherCAT Motor type
 #define LO_PWR_DC_MC 0x12
@@ -24,9 +28,13 @@ bool brake_engagement_req=false;
 void on_sigint(int)
 {
 
-    if (STM_sts=="Motor_Ctrl")
+    if (STM_sts=="Motor_Ctrl_SetGains")
     {
         brake_engagement_req=true;
+    }
+    else if (STM_sts=="Motor_Ctrl")
+    {
+        restore_gains=true;
     }
     else
     {
@@ -34,7 +42,7 @@ void on_sigint(int)
     }
 }
 
-// IDLE-->Connected->Autodetection->Motor_Started->Motor_Ctrl->Engage_Motor_Brake->Motor_Stopping->Exit
+// IDLE-->Connected->Autodetection->Motor_Started->Motor_Ctrl_SetGains->Motor_Ctrl->Motor_Ctrl_SetGains->Engage_Motor_Brake->Motor_Stopping->Exit
                                                                     
 int main()
 {
@@ -108,6 +116,10 @@ int main()
         
         SSI slave_info;
         
+        
+        int control_mode_type=0xD4;
+        std::vector<float> imp_gains={1000.0,10.0,1.0,0.7,0.007};
+
         if(client.retrieve_slaves_info(slave_info))
         {   
             if(!slave_info.empty())
@@ -131,7 +143,7 @@ int main()
         for(int i=0; i< slave_id_vector.size();i++)
         {
             int id = slave_id_vector[i];
-            motors_start.push_back(std::make_tuple(id,ec_client_cfg.control_mode_type,ec_client_cfg.gains));
+            motors_start.push_back(std::make_tuple(id,control_mode_type,imp_gains));
             
             // queue release brake commands for all motors 
             brake_cmds.push_back(std::make_tuple(id,to_underlying(PdoAuxCmdType::BRAKE_RELEASE)));
@@ -176,7 +188,7 @@ int main()
                         if(client.pdo_aux_cmd_sts(brake_cmds))
                         {
                             pdo_aux_cmd_attemps=max_pdo_aux_cmd_attemps;
-                            STM_sts="Motor_Ctrl";
+                            STM_sts="Motor_Ctrl_SetGains";
                         }
                     }
                 }
@@ -220,18 +232,23 @@ int main()
 #ifdef TEST
         if(STM_sts=="Connected")
         {
-            STM_sts="Motor_Ctrl";
+            STM_sts="Motor_Ctrl_SetGains";
         }
 #endif
                 
-        if(STM_sts=="Motor_Ctrl")
+        if(STM_sts=="Motor_Ctrl_SetGains" || 
+           STM_sts=="Motor_Ctrl")
         {
+            // MODEL INTEFACE SETUP
+            XBot::ConfigOptions config=XBot::ConfigOptions::FromConfigFile(ec_client_cfg_path); 
+            
+            XBot::ModelInterface::Ptr model= XBot::ModelInterface::getModel(config);
+            
             // UDP Mechanism
             auto start_time= steady_clock::now();
             auto time=start_time;
             
             auto time_to_engage_brakes = milliseconds(1000); // Default 1s
-            auto incrementat_freq=microseconds(0);
             
             bool run=true;
             bool first_UDP_Rx=false;
@@ -239,8 +256,14 @@ int main()
             bool motors_vel_check=false;
             bool led_off_req=false;
             
-            std::map<double,double> q_set_trj=ec_client_cfg.homing_position;
-            std::map<double,double> q_ref,qdot;
+            XBot::JointIdMap q,qdot,q_ref,tau_ref,q_ref_test;
+            Eigen::VectorXd tau_g; 
+            
+            auto set_gain_time_ms=milliseconds(3000);
+            std::vector<float> imp_zero_gains={0.0,0.0,imp_gains[2],imp_gains[3],imp_gains[4]};
+            std::vector<float> gain_start=imp_gains;
+            std::vector<float> gain_trj=imp_zero_gains;
+            std::vector<float> gain_ref=gain_start;
             
             std::vector<MR> motors_ref;
             uint32_t motor_ref_flags = 1;
@@ -293,28 +316,28 @@ int main()
                                                         //11 error
                             led_sts= (cmd_aux_sts & 4)/4; // 1 or 0 LED  ON/OFF
                             
-                            //Closed Loop SENSE for motor velocity
-                            qdot[esc_id] = motor_vel;
-                            
                             
                             //Closed Loop SENSE for motor position and velocity
+                            q[esc_id]=motor_pos;
+                            qdot[esc_id] = motor_vel;
+                            q_ref[esc_id]=q[esc_id];
                             
                             if(!first_UDP_Rx)
                             {
-                                q_ref[esc_id]=motor_pos;
+                                q_ref_test[esc_id]=motor_pos;
                             }
                             
                         } catch (std::out_of_range oor) {}
                     }
                     //******************* Motor Telemetry **************
-                    if(q_ref.size() == q_set_trj.size())
+                    if(q_ref_test.size() == model->getJointNum()-6)
                     {
                         //Open Loop SENSE
                         first_UDP_Rx=true;
                     }
                     else
                     {
-                        throw std::runtime_error("fatal error: different size of initial position and trajectory vectors");
+                        throw std::runtime_error("fatal error: different size of initial position from joint of the model");
                     }
                 }
                     
@@ -324,29 +347,72 @@ int main()
                     first_UDP_Rx=true;
                     for(int i=0; i<slave_id_vector.size();i++)
                     {
+                        int id=slave_id_vector[i];
+                        q[id]=0.0;
+                        qdot[id] = 0.0;
                         q_ref[i]=0.0;
                     }
                 }
 #endif
-                if(STM_sts=="Motor_Ctrl")
+                if(STM_sts=="Motor_Ctrl" || 
+                   STM_sts=="Motor_Ctrl_SetGains")
                 {
                     motors_ref.clear();      
+                    
+                    if(STM_sts=="Motor_Ctrl_SetGains")
+                    {
+                        // define a simplistic linear trajectory
+                        auto tau= std::chrono::duration<double> (time_elapsed_ms) / std::chrono::duration<double> (set_gain_time_ms);
 
-                    for ( const auto &[esc_id, pos_ref] : q_ref){
-                        motors_ref.push_back(std::make_tuple(esc_id, //bId
-                                                        ec_client_cfg.control_mode_type, //ctrl_type
-                                                        pos_ref, //pos_ref
-                                                        0.0, //vel_ref
-                                                        0.0, //tor_ref
-                                                        ec_client_cfg.gains[0], //gain_1
-                                                        ec_client_cfg.gains[1], //gain_2
-                                                        ec_client_cfg.gains[2], //gain_3
-                                                        ec_client_cfg.gains[3], //gain_4
-                                                        ec_client_cfg.gains[4], //gain_5
-                                                        1, // op means NO_OP
-                                                        0, // idx
-                                                        0  // aux
-                                                    ));
+                        // quintic poly 6t^5 - 15t^4 + 10t^3
+                        auto alpha = ((6*tau - 15)*tau + 10)*tau*tau*tau;
+                        
+                        // interpolate
+                        for(int i=0; i<gain_trj.size();i++)
+                        {
+                            gain_ref[i] = gain_start[i] + alpha * (gain_trj[i] - gain_start[i]);
+                        }
+                    }
+
+                    if(!q.empty())
+                    {
+                        model->setJointPosition(q);
+                        model->update();
+                        
+                        model->computeGravityCompensation(tau_g);
+                        model->eigenToMap(tau_g,tau_ref);
+                        
+                        
+                        for ( const auto &[esc_id, tor_ref] : tau_ref){
+                            if(esc_id > 0)
+                            {
+                                double pos_ref = q_ref[esc_id];
+//                                 std::cout << "ESC_ID: " << esc_id
+//                                           << " POS_REF: " << pos_ref 
+//                                           << " TOR_REF: " << tor_ref 
+//                                           << " GAIN_REF: " <<  gain_ref[0] <<  " " 
+//                                                            <<  gain_ref[1] <<  " "
+//                                                            <<  gain_ref[2] <<  " "
+//                                                            <<  gain_ref[3] <<  " "
+//                                                            <<  gain_ref[4] <<  " "
+//                                           << std::endl;
+
+                                motors_ref.push_back(std::make_tuple(esc_id, //bId
+                                                                    control_mode_type, //ctrl_type
+                                                                    pos_ref, //pos_ref
+                                                                    0.0, //vel_ref
+                                                                    tor_ref, //tor_ref
+                                                                    gain_ref[0], //gain_1
+                                                                    gain_ref[1], //gain_2
+                                                                    gain_ref[2], //gain_3
+                                                                    gain_ref[3], //gain_4
+                                                                    gain_ref[4], //gain_5
+                                                                    1, // op  means NO_OP
+                                                                    0, // idx
+                                                                    0  // aux
+                                                                    ));
+                            }
+                        }
                     }
                 }
                     
@@ -383,7 +449,7 @@ int main()
                                 {
                                     led_off_req=false;
                                     motors_vel_check=false;
-                                    start_time=time+UDP_period_ms_time+ incrementat_freq;
+                                    start_time=time+UDP_period_ms_time;
                                 }
                             }
                         }
@@ -419,7 +485,7 @@ int main()
                             
                             if(motors_vel_check)
                             {
-                                start_time=time+UDP_period_ms_time+ incrementat_freq;
+                                start_time=time+UDP_period_ms_time;
                                 if(!client.pdo_aux_cmd(brake_cmds))
                                 { 
                                     run=false;
@@ -448,7 +514,7 @@ int main()
                             if(pdo_aux_cmd_attemps<max_pdo_aux_cmd_attemps)
                             {
                                 run=true;
-                                start_time=time+UDP_period_ms_time+ incrementat_freq;
+                                start_time=time+UDP_period_ms_time;
                                 if(!client.pdo_aux_cmd(led_cmds))
                                 {
                                     std::cout << "Cannot perform the led off command of the all motors" << std::endl;
@@ -470,22 +536,33 @@ int main()
                 }
                 
                 // delay until time to iterate again
-                time += UDP_period_ms_time + incrementat_freq;
+                time += UDP_period_ms_time;
                
-                if(STM_sts=="Motor_Ctrl")
+                if(STM_sts=="Motor_Ctrl_SetGains")
                 {
-                    if(brake_engagement_req)
+                    if(time_elapsed_ms>=set_gain_time_ms)
                     {
-                        STM_sts="Engage_Motor_Brake";
+                        if(!brake_engagement_req)
+                        {
+                            STM_sts="Motor_Ctrl";
+                        }
+                        else
+                        {
+                            STM_sts="Engage_Motor_Brake";
+                            pdo_aux_cmd_attemps=0;
+                        }
                         start_time=time;
                     }
-                    else
+                }
+                else if(STM_sts=="Motor_Ctrl")
+                {
+                    if(restore_gains)
                     {
-                        if(time_elapsed_ms>=1000ms)
-                        {
-                            incrementat_freq=incrementat_freq+microseconds(100);
-                            start_time=time;
-                        }
+                        STM_sts="Motor_Ctrl_SetGains";
+                        brake_engagement_req=true;
+                        gain_start=gain_ref;
+                        gain_trj=imp_gains;
+                        start_time=time;
                     }
                 }
                 else if(STM_sts=="Engage_Motor_Brake")
