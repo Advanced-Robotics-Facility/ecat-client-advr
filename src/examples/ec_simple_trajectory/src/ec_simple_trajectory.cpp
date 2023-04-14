@@ -63,9 +63,11 @@ int main()
         
         client.connect();
         
-        
         // Run asio thread alongside main thread
         std::thread t1{[&]{client.run();}};
+        
+        client.start_logging();
+        
         
         // *************** START UDP CLIENT  *************** //
                     

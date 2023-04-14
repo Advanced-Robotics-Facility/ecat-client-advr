@@ -12,6 +12,7 @@
 #include "pck_msgs.h"
 
 #include <mutex>
+#include <matlogger2/matlogger2.h>
 
 
 using boost::asio::ip::udp;
@@ -90,6 +91,9 @@ public:
                     const RD_SDO &rd_sdo,
                     const WR_SDO &wr_sdo);
     bool is_client_alive();
+    void start_logging();
+    void stop_logging();
+    
 
 private:
 

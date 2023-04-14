@@ -1,14 +1,20 @@
+project(ecat-client-advr)
 cmake_minimum_required(VERSION 3.0)
 
-
-project(ecat-client-advr)
-
-# c++17 support
+# std c++17 flags
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# avoid installing catkin-related files
+set(CATKIN_BUILD_BINARY_PACKAGE TRUE)
 
 option(COMPILE_EXAMPLE "Enable to compile an example for the UDP communication" ON)
 option(COMPILE_GUI "Enable to compile the client GUI" ON)
-#option(COMPILE_GRAVITY_COMPENSATION "Enable to compile an example of the gravity compensation" OFF)
+
+find_package(Boost REQUIRED system)
+
+find_package(yaml-cpp REQUIRED)
 
 find_package(Git REQUIRED)
 execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive -- ${CMAKE_SOURCE_DIR}
@@ -27,7 +33,18 @@ if(NOT ${magic_enum_FOUND})
     )
 endif()
 
+find_package(matlogger2 REQUIRED)
+
 find_package(ecat_master REQUIRED)
+
+# set includes
+include_directories(
+    ${PROJECT_SOURCE_DIR}/src/utils
+    ${PROJECT_SOURCE_DIR}/src/library/protocols/udp
+    )
+    
+#compile ec_library
+add_subdirectory(src/library)
 
 if(${COMPILE_EXAMPLE})
 	# compile example
