@@ -25,7 +25,6 @@ add_library(ec_gui_lib STATIC
     src/ec_gui_start_resources.qrc
     src/slider_widget.cpp
     src/slider_widget_calib.cpp
-    ${PROJECT_SOURCE_DIR}/../../utils/ec_utils.cpp
     )
 
 target_link_libraries(ec_gui_lib

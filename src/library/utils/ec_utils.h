@@ -2,7 +2,8 @@
 #define __EC_UTILS__
 
 #include <yaml-cpp/yaml.h>
-
+#include <thread>
+#include "ec_udp.h"
 
 class EcUtils
 {
@@ -30,11 +31,12 @@ public:
     }EC_CONFIG;
     
     EC_CONFIG get_ec_cfg();
-
+    EcWrapper::Ptr make_ecat_client();
 private:
     
     std::string _control_mode;
     EC_CONFIG _ec_cfg;
+    std::thread *_ec_thread;
   
 };
 

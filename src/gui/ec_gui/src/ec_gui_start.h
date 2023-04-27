@@ -36,7 +36,7 @@ public:
 
     explicit EcGuiStart(std::map<int ,joint_info_t > joint_info_map,
                         EcUtils::EC_CONFIG ec_config,
-                        std::shared_ptr<Client> client,
+                        std::shared_ptr<EcUDP> client,
                         QWidget *parent = nullptr);
 
     ~EcGuiStart();
@@ -76,7 +76,7 @@ private:
   std::map<int, SliderWidget*> _torque_sw_map;
   std::map<int, SliderWidget*> _sw_map_selected;
 
-  Client::ClientCmdType _ctrl_cmd_type;
+  EcUDP::ClientCmdType _ctrl_cmd_type;
 
   MST _motors_start = {};
   PAC _brake_cmds = {};
@@ -109,7 +109,7 @@ private:
 
   QTimer *_UDPTimer_send,*_UDPTimer_receive;
 
-  std::shared_ptr<Client> _client;
+  std::shared_ptr<EcUDP> _client;
   std::vector<MR> _motors_ref;
   MotorRefFlags _motor_ref_flags;
   

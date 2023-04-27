@@ -32,12 +32,6 @@ enum class ClientStatus : uint32_t
     
 };
 
-enum class MotorRefFlags : uint32_t
-{
-    FLAG_NONE           = 0x0,        //
-    FLAG_MULTI_REF      = 1 << 0,
-    FLAG_LAST_REF       = 1 << 1,
-};
 
 /////////////////////////////////////////////////////
 
@@ -46,45 +40,55 @@ constexpr static int CLIENT_PORT{54320};
 /**
  * @brief The ReplServer class
  */
-class Client : public UdpTask<Client, MsgPackProtocol>
+class EcUDP : public UdpTask<EcUDP, MsgPackProtocol>, public EcWrapper
 {
 public:
-    enum ClientCmdType { STOP, START};
     
-    Client(std::string host_address,uint32_t host_port);
+    enum ClientCmdType { STOP, START};
+    EcUDP(std::string host_address,uint32_t host_port);
 
     void receive_error(std::error_code ec);
+    
+    void connect() final;
+    void disconnect() final;
     void periodicActivity();
-
-    void connect();
-    void disconnect();
+    void stop_client() final ;
+    bool is_client_alive() final;
     void ping(bool test);
+    
+    void start_logging() final;
+    void stop_logging() final;
+    
+    
     void get_slaves_info();
     void getAndset_slaves_sdo(uint32_t esc_id, const RD_SDO &rd_sdo, const WR_SDO &wr_sdo);
-    MotorStatusMap get_motors_status();
-    void set_motors_references(const MotorRefFlags &,const std::vector<MR> &);
-    FtStatusMap get_ft6_status();
-    PwrStatusMap get_pow_status();
-    bool start_motors(const MST &);
-    bool stop_motors();
-    bool pdo_aux_cmd(const PAC & pac);
-    bool pdo_aux_cmd_sts(const PAC & pac);
-    void feed_motors(const MSR &);
-    void set_motors_gains(const MSG &);
-    void stop_client();
-    bool get_reply_from_server(ReplReqRep cmd_req);
-    bool retrieve_slaves_info(SSI &slave_info);
+    
+    MotorStatusMap get_motors_status() final ;
+    FtStatusMap get_ft6_status() final;
+    PwrStatusMap get_pow_status() final ;
+    
+    void set_motors_references(const MotorRefFlags &,const std::vector<MR> &) final;
+    
+    bool start_motors(const MST &) final;
+    bool stop_motors() final;
+    bool pdo_aux_cmd(const PAC & pac) final;
+    bool retrieve_slaves_info(SSI &slave_info) final;
     bool retrieve_rr_sdo(uint32_t esc_id,
                          const RD_SDO &rd_sdo, 
                          const WR_SDO &wr_sdo,
-                         RR_SDO &rr_sdo);
+                         RR_SDO &rr_sdo) final;
+                         
     bool set_wr_sdo(uint32_t esc_id,
                     const RD_SDO &rd_sdo,
-                    const WR_SDO &wr_sdo);
-    bool is_client_alive();
-    void start_logging();
-    void stop_logging();
+                    const WR_SDO &wr_sdo) final;
     
+    
+    bool pdo_aux_cmd_sts(const PAC & pac) final;
+    void feed_motors(const MSR &);
+    void set_motors_gains(const MSG &);
+
+    bool get_reply_from_server(ReplReqRep cmd_req);
+
 
 private:
 

@@ -11,7 +11,7 @@
 class EcPDORead
 {
 public:
-      EcPDORead(std::shared_ptr<Client> client,
+      EcPDORead(std::shared_ptr<EcUDP> client,
                 QTreeWidget *tree_wid) :
       _client(client),
       _tree_wid(tree_wid)
@@ -35,7 +35,7 @@ public:
       void read_pow_status();
       
 private:
-      std::shared_ptr<Client> _client;
+      std::shared_ptr<EcUDP> _client;
       QTreeWidget *_tree_wid;
       QElapsedTimer *_receive_timer;
       

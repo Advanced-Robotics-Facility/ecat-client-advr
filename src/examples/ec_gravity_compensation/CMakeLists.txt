@@ -10,8 +10,7 @@ ENDIF(TEST_MAIN)
 
 # compile gravity_compensation
 add_executable(ec_gravity_compensation
-               src/ec_gravity_compensation.cpp
-               ${PROJECT_SOURCE_DIR}/../../utils/ec_utils.cpp)
+               src/ec_gravity_compensation.cpp)
                
 target_link_libraries(ec_gravity_compensation
     PRIVATE 

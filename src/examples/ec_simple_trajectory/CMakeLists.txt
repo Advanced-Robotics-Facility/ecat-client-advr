@@ -8,8 +8,7 @@ ENDIF(TEST_MAIN)
 
 # compile main
 add_executable(ec_simple_trajectory
-               src/ec_simple_trajectory.cpp
-               ${PROJECT_SOURCE_DIR}/../../utils/ec_utils.cpp)
+               src/ec_simple_trajectory.cpp)
                
 target_link_libraries(ec_simple_trajectory
     PUBLIC

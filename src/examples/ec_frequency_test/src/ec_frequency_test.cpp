@@ -82,7 +82,7 @@ int main()
         // *************** START UDP CLIENT  *************** //
         createLogger("console","client");
         
-        Client client(ec_client_cfg.host_name,ec_client_cfg.host_port);
+        EcUDP client(ec_client_cfg.host_name,ec_client_cfg.host_port);
         
         auto UDP_period_ms_time=milliseconds(ec_client_cfg.period_ms);
         

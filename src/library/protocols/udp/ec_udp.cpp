@@ -18,13 +18,13 @@ XBot::MatLogger2::Ptr _ft6_status_logger;
 XBot::MatLogger2::Ptr _pow_status_logger;
 
 /**
- * @brief Client::Client
+ * @brief EcUDP::EcUDP
  */
-Client::Client(std::string host_address,uint32_t host_port) :
-    UdpTask("Client", CLIENT_PORT),
+EcUDP::EcUDP(std::string host_address,uint32_t host_port) :
+    UdpTask("EcUDP", CLIENT_PORT),
     consoleLog{ spdlog::get("console") }
 {
-    consoleLog->info(" Client Started " + make_daytime_string());
+    consoleLog->info(" UDP Client Started " + make_daytime_string());
     
     if(host_address=="localhost")
     {
@@ -36,12 +36,12 @@ Client::Client(std::string host_address,uint32_t host_port) :
     sender_endpoint.port(host_port);
 
     // Register Message Handler
-    registerHandler(UdpPackMsg::MSG_SRV_REP,    &Client::server_replies_handler);
-    registerHandler(UdpPackMsg::MSG_REPL_REP,   &Client::repl_replies_handler);
-    registerHandler(UdpPackMsg::MSG_SRV_STS,    &Client::server_status_handler);
-    registerHandler(UdpPackMsg::MSG_MOTOR_STS,  &Client::motor_status_handler);
-    registerHandler(UdpPackMsg::MSG_FT6_STS,    &Client::ft6_status_handler);
-    registerHandler(UdpPackMsg::MSG_PWR_STS,    &Client::pwr_status_handler);
+    registerHandler(UdpPackMsg::MSG_SRV_REP,    &EcUDP::server_replies_handler);
+    registerHandler(UdpPackMsg::MSG_REPL_REP,   &EcUDP::repl_replies_handler);
+    registerHandler(UdpPackMsg::MSG_SRV_STS,    &EcUDP::server_status_handler);
+    registerHandler(UdpPackMsg::MSG_MOTOR_STS,  &EcUDP::motor_status_handler);
+    registerHandler(UdpPackMsg::MSG_FT6_STS,    &EcUDP::ft6_status_handler);
+    registerHandler(UdpPackMsg::MSG_PWR_STS,    &EcUDP::pwr_status_handler);
 
     
     _mutex_motor_status= std::make_shared<std::mutex>();
@@ -74,7 +74,7 @@ Client::Client(std::string host_address,uint32_t host_port) :
 
 //******************************* EVENT HANDLERS *****************************************************//
 
-void Client::server_replies_handler(char*buf, size_t size)
+void EcUDP::server_replies_handler(char*buf, size_t size)
 {   
     size_t offset {};
     auto reply = proto.getCliReqSrvRep(buf, size, offset);
@@ -109,7 +109,7 @@ void Client::server_replies_handler(char*buf, size_t size)
  * @param buf
  * @param size
  */
-void Client::server_status_handler(char *buf, size_t size)
+void EcUDP::server_status_handler(char *buf, size_t size)
 {
     _actual_server_status = proto.getServerStatus(buf,size);
     
@@ -139,7 +139,7 @@ void Client::server_status_handler(char *buf, size_t size)
  * @param buf
  * @param size
  */
-void Client::repl_replies_handler(char *buf, size_t size)
+void EcUDP::repl_replies_handler(char *buf, size_t size)
 {
     _reply_err_msg="";
     
@@ -180,7 +180,7 @@ void Client::repl_replies_handler(char *buf, size_t size)
 }
 
 
-void Client::motor_status_handler(char *buf, size_t size)
+void EcUDP::motor_status_handler(char *buf, size_t size)
 {
     static uint32_t cnt;
     static MSS motors_status;
@@ -209,7 +209,7 @@ void Client::motor_status_handler(char *buf, size_t size)
 
 }
 
-void Client::ft6_status_handler(char *buf, size_t size)
+void EcUDP::ft6_status_handler(char *buf, size_t size)
 {
     static uint32_t cnt;
     static FTS fts_status;
@@ -233,7 +233,7 @@ void Client::ft6_status_handler(char *buf, size_t size)
 
 }
 
-void Client::pwr_status_handler(char *buf, size_t size)
+void EcUDP::pwr_status_handler(char *buf, size_t size)
 {
     static uint32_t cnt;
     static PWS pow_status;
@@ -260,7 +260,7 @@ void Client::pwr_status_handler(char *buf, size_t size)
 
 
 //******************************* COMMANDS *****************************************************//
-void Client::connect()
+void EcUDP::connect()
 {
     if(_client_status==ClientStatus::IDLE)
     {
@@ -277,7 +277,7 @@ void Client::connect()
 
 }
 
-void Client::disconnect()
+void EcUDP::disconnect()
 {
     if(_client_status!=ClientStatus::IDLE)
     {
@@ -294,7 +294,7 @@ void Client::disconnect()
 
 }
 
-void Client::ping(bool test)
+void EcUDP::ping(bool test)
 {
     CBuff sendBuffer{};
     int64_t microseconds_since_epoch = getTsEpoch<std::chrono::microseconds>();
@@ -307,7 +307,7 @@ void Client::ping(bool test)
     consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
 }
 
-void Client::quit_server()
+void EcUDP::quit_server()
 {
     CBuff sendBuffer{};
     uint32_t payload = 0xC1A0C1A0;
@@ -316,7 +316,7 @@ void Client::quit_server()
     consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
 }
 
-bool Client::get_reply_from_server(ReplReqRep cmd_req)
+bool EcUDP::get_reply_from_server(ReplReqRep cmd_req)
 {
     std::mutex _cv_m;
     std::unique_lock<std::mutex> lk(_cv_m);
@@ -346,7 +346,7 @@ bool Client::get_reply_from_server(ReplReqRep cmd_req)
  * @param buf
  * @param size
  */
-void Client::get_slaves_info()
+void EcUDP::get_slaves_info()
 {
     CBuff sendBuffer{};
     auto sizet = proto.packReplRequest(sendBuffer, ReplReqRep::SLAVES_INFO);
@@ -354,7 +354,7 @@ void Client::get_slaves_info()
     consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
 }
 
-bool Client::retrieve_slaves_info(SSI &slave_info)
+bool EcUDP::retrieve_slaves_info(SSI &slave_info)
 {
     int attemps_cnt = 0;
     bool ret_cmd_status=false;
@@ -392,7 +392,7 @@ bool Client::retrieve_slaves_info(SSI &slave_info)
     return ret_cmd_status;
 }
 
-void Client::getAndset_slaves_sdo(uint32_t esc_id, const RD_SDO &rd_sdo, const WR_SDO &wr_sdo)
+void EcUDP::getAndset_slaves_sdo(uint32_t esc_id, const RD_SDO &rd_sdo, const WR_SDO &wr_sdo)
 {
     CBuffT<4096u> sendBuffer{};
     
@@ -403,7 +403,7 @@ void Client::getAndset_slaves_sdo(uint32_t esc_id, const RD_SDO &rd_sdo, const W
     consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
 }
 
-bool Client::retrieve_rr_sdo(uint32_t esc_id,
+bool EcUDP::retrieve_rr_sdo(uint32_t esc_id,
                              const RD_SDO &rd_sdo, 
                              const WR_SDO &wr_sdo,
                              RR_SDO &rr_sdo)
@@ -439,7 +439,7 @@ bool Client::retrieve_rr_sdo(uint32_t esc_id,
     return ret_cmd_status;
 }
 
-bool Client::set_wr_sdo(uint32_t esc_id,
+bool EcUDP::set_wr_sdo(uint32_t esc_id,
                         const RD_SDO &rd_sdo,
                         const WR_SDO &wr_sdo)
 
@@ -472,7 +472,7 @@ bool Client::set_wr_sdo(uint32_t esc_id,
     return ret_cmd_status;
 }
 
-bool Client::start_motors(const MST &motors_start)
+bool EcUDP::start_motors(const MST &motors_start)
 {
     bool ret_cmd_status=false;
 
@@ -535,7 +535,7 @@ bool Client::start_motors(const MST &motors_start)
 }
 
 
-bool Client::stop_motors()
+bool EcUDP::stop_motors()
 {
     int attemps_cnt=0;
     bool ret_cmd_status=false;
@@ -577,7 +577,7 @@ bool Client::stop_motors()
     return ret_cmd_status;
 }
 
-bool Client::pdo_aux_cmd(const PAC & pac)
+bool EcUDP::pdo_aux_cmd(const PAC & pac)
 {
     bool ret_cmd_status=false;
     if(_client_alive)
@@ -596,7 +596,7 @@ bool Client::pdo_aux_cmd(const PAC & pac)
     return ret_cmd_status;
 }
 
-bool Client::pdo_aux_cmd_sts(const PAC & pac)
+bool EcUDP::pdo_aux_cmd_sts(const PAC & pac)
 {
     auto motor_status_map = get_motors_status();
     
@@ -656,7 +656,7 @@ bool Client::pdo_aux_cmd_sts(const PAC & pac)
 }
 
 
-void Client::feed_motors(const MSR & m_ref)
+void EcUDP::feed_motors(const MSR & m_ref)
 {
     if(_client_alive)
     {
@@ -706,7 +706,7 @@ void Client::feed_motors(const MSR & m_ref)
     }
 }
 
-void Client::set_motors_gains(const MSG &motors_gains)
+void EcUDP::set_motors_gains(const MSG &motors_gains)
 {
     if(_client_alive)
     {
@@ -730,7 +730,7 @@ auto lastTime_ = std::chrono::high_resolution_clock::now();
 /**
  * @brief Client::periodicActivity
  */
-void Client::periodicActivity()
+void EcUDP::periodicActivity()
 {
     auto sample_time = steady_clock::now();
     
@@ -780,7 +780,7 @@ void Client::periodicActivity()
 }
 //******************************* Periodic Activity *****************************************************//
 
-void Client::stop_client()
+void EcUDP::stop_client()
 {
     spdlog::get("console")->info("That's all folks");
     
@@ -792,7 +792,7 @@ void Client::stop_client()
     
 }
 
-void Client::set_motors_references(const MotorRefFlags & motor_ref_flags,const std::vector<MR> &motors_references)
+void EcUDP::set_motors_references(const MotorRefFlags & motor_ref_flags,const std::vector<MR> &motors_references)
 {
     _mutex_motor_reference->lock();
 
@@ -804,14 +804,14 @@ void Client::set_motors_references(const MotorRefFlags & motor_ref_flags,const s
        if(motor_ref_flags==MotorRefFlags::FLAG_MULTI_REF ||
           motor_ref_flags==MotorRefFlags::FLAG_LAST_REF)
        {
-           if(!_motors_references.empty())
+           if(!motors_references.empty())
            {
                 _motor_ref_flags = motor_ref_flags;
                 _motors_references = motors_references;
            }
            else
            {
-                consoleLog->error("Motors references vector is empy!, please fill the vector");
+                consoleLog->error("Motors references vector is empty!, please fill the vector");
            }
        }
        else
@@ -830,7 +830,7 @@ void Client::set_motors_references(const MotorRefFlags & motor_ref_flags,const s
     _mutex_motor_reference->unlock();
 }
 
-MotorStatusMap Client::get_motors_status()
+MotorStatusMap EcUDP::get_motors_status()
 {
     _mutex_motor_status->lock();
     
@@ -841,7 +841,7 @@ MotorStatusMap Client::get_motors_status()
     return ret_motor_status_map;
 }
 
-FtStatusMap Client::get_ft6_status()
+FtStatusMap EcUDP::get_ft6_status()
 {
     _mutex_ft6_status->lock();
     
@@ -852,7 +852,7 @@ FtStatusMap Client::get_ft6_status()
     return ret_ft_status_map; 
 }
 
-PwrStatusMap Client::get_pow_status()
+PwrStatusMap EcUDP::get_pow_status()
 {
     _mutex_pow_status->lock();
     
@@ -863,23 +863,23 @@ PwrStatusMap Client::get_pow_status()
     return ret_pow_status_map; 
 }
 
-void Client::set_wait_reply_time(uint32_t wait_reply_time)
+void EcUDP::set_wait_reply_time(uint32_t wait_reply_time)
 {
     _wait_reply_time = wait_reply_time; // ms
     _server_alive_check_ms=milliseconds(_wait_reply_time)+milliseconds(500);
 }
-void Client::restore_wait_reply_time()
+void EcUDP::restore_wait_reply_time()
 {
     _wait_reply_time = 1000; //1s
     _server_alive_check_ms=milliseconds(_wait_reply_time)+milliseconds(500); //1.5s
 }
 
-bool Client::is_client_alive()
+bool EcUDP::is_client_alive()
 {
     return _client_alive;
 }
 
-void Client::start_logging()
+void EcUDP::start_logging()
 {
     // Logger setup
     XBot::MatLogger2::Options opt;
@@ -897,7 +897,7 @@ void Client::start_logging()
     _pow_status_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
 }
 
-void Client::stop_logging()
+void EcUDP::stop_logging()
 {
     _motors_references_logger.reset();
     _motors_status_logger.reset();
@@ -909,7 +909,7 @@ void Client::stop_logging()
 
 /**
  */
-void Client::receive_error(std::error_code ec)
+void EcUDP::receive_error(std::error_code ec)
 {
     consoleLog->error( " Receive Error {}", ec.message());
 }

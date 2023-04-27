@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
         // *************** AUTODETECTION *************** //
 
         createLogger("console","GUI");
-        auto client=std::make_shared<Client>(ec_client_cfg.host_name,ec_client_cfg.host_port);
+        auto client=std::make_shared<EcUDP>(ec_client_cfg.host_name,ec_client_cfg.host_port);
         auto UDP_period_ms_time=std::chrono::milliseconds(ec_client_cfg.period_ms);
         
         client->set_period(UDP_period_ms_time);

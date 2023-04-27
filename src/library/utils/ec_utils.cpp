@@ -1,8 +1,10 @@
 #include "ec_utils.h"
 
 #include <iostream>
+#include <chrono>
 
 using namespace std;
+using namespace std::chrono;
 
 EcUtils::EcUtils(const YAML::Node & ec_cfg)
 {   
@@ -13,8 +15,8 @@ EcUtils::EcUtils(const YAML::Node & ec_cfg)
     if(!ec_cfg["network"]["protocol"])
         _ec_cfg.protocol="";
     else
-        _ec_cfg.host_name=ec_cfg["network"]["protocol"].as<std::string>();
-    
+        _ec_cfg.protocol=ec_cfg["network"]["protocol"].as<std::string>();
+
     if(!ec_cfg["network"]["hostname"])
         _ec_cfg.host_name="localhost";
     else
@@ -127,9 +129,38 @@ EcUtils::EC_CONFIG EcUtils::get_ec_cfg()
     return _ec_cfg;
 };
 
+EcWrapper::Ptr EcUtils::make_ecat_client()
+{
+    EcWrapper::Ptr ec_wrapper_ptr;
+    if(_ec_cfg.protocol == "udp")
+    {
+       auto ec_udp_ptr = std::make_shared<EcUDP>(_ec_cfg.host_name,_ec_cfg.host_port);
+       auto period_ms_time=milliseconds(_ec_cfg.period_ms);
+       ec_udp_ptr->set_period(period_ms_time);
+       
+       _ec_thread = new std::thread{[&]{ec_udp_ptr->run();}};
+       
+       ec_wrapper_ptr = ec_udp_ptr;
+       
+    }
+    else
+    {
+        throw std::runtime_error("Protocol not recognized");
+    }
+    return ec_wrapper_ptr;    
+}
+
 
 
 EcUtils::~EcUtils()
 {
+    if(_ec_thread != nullptr)
+    {
+        if ( _ec_thread->joinable() ) 
+        {
+            std::cout << "EtherCAT Client thread stopped" << std::endl;
+            _ec_thread->join();
+        }
+    }
 };
 

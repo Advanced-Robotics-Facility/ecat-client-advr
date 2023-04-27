@@ -10,8 +10,7 @@ ENDIF(TEST_MAIN)
     
 # compile frequency test
 add_executable(ec_frequency_test
-               src/ec_frequency_test.cpp
-               ${PROJECT_SOURCE_DIR}/../../utils/ec_utils.cpp)
+               src/ec_frequency_test.cpp)
  
 target_link_libraries(ec_frequency_test
     PUBLIC

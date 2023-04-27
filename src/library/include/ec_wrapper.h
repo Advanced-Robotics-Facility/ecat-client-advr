@@ -34,17 +34,25 @@ using PAC = std::vector<std::tuple<int32_t, int32_t>>;
 // SlaveSInfo
 using SSI = std::vector<std::tuple<int32_t, int32_t, int32_t>>;
 
+enum class MotorRefFlags : uint32_t
+{
+    FLAG_NONE           = 0x0,        //
+    FLAG_MULTI_REF      = 1 << 0,
+    FLAG_LAST_REF       = 1 << 1,
+};
+
 
 class EcWrapper
 {
 public:
     
+    typedef std::shared_ptr<EcWrapper> Ptr;
     virtual ~EcWrapper() {};
 
     // EtherCAT Client ADVR Facilty manager
     virtual void connect(void) = 0;
     virtual void disconnect(void) = 0;
-    virtual void periodicActivity(void) = 0;
+    //virtual void periodicActivity(void) = 0;
     virtual void stop_client(void) = 0;
     virtual bool is_client_alive(void) = 0;
     
@@ -56,9 +64,10 @@ public:
     virtual MotorStatusMap get_motors_status(void) = 0;
     virtual FtStatusMap get_ft6_status(void) = 0;
     virtual PwrStatusMap get_pow_status(void) = 0;
+    virtual bool pdo_aux_cmd_sts(const PAC & pac) = 0;
     
     // EtherCAT Client ADVR Facilty setters
-    virtual void set_motors_references(const std::vector<MR> &) = 0;
+    virtual void set_motors_references(const MotorRefFlags &, const std::vector<MR> &) = 0;
     
     // EtherCAT Client ADVR Facilty commands
     virtual bool start_motors(const MST &) = 0;
@@ -70,9 +79,9 @@ public:
                                  const RD_SDO &rd_sdo, 
                                  const WR_SDO &wr_sdo,
                                  RR_SDO &rr_sdo) = 0;
-    bool set_wr_sdo(uint32_t esc_id,
-                    const RD_SDO &rd_sdo,
-                    const WR_SDO &wr_sdo);
+    virtual bool set_wr_sdo(uint32_t esc_id,
+                            const RD_SDO &rd_sdo,
+                            const WR_SDO &wr_sdo) = 0;
 };
 
 #endif // EC_WRAPPER_H

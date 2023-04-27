@@ -1,6 +1,6 @@
 network:
   protocol: udp
-  hostname: 192.168.99.10 #10.240.23.30 #localhost #192.168.99.10 #192.168.9.99 #10.240.22.49
+  hostname: localhost #10.240.23.30 #localhost #192.168.99.10 #192.168.9.99 #10.240.22.49
   port: 54321
   timeout: 1000
 
@@ -28,7 +28,7 @@ control:
                21: 0.0, 22: -1.9, 23: -2.3, 24: 0.0, 25: -0.4, 26: 0.0,
                31: 0.0, 32: -1.9, 33: -2.3, 34: 0.0, 35: -0.4, 36: 0.0}
   trajectory_time_sec: 3
-  repeat_trj: 3
+  repeat_trj: 1
 
   slave_id_led: [16,26,35]
   
