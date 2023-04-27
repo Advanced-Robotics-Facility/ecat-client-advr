@@ -1,12 +1,12 @@
-#ifndef CLIENT_UDP_H
-#define CLIENT_UDP_H
+#ifndef EC_UDP_H
+#define EC_UDP_H
 
-#include <memory>
-#include <array>
-#include <vector>
+
 #include <chrono>
 #include <boost/asio.hpp>
 
+
+#include "ec_wrapper.h"
 #include "cmn_utils.h"
 #include "task.h"
 #include "pck_msgs.h"
@@ -14,16 +14,7 @@
 #include <mutex>
 #include <matlogger2/matlogger2.h>
 
-
 using boost::asio::ip::udp;
-
-using MotorStatusMap = std::map<int, std::tuple<float, float, float, float,   // pos_{link,motor}, vel_{link,motor}
-                                                float,                        // tor_ref
-                                                float,float,                  // {motor,board}
-                                                uint32_t, uint32_t,           // fault, rtt, op_idx_ack                  
-                                                uint32_t, float, uint32_t>>;            // aux // cmd_aux_sts
-using FtStatusMap = std::map<int, std::vector<float>>;
-using PwrStatusMap = std::map<int32_t, std::vector<float>>;
 
 enum class ClientStatus : uint32_t
 {
@@ -141,4 +132,4 @@ private:
     std::vector<MR> _motors_references;
 };
 
-#endif // REPL_SERVER_H
+#endif // EC_UDP_H

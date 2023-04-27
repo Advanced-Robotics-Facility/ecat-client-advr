@@ -40,7 +40,7 @@ QWidget * LoadUiFile(QWidget * parent)
 
 }
 
-EcGuiStart::EcGuiStart(std::map<int ,joint_info_t > joint_info_map,EC_Client_Utils::EC_CONFIG ec_config,std::shared_ptr<Client> client,QWidget *parent) :
+EcGuiStart::EcGuiStart(std::map<int ,joint_info_t > joint_info_map,EcUtils::EC_CONFIG ec_config,std::shared_ptr<Client> client,QWidget *parent) :
     _joint_info_map(joint_info_map),
     _ec_config(ec_config),
     _client(client),

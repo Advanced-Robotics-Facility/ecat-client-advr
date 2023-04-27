@@ -8,7 +8,7 @@
 #include "slider_widget.h"
 
 #include "cmn_utils.h"
-#include "ec_udp_comm.h"
+#include "ec_udp.h"
 #include "ec_pdo_read.h"
 #include "ec_utils.h"
 #include <QMainWindow>
@@ -35,7 +35,7 @@ public:
     };
 
     explicit EcGuiStart(std::map<int ,joint_info_t > joint_info_map,
-                        EC_Client_Utils::EC_CONFIG ec_config,
+                        EcUtils::EC_CONFIG ec_config,
                         std::shared_ptr<Client> client,
                         QWidget *parent = nullptr);
 
@@ -64,7 +64,7 @@ public slots:
 
 private:
 
-  EC_Client_Utils::EC_CONFIG  _ec_config;
+  EcUtils::EC_CONFIG  _ec_config;
   std::map<int ,joint_info_t > _joint_info_map;
   std::vector<int> _slave_id_led;
   QVBoxLayout *_l;

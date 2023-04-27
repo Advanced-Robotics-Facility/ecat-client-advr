@@ -8,7 +8,7 @@
 
 #include "ec_utils.h"
 
-#include "ec_udp_comm.h"
+#include "ec_udp.h"
 
 #include <XBotInterface/ModelInterface.h>
 #include <XBotInterface/ConfigOptions.h>
@@ -52,8 +52,8 @@ int main()
     sa.sa_flags = 0;  // receive will return EINTR on CTRL+C!
     sigaction(SIGINT,&sa, nullptr);
     
-    EC_Client_Utils::Ptr ec_client_utils;
-    EC_Client_Utils::EC_CONFIG ec_client_cfg;
+    EcUtils::Ptr ec_client_utils;
+    EcUtils::EC_CONFIG ec_client_cfg;
 
     // Find the ec client configuration environment variable for setting.
     char* ec_client_cfg_path;
@@ -68,8 +68,8 @@ int main()
     {
         try{
             auto ec_client_cfg_file = YAML::LoadFile(ec_client_cfg_path);
-            ec_client_utils=std::make_shared<EC_Client_Utils>(ec_client_cfg_file);
-            ec_client_cfg = ec_client_utils->get_ec_client_config();
+            ec_client_utils=std::make_shared<EcUtils>(ec_client_cfg_file);
+            ec_client_cfg = ec_client_utils->get_ec_cfg();
         }catch(std::exception &ex){
             std::cout << "Error on ec client config file" << std::endl;
             std::cout << ex.what() << std::endl;
@@ -90,9 +90,9 @@ int main()
         // *************** START UDP CLIENT  *************** //
         createLogger("console","client");
         
-        Client client(ec_client_cfg.host_name_s,ec_client_cfg.host_port);
+        Client client(ec_client_cfg.host_name,ec_client_cfg.host_port);
         
-        auto UDP_period_ms_time=milliseconds(ec_client_cfg.UDP_period_ms);
+        auto UDP_period_ms_time=milliseconds(ec_client_cfg.period_ms);
         
         client.set_period(UDP_period_ms_time);
         

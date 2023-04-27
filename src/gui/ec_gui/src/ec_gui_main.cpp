@@ -6,7 +6,7 @@
 #include "ec_gui_start.h"
 #include <QApplication>
 
-#include "ec_udp_comm.h"
+#include "ec_udp.h"
 #include "ec_utils.h"
 
 #define CENT_AC 0x15
@@ -41,8 +41,8 @@ int main(int argc, char *argv[])
 
 
     // Find the ec client configuration environment variable for setting
-    EC_Client_Utils::Ptr ec_client_utils;
-    EC_Client_Utils::EC_CONFIG ec_client_cfg;
+    EcUtils::Ptr ec_client_utils;
+    EcUtils::EC_CONFIG ec_client_cfg;
     
     char* ec_client_cfg_path;
     ec_client_cfg_path = getenv ("EC_CLIENT_CFG");
@@ -60,8 +60,8 @@ int main(int argc, char *argv[])
     {
         try{
         auto ec_client_cfg_file = YAML::LoadFile(ec_client_cfg_path);
-        ec_client_utils=std::make_shared<EC_Client_Utils>(ec_client_cfg_file);
-        ec_client_cfg = ec_client_utils->get_ec_client_config();   
+        ec_client_utils=std::make_shared<EcUtils>(ec_client_cfg_file);
+        ec_client_cfg = ec_client_utils->get_ec_cfg();   
             
         }catch(std::exception &ex){
             
@@ -74,8 +74,8 @@ int main(int argc, char *argv[])
         // *************** AUTODETECTION *************** //
 
         createLogger("console","GUI");
-        auto client=std::make_shared<Client>(ec_client_cfg.host_name_s,ec_client_cfg.host_port);
-        auto UDP_period_ms_time=std::chrono::milliseconds(ec_client_cfg.UDP_period_ms);
+        auto client=std::make_shared<Client>(ec_client_cfg.host_name,ec_client_cfg.host_port);
+        auto UDP_period_ms_time=std::chrono::milliseconds(ec_client_cfg.period_ms);
         
         client->set_period(UDP_period_ms_time);
         client->connect();

@@ -5,7 +5,7 @@
 #include <QWidget>
 
 #include "Utils.h"
-#include "ec_udp_comm.h"
+#include "ec_udp.h"
 
 
 class EcPDORead

@@ -2,9 +2,11 @@ project(ec_library)
 
 # compile ecat library test
 add_library(ec_library STATIC
-            ${PROJECT_SOURCE_DIR}/protocols/udp/ec_udp_comm.cpp)
+            ${PROJECT_SOURCE_DIR}/protocols/udp/ec_udp.cpp)
 
 target_include_directories(ec_library
+    PUBLIC
+    include
     PRIVATE
     ${EXTERNAL}/spdlog/include
 )

@@ -1,40 +1,40 @@
-#ifndef __EC_CLIENT_UTILS__
-#define __EC_CLIENT_UTILS__
+#ifndef __EC_UTILS__
+#define __EC_UTILS__
 
 #include <yaml-cpp/yaml.h>
 
 
-class EC_Client_Utils
+class EcUtils
 {
 public:
     
-    typedef std::shared_ptr<EC_Client_Utils> Ptr;
+    typedef std::shared_ptr<EcUtils> Ptr;
     
-    EC_Client_Utils(const YAML::Node & ec_client_cfg);
+    EcUtils(const YAML::Node & ec_cfg);
     
-    ~EC_Client_Utils();
+    ~EcUtils();
     
     typedef struct EC_CONFIG_t{
         
-        int UDP_period_ms; 
+        std::string protocol;
+        std::string host_name;
+        uint32_t host_port;
+        int period_ms; 
         std::map<double,double> homing_position,trajectory;
         int homing_time_sec,trajectory_time_sec;
         int repeat_trj;
-        std::string host_name_s;
-        uint32_t host_port;
         int control_mode_type;
         std::vector<float> gains;
         std::vector<int> slave_id_led;
         
     }EC_CONFIG;
     
-    EC_CONFIG get_ec_client_config();
+    EC_CONFIG get_ec_cfg();
 
 private:
     
     std::string _control_mode;
-    std::vector<int> _success_cmd_slave,_unsuccess_cmd_slave;
-    EC_CONFIG _ec_config;
+    EC_CONFIG _ec_cfg;
   
 };
 
