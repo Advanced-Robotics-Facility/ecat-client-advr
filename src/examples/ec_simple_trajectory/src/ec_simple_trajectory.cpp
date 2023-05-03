@@ -51,21 +51,9 @@ int main()
 
         // *************** START UDP CLIENT  *************** //
         createLogger("console","client");
-        auto client=ec_client_utils->make_ecat_client();
-
-        //EcUDP client(ec_client_cfg.host_name,ec_client_cfg.host_port);
+        auto client=ec_client_utils->make_ec_iface();
         
         auto UDP_period_ms_time=milliseconds(ec_client_cfg.period_ms);
-
-        //client.set_period(UDP_period_ms_time);
-        
-        client->connect();
-        
-        // Run asio thread alongside main thread
-        //std::thread t1{[&]{client.run();}};
-        
-        client->start_logging();
-        
         
         // *************** START UDP CLIENT  *************** //
                     

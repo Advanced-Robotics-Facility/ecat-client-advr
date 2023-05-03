@@ -5,6 +5,7 @@ network:
   timeout: 1000
 
 period_ms: 4
+logging: false
 
 control:
 ################position################

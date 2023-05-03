@@ -24,7 +24,7 @@ EcUDP::EcUDP(std::string host_address,uint32_t host_port) :
     UdpTask("EcUDP", CLIENT_PORT),
     consoleLog{ spdlog::get("console") }
 {
-    consoleLog->info(" UDP Client Started " + make_daytime_string());
+    consoleLog->info(" EtherCAT Client UDP Started " + make_daytime_string());
     
     if(host_address=="localhost")
     {
@@ -70,6 +70,20 @@ EcUDP::EcUDP(std::string host_address,uint32_t host_port) :
     _client_status=ClientStatus::IDLE;
 }
 
+EcUDP::~EcUDP()
+{
+
+    if(_ec_udp_thread != nullptr)
+    {
+        if ( _ec_udp_thread->joinable() ) 
+        {
+            consoleLog->info("EtherCAT Client thread stopped");
+            _ec_udp_thread->join();
+        }
+    }
+    
+    spdlog::get("console")->info("That's all folks");
+}
 
 
 //******************************* EVENT HANDLERS *****************************************************//
@@ -286,12 +300,8 @@ void EcUDP::disconnect()
         auto sizet = proto.packClientRequest(sendBuffer, CliReqSrvRep::DISCONNECT, payload);
         do_send(sendBuffer.data(),  sendBuffer.size() );
         consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
+        _client_status=ClientStatus::IDLE;
     }
-    else
-    {
-        consoleLog->info("Client not connected, cannot perform the disconnect command");
-    }
-
 }
 
 void EcUDP::ping(bool test)
@@ -723,6 +733,76 @@ void EcUDP::set_motors_gains(const MSG &motors_gains)
 //******************************* COMMANDS *****************************************************//
 
 
+void EcUDP::set_loop_time(uint32_t period_ms)
+{
+    auto period_ms_time=milliseconds(period_ms);
+    
+    set_period(period_ms_time);
+}
+
+void EcUDP::start_client(uint32_t period_ms,bool logging)
+{
+
+    set_loop_time(period_ms);
+        
+    connect();
+    
+    if(logging)
+    {
+        start_logging();
+    }
+        
+    if(_ec_udp_thread == nullptr)
+    {
+        _ec_udp_thread = std::make_shared<std::thread>(std::thread{[&]{run();}});
+    }
+    else
+    {
+        // leave the periodicActivity alive with a period changed
+    }
+}
+
+void EcUDP::stop_client()
+{
+    stop();
+    
+    stop_logging();
+    
+    disconnect();
+}
+
+bool EcUDP::is_client_alive()
+{
+    return _client_alive;
+}
+
+void EcUDP::start_logging()
+{
+    // Logger setup
+    XBot::MatLogger2::Options opt;
+    opt.default_buffer_size = 1e4; // set default buffer size
+    opt.enable_compression = true; // enable ZLIB compression
+    
+    _motors_references_logger = XBot::MatLogger2::MakeLogger("/tmp/motors_references_logger");
+    _motors_references_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
+
+    _motors_status_logger = XBot::MatLogger2::MakeLogger("/tmp/motors_status_logger", opt);
+    _motors_status_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
+    _ft6_status_logger = XBot::MatLogger2::MakeLogger("/tmp/ft6_status_logger", opt);
+    _ft6_status_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
+    _pow_status_logger = XBot::MatLogger2::MakeLogger("/tmp/pow_status_logger", opt);
+    _pow_status_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
+}
+
+void EcUDP::stop_logging()
+{
+    _motors_references_logger.reset();
+    _motors_status_logger.reset();
+    _ft6_status_logger.reset();
+    _pow_status_logger.reset();
+}
+
+
 //******************************* Periodic Activity *****************************************************//
 #ifdef PROFILE_TIMING
 auto lastTime_ = std::chrono::high_resolution_clock::now();
@@ -780,17 +860,6 @@ void EcUDP::periodicActivity()
 }
 //******************************* Periodic Activity *****************************************************//
 
-void EcUDP::stop_client()
-{
-    spdlog::get("console")->info("That's all folks");
-    
-    disconnect();
-    
-    stop_logging();
-
-    this->stop();
-    
-}
 
 void EcUDP::set_motors_references(const MotorRefFlags & motor_ref_flags,const std::vector<MR> &motors_references)
 {
@@ -874,41 +943,6 @@ void EcUDP::restore_wait_reply_time()
     _server_alive_check_ms=milliseconds(_wait_reply_time)+milliseconds(500); //1.5s
 }
 
-bool EcUDP::is_client_alive()
-{
-    return _client_alive;
-}
-
-void EcUDP::start_logging()
-{
-    // Logger setup
-    XBot::MatLogger2::Options opt;
-    opt.default_buffer_size = 1e4; // set default buffer size
-    opt.enable_compression = true; // enable ZLIB compression
-    
-    _motors_references_logger = XBot::MatLogger2::MakeLogger("/tmp/motors_references_logger");
-    _motors_references_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
-
-    _motors_status_logger = XBot::MatLogger2::MakeLogger("/tmp/_motors_status_logger", opt);
-    _motors_status_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
-    _ft6_status_logger = XBot::MatLogger2::MakeLogger("/tmp/_ft6_status_logger", opt);
-    _ft6_status_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
-    _pow_status_logger = XBot::MatLogger2::MakeLogger("/tmp/_pow_status_logger", opt);
-    _pow_status_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
-}
-
-void EcUDP::stop_logging()
-{
-    _motors_references_logger.reset();
-    _motors_status_logger.reset();
-    _ft6_status_logger.reset();
-    _pow_status_logger.reset();
-}
-
-
-
-/**
- */
 void EcUDP::receive_error(std::error_code ec)
 {
     consoleLog->error( " Receive Error {}", ec.message());

@@ -13,11 +13,18 @@ target_include_directories(ec_library
     ${EXTERNAL}/spdlog/include
 )
 
+if ( Xenomai_FOUND )
+    set(LIB_TYPE _rt)
+else ()
+    set(LIB_TYPE _nrt)
+endif()
+
 target_link_libraries(ec_library
     PUBLIC
     ${YAML_CPP_LIBRARIES}
     ${Boost_SYSTEM_LIBRARY}
     pthread
+    ecat_master::ecat_core${LIB_TYPE}
     ecat_master::msgpck_proto
     magic_enum::magic_enum
     matlogger2::matlogger2

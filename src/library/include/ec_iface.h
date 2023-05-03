@@ -1,5 +1,5 @@
-#ifndef EC_WRAPPER_H
-#define EC_WRAPPER_H
+#ifndef EC_IFACE_H
+#define EC_IFACE_H
 
 #include <memory>
 #include <array>
@@ -42,19 +42,18 @@ enum class MotorRefFlags : uint32_t
 };
 
 
-class EcWrapper
+class EcIface
 {
 public:
     
-    typedef std::shared_ptr<EcWrapper> Ptr;
-    virtual ~EcWrapper() {};
+    typedef std::shared_ptr<EcIface> Ptr;
+    virtual ~EcIface() {};
 
     // EtherCAT Client ADVR Facilty manager
-    virtual void connect(void) = 0;
-    virtual void disconnect(void) = 0;
-    //virtual void periodicActivity(void) = 0;
+    virtual void start_client(uint32_t period_ms,bool logging) = 0;
     virtual void stop_client(void) = 0;
     virtual bool is_client_alive(void) = 0;
+    virtual void set_loop_time(uint32_t period_ms) = 0;
     
     // EtherCAT Client ADVR Facilty logger
     virtual void start_logging(void) = 0;
@@ -84,4 +83,4 @@ public:
                             const WR_SDO &wr_sdo) = 0;
 };
 
-#endif // EC_WRAPPER_H
+#endif // EC_IFACE_H

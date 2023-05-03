@@ -6,7 +6,7 @@
 #include <boost/asio.hpp>
 
 
-#include "ec_wrapper.h"
+#include "ec_iface.h"
 #include "cmn_utils.h"
 #include "task.h"
 #include "pck_msgs.h"
@@ -40,22 +40,26 @@ constexpr static int CLIENT_PORT{54320};
 /**
  * @brief The ReplServer class
  */
-class EcUDP : public UdpTask<EcUDP, MsgPackProtocol>, public EcWrapper
+class EcUDP : public UdpTask<EcUDP, MsgPackProtocol>, public EcIface
 {
 public:
     
     enum ClientCmdType { STOP, START};
     EcUDP(std::string host_address,uint32_t host_port);
+    ~EcUDP();
 
     void receive_error(std::error_code ec);
-    
-    void connect() final;
-    void disconnect() final;
-    void periodicActivity();
+
+    void start_client(uint32_t period_ms,bool logging) final;
     void stop_client() final ;
     bool is_client_alive() final;
-    void ping(bool test);
+    void set_loop_time(uint32_t period_ms) final;
     
+    void connect();
+    void periodicActivity();
+    
+    void ping(bool test);
+
     void start_logging() final;
     void stop_logging() final;
     
@@ -93,6 +97,7 @@ public:
 private:
 
     // MSG HANDLERS
+    void disconnect();
     void quit_server();
     void server_replies_handler(char*buf, size_t size);
     void repl_replies_handler(char*buf, size_t size);
@@ -134,6 +139,7 @@ private:
 
     MotorRefFlags _motor_ref_flags;
     std::vector<MR> _motors_references;
+    std::shared_ptr<std::thread> _ec_udp_thread;
 };
 
 #endif // EC_UDP_H

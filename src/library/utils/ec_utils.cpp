@@ -32,6 +32,12 @@ EcUtils::EcUtils(const YAML::Node & ec_cfg)
     else
         _ec_cfg.period_ms=ec_cfg["period_ms"].as<int>();
     
+    if(!ec_cfg["logging"])
+        _ec_cfg.logging=false;
+    else
+        _ec_cfg.logging=ec_cfg["logging"].as<bool>();
+    
+    
     //****** Trajectory **************//
     if(ec_cfg["control"])
     {
@@ -129,38 +135,33 @@ EcUtils::EC_CONFIG EcUtils::get_ec_cfg()
     return _ec_cfg;
 };
 
-EcWrapper::Ptr EcUtils::make_ecat_client()
+EcIface::Ptr EcUtils::make_ec_iface()
 {
-    EcWrapper::Ptr ec_wrapper_ptr;
+    EcIface::Ptr ec_iface_ptr;
+
     if(_ec_cfg.protocol == "udp")
     {
        auto ec_udp_ptr = std::make_shared<EcUDP>(_ec_cfg.host_name,_ec_cfg.host_port);
-       auto period_ms_time=milliseconds(_ec_cfg.period_ms);
-       ec_udp_ptr->set_period(period_ms_time);
-       
-       _ec_thread = new std::thread{[&]{ec_udp_ptr->run();}};
-       
-       ec_wrapper_ptr = ec_udp_ptr;
+       ec_iface_ptr = ec_udp_ptr;
        
     }
     else
     {
-        throw std::runtime_error("Protocol not recognized");
+        throw std::runtime_error("EtherCAT client protocol not recognized, protocols allowed are upd, zmq, ros2 and iddp");
     }
-    return ec_wrapper_ptr;    
+    
+    if(ec_iface_ptr != nullptr)
+    {
+        ec_iface_ptr->start_client(_ec_cfg.period_ms,_ec_cfg.logging); // auto-start 
+    }
+    
+    return ec_iface_ptr;    
 }
 
 
 
 EcUtils::~EcUtils()
 {
-    if(_ec_thread != nullptr)
-    {
-        if ( _ec_thread->joinable() ) 
-        {
-            std::cout << "EtherCAT Client thread stopped" << std::endl;
-            _ec_thread->join();
-        }
-    }
+    
 };
 
