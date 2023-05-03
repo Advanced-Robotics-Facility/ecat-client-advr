@@ -50,7 +50,6 @@ int main()
 // ********************* TEST ****************************////
 
         // *************** START UDP CLIENT  *************** //
-        createLogger("console","client");
         auto client=ec_client_utils->make_ec_iface();
         
         auto UDP_period_ms_time=milliseconds(ec_client_cfg.period_ms);

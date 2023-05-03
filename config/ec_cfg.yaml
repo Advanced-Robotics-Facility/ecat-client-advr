@@ -9,9 +9,9 @@ logging: false
 
 control:
 ################position################
-#control_mode: position
-#position gains
-#gains: [200.0,0.0,10.0,0.0,0.0]
+  #control_mode: position
+  #position gains
+  #gains: [200.0,0.0,10.0,0.0,0.0]
 ################position################
 
 ################impedance################

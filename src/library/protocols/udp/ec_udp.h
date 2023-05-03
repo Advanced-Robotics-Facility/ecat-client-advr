@@ -5,14 +5,13 @@
 #include <chrono>
 #include <boost/asio.hpp>
 
-
+#include "ec_logger.h"
 #include "ec_iface.h"
 #include "cmn_utils.h"
 #include "task.h"
 #include "pck_msgs.h"
 
 #include <mutex>
-#include <matlogger2/matlogger2.h>
 
 using boost::asio::ip::udp;
 
@@ -140,6 +139,7 @@ private:
     MotorRefFlags _motor_ref_flags;
     std::vector<MR> _motors_references;
     std::shared_ptr<std::thread> _ec_udp_thread;
+    EcLogger::Ptr _ec_logger;
 };
 
 #endif // EC_UDP_H

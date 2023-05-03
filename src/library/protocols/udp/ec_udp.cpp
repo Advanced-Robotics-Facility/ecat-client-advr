@@ -11,26 +11,20 @@ using boost::asio::ip::udp;
 using namespace std::chrono_literals;
 using namespace std::chrono;
 
-// TO BE CHECKED
-XBot::MatLogger2::Ptr _motors_references_logger;
-XBot::MatLogger2::Ptr _motors_status_logger;
-XBot::MatLogger2::Ptr _ft6_status_logger;
-XBot::MatLogger2::Ptr _pow_status_logger;
 
 /**
  * @brief EcUDP::EcUDP
  */
 EcUDP::EcUDP(std::string host_address,uint32_t host_port) :
-    UdpTask("EcUDP", CLIENT_PORT),
-    consoleLog{ spdlog::get("console") }
+    UdpTask("EcUDP", CLIENT_PORT)
 {
-    consoleLog->info(" EtherCAT Client UDP Started " + make_daytime_string());
-    
+
     if(host_address=="localhost")
     {
         host_address.clear();
         host_address="127.0.0.1";
     }
+    
     
     sender_endpoint.address(boost::asio::ip::address::from_string(host_address));
     sender_endpoint.port(host_port);
@@ -68,11 +62,15 @@ EcUDP::EcUDP(std::string host_address,uint32_t host_port) :
     _server_alive_check_ms=milliseconds(_wait_reply_time)+milliseconds(500); //1.5s
     _actual_server_status= ServerStatus::IDLE;
     _client_status=ClientStatus::IDLE;
+    
+    createLogger("console","client");
+    consoleLog=spdlog::get("console");
+    
+    _ec_logger = std::make_shared<EcLogger>();
 }
 
 EcUDP::~EcUDP()
 {
-
     if(_ec_udp_thread != nullptr)
     {
         if ( _ec_udp_thread->joinable() ) 
@@ -82,7 +80,7 @@ EcUDP::~EcUDP()
         }
     }
     
-    spdlog::get("console")->info("That's all folks");
+    consoleLog->info("That's all folks");
 }
 
 
@@ -682,33 +680,6 @@ void EcUDP::feed_motors(const MSR & m_ref)
         {
             consoleLog->error("Cannot send references to the motors since not controlled, stop sending them");
         }
-        
-        if(_motors_references_logger != nullptr)
-        {
-            uint32_t flag;
-            std::vector<MR> mot_ref;
-            std::tie(flag,mot_ref) = m_ref;
-            
-            int32_t bId, ctrl_type;
-            float pos_ref,vel_ref,tor_ref,gains[5],aux;
-            uint32_t op,idx;
-            
-            Eigen::VectorXd pos_ref_eigen(mot_ref.size());
-            Eigen::VectorXd vel_ref_eigen(mot_ref.size());
-            Eigen::VectorXd tor_ref_eigen(mot_ref.size());
-            
-            for(int i=0;i < mot_ref.size();i++)
-            {
-                std::tie(bId,ctrl_type,pos_ref,vel_ref,tor_ref,gains[0],gains[1],gains[2],gains[3],gains[4],op,idx,aux) = mot_ref[i];
-                pos_ref_eigen(i)=pos_ref;
-                vel_ref_eigen(i)=vel_ref;
-                tor_ref_eigen(i)=tor_ref;
-            }
-            
-            _motors_references_logger->add("pos_ref", pos_ref_eigen);
-            _motors_references_logger->add("vel_ref", vel_ref_eigen);
-            _motors_references_logger->add("tor_ref", tor_ref_eigen);
-        }
     }
     else
     {
@@ -743,6 +714,8 @@ void EcUDP::set_loop_time(uint32_t period_ms)
 void EcUDP::start_client(uint32_t period_ms,bool logging)
 {
 
+    consoleLog->info(" EtherCAT Client UDP Started " + make_daytime_string());
+    
     set_loop_time(period_ms);
         
     connect();
@@ -778,28 +751,13 @@ bool EcUDP::is_client_alive()
 
 void EcUDP::start_logging()
 {
-    // Logger setup
-    XBot::MatLogger2::Options opt;
-    opt.default_buffer_size = 1e4; // set default buffer size
-    opt.enable_compression = true; // enable ZLIB compression
-    
-    _motors_references_logger = XBot::MatLogger2::MakeLogger("/tmp/motors_references_logger");
-    _motors_references_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
-
-    _motors_status_logger = XBot::MatLogger2::MakeLogger("/tmp/motors_status_logger", opt);
-    _motors_status_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
-    _ft6_status_logger = XBot::MatLogger2::MakeLogger("/tmp/ft6_status_logger", opt);
-    _ft6_status_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
-    _pow_status_logger = XBot::MatLogger2::MakeLogger("/tmp/pow_status_logger", opt);
-    _pow_status_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
+    stop_logging();
+    _ec_logger->start_mat_logger();
 }
 
 void EcUDP::stop_logging()
 {
-    _motors_references_logger.reset();
-    _motors_status_logger.reset();
-    _ft6_status_logger.reset();
-    _pow_status_logger.reset();
+    _ec_logger->stop_mat_logger();
 }
 
 
@@ -877,6 +835,7 @@ void EcUDP::set_motors_references(const MotorRefFlags & motor_ref_flags,const st
            {
                 _motor_ref_flags = motor_ref_flags;
                 _motors_references = motors_references;
+                _ec_logger->log_motors_ref(_motors_references);
            }
            else
            {
@@ -903,6 +862,7 @@ MotorStatusMap EcUDP::get_motors_status()
 {
     _mutex_motor_status->lock();
     
+    _ec_logger->log_motors_sts(_motor_status_map);
     auto ret_motor_status_map= _motor_status_map;
     
     _mutex_motor_status->unlock();
@@ -914,6 +874,7 @@ FtStatusMap EcUDP::get_ft6_status()
 {
     _mutex_ft6_status->lock();
     
+    _ec_logger->log_ft6_sts(_ft_status_map);
     auto ret_ft_status_map= _ft_status_map;
     
     _mutex_ft6_status->unlock();
@@ -925,6 +886,7 @@ PwrStatusMap EcUDP::get_pow_status()
 {
     _mutex_pow_status->lock();
     
+    _ec_logger->log_pow_sts(_pow_status_map);
     auto ret_pow_status_map= _pow_status_map;
     
     _mutex_pow_status->unlock();
