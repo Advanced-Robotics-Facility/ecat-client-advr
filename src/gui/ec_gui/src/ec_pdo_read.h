@@ -5,13 +5,13 @@
 #include <QWidget>
 
 #include "Utils.h"
-#include "ec_udp.h"
+#include "ec_utils.h"
 
 
 class EcPDORead
 {
 public:
-      EcPDORead(std::shared_ptr<EcUDP> client,
+      EcPDORead(EcIface::Ptr client,
                 QTreeWidget *tree_wid) :
       _client(client),
       _tree_wid(tree_wid)
@@ -35,7 +35,7 @@ public:
       void read_pow_status();
       
 private:
-      std::shared_ptr<EcUDP> _client;
+      EcIface::Ptr _client;
       QTreeWidget *_tree_wid;
       QElapsedTimer *_receive_timer;
       

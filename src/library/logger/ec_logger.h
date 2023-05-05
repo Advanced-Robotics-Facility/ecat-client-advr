@@ -7,7 +7,7 @@
 #include <map>
 
 #include <matlogger2/matlogger2.h>
-#include "ec_iface.h"
+#include "ec_types.h"
 
 class EcLogger
 {

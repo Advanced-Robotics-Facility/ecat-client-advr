@@ -33,13 +33,11 @@ control:
 
   slave_id_led: [16,26,35]
   
-
-robot:
-  XBotInterface:
-    urdf_path: ${PWD}/urdf/mirror.urdf
-    srdf_path: ${PWD}/srdf/mirror.srdf
-    joint_map_path: ${PWD}/joint_map/mirror_joint_map.yaml
-  ModelInterface:
-    model_type: "RBDL"
-    is_model_floating_base: "true"
+XBotInterface:
+  urdf_path: ${PWD}/urdf/mirror.urdf
+  srdf_path: ${PWD}/srdf/mirror.srdf
+  joint_map_path: ${PWD}/joint_map/mirror_joint_map.yaml
+ModelInterface:
+  model_type: "RBDL"
+  is_model_floating_base: "true"
 

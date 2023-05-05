@@ -8,7 +8,6 @@
 #include "slider_widget.h"
 
 #include "cmn_utils.h"
-#include "ec_udp.h"
 #include "ec_pdo_read.h"
 #include "ec_utils.h"
 #include <QMainWindow>
@@ -36,7 +35,7 @@ public:
 
     explicit EcGuiStart(std::map<int ,joint_info_t > joint_info_map,
                         EcUtils::EC_CONFIG ec_config,
-                        std::shared_ptr<EcUDP> client,
+                        EcIface::Ptr client,
                         QWidget *parent = nullptr);
 
     ~EcGuiStart();
@@ -76,7 +75,7 @@ private:
   std::map<int, SliderWidget*> _torque_sw_map;
   std::map<int, SliderWidget*> _sw_map_selected;
 
-  EcUDP::ClientCmdType _ctrl_cmd_type;
+  ClientCmdType _ctrl_cmd_type;
 
   MST _motors_start = {};
   PAC _brake_cmds = {};
@@ -109,7 +108,7 @@ private:
 
   QTimer *_UDPTimer_send,*_UDPTimer_receive;
 
-  std::shared_ptr<EcUDP> _client;
+  EcIface::Ptr _client;
   std::vector<MR> _motors_ref;
   MotorRefFlags _motor_ref_flags;
   

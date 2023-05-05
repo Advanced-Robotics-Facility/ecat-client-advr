@@ -8,8 +8,6 @@
 
 #include "ec_utils.h"
 
-#include "ec_udp.h"
-
 #include <XBotInterface/ModelInterface.h>
 #include <XBotInterface/ConfigOptions.h>
 
@@ -87,25 +85,15 @@ int main()
 #endif
 // ********************* TEST ****************************////
 
-        // *************** START UDP CLIENT  *************** //
-        createLogger("console","client");
+        // *************** START CLIENT  *************** //
+        EcIface::Ptr client=ec_client_utils->make_ec_iface();
         
-        EcUDP client(ec_client_cfg.host_name,ec_client_cfg.host_port);
+        auto period_ms_time=milliseconds(ec_client_cfg.period_ms);
         
-        auto UDP_period_ms_time=milliseconds(ec_client_cfg.period_ms);
-        
-        client.set_period(UDP_period_ms_time);
-        
-        client.connect();
-        
-        // Run asio thread alongside main thread
-        std::thread t1{[&]{client.run();}};
-        
-
         STM_sts="Connected";
         
         
-        // *************** START UDP CLIENT  *************** //
+        // *************** START CLIENT  *************** //
                     
         
         // *************** AUTODETECTION *************** //
@@ -120,7 +108,7 @@ int main()
         int control_mode_type=0xD4;
         std::vector<float> imp_gains={1000.0,10.0,1.0,0.7,0.007};
 
-        if(client.retrieve_slaves_info(slave_info))
+        if(client->retrieve_slaves_info(slave_info))
         {   
             if(!slave_info.empty())
             {
@@ -168,7 +156,7 @@ int main()
         {
             // ************************* START Motors ***********************************//
             std::cout << "START ALL MOTORS" << std::endl;
-            motor_started=client.start_motors(motors_start);
+            motor_started=client->start_motors(motors_start);
 
             if(motor_started)
             {
@@ -177,7 +165,7 @@ int main()
                 while(pdo_aux_cmd_attemps<max_pdo_aux_cmd_attemps)
                 {
                     pdo_aux_cmd_attemps++;
-                    if(!client.pdo_aux_cmd(brake_cmds))
+                    if(!client->pdo_aux_cmd(brake_cmds))
                     {
                         std::cout << "Cannot perform the release brake command of the motors" << std::endl;
                         pdo_aux_cmd_attemps=max_pdo_aux_cmd_attemps;
@@ -185,7 +173,7 @@ int main()
                     else
                     {
                         std::this_thread::sleep_for(1000ms); //wait 1s to check if the brakes are released
-                        if(client.pdo_aux_cmd_sts(brake_cmds))
+                        if(client->pdo_aux_cmd_sts(brake_cmds))
                         {
                             pdo_aux_cmd_attemps=max_pdo_aux_cmd_attemps;
                             STM_sts="Motor_Ctrl_SetGains";
@@ -207,7 +195,7 @@ int main()
             while(pdo_aux_cmd_attemps<max_pdo_aux_cmd_attemps)
             {
                 pdo_aux_cmd_attemps++;
-                if(!client.pdo_aux_cmd(led_cmds))
+                if(!client->pdo_aux_cmd(led_cmds))
                 {
                     std::cout << "Cannot perform the led on command of the motors"<< std::endl;
                     pdo_aux_cmd_attemps=max_pdo_aux_cmd_attemps;
@@ -215,7 +203,7 @@ int main()
                 else
                 {
                     std::this_thread::sleep_for(100ms);
-                    if(client.pdo_aux_cmd_sts(led_cmds))
+                    if(client->pdo_aux_cmd_sts(led_cmds))
                     {
                         std::cout << "Switched ON the LEDs " << std::endl;
                         pdo_aux_cmd_attemps=max_pdo_aux_cmd_attemps;
@@ -244,14 +232,13 @@ int main()
             
             XBot::ModelInterface::Ptr model= XBot::ModelInterface::getModel(config);
             
-            // UDP Mechanism
             auto start_time= steady_clock::now();
             auto time=start_time;
             
             auto time_to_engage_brakes = milliseconds(1000); // Default 1s
             
             bool run=true;
-            bool first_UDP_Rx=false;
+            bool first_Rx=false;
             
             bool motors_vel_check=false;
             bool led_off_req=false;
@@ -266,11 +253,9 @@ int main()
             std::vector<float> gain_ref=gain_start;
             
             std::vector<MR> motors_ref;
-            uint32_t motor_ref_flags = 1;
-            
             while (run)
             {
-                bool client_alive = client.is_client_alive();
+                bool client_alive = client->is_client_alive();
                 
                 if(!client_alive)
                 {
@@ -279,10 +264,10 @@ int main()
                 
                 auto time_elapsed_ms= duration_cast<milliseconds>(time-start_time);
                 
-                // UDP_Rx "SENSE"
+                // Rx "SENSE"
                 
                 //******************* Power Board Telemetry ********
-                auto pow_status_map= client.get_pow_status();
+                auto pow_status_map= client->get_pow_status();
                 float v_batt,v_load,i_load,temp_pcb,temp_heatsink,temp_batt;
                 if(!pow_status_map.empty())
                 {
@@ -298,7 +283,7 @@ int main()
                 //******************* Power Board Telemetry ********
                 
                 //******************* Motor Telemetry **************
-                auto motors_status_map= client.get_motors_status();
+                auto motors_status_map= client->get_motors_status();
                 if(!motors_status_map.empty())
                 {
                     for ( const auto &[esc_id, motor_status] : motors_status_map){
@@ -322,7 +307,7 @@ int main()
                             qdot[esc_id] = motor_vel;
                             q_ref[esc_id]=q[esc_id];
                             
-                            if(!first_UDP_Rx)
+                            if(!first_Rx)
                             {
                                 q_ref_test[esc_id]=motor_pos;
                             }
@@ -333,7 +318,7 @@ int main()
                     if(q_ref_test.size() == model->getJointNum()-6)
                     {
                         //Open Loop SENSE
-                        first_UDP_Rx=true;
+                        first_Rx=true;
                     }
                     else
                     {
@@ -342,9 +327,9 @@ int main()
                 }
                     
 #ifdef TEST
-                if(!first_UDP_Rx)
+                if(!first_Rx)
                 {
-                    first_UDP_Rx=true;
+                    first_Rx=true;
                     for(int i=0; i<slave_id_vector.size();i++)
                     {
                         int id=slave_id_vector[i];
@@ -418,10 +403,10 @@ int main()
                     
                 // ************************* SEND ALWAYS REFERENCES***********************************//
                 
-                // UDP_Tx "MOVE"  @NOTE: motors_ref done when the state machine switch between homing and trajectory after motor_ref will remain equal to old references 
+                // Tx "MOVE"  @NOTE: motors_ref done when the state machine switch between homing and trajectory after motor_ref will remain equal to old references 
                 if(!motors_ref.empty())
                 {
-                    client.feed_motors(std::make_tuple(motor_ref_flags, motors_ref));
+                    client->set_motors_references(MotorRefFlags::FLAG_MULTI_REF, motors_ref);
                 }
                 else
                 {
@@ -437,7 +422,7 @@ int main()
                         led_off_req=true;
                         if(motors_vel_check)
                         {
-                            if(client.pdo_aux_cmd_sts(brake_cmds))
+                            if(client->pdo_aux_cmd_sts(brake_cmds))
                             {
                                 std::cout << "Brakes engaged for all motors" << std::endl;
                                 stop_motors=true;
@@ -449,7 +434,7 @@ int main()
                                 {
                                     led_off_req=false;
                                     motors_vel_check=false;
-                                    start_time=time+UDP_period_ms_time;
+                                    start_time=time+period_ms_time;
                                 }
                             }
                         }
@@ -485,8 +470,8 @@ int main()
                             
                             if(motors_vel_check)
                             {
-                                start_time=time+UDP_period_ms_time;
-                                if(!client.pdo_aux_cmd(brake_cmds))
+                                start_time=time+period_ms_time;
+                                if(!client->pdo_aux_cmd(brake_cmds))
                                 { 
                                     run=false;
                                 }
@@ -504,7 +489,7 @@ int main()
                     {
                         run=false;
                         
-                        if(client.pdo_aux_cmd_sts(led_cmds))
+                        if(client->pdo_aux_cmd_sts(led_cmds))
                         {
                             std::cout << "Switched OFF the LEDs"<< std::endl;
                         }
@@ -514,8 +499,8 @@ int main()
                             if(pdo_aux_cmd_attemps<max_pdo_aux_cmd_attemps)
                             {
                                 run=true;
-                                start_time=time+UDP_period_ms_time;
-                                if(!client.pdo_aux_cmd(led_cmds))
+                                start_time=time+period_ms_time;
+                                if(!client->pdo_aux_cmd(led_cmds))
                                 {
                                     std::cout << "Cannot perform the led off command of the all motors" << std::endl;
                                     run=false;
@@ -536,7 +521,7 @@ int main()
                 }
                 
                 // delay until time to iterate again
-                time += UDP_period_ms_time;
+                time += period_ms_time;
                
                 if(STM_sts=="Motor_Ctrl_SetGains")
                 {
@@ -588,7 +573,7 @@ int main()
                         
                         // send first leds off command
                         pdo_aux_cmd_attemps=0;
-                        if(!client.pdo_aux_cmd(led_cmds))
+                        if(!client->pdo_aux_cmd(led_cmds))
                         {
                             std::cout << "Cannot perform the led off command of the all motors" << std::endl;
                             run=false;
@@ -605,7 +590,7 @@ int main()
         // ************************* STOP Motors ***********************************//
         if(STM_sts =="Motor_Stopping")
         {
-            if(!client.stop_motors())
+            if(!client->stop_motors())
             {
                 std::cout << "Not all motors are stopped" << std::endl;
             }
@@ -617,16 +602,10 @@ int main()
         }
         // ************************* STOP Motors ***********************************//
         
-        // STOP UDP Mechanism
-        if(client.is_client_alive())
+        // STOP CLIENT
+        if(client->is_client_alive())
         {
-            client.stop_client();
-        }
-        
-        if ( t1.joinable() ) 
-        {
-            std::cout << "Client thread stopped" << std::endl;
-            t1.join();
+            client->stop_client();
         }
     }
     return 0;

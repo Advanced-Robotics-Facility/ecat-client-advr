@@ -6,7 +6,6 @@
 #include "ec_gui_start.h"
 #include <QApplication>
 
-#include "ec_udp.h"
 #include "ec_utils.h"
 
 #define CENT_AC 0x15
@@ -72,16 +71,7 @@ int main(int argc, char *argv[])
         return 1;
         }
         // *************** AUTODETECTION *************** //
-
-        createLogger("console","GUI");
-        auto client=std::make_shared<EcUDP>(ec_client_cfg.host_name,ec_client_cfg.host_port);
-        auto UDP_period_ms_time=std::chrono::milliseconds(ec_client_cfg.period_ms);
-        
-        client->set_period(UDP_period_ms_time);
-        client->connect();
-
-        // Run asio thread alongside GUI thread
-        std::thread t1{[&]{client->run();}};
+        EcIface::Ptr client=ec_client_utils->make_ec_iface();
         
         SSI slave_info;
         
@@ -182,12 +172,6 @@ int main(int argc, char *argv[])
             {
                 client->stop_client();
             }
-        }
-        
-        if ( t1.joinable() ) 
-        {
-            std::cout << "Client thread stopped" << std::endl;
-            t1.join();
         }
     }
     

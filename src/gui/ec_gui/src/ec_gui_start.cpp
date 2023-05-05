@@ -40,7 +40,7 @@ QWidget * LoadUiFile(QWidget * parent)
 
 }
 
-EcGuiStart::EcGuiStart(std::map<int ,joint_info_t > joint_info_map,EcUtils::EC_CONFIG ec_config,std::shared_ptr<EcUDP> client,QWidget *parent) :
+EcGuiStart::EcGuiStart(std::map<int ,joint_info_t > joint_info_map,EcUtils::EC_CONFIG ec_config,EcIface::Ptr client,QWidget *parent) :
     _joint_info_map(joint_info_map),
     _ec_config(ec_config),
     _client(client),
@@ -295,13 +295,13 @@ void EcGuiStart::readCommand()
     _tabcontrol->setEnabled(false);
     _mode_type_combobox->setEnabled(false);
 
-    _ctrl_cmd_type=EcUDP::ClientCmdType::STOP;
+    _ctrl_cmd_type=ClientCmdType::STOP;
 
     if(getFieldType() == "Start motors")
     {
         _tabcontrol->setEnabled(true);
         _mode_type_combobox->setEnabled(true);
-        _ctrl_cmd_type=EcUDP::ClientCmdType::START;
+        _ctrl_cmd_type=ClientCmdType::START;
         readModeType();
         if(!_motor_start_req)
         {
@@ -311,7 +311,7 @@ void EcGuiStart::readCommand()
     }
     else if(getFieldType() == "Stop motors")
     {
-        _ctrl_cmd_type=EcUDP::ClientCmdType::STOP;
+        _ctrl_cmd_type=ClientCmdType::STOP;
 
         _notallbtn->setEnabled(false);
         _allbtn->setEnabled(false);
@@ -489,14 +489,14 @@ void EcGuiStart::onApplyCmdReleased()
         _torque_sw_map[slave_id]->align_spinbox(0.0);
     }
     
-    if((_motor_start_req)&&(_ctrl_cmd_type==EcUDP::ClientCmdType::START))
+    if((_motor_start_req)&&(_ctrl_cmd_type==ClientCmdType::START))
     {
         QMessageBox msgBox;
         msgBox.setText("All or some slaves are already started/released brake"
                        ", please launch STOP EtherCAT command");
         msgBox.exec();
     }
-    else if((!_motor_start_req)&&(_ctrl_cmd_type==EcUDP::ClientCmdType::STOP))
+    else if((!_motor_start_req)&&(_ctrl_cmd_type==ClientCmdType::STOP))
     {
         QMessageBox msgBox;
         msgBox.setText("No slaves was started releasing the brake"
@@ -505,7 +505,7 @@ void EcGuiStart::onApplyCmdReleased()
     }
     else
     {
-        if(_ctrl_cmd_type==EcUDP::ClientCmdType::STOP)
+        if(_ctrl_cmd_type==ClientCmdType::STOP)
         {
             _UDPTimer_send->stop();
             _send_stop_btn->setText("Send");
@@ -699,7 +699,7 @@ void EcGuiStart::OnUDPFreqChanged()
     _UDPTimer_receive->start(_udp_ms_req);
     auto period=std::chrono::milliseconds(_udp_ms_req);
 
-    _client->set_period(period);
+    _client->set_loop_time(_udp_ms_req);
 
 
 /**** RX STOP and START *****/

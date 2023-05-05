@@ -15,23 +15,6 @@
 
 using boost::asio::ip::udp;
 
-enum class ClientStatus : uint32_t
-{
-    ERROR           = 0,        // Error
-    WAITING_REPLY   = 1 << 0,
-    IDLE            = 1 << 1,   
-    CONNECTED       = 1 << 2,   
-    MOTORS_MAPPED   = 1 << 3,   
-    MOTORS_READY    = 1 << 4,   
-    MOTORS_STARTED  = 1 << 5,   
-    MOTORS_BRK_OFF  = 1 << 6,   
-    MOTORS_CTRL     = 1 << 7,   
-    MOTORS_STOPPED  = 1 << 8,   
-    MOTORS_BRK_ON   = 1 << 9,   
-    
-};
-
-
 /////////////////////////////////////////////////////
 
 constexpr static int CLIENT_PORT{54320};
@@ -42,29 +25,20 @@ constexpr static int CLIENT_PORT{54320};
 class EcUDP : public UdpTask<EcUDP, MsgPackProtocol>, public EcIface
 {
 public:
-    
-    enum ClientCmdType { STOP, START};
+
     EcUDP(std::string host_address,uint32_t host_port);
     ~EcUDP();
-
-    void receive_error(std::error_code ec);
 
     void start_client(uint32_t period_ms,bool logging) final;
     void stop_client() final ;
     bool is_client_alive() final;
     void set_loop_time(uint32_t period_ms) final;
     
-    void connect();
+    void receive_error(std::error_code ec);
     void periodicActivity();
-    
-    void ping(bool test);
 
     void start_logging() final;
     void stop_logging() final;
-    
-    
-    void get_slaves_info();
-    void getAndset_slaves_sdo(uint32_t esc_id, const RD_SDO &rd_sdo, const WR_SDO &wr_sdo);
     
     MotorStatusMap get_motors_status() final ;
     FtStatusMap get_ft6_status() final;
@@ -87,25 +61,37 @@ public:
     
     
     bool pdo_aux_cmd_sts(const PAC & pac) final;
-    void feed_motors(const MSR &);
-    void set_motors_gains(const MSG &);
 
-    bool get_reply_from_server(ReplReqRep cmd_req);
 
 
 private:
 
-    // MSG HANDLERS
+    //COMMANDS
+    void connect();
     void disconnect();
     void quit_server();
+    void ping(bool test);
+    
+    void get_slaves_info();
+    void getAndset_slaves_sdo(uint32_t esc_id, const RD_SDO &rd_sdo, const WR_SDO &wr_sdo);
+    
+    void feed_motors(const MSR &);
+    void set_motors_gains(const MSG &);
+
+    bool get_reply_from_server(ReplReqRep cmd_req);
+    
+    void set_wait_reply_time(uint32_t wait_reply_time);
+    void restore_wait_reply_time();
+    
+    // MSG HANDLERS
     void server_replies_handler(char*buf, size_t size);
     void repl_replies_handler(char*buf, size_t size);
     void server_status_handler(char*buf, size_t size);
     void motor_status_handler(char*buf, size_t size);
     void ft6_status_handler(char*buf, size_t size);
     void pwr_status_handler(char*buf, size_t size);
-    void set_wait_reply_time(uint32_t wait_reply_time);
-    void restore_wait_reply_time();
+
+    
     std::shared_ptr<std::mutex> _mutex_motor_status;
     std::shared_ptr<std::mutex> _mutex_motor_reference;
     std::shared_ptr<std::mutex> _mutex_ft6_status;

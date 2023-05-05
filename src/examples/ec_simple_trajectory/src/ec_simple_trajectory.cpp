@@ -49,12 +49,12 @@ int main()
 #endif
 // ********************* TEST ****************************////
 
-        // *************** START UDP CLIENT  *************** //
-        auto client=ec_client_utils->make_ec_iface();
+        // *************** START CLIENT  *************** //
+        EcIface::Ptr client=ec_client_utils->make_ec_iface();
         
-        auto UDP_period_ms_time=milliseconds(ec_client_cfg.period_ms);
+        auto period_ms_time=milliseconds(ec_client_cfg.period_ms);
         
-        // *************** START UDP CLIENT  *************** //
+        // *************** START CLIENT  *************** //
                     
         
         // *************** AUTODETECTION *************** //
@@ -177,8 +177,6 @@ int main()
                 
         if(send_ref)
         {
-            // UDP Mechanism
-            
             auto start_time= steady_clock::now();
             auto time=start_time;
             
@@ -188,7 +186,7 @@ int main()
             auto time_to_engage_brakes = milliseconds(1000); // Default 1s
             
             bool run=true;
-            bool first_UDP_Rx=false;
+            bool first_Rx=false;
             
             std::string STM_sts="Homing";
             std::map<double,double> q_set_trj=ec_client_cfg.homing_position;
@@ -212,7 +210,7 @@ int main()
                 
                 auto time_elapsed_ms= duration_cast<milliseconds>(time-start_time);
                 
-                // UDP_Rx "SENSE"
+                // Rx "SENSE"
                 
                 //******************* Power Board Telemetry ********
                 auto pow_status_map= client->get_pow_status();
@@ -257,7 +255,7 @@ int main()
                                     //Closed Loop SENSE for motor velocity
                                     qdot[esc_id] = motor_vel;
                                     
-                                    if(!first_UDP_Rx)
+                                    if(!first_Rx)
                                     {
                                         q_start[esc_id]=motor_pos; // get position at first time
                                     }
@@ -269,7 +267,7 @@ int main()
                     if(q_start.size() == q_set_trj.size())
                     {
                         //Open Loop SENSE
-                        first_UDP_Rx=true;
+                        first_Rx=true;
                     }
                     else
                     {
@@ -278,9 +276,9 @@ int main()
                 }
                     
 #ifdef TEST
-                if(!first_UDP_Rx)
+                if(!first_Rx)
                 {
-                    first_UDP_Rx=true;
+                    first_Rx=true;
                     for(int i=0; i<q_set_trj.size();i++)
                     {
                         int id=slave_id_vector[i];
@@ -346,7 +344,7 @@ int main()
                 
                 if(!motors_ref.empty())
                 {
-                    // UDP_Tx "MOVE"  @NOTE: motors_ref done when the state machine switch between homing and trajectory after motor_ref will remain equal to old references
+                    // Tx "MOVE"  @NOTE: motors_ref done when the state machine switch between homing and trajectory after motor_ref will remain equal to old references
                     client->set_motors_references(MotorRefFlags::FLAG_MULTI_REF, motors_ref);
                     //->feed_motors(std::make_tuple(motor_ref_flags, motors_ref));
                 }
@@ -377,7 +375,7 @@ int main()
                                 {
                                     led_off_req=false;
                                     motors_vel_check=false;
-                                    start_time=time+UDP_period_ms_time;
+                                    start_time=time+period_ms_time;
                                 }
                             }
                         }
@@ -413,7 +411,7 @@ int main()
                             
                             if(motors_vel_check)
                             {
-                                start_time=time+UDP_period_ms_time;
+                                start_time=time+period_ms_time;
                                 if(!client->pdo_aux_cmd(brake_cmds))
                                 { 
                                     run=false;
@@ -442,7 +440,7 @@ int main()
                             if(pdo_aux_cmd_attemps<max_pdo_aux_cmd_attemps)
                             {
                                 run=true;
-                                start_time=time+UDP_period_ms_time;
+                                start_time=time+period_ms_time;
                                 if(!client->pdo_aux_cmd(led_cmds))
                                 {
                                     std::cout << "Cannot perform the led off command of the all motors" << std::endl;
@@ -459,7 +457,7 @@ int main()
                 }
                 
                 // delay until time to iterate again
-                time += UDP_period_ms_time;
+                time += period_ms_time;
                     
                 if((time_elapsed_ms>=hm_time_ms)&&(STM_sts=="Homing"))
                 {
@@ -535,17 +533,11 @@ int main()
         }
         // ************************* STOP Motors ***********************************//
         
-        // STOP UDP Mechanism
+        // STOP CLIENT
         if(client->is_client_alive())
         {
             client->stop_client();
         }
-        
-//         if ( t1.joinable() ) 
-//         {
-//             std::cout << "Client thread stopped" << std::endl;
-//             t1.join();
-//         }
     }
     return 0;
 }
