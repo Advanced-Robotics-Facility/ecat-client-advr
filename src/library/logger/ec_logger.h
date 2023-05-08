@@ -17,7 +17,9 @@ public:
     
     void start_mat_logger();
     void stop_mat_logger();
+    void add_motors_ref(std::vector<MR> motors_ref,XBot::MatLogger2::Ptr logger);
     void log_motors_ref(std::vector<MR> motors_ref);
+    void log_set_motors_ref(std::vector<MR> motors_ref);
     void log_motors_sts(MotorStatusMap motors_sts_map);
     void log_pow_sts(PwrStatusMap pow_sts_map);
     void log_ft6_sts(FtStatusMap ft_sts_map);
@@ -30,6 +32,7 @@ public:
 private: 
 
     XBot::MatLogger2::Ptr _motors_references_logger;
+    XBot::MatLogger2::Ptr _set_motors_references_logger;
     XBot::MatLogger2::Ptr _motors_status_logger;
     XBot::MatLogger2::Ptr _ft6_status_logger;
     XBot::MatLogger2::Ptr _pow_status_logger;

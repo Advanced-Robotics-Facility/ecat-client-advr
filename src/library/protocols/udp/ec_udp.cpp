@@ -217,6 +217,8 @@ void EcUDP::motor_status_handler(char *buf, size_t size)
         }
     }
     
+    _ec_logger->log_motors_sts(_motor_status_map);
+    
     _mutex_motor_status->unlock();
 
 }
@@ -241,6 +243,8 @@ void EcUDP::ft6_status_handler(char *buf, size_t size)
         }
     }
     
+    _ec_logger->log_ft6_sts(_ft_status_map);
+    
     _mutex_ft6_status->unlock();
 
 }
@@ -264,6 +268,8 @@ void EcUDP::pwr_status_handler(char *buf, size_t size)
             //consoleLog->info( " pwr_status {}: {} {} {} ", cnt,esc_id,values[0],values[1] );
         }
     }
+    
+    _ec_logger->log_pow_sts(_pow_status_map);
     
     _mutex_pow_status->unlock();
 
@@ -675,6 +681,7 @@ void EcUDP::feed_motors(const MSR & m_ref)
             auto sizet = proto.packReplRequestSetMotorsRefs(sendBuffer, m_ref);
             do_send(sendBuffer.data(), sendBuffer.size() );
             consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
+            _ec_logger->log_motors_ref(_motors_references);
         }
         else
         {
@@ -835,7 +842,7 @@ void EcUDP::set_motors_references(const MotorRefFlags & motor_ref_flags,const st
            {
                 _motor_ref_flags = motor_ref_flags;
                 _motors_references = motors_references;
-                _ec_logger->log_motors_ref(_motors_references);
+                _ec_logger->log_set_motors_ref(_motors_references);
            }
            else
            {
@@ -862,7 +869,6 @@ MotorStatusMap EcUDP::get_motors_status()
 {
     _mutex_motor_status->lock();
     
-    _ec_logger->log_motors_sts(_motor_status_map);
     auto ret_motor_status_map= _motor_status_map;
     
     _mutex_motor_status->unlock();
@@ -874,7 +880,6 @@ FtStatusMap EcUDP::get_ft6_status()
 {
     _mutex_ft6_status->lock();
     
-    _ec_logger->log_ft6_sts(_ft_status_map);
     auto ret_ft_status_map= _ft_status_map;
     
     _mutex_ft6_status->unlock();
@@ -886,7 +891,6 @@ PwrStatusMap EcUDP::get_pow_status()
 {
     _mutex_pow_status->lock();
     
-    _ec_logger->log_pow_sts(_pow_status_map);
     auto ret_pow_status_map= _pow_status_map;
     
     _mutex_pow_status->unlock();

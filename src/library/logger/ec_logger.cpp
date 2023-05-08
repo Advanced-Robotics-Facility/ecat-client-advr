@@ -10,6 +10,11 @@ void EcLogger::start_mat_logger()
     
     _motors_references_logger = XBot::MatLogger2::MakeLogger("/tmp/motors_references_logger");
     _motors_references_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
+    
+    
+    _set_motors_references_logger = XBot::MatLogger2::MakeLogger("/tmp/set_motors_references_logger");
+    _set_motors_references_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
+    
 
     _motors_status_logger = XBot::MatLogger2::MakeLogger("/tmp/motors_status_logger", opt);
     _motors_status_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
@@ -26,9 +31,9 @@ void EcLogger::stop_mat_logger()
     _pow_status_logger.reset();
 }
 
-void EcLogger::log_motors_ref(std::vector<MR> motors_ref)
+void EcLogger::add_motors_ref(std::vector<MR> motors_ref,XBot::MatLogger2::Ptr logger)
 {
-    if(_motors_references_logger != nullptr)
+    if(logger != nullptr)
     {
         if(!motors_ref.empty())
         {
@@ -52,16 +57,25 @@ void EcLogger::log_motors_ref(std::vector<MR> motors_ref)
                 i++;
             }
 
-            _motors_references_logger->add("pos_ref", _pos_ref_eigen);
-            _motors_references_logger->add("vel_ref", _vel_ref_eigen);
-            _motors_references_logger->add("tor_ref", _tor_ref_eigen);
-            _motors_references_logger->add("GP", _GP_eigen);
-            _motors_references_logger->add("GD", _GD_eigen);
-            
-
+            logger->add("pos_ref", _pos_ref_eigen);
+            logger->add("vel_ref", _vel_ref_eigen);
+            logger->add("tor_ref", _tor_ref_eigen);
+            logger->add("GP", _GP_eigen);
+            logger->add("GD", _GD_eigen);
         }
     }
 }
+
+void EcLogger::log_motors_ref(std::vector<MR> motors_ref)
+{
+    add_motors_ref(motors_ref,_motors_references_logger);
+}
+
+void EcLogger::log_set_motors_ref(std::vector<MR> motors_ref)
+{
+    add_motors_ref(motors_ref,_set_motors_references_logger);
+}
+
 
 void EcLogger::resize_motors_ref(size_t size)
 {
