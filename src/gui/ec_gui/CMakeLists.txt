@@ -22,6 +22,7 @@ ENDIF(TEST_GUI)
 # compile widget
 add_library(ec_gui_lib STATIC
     src/ec_gui_start.cpp
+    src/qcustomplot.cpp
     src/ec_gui_start_resources.qrc
     src/slider_widget.cpp
     src/slider_widget_calib.cpp
@@ -31,6 +32,7 @@ target_link_libraries(ec_gui_lib
     PUBLIC
     Qt5::Widgets
     Qt5::UiTools
+    Qt5::PrintSupport 
     -lcurl
     ${YAML_CPP_LIBRARIES}
     ${Boost_SYSTEM_LIBRARY}

@@ -161,7 +161,8 @@ int main(int argc, char *argv[])
             // START the GUI
             EcGuiStart w(joint_info_map,ec_client_cfg,client);
 
-            w.setFixedSize(1600,1000);
+            w.setMinimumSize(1600,1000);
+            //w.setFixedSize(1600,1000);
             w.show();
 
             ret_gui_start = a.exec();

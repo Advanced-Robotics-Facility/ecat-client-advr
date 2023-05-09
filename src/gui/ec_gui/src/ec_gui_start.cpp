@@ -268,6 +268,10 @@ EcGuiStart::EcGuiStart(std::map<int ,joint_info_t > joint_info_map,EcUtils::EC_C
 
     _ec_pdo_read = std::make_shared<EcPDORead>(_client,_tree_wid);
 
+    auto cplot  = findChild<QVBoxLayout *>("cplot");
+    auto custom_plot = _ec_pdo_read->get_custom_plot();
+    cplot->addWidget(custom_plot);
+
     OnUDPFreqChanged();
 
     auto l = new QVBoxLayout;
@@ -855,6 +859,7 @@ void EcGuiStart::UDP_Communication_receive()
         _ec_pdo_read->read_motor_status();
         _ec_pdo_read->read_ft6_status();
         _ec_pdo_read->read_pow_status();
+        _ec_pdo_read->update_plot();
         /************************************* READ PDOs  ********************************************/
         
         auto motors_status_map= _client->get_motors_status();

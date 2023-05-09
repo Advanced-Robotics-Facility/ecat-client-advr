@@ -6,6 +6,7 @@
 
 #include "Utils.h"
 #include "ec_utils.h"
+#include "qcustomplot.h"
 
 
 class EcPDORead
@@ -17,6 +18,32 @@ public:
       _tree_wid(tree_wid)
       {
         _receive_timer= new QElapsedTimer();
+
+        _custom_plot = new QCustomPlot();
+        
+        // make left and bottom axes transfer their ranges to right and top axes:
+        QCustomPlot::connect(_custom_plot->xAxis, SIGNAL(rangeChanged(QCPRange)), _custom_plot->xAxis2, SLOT(setRange(QCPRange)));
+        QCustomPlot::connect(_custom_plot->yAxis, SIGNAL(rangeChanged(QCPRange)), _custom_plot->yAxis2, SLOT(setRange(QCPRange)));
+
+        // Allow user to drag axis ranges with mouse, zoom with mouse wheel and select graphs by clicking:
+        _custom_plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+
+
+        QSharedPointer<QCPAxisTickerTime> timeTicker(new QCPAxisTickerTime);
+        timeTicker->setTimeFormat("%s");
+        _custom_plot->xAxis->setTicker(timeTicker);
+        _custom_plot->xAxis->setLabel("Time [s]");
+        _custom_plot->axisRect()->setupFullAxesBox();
+        _custom_plot->yAxis->setRange(-100, 100);
+        
+        _update_plot=false;
+
+#ifdef TEST
+        for(int i=11; i<37; i++)
+        {
+            _internal_motor_status_map[i] = std::make_tuple(10,10,0,0,100,25,25,0,0,0,0,0);
+        }
+#endif
       };
       
       ~EcPDORead(){};
@@ -25,10 +52,29 @@ public:
       {
         _receive_timer->restart();
       }
+
+      QCustomPlot* get_custom_plot()
+      {
+         return _custom_plot;
+      }
       
+      void update_plot()
+      {
+        if(_update_plot)
+        {
+            _custom_plot->legend->setVisible(true);
+            qint64 ms_receive_time= _receive_timer->elapsed();
+            double s_receive_time=(double) ms_receive_time/1000;
+            // make key axis range scroll with the data (at a constant range size of 8):
+            _custom_plot->xAxis->setRange(s_receive_time, 8, Qt::AlignRight);
+            _custom_plot->replot();
+            _update_plot=false;
+        }
+      }
+
       QTreeWidgetItem * search_slave_into_treewid(std::string esc_id_name);
       QTreeWidgetItem * initial_setup(std::string esc_id_name,QList<QString> pdo_fields);
-      void fill_data(QTreeWidgetItem * topLevel,QList<QString> pdo_fields,std::vector<float> pdo);
+      void fill_data(std::string esc_id_name,QTreeWidgetItem * topLevel,QList<QString> pdo_fields,std::vector<float> pdo);
       
       void read_motor_status();
       void read_ft6_status();
@@ -36,8 +82,12 @@ public:
       
 private:
       EcIface::Ptr _client;
+      MotorStatusMap _internal_motor_status_map;
       QTreeWidget *_tree_wid;
       QElapsedTimer *_receive_timer;
+      QCustomPlot *_custom_plot;
+      std::map<std::string,QCPGraph *> _graph_pdo_map;
+      bool _update_plot;
       
       QList<QString> _motor_pdo_fields= {"Link Position",
                                          "Motor Position",
@@ -97,8 +147,16 @@ inline QTreeWidgetItem * EcPDORead::initial_setup(std::string esc_id_name,QList<
       for(int index=0; index<pdo_fields.size(); index++)
       {
           QTreeWidgetItem * item = new QTreeWidgetItem();
+          item->setFlags(item->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable);
+          item->setCheckState(1,Qt::Unchecked);
           item->setText(1,pdo_fields.at(index));
           topLevelrtn->addChild(item);
+
+          auto graph_pdo = _custom_plot->addGraph();
+          //graph_pdo->setPen(QPen(QColor(40, 110, 255)));
+          std::string esc_id_pdo = esc_id_name + "_" + pdo_fields.at(index).toStdString();
+          graph_pdo->setName(QString::fromStdString(esc_id_pdo));
+          _graph_pdo_map[esc_id_pdo]=graph_pdo;
       }
 
       _tree_wid->addTopLevelItem(topLevelrtn);
@@ -107,7 +165,7 @@ inline QTreeWidgetItem * EcPDORead::initial_setup(std::string esc_id_name,QList<
 /************************************* INITIAL SETUP ***************************************/
 
 /************************************* FILL DATA ***************************************/
-inline void EcPDORead::fill_data(QTreeWidgetItem * topLevel,QList<QString> pdo_fields,std::vector<float> pdo)
+inline void EcPDORead::fill_data(std::string esc_id_name,QTreeWidgetItem * topLevel,QList<QString> pdo_fields,std::vector<float> pdo)
 {
     /************************************* TIME ************************************************/
     qint64 ms_receive_time= _receive_timer->elapsed();
@@ -126,13 +184,26 @@ inline void EcPDORead::fill_data(QTreeWidgetItem * topLevel,QList<QString> pdo_f
                 QString data=QString::number(pdo[k], 'f', 6);
                 item->setText(2,data);
                 raw_data=raw_data+data+ " ";
+                
+                std::string esc_id_pdo = esc_id_name + "_" + pdo_fields.at(k).toStdString();
+                auto graph_pdo = _graph_pdo_map[esc_id_pdo];
+                if(item->checkState(1)==Qt::Checked)
+                {
+                    // add data to lines:
+                    graph_pdo->addData(s_receive_time,data.toDouble());
+                    _update_plot |= true; //update plot
+                }
+                else
+                {
+                    graph_pdo->removeFromLegend();
+                }
             }
             /************************************* DATA ************************************************/
 
             /************************************* RAW DATA ********************************************/
             topLevel->setText(4,raw_data);
             /************************************* RAW DATA ********************************************/
-
+            
         }catch (std::out_of_range oor) {}
     }
 }
@@ -140,6 +211,11 @@ inline void EcPDORead::fill_data(QTreeWidgetItem * topLevel,QList<QString> pdo_f
 inline void EcPDORead::read_motor_status()
 {
     auto motors_status_map= _client->get_motors_status();
+    if(motors_status_map.empty())
+    {
+        motors_status_map=_internal_motor_status_map;
+    }
+
     if(!motors_status_map.empty())
     {
         for ( const auto &[esc_id, motor_status] : motors_status_map)
@@ -203,6 +279,22 @@ inline void EcPDORead::read_motor_status()
                     item->setText(2,data);
 
                     raw_data=raw_data+data+ " ";
+                    
+                    std::string esc_id_pdo = esc_id_name + "_" + _motor_pdo_fields.at(k).toStdString();
+                    auto graph_pdo = _graph_pdo_map[esc_id_pdo];
+                    
+                    if(item->checkState(1)==Qt::Checked)
+                    {
+                        graph_pdo->addToLegend();
+                        // add data to lines:
+                        std::string esc_id_pdo = esc_id_name + "_" + _motor_pdo_fields.at(k).toStdString();
+                        graph_pdo->addData(s_receive_time,data.toDouble());
+                        _update_plot |= true; //update plot
+                    }
+                    else
+                    {
+                        graph_pdo->removeFromLegend();
+                    }
                 }
                 
                 /************************************* DATA ************************************************/
@@ -210,7 +302,6 @@ inline void EcPDORead::read_motor_status()
                 /************************************* RAW DATA ********************************************/
                 topLevel->setText(4,raw_data);
                 /************************************* RAW DATA ********************************************/
-
             }catch (std::out_of_range oor) {}
         }
     }
@@ -233,7 +324,7 @@ inline void EcPDORead::read_ft6_status()
                 topLevel= initial_setup(esc_id_name,_ft6_pdo_fields);
             }
             
-            fill_data(topLevel,_ft6_pdo_fields,ft6_status);
+            fill_data(esc_id_name,topLevel,_ft6_pdo_fields,ft6_status);
         }
      }
     /*************************************FT*****************************************************************/
@@ -256,10 +347,12 @@ inline void EcPDORead::read_pow_status()
                 topLevel= initial_setup(esc_id_name,_pow_pdo_fields);
             }
 
-            fill_data(topLevel,_pow_pdo_fields,pow_status);
+            fill_data(esc_id_name,topLevel,_pow_pdo_fields,pow_status);
         }
      }
     /*************************************Power Board*****************************************************************/
 }
 
 #endif // EC_PDO_READ_H
+
+
