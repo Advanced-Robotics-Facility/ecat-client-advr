@@ -530,6 +530,22 @@
            <item>
             <layout class="QVBoxLayout" name="cplot"/>
            </item>
+           <item>
+            <widget class="QPushButton" name="stopPlotting">
+             <property name="maximumSize">
+              <size>
+               <width>100</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="layoutDirection">
+              <enum>Qt::RightToLeft</enum>
+             </property>
+             <property name="text">
+              <string>Stop plotting</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </widget>
         </widget>

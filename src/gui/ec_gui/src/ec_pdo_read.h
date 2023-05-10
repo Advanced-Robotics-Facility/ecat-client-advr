@@ -36,7 +36,7 @@ public:
         _custom_plot->axisRect()->setupFullAxesBox();
         _custom_plot->yAxis->setRange(-100, 100);
         
-        _update_plot=false;
+        _update_plot=_first_update=_clear_plot=false;
 
 #ifdef TEST
         for(int i=11; i<37; i++)
@@ -58,28 +58,13 @@ public:
          return _custom_plot;
       }
       
-      void update_plot()
-      {
-        if(_update_plot)
-        {
-            _custom_plot->legend->setVisible(true);
-            qint64 ms_receive_time= _receive_timer->elapsed();
-            double s_receive_time=(double) ms_receive_time/1000;
-            // make key axis range scroll with the data (at a constant range size of 8):
-            _custom_plot->xAxis->setRange(s_receive_time, 8, Qt::AlignRight);
-            _custom_plot->replot();
-            _update_plot=false;
-        }
-      }
-
-      QTreeWidgetItem * search_slave_into_treewid(std::string esc_id_name);
-      QTreeWidgetItem * initial_setup(std::string esc_id_name,QList<QString> pdo_fields);
-      void fill_data(std::string esc_id_name,QTreeWidgetItem * topLevel,QList<QString> pdo_fields,std::vector<float> pdo);
-      
+      void update_plot();
       void read_motor_status();
       void read_ft6_status();
       void read_pow_status();
-      
+      void read_imu_status();
+      void stop_plotting();
+
 private:
       EcIface::Ptr _client;
       MotorStatusMap _internal_motor_status_map;
@@ -87,7 +72,11 @@ private:
       QElapsedTimer *_receive_timer;
       QCustomPlot *_custom_plot;
       std::map<std::string,QCPGraph *> _graph_pdo_map;
-      bool _update_plot;
+      std::map<std::string,QColor> _color_pdo_map;
+      bool _update_plot,_first_update,_clear_plot;
+      qint64 _ms_receive_time;
+      double _s_receive_time;
+      float _currentHue = 0.0;
       
       QList<QString> _motor_pdo_fields= {"Link Position",
                                          "Motor Position",
@@ -116,7 +105,22 @@ private:
                                          "temp_pcb",
                                          "temp_heatsink",
                                          "temp_batt"};
-
+                                         
+        QList<QString> _imu_pdo_fields=  {"ang_vel_x",
+                                          "ang_vel_y",
+                                          "ang_vel_z",
+                                          "lin_acc_x",
+                                          "lin_acc_y",
+                                          "lin_acc_z",
+                                          "orientation_x",
+                                          "orientation_y",
+                                          "orientation_z",
+                                          "orientation_w"};
+                                          
+        void create_color(std::string esc_id_pdo);
+        QTreeWidgetItem * search_slave_into_treewid(std::string esc_id_name);
+        QTreeWidgetItem * initial_setup(std::string esc_id_name,QList<QString> pdo_fields);
+        void fill_data(std::string esc_id_name,QTreeWidgetItem * topLevel,QList<QString> pdo_fields,std::vector<float> pdo);
 };
 
 /************************************* SEARCH SLAVE INTO TREE WID ***************************************/
@@ -136,6 +140,16 @@ inline QTreeWidgetItem * EcPDORead::search_slave_into_treewid(std::string esc_id
 }
 /************************************* SEARCH SLAVE INTO TREE WID ***************************************/
 
+/************************************* GENERATE COLORS FOR THE GRAPH ***************************************/
+inline void EcPDORead::create_color(std::string esc_id_pdo)
+{
+    auto color= QColor::fromHslF(_currentHue, 1.0, 0.5);
+    _currentHue += 0.618033988749895f;
+    _currentHue = std::fmod(_currentHue, 1.0f);
+    _color_pdo_map[esc_id_pdo] = color;
+}
+/************************************* GENERATE COLORS FOR THE GRAPH ***************************************/
+
 /************************************* INITIAL SETUP ***************************************/
 inline QTreeWidgetItem * EcPDORead::initial_setup(std::string esc_id_name,QList<QString> pdo_fields)
 {
@@ -146,19 +160,16 @@ inline QTreeWidgetItem * EcPDORead::initial_setup(std::string esc_id_name,QList<
 
       for(int index=0; index<pdo_fields.size(); index++)
       {
+          std::string esc_id_pdo = esc_id_name + "_" + pdo_fields.at(index).toStdString();
+          create_color(esc_id_pdo);
+          
           QTreeWidgetItem * item = new QTreeWidgetItem();
           item->setFlags(item->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable);
           item->setCheckState(1,Qt::Unchecked);
           item->setText(1,pdo_fields.at(index));
           topLevelrtn->addChild(item);
-
-          auto graph_pdo = _custom_plot->addGraph();
-          //graph_pdo->setPen(QPen(QColor(40, 110, 255)));
-          std::string esc_id_pdo = esc_id_name + "_" + pdo_fields.at(index).toStdString();
-          graph_pdo->setName(QString::fromStdString(esc_id_pdo));
-          _graph_pdo_map[esc_id_pdo]=graph_pdo;
       }
-
+      
       _tree_wid->addTopLevelItem(topLevelrtn);
       return(topLevelrtn);
 }
@@ -168,9 +179,7 @@ inline QTreeWidgetItem * EcPDORead::initial_setup(std::string esc_id_name,QList<
 inline void EcPDORead::fill_data(std::string esc_id_name,QTreeWidgetItem * topLevel,QList<QString> pdo_fields,std::vector<float> pdo)
 {
     /************************************* TIME ************************************************/
-    qint64 ms_receive_time= _receive_timer->elapsed();
-    double s_receive_time=(double) ms_receive_time/1000;
-    topLevel->setText(0,QString::number(s_receive_time, 'f', 3));
+    topLevel->setText(0,QString::number(_s_receive_time, 'f', 3));
     /************************************* TIME ***********************************************/
 
     for(int k=0; k < pdo.size();k++)
@@ -185,18 +194,22 @@ inline void EcPDORead::fill_data(std::string esc_id_name,QTreeWidgetItem * topLe
                 item->setText(2,data);
                 raw_data=raw_data+data+ " ";
                 
-                std::string esc_id_pdo = esc_id_name + "_" + pdo_fields.at(k).toStdString();
-                auto graph_pdo = _graph_pdo_map[esc_id_pdo];
-                if(item->checkState(1)==Qt::Checked)
+                std::string esc_id_pdo = esc_id_name + "_" + _motor_pdo_fields.at(k).toStdString();
+                QCPGraph * graph_pdo=_graph_pdo_map[esc_id_pdo];
+                
+                if(!graph_pdo)
                 {
-                    // add data to lines:
-                    graph_pdo->addData(s_receive_time,data.toDouble());
-                    _update_plot |= true; //update plot
+                    graph_pdo = _custom_plot->addGraph();
+                    graph_pdo->setPen(QPen(_color_pdo_map[esc_id_pdo]));
+                    graph_pdo->setName(QString::fromStdString(esc_id_pdo));
+                    graph_pdo->addToLegend();
+                    _graph_pdo_map[esc_id_pdo]=graph_pdo;
                 }
-                else
-                {
-                    graph_pdo->removeFromLegend();
-                }
+                
+                // add data to lines:
+                graph_pdo->addData(_s_receive_time,data.toDouble());
+                //update plot
+                _update_plot |= true;
             }
             /************************************* DATA ************************************************/
 
@@ -234,9 +247,7 @@ inline void EcPDORead::read_motor_status()
             /************************************* INITIAL SETUP ***************************************/
 
             /************************************* TIME ************************************************/
-            qint64 ms_receive_time= _receive_timer->elapsed();
-            double s_receive_time=(double) ms_receive_time/1000;
-            topLevel->setText(0,QString::number(s_receive_time, 'f', 3));
+            topLevel->setText(0,QString::number(_s_receive_time, 'f', 3));
             /************************************* TIME ***********************************************/
 
             /************************************* DATA ***********************************************/
@@ -280,20 +291,24 @@ inline void EcPDORead::read_motor_status()
 
                     raw_data=raw_data+data+ " ";
                     
-                    std::string esc_id_pdo = esc_id_name + "_" + _motor_pdo_fields.at(k).toStdString();
-                    auto graph_pdo = _graph_pdo_map[esc_id_pdo];
-                    
                     if(item->checkState(1)==Qt::Checked)
                     {
-                        graph_pdo->addToLegend();
-                        // add data to lines:
                         std::string esc_id_pdo = esc_id_name + "_" + _motor_pdo_fields.at(k).toStdString();
-                        graph_pdo->addData(s_receive_time,data.toDouble());
-                        _update_plot |= true; //update plot
-                    }
-                    else
-                    {
-                        graph_pdo->removeFromLegend();
+                        QCPGraph * graph_pdo=_graph_pdo_map[esc_id_pdo];
+                        
+                        if(!graph_pdo)
+                        {
+                            graph_pdo = _custom_plot->addGraph();
+                            graph_pdo->setPen(QPen(_color_pdo_map[esc_id_pdo]));
+                            graph_pdo->setName(QString::fromStdString(esc_id_pdo));
+                            graph_pdo->addToLegend();
+                            _graph_pdo_map[esc_id_pdo]=graph_pdo;
+                        }
+                        
+                        // add data to lines:
+                        graph_pdo->addData(_s_receive_time,data.toDouble());
+                        //update plot
+                        _update_plot |= true;
                     }
                 }
                 
@@ -351,6 +366,75 @@ inline void EcPDORead::read_pow_status()
         }
      }
     /*************************************Power Board*****************************************************************/
+}
+
+inline void EcPDORead::read_imu_status()
+{
+    auto imu_status_map= _client->get_imu_status();
+    /*************************************IMU*****************************************************************/
+     if(!imu_status_map.empty())
+     {
+        for ( const auto &[esc_id, imu_status] : imu_status_map)
+        {
+            std::string esc_id_name="joint_id"+std::to_string(esc_id);
+            QTreeWidgetItem *topLevel=nullptr;
+
+            topLevel=search_slave_into_treewid(esc_id_name);
+            if(!topLevel)
+            {
+                topLevel= initial_setup(esc_id_name,_imu_pdo_fields);
+            }
+
+            fill_data(esc_id_name,topLevel,_imu_pdo_fields,imu_status);
+        }
+     }
+    /*************************************IMU*****************************************************************/
+}
+
+inline void EcPDORead::update_plot()
+{
+    _ms_receive_time= _receive_timer->elapsed();
+    _s_receive_time=(double) _ms_receive_time/1000;
+    if(_update_plot)
+    {
+        if(!_first_update)
+        {
+            _custom_plot->legend->setVisible(true);
+            _first_update=true;
+        }
+        
+        //make key axis range scroll with the data (at a constant range size of 8):
+        _custom_plot->xAxis->setRange(_s_receive_time, 8, Qt::AlignRight);
+        _custom_plot->replot();
+        
+        if(_clear_plot)
+        {
+            _custom_plot->clearGraphs();
+            _graph_pdo_map.clear();
+            _clear_plot=false;
+        }
+        
+        _update_plot=false;
+    }
+    else
+    {
+        if(!_clear_plot && _first_update)
+        {
+            _clear_plot = true;
+        }
+    }
+}
+inline void EcPDORead::stop_plotting()
+{
+    for(int i=0;i<_tree_wid->topLevelItemCount();i++)
+    {
+        auto topLevel =_tree_wid->topLevelItem(i);
+        for(int k=0; k< topLevel->childCount(); k++)
+        {
+            QTreeWidgetItem * item = topLevel->child(k);
+            item->setCheckState(1,Qt::Unchecked);
+        }
+    }
 }
 
 #endif // EC_PDO_READ_H

@@ -43,6 +43,7 @@ public:
     MotorStatusMap get_motors_status() final ;
     FtStatusMap get_ft6_status() final;
     PwrStatusMap get_pow_status() final ;
+    ImuStatusMap get_imu_status() final;
     
     void set_motors_references(const MotorRefFlags &,const std::vector<MR> &) final;
     
@@ -96,6 +97,7 @@ private:
     std::shared_ptr<std::mutex> _mutex_motor_reference;
     std::shared_ptr<std::mutex> _mutex_ft6_status;
     std::shared_ptr<std::mutex> _mutex_pow_status;
+    std::shared_ptr<std::mutex> _mutex_imu_status;
     std::shared_ptr<std::condition_variable> _cv_repl_reply;
     
     SSI _slave_info;
@@ -117,6 +119,8 @@ private:
     FtStatusMap _ft_status_map;
     // last received pow data
     PwrStatusMap _pow_status_map;
+    // last received imu data
+    ImuStatusMap _imu_status_map;
     
     std::string _reply_err_msg;
     ReplReqRep _repl_req_rep;

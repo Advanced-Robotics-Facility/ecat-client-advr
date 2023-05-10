@@ -8,6 +8,7 @@ using MotorStatusMap = std::map<int, std::tuple<float, float, float, float,   //
                                                 uint32_t, float, uint32_t>>;  // aux // cmd_aux_sts
 using FtStatusMap = std::map<int, std::vector<float>>;
 using PwrStatusMap = std::map<int32_t, std::vector<float>>;
+using ImuStatusMap = std::map<int32_t, std::vector<float>>;
 
 // MotorsRef
 using MR = std::tuple<int32_t, int32_t,                     // bId, ctrl_type

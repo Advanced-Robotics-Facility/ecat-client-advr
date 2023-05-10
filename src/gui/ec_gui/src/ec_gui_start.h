@@ -50,6 +50,7 @@ public:
     void onNotAllCmdReleased();
     void onAllCmdReleased();
     void onLED_ON_OFF_Released();
+    void onStopPlotting();
     
 public slots:
     void readCommand();
@@ -100,6 +101,7 @@ private:
   QDialogButtonBox  * _cmd_manager;
   QPushButton * _applybtn;
   QPushButton *_send_stop_btn,*_notallbtn,*_allbtn;
+  QPushButton * _stop_plotting_btn;
 
   QLCDNumber *_battery_level;
   QTimer *_timer_change_color;

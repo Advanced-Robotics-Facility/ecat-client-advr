@@ -48,6 +48,8 @@ EcUDP::EcUDP(std::string host_address,uint32_t host_port) :
     
     _mutex_pow_status= std::make_shared<std::mutex>();
     
+    _mutex_imu_status= std::make_shared<std::mutex>();
+    
     _cv_repl_reply= std::make_shared<std::condition_variable>();
     
     _cmd_req_reply=false;
@@ -897,6 +899,19 @@ PwrStatusMap EcUDP::get_pow_status()
     
     return ret_pow_status_map; 
 }
+
+
+ImuStatusMap EcUDP::get_imu_status()
+{
+    _mutex_imu_status->lock();
+    
+    auto ret_imu_status_map= _imu_status_map;
+    
+    _mutex_imu_status->unlock();
+    
+    return _imu_status_map; 
+}
+
 
 void EcUDP::set_wait_reply_time(uint32_t wait_reply_time)
 {

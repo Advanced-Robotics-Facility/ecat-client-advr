@@ -28,6 +28,7 @@ public:
     virtual MotorStatusMap get_motors_status(void) = 0;
     virtual FtStatusMap get_ft6_status(void) = 0;
     virtual PwrStatusMap get_pow_status(void) = 0;
+    virtual ImuStatusMap get_imu_status(void) = 0;
     virtual bool pdo_aux_cmd_sts(const PAC & pac) = 0;
     
     // EtherCAT Client ADVR Facilty setters

@@ -271,6 +271,11 @@ EcGuiStart::EcGuiStart(std::map<int ,joint_info_t > joint_info_map,EcUtils::EC_C
     auto cplot  = findChild<QVBoxLayout *>("cplot");
     auto custom_plot = _ec_pdo_read->get_custom_plot();
     cplot->addWidget(custom_plot);
+   
+    _stop_plotting_btn = findChild<QPushButton *>("stopPlotting");
+
+    connect(_stop_plotting_btn, &QPushButton::released,
+           this, &EcGuiStart::onStopPlotting);
 
     OnUDPFreqChanged();
 
@@ -392,6 +397,11 @@ void EcGuiStart::readModeType()
         }
     }
     
+}
+
+void EcGuiStart::onStopPlotting()
+{
+    _ec_pdo_read->stop_plotting();
 }
 
 void EcGuiStart::onNotAllCmdReleased()
@@ -856,10 +866,11 @@ void EcGuiStart::UDP_Communication_receive()
     if(_client->is_client_alive())
     {
         /************************************* READ PDOs  ********************************************/
+        _ec_pdo_read->update_plot();
         _ec_pdo_read->read_motor_status();
         _ec_pdo_read->read_ft6_status();
         _ec_pdo_read->read_pow_status();
-        _ec_pdo_read->update_plot();
+        _ec_pdo_read->read_imu_status();
         /************************************* READ PDOs  ********************************************/
         
         auto motors_status_map= _client->get_motors_status();
