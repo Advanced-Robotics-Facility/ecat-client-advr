@@ -480,7 +480,7 @@
      </widget>
      <widget class="QWidget" name="tab_2">
       <attribute name="title">
-       <string>Motor Measured Data</string>
+       <string>PDO Data</string>
       </attribute>
       <layout class="QHBoxLayout" name="horizontalLayout_5">
        <item>
@@ -551,6 +551,12 @@
         </widget>
        </item>
       </layout>
+     </widget>
+     <widget class="QWidget" name="tab_3">
+      <attribute name="title">
+       <string>SDO Data</string>
+      </attribute>
+      <layout class="QHBoxLayout" name="horizontalLayout_7"/>
      </widget>
     </widget>
    </item>
