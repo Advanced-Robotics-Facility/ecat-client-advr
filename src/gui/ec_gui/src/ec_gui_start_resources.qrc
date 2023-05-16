@@ -3,5 +3,22 @@
         <file>ec_gui_start.ui</file>
         <file>slider_widget.ui</file>
         <file>slider_widget_calib.ui</file>
+        <file>icons/48px-Document-open.png</file>
+        <file>icons/48px-Document-save-as.png</file>
+        <file>icons/48px-Document-save.png</file>
+        <file>icons/48px-Edit-redo.png</file>
+        <file>icons/48px-Edit-undo.png</file>
+        <file>icons/48px-Go-bottom.png</file>
+        <file>icons/48px-Image-x-generic.png</file>
+        <file>icons/48px-Package-x-generic.svg.png</file>
+        <file>icons/48px-Polypaint.png</file>
+        <file>icons/48px-Preferences-system.png</file>
+        <file>icons/48px-Printer.png</file>
+        <file>icons/48px-View-refresh.png</file>
+        <file>icons/48px-View-zoom-fit.png</file>
+        <file>icons/Help-browser.png</file>
+        <file>icons/light_bulb.png</file>
+        <file>icons/record.png</file>
+        <file>icons/connection.png</file>
     </qresource>
 </RCC>

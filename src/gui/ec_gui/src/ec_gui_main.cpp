@@ -159,11 +159,12 @@ int main(int argc, char *argv[])
         {
 
             // START the GUI
+            QMainWindow mw;
             EcGuiStart w(joint_info_map,ec_client_cfg,client);
-
-            w.setMinimumSize(1600,1000);
-            //w.setFixedSize(1600,1000);
-            w.show();
+            w.setMinimumSize(1000,1000);
+            mw.setCentralWidget(w.centralWidget());
+            mw.setWindowState(Qt::WindowMaximized);
+            mw.show();
 
             ret_gui_start = a.exec();
         }

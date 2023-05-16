@@ -12,7 +12,7 @@
 #include "ec_utils.h"
 #include <QMainWindow>
 
-class EcGuiStart : public QWidget
+class EcGuiStart : public QMainWindow
 {
     Q_OBJECT
 
