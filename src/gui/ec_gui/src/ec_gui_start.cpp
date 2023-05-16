@@ -708,7 +708,6 @@ void EcGuiStart::OnUDPFreqChanged()
     _ec_pdo_read->restart_receive_timer();
 
     _UDPTimer_receive->start(_udp_ms_req);
-    auto period=std::chrono::milliseconds(_udp_ms_req);
 
     _client->set_loop_time(_udp_ms_req);
 
@@ -754,11 +753,6 @@ void EcGuiStart::onSendStopBtnReleased()
         _UDPTimer_send->stop();
         for (auto& [slave_id, slider_wid]:_position_sw_map)
         {
-//             slider_wid->align_spinbox();
-//             _position_t_sw_map[slave_id]->align_spinbox();
-//             _velocity_sw_map[slave_id]->align_spinbox(0.0);
-//             _torque_sw_map[slave_id]->align_spinbox(0.0);
-
             slider_wid->disable_slider();
             _position_t_sw_map[slave_id]->disable_slider();
             _velocity_sw_map[slave_id]->disable_slider();
