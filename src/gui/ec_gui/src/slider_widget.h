@@ -43,6 +43,7 @@ public:
     bool is_joint_enabled();
     void check_joint_enabled();
     void uncheck_joint_enabled();
+    bool is_joint_braked();
     void hide_led_on_off_btn();
     std::string get_joint_name();
     QPushButton* get_led_on_off_btn();
@@ -58,7 +59,7 @@ private:
     void on_spinbox_changed();
 
     bool _callback_enabled;
-    QLabel *_jname;
+    QLabel *_jname,*_j_braked;
     QLabel *_min;
     QLabel *_max;
     QLabel *_unit;
@@ -69,6 +70,7 @@ private:
     QSlider *          _valueslider;
     QDoubleSpinBox *   _valuebox;
     QCheckBox* _joint_enabled;
+    QCheckBox* _joint_is_braked;
     QPushButton* _led_on_off;
     int _slider_spinbox_fct;
 

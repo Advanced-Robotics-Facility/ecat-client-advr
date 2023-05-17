@@ -76,6 +76,23 @@
       </widget>
      </item>
      <item>
+      <widget class="QLabel" name="joint_braked">
+       <property name="text">
+        <string>braked   </string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="joint_is_braked">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
       <layout class="QHBoxLayout" name="PID_Layout"/>
      </item>
      <item>

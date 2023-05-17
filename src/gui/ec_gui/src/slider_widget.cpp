@@ -52,6 +52,8 @@ SliderWidget::SliderWidget (const QString&  joint_name,
     _jname->installEventFilter(this);
     _jname->setText(joint_name);
     _joint_name = joint_name.toStdString();
+    
+    _j_braked = findChild<QLabel *>("joint_braked");
 
     _min = findChild<QLabel *>("Min");
     _min->setText(min+"   "+unit+"       ");
@@ -118,6 +120,7 @@ SliderWidget::SliderWidget (const QString&  joint_name,
            );
 
     _joint_enabled = findChild<QCheckBox *>("JointEnabled");
+    _joint_is_braked = findChild<QCheckBox *>("joint_is_braked");
     _led_on_off = findChild<QPushButton *>("LED_ON_OFF");
 
     _slider_filtered=std::make_shared<SecondOrderFilter<double>>(12.0,1.0,1.0,init_value);
@@ -190,21 +193,27 @@ void SliderWidget::enable_slider()
 void SliderWidget::enable_joint_enabled()
 {
     _joint_enabled->setEnabled(true);
+    _joint_is_braked->setEnabled(true);
 }
 void SliderWidget::disable_joint_enabled()
 {
     _joint_enabled->setEnabled(false);
+    _joint_is_braked->setEnabled(false);
 }
 
 
 void SliderWidget::hide_joint_enabled()
 {
     _joint_enabled->setHidden(true);
+    _joint_is_braked->setHidden(true);
+    _j_braked->setText("                   ");
 }
 
 void SliderWidget::unhide_joint_enabled()
 {
     _joint_enabled->setHidden(false);
+    _joint_is_braked->setHidden(false);
+    _j_braked->setText("braked");
 }
 
 bool SliderWidget::is_joint_enabled()
@@ -221,6 +230,12 @@ void SliderWidget::uncheck_joint_enabled()
 {
     _joint_enabled->setChecked(false);
 }
+
+bool SliderWidget::is_joint_braked()
+{
+    return _joint_is_braked->isChecked();
+}
+
 
 void SliderWidget::hide_led_on_off_btn()
 {
