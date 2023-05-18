@@ -4,7 +4,6 @@
 #include <QtUiTools>
 #include <QWidget>
 
-#include "Utils.h"
 #include "ec_utils.h"
 #include "qcustomplot.h"
 

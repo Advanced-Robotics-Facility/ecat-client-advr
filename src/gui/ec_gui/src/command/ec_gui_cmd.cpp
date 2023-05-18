@@ -1,12 +1,22 @@
 ﻿#include "ec_gui_cmd.h"
 
-EcGuiCmd::EcGuiCmd(EcIface::Ptr client,QWidget *parent) :
+using namespace std::chrono;
+EcGuiCmd::EcGuiCmd(EcIface::Ptr client,
+                   std::map<int, SliderWidget*> position_sw_map,
+                   std::map<int, SliderWidget*> velocity_sw_map,
+                   std::map<int, SliderWidget*> position_t_sw_map,
+                   std::map<int, SliderWidget*> torque_sw_map,
+                   QWidget *parent) :
     QWidget(parent),
-    _client(client)
+    _client(client),
+    _position_sw_map(position_sw_map),
+    _velocity_sw_map(velocity_sw_map),
+    _position_t_sw_map(position_t_sw_map),
+    _torque_sw_map(torque_sw_map)
 {
 
     /*  EtherCAT Master commands */
-    _fieldtype_combobox = findChild<QComboBox *>("SelectFieldComboBox");
+    _fieldtype_combobox = parent->findChild<QComboBox *>("SelectFieldComboBox");
 
     /* connection of read command function */
     connect(_fieldtype_combobox, SIGNAL(currentIndexChanged(int)),this,
@@ -14,7 +24,7 @@ EcGuiCmd::EcGuiCmd(EcIface::Ptr client,QWidget *parent) :
     );
 
     /*  create mode type to start he motors */
-    _mode_type_combobox = findChild<QComboBox *>("ModeType");
+    _mode_type_combobox = parent->findChild<QComboBox *>("ModeType");
 
     /* connection of read mode type function */
     connect(_mode_type_combobox, SIGNAL(currentIndexChanged(int)),this,
@@ -23,17 +33,17 @@ EcGuiCmd::EcGuiCmd(EcIface::Ptr client,QWidget *parent) :
 
     // find position, velocity and torque tab.
 
-    _tabcontrol = findChild<QTabWidget *>("tabControl");
+    _tabcontrol = parent->findChild<QTabWidget *>("tabControl");
 
     /* Getting command manager (Apply) */
-    _cmd_manager = findChild<QDialogButtonBox *>("CmdManager");
+    _cmd_manager = parent->findChild<QDialogButtonBox *>("CmdManager");
     _applybtn = _cmd_manager->button(QDialogButtonBox::Apply);
 
     connect(_applybtn, &QPushButton::released,
            this, &EcGuiCmd::onApplyCmdReleased);
 
     /* Getting command manager (Apply) */
-    auto dis_enable_slaves = findChild<QDialogButtonBox *>("DisEnableSlaves");
+    auto dis_enable_slaves = parent->findChild<QDialogButtonBox *>("DisEnableSlaves");
 
    _notallbtn = dis_enable_slaves->button(QDialogButtonBox::NoToAll);
 
@@ -350,7 +360,7 @@ void EcGuiCmd::onApplyCmdReleased()
     
     if((_motor_start_req)&&(_ctrl_cmd_type==ClientCmdType::START))
     {
-        cmd_message="Motor(s) already started, please launch STOP EtherCAT command");
+        cmd_message="Motor(s) already started, please launch STOP EtherCAT command";
     }
     else if((!_motor_start_req)&&(_ctrl_cmd_type==ClientCmdType::STOP))
     {

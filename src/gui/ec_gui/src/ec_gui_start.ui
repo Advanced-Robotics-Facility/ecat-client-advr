@@ -55,9 +55,18 @@
     </property>
     <addaction name="actionConnnect_to"/>
    </widget>
+   <widget class="QMenu" name="menuRobot">
+    <property name="title">
+     <string>Robot</string>
+    </property>
+    <addaction name="actionSlave_Mapping"/>
+    <addaction name="actionURDF"/>
+    <addaction name="actionSRDF"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuConnection"/>
+   <addaction name="menuRobot"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
@@ -77,7 +86,7 @@
    <addaction name="actionPrint"/>
    <addaction name="actionRecord"/>
   </widget>
-  <widget class="QDockWidget" name="dockWidget">
+  <widget class="QDockWidget" name="Command">
    <property name="maximumSize">
     <size>
      <width>524287</width>
@@ -85,10 +94,13 @@
     </size>
    </property>
    <property name="features">
-    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
+    <set>QDockWidget::AllDockWidgetFeatures</set>
    </property>
    <property name="allowedAreas">
     <set>Qt::NoDockWidgetArea</set>
+   </property>
+   <property name="windowTitle">
+    <string>Command</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>1</number>
@@ -207,7 +219,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="UDPFreq">
+           <widget class="QComboBox" name="Freq">
             <property name="minimumSize">
              <size>
               <width>80</width>
@@ -400,8 +412,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>1537</width>
-              <height>156</height>
+              <width>1532</width>
+              <height>161</height>
              </rect>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_6">
@@ -429,8 +441,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>1537</width>
-              <height>156</height>
+              <width>1532</width>
+              <height>161</height>
              </rect>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_10">
@@ -458,8 +470,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>1537</width>
-              <height>156</height>
+              <width>1532</width>
+              <height>161</height>
              </rect>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_13">
@@ -503,7 +515,7 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="dockWidget_5">
+  <widget class="QDockWidget" name="PDO">
    <property name="minimumSize">
     <size>
      <width>500</width>
@@ -517,7 +529,10 @@
     </size>
    </property>
    <property name="features">
-    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
+    <set>QDockWidget::AllDockWidgetFeatures</set>
+   </property>
+   <property name="windowTitle">
+    <string>PDO</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>8</number>
@@ -556,7 +571,7 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="dockWidget_8">
+  <widget class="QDockWidget" name="Graph">
    <property name="minimumSize">
     <size>
      <width>500</width>
@@ -564,7 +579,10 @@
     </size>
    </property>
    <property name="features">
-    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
+    <set>QDockWidget::AllDockWidgetFeatures</set>
+   </property>
+   <property name="windowTitle">
+    <string>Graph</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>8</number>
@@ -650,6 +668,21 @@
    </property>
    <property name="text">
     <string>Print</string>
+   </property>
+  </action>
+  <action name="actionSlave_Mapping">
+   <property name="text">
+    <string>Slave Mapping</string>
+   </property>
+  </action>
+  <action name="actionURDF">
+   <property name="text">
+    <string>URDF</string>
+   </property>
+  </action>
+  <action name="actionSRDF">
+   <property name="text">
+    <string>SRDF</string>
    </property>
   </action>
  </widget>

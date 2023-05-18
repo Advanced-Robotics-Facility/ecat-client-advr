@@ -49,38 +49,20 @@ EcGuiStart::EcGuiStart(std::map<int ,joint_info_t > joint_info_map,EcUtils::EC_C
 
     /* Load ui */
     auto wid = LoadUiFile(this);
-    //wid->show();
 
-    /*  EtherCAT Master commands */
-    _fieldtype_combobox = findChild<QComboBox *>("SelectFieldComboBox");
+    /*frequency */
 
-    /* connection of read command function */
-    connect(_fieldtype_combobox, SIGNAL(currentIndexChanged(int)),this,
-        SLOT(readCommand())
-    );
-
-    /*  create mode type to start he motors */
-    _mode_type_combobox = findChild<QComboBox *>("ModeType");
-
-    /* connection of read mode type function */
-    connect(_mode_type_combobox, SIGNAL(currentIndexChanged(int)),this,
-        SLOT(readModeType())
-    );
-
-
-    /*  UDP frequency */
-
-    _udp_freq_combobox = findChild<QComboBox *>("UDPFreq");
-    _udp_freq_combobox->setCurrentIndex(1); // set Default 2.5ms.
+    _freq_combobox = findChild<QComboBox *>("Freq");
+    _freq_combobox->setCurrentIndex(1); // set Default 2.5ms.
 
     // change FONT
     QFont font;
     font.setPointSize(font.pointSize() + 5);
-    _udp_freq_combobox->setFont(font);
+    _freq_combobox->setFont(font);
 
-    /* connection of UDP frequency function */
-    connect(_udp_freq_combobox, SIGNAL(currentIndexChanged(int)),this,
-        SLOT(OnUDPFreqChanged())
+    /* connection of frequency function */
+    connect(_freq_combobox, SIGNAL(currentIndexChanged(int)),this,
+        SLOT(OnFreqChanged())
     );
 
     _battery_level = findChild<QLCDNumber *>("BatteryLevel");
@@ -96,40 +78,15 @@ EcGuiStart::EcGuiStart(std::map<int ,joint_info_t > joint_info_map,EcUtils::EC_C
     
 
     // find position, velocity and torque tab for adding the sliders for every slave.
-
-    _tabcontrol = findChild<QTabWidget *>("tabControl");
-
     _sliders_poslayout  = findChild<QVBoxLayout *>("positionSliders");
     _sliders_vellayout  = findChild<QVBoxLayout *>("velocitySliders");
     _sliders_torqlayout = findChild<QVBoxLayout *>("torqueSliders");
 
-    /* Getting command manager (Apply) */
-    _cmd_manager = findChild<QDialogButtonBox *>("CmdManager");
-    _applybtn = _cmd_manager->button(QDialogButtonBox::Apply);
-
-    connect(_applybtn, &QPushButton::released,
-           this, &EcGuiStart::onApplyCmdReleased);
-
     // Get Send and Stop button
-
     _send_stop_btn = findChild<QPushButton *>("SendStopBtn");
 
     connect(_send_stop_btn, &QPushButton::released,
             this, &EcGuiStart::onSendStopBtnReleased);
-
-    /* Getting command manager (Apply) */
-    auto dis_enable_slaves = findChild<QDialogButtonBox *>("DisEnableSlaves");
-
-   _notallbtn = dis_enable_slaves->button(QDialogButtonBox::NoToAll);
-
-    connect(_notallbtn, &QPushButton::released,
-            this, &EcGuiStart::onNotAllCmdReleased);
-
-    _allbtn = dis_enable_slaves->button(QDialogButtonBox::YesToAll);
-
-    connect(_allbtn, &QPushButton::released,
-            this, &EcGuiStart::onAllCmdReleased);
-
 
      _tree_wid = findChild<QTreeWidget *>("MotorData");
 
@@ -167,7 +124,7 @@ EcGuiStart::EcGuiStart(std::map<int ,joint_info_t > joint_info_map,EcUtils::EC_C
          {
             auto led_on_off_btn=wid_p->get_led_on_off_btn();
             led_on_off_btn->setStyleSheet("background: red; color: #00FF00");
-            connect(led_on_off_btn, &QPushButton::released,this, &EcGuiStart::onLED_ON_OFF_Released); 
+            //connect(led_on_off_btn, &QPushButton::released,this, &EcGuiStart::onLED_ON_OFF_Released); 
          }
 
          _position_sw_map[slave_id]=wid_p;
@@ -186,7 +143,7 @@ EcGuiStart::EcGuiStart(std::map<int ,joint_info_t > joint_info_map,EcUtils::EC_C
          {
             auto led_on_off_btn=wid_v->get_led_on_off_btn();
             led_on_off_btn->setStyleSheet("background: red; color: #00FF00");
-            connect(led_on_off_btn, &QPushButton::released,this, &EcGuiStart::onLED_ON_OFF_Released); 
+            //connect(led_on_off_btn, &QPushButton::released,this, &EcGuiStart::onLED_ON_OFF_Released); 
          }
          
          _velocity_sw_map[slave_id]=wid_v;
@@ -205,7 +162,7 @@ EcGuiStart::EcGuiStart(std::map<int ,joint_info_t > joint_info_map,EcUtils::EC_C
          {
             auto led_on_off_btn=wid_p_t->get_led_on_off_btn();
             led_on_off_btn->setStyleSheet("background: red; color: #00FF00");
-            connect(led_on_off_btn, &QPushButton::released,this, &EcGuiStart::onLED_ON_OFF_Released);
+            //connect(led_on_off_btn, &QPushButton::released,this, &EcGuiStart::onLED_ON_OFF_Released);
          }
              
          
@@ -247,25 +204,31 @@ EcGuiStart::EcGuiStart(std::map<int ,joint_info_t > joint_info_map,EcUtils::EC_C
          _sliders_torqlayout->addWidget(wid_p_t,0, Qt::AlignTop);
          _sliders_torqlayout->addWidget(wid_t,0, Qt::AlignTop);
      }
+     
+     _ec_gui_cmd = std::make_shared<EcGuiCmd>(_client,
+                                              _position_sw_map,
+                                              _velocity_sw_map,
+                                              _position_sw_map,
+                                              _torque_sw_map,
+                                              this
+                                             );
 
-    _motor_start_req=_send_ref=_first_send_udp_comm=false;
-    _value=0;
-    readCommand();
-
-    // create a timer for UDP communication (send)
-    _UDPTimer_send = new QTimer(this);
-
-    // setup signal and slot
-    connect(_UDPTimer_send, SIGNAL(timeout()),
-        this, SLOT(UDP_Communication_send()));
-
-
-    // create a timer for UDP communication (read)
-    _UDPTimer_receive = new QTimer(this);
+    _send_ref=_first_send=false;
+    
+    // create a timer for sending PDO
+    _send_timer = new QTimer(this);
 
     // setup signal and slot
-    connect(_UDPTimer_receive, SIGNAL(timeout()),
-        this, SLOT(UDP_Communication_receive()));
+    connect(_send_timer, SIGNAL(timeout()),
+        this, SLOT(send()));
+
+
+    // create a timer for receiving PDO
+    _receive_timer = new QTimer(this);
+
+    // setup signal and slot
+    connect(_receive_timer, SIGNAL(timeout()),
+        this, SLOT(receive()));
 
     _ec_pdo_read = std::make_shared<EcPDORead>(_client,_tree_wid);
 
@@ -278,438 +241,44 @@ EcGuiStart::EcGuiStart(std::map<int ,joint_info_t > joint_info_map,EcUtils::EC_C
     connect(_stop_plotting_btn, &QPushButton::released,
            this, &EcGuiStart::onStopPlotting);
 
-    OnUDPFreqChanged();
+    OnFreqChanged();
 }
 
-std::string EcGuiStart::getFieldType() const
-{
-    return _fieldtype_combobox->currentText().toStdString();
-}
-
-std::string EcGuiStart::getModeType() const
-{
-    return _mode_type_combobox->currentText().toStdString();
-}
-
-double EcGuiStart::getUDPFreq() const
-{
-    return _udp_freq_combobox->currentText().toDouble();
-}
-
-void EcGuiStart::readCommand()
-{
-    _tabcontrol->setEnabled(false);
-    _mode_type_combobox->setEnabled(false);
-
-    _ctrl_cmd_type=ClientCmdType::STOP;
-
-    if(getFieldType() == "Start motors")
-    {
-        _tabcontrol->setEnabled(true);
-        _mode_type_combobox->setEnabled(true);
-        _ctrl_cmd_type=ClientCmdType::START;
-        readModeType();
-        if(!_motor_start_req)
-        {
-            _notallbtn->setEnabled(true);
-            _allbtn->setEnabled(true);
-        }
-    }
-    else if(getFieldType() == "Stop motors")
-    {
-        _ctrl_cmd_type=ClientCmdType::STOP;
-
-        _notallbtn->setEnabled(false);
-        _allbtn->setEnabled(false);
-    }
-    else
-    {
-        throw std::runtime_error("Error: Found not valid EtherCAT Master commnad");
-    }
-}
-
-void EcGuiStart::readModeType()
-{
-    if(getModeType() == "Position")
-    {
-        _tabcontrol->setTabEnabled(0,true);
-        _tabcontrol->setTabEnabled(1,false);
-        _tabcontrol->setTabEnabled(2,false);
-
-        _tabcontrol->setCurrentIndex(0);
-        _value=0x3B;
-        _sw_map_selected.clear();
-        _sw_map_selected=_position_sw_map;
-    }
-    else if(getModeType() == "Velocity")
-    {
-        _tabcontrol->setTabEnabled(0,false);
-        _tabcontrol->setTabEnabled(1,true);
-        _tabcontrol->setTabEnabled(2,false);
-
-        _tabcontrol->setCurrentIndex(1);
-        _value=0x71;
-        _sw_map_selected.clear();
-        _sw_map_selected=_velocity_sw_map;
-    }
-    else if(getModeType() == "Impedance")
-    {
-        _tabcontrol->setTabEnabled(0,false);
-        _tabcontrol->setTabEnabled(1,false);
-        _tabcontrol->setTabEnabled(2,true);
-        _tabcontrol->setCurrentIndex(2);
-        _value=0xD4;
-        _sw_map_selected.clear();
-        _sw_map_selected=_position_t_sw_map;
-    }
-    else if(getModeType() == "Idle")
-    {
-    }
-    else
-    {
-        throw std::runtime_error("Error: Found not valid starting mode");
-    }
-    
-    for (auto& [slave_id, slider_wid]:_sw_map_selected)
-    {
-        auto joint_calib_selected=slider_wid->get_wid_calibration();
-        for(int calib_index=0; calib_index < joint_calib_selected->get_slider_numb(); calib_index++)
-        {   
-            if(getModeType() == "Idle")
-            {
-                joint_calib_selected->disable_slider_calib(calib_index);
-                if(_value == 0xD4)
-                {
-                    _torque_sw_map[slave_id]->get_wid_calibration()->disable_slider_calib(calib_index);
-                }
-            }
-            else
-            {
-                joint_calib_selected->enable_slider_calib(calib_index);
-                if(_value == 0xD4)
-                {
-                    _torque_sw_map[slave_id]->get_wid_calibration()->enable_slider_calib(calib_index);
-                }
-            }
-        }
-    }
-    
-}
 
 void EcGuiStart::onStopPlotting()
 {
     _ec_pdo_read->stop_plotting();
 }
 
-void EcGuiStart::onNotAllCmdReleased()
+double EcGuiStart::getFreq() const
 {
-    /* Uncheck all checkboxes of Joint WID */
-    for (auto& [slave_id, slider_wid]:_sw_map_selected)
-    {
-        slider_wid->uncheck_joint_enabled();
-    }
-
+    return _freq_combobox->currentText().toDouble();
 }
 
-void EcGuiStart::onAllCmdReleased()
+void EcGuiStart::OnFreqChanged()
 {
-    /* Check all checkboxes of Slider WID */
-    for (auto& [slave_id, slider_wid]:_sw_map_selected)
-    {
-        slider_wid->check_joint_enabled();
-    }
-
-}
-
-void EcGuiStart::onLED_ON_OFF_Released()
-{
-    PAC led_cmds = {};
-    QPushButton* led_on_off_btn = qobject_cast<QPushButton*>(sender());
-    for (auto& [slave_id, slider_wid]:_sw_map_selected)
-    {
-        auto actual_led_on_off_btn = slider_wid->get_led_on_off_btn();
-        bool led_on_off_cmd_result=false;
-        if(actual_led_on_off_btn == led_on_off_btn)
-        {
-            QString led_text,led_style;
-            if(led_on_off_btn->text()=="LED OFF")
-            {
-                led_cmds.push_back(std::make_tuple(slave_id,to_underlying(PdoAuxCmdType::LED_ON)));     
-                if(_client->pdo_aux_cmd(led_cmds))
-                {
-                    std::this_thread::sleep_for(100ms);
-                    if(_client->pdo_aux_cmd_sts(led_cmds))
-                    {
-                        led_on_off_cmd_result=true;
-                        led_text="LED ON";
-                        led_style="background: green; color: #00FF00";
-                    }
-                }
-            }
-            else
-            {
-                led_cmds.push_back(std::make_tuple(slave_id,to_underlying(PdoAuxCmdType::LED_OFF)));
-                if(_client->pdo_aux_cmd(led_cmds))
-                {
-                    std::this_thread::sleep_for(100ms);
-                    if(_client->pdo_aux_cmd_sts(led_cmds))
-                    {
-                        led_on_off_cmd_result=true;
-                        led_text="LED OFF";
-                        led_style="background: red; color: #00FF00";
-                    }
-                }
-            }
-            
-            if(!led_on_off_cmd_result)
-            {
-                QMessageBox msgBox;
-                msgBox.setText("Cannot perform LED switching on/off command on the slaves requested");
-                msgBox.exec();
-            }
-            else
-            {
-                
-                auto pos_led_on_off_btn= _position_sw_map[slave_id]->get_led_on_off_btn();
-                pos_led_on_off_btn->setText(led_text);
-                pos_led_on_off_btn->setStyleSheet(led_style);
-                auto vel_led_on_off_btn= _velocity_sw_map[slave_id]->get_led_on_off_btn();
-                vel_led_on_off_btn->setText(led_text);
-                vel_led_on_off_btn->setStyleSheet(led_style);
-                auto pos_t_led_on_off_btn= _position_t_sw_map[slave_id]->get_led_on_off_btn();
-                pos_t_led_on_off_btn->setText(led_text);
-                pos_t_led_on_off_btn->setStyleSheet(led_style);
-            }
-            
-            break;
-        }
-    }
-
-}
-
-
-void EcGuiStart::onApplyCmdReleased()
-{
+    double freq=getFreq();
+    double time_s= 1/freq;
     
-    // @NOTE to be tested.
-    for (auto& [slave_id, slider_wid]:_position_sw_map)
-    {
-        slider_wid->align_spinbox();
-        _position_t_sw_map[slave_id]->align_spinbox();
-        _velocity_sw_map[slave_id]->align_spinbox(0.0);
-        _torque_sw_map[slave_id]->align_spinbox(0.0);
-    }
-    
-    if((_motor_start_req)&&(_ctrl_cmd_type==ClientCmdType::START))
-    {
-        QMessageBox msgBox;
-        msgBox.setText("All or some slaves are already started/released brake"
-                       ", please launch STOP EtherCAT command");
-        msgBox.exec();
-    }
-    else if((!_motor_start_req)&&(_ctrl_cmd_type==ClientCmdType::STOP))
-    {
-        QMessageBox msgBox;
-        msgBox.setText("No slaves was started releasing the brake"
-                       ", please launch START EtherCAT command");
-        msgBox.exec();
-    }
-    else
-    {
-        if(_ctrl_cmd_type==ClientCmdType::STOP)
-        {
-            _UDPTimer_send->stop();
-            _send_stop_btn->setText("Send");
-            _first_send_udp_comm=false;
-            
-            _brake_cmds.clear();
-
-            for (auto& [slave_id, slider_wid]:_sw_map_selected)
-            {
-                slider_wid->enable_joint_enabled();
-
-                _position_sw_map[slave_id]->disable_slider();
-                _position_t_sw_map[slave_id]->disable_slider();
-                _velocity_sw_map[slave_id]->disable_slider();
-                _torque_sw_map[slave_id]->disable_slider();
-
-                _brake_cmds.push_back(std::make_tuple(slave_id,to_underlying(PdoAuxCmdType::BRAKE_ENGAGE)));
-            }
-
-            if(_client->pdo_aux_cmd(_brake_cmds))
-            {
-                std::this_thread::sleep_for(1000ms);
-                if(_client->pdo_aux_cmd_sts(_brake_cmds))
-                {
-                    if(_client->stop_motors())
-                    {
-                        QMessageBox msgBox;
-                        msgBox.setText("All slaves requested have performed the command successfully");
-                        msgBox.exec();
-                    }
-                    else
-                    {
-                        QMessageBox msgBox;
-                        msgBox.setText("Cannot perform the stop command on the slaves requested");
-                        msgBox.exec();
-                    }
-                }
-                else
-                {
-                    QMessageBox msgBox;
-                    msgBox.setText("Cannot perform the engage brake command on the slaves requested");
-                    msgBox.exec();
-                }
-            }
-
-
-            _udp_freq_combobox->setEnabled(true);
-            _motor_start_req=false;
-            _send_ref=false;
-        }
-        else
-        {
-            _motors_start.clear();
-            _brake_cmds.clear();
-
-            for (auto& [slave_id, slider_wid]:_sw_map_selected)
-            {
-                if(slider_wid->is_joint_enabled())
-                {
-                    if(getModeType() != "Idle")
-                    {
-                        _gains.clear();
-                        auto joint_calib_selected=slider_wid->get_wid_calibration();
-                        for(int calib_index=0; calib_index < joint_calib_selected->get_slider_numb(); calib_index++)
-                        {
-                            _gains.push_back(joint_calib_selected->get_slider_value(calib_index));
-                        }
-                        if(_value==0xD4)
-                        {
-                            _gains.erase(_gains.begin()+1);
-                            joint_calib_selected=_torque_sw_map[slave_id]->get_wid_calibration();
-                            for(int calib_index=0; calib_index < joint_calib_selected->get_slider_numb(); calib_index++)
-                            {
-                                _gains.push_back(joint_calib_selected->get_slider_value(calib_index));
-                            }
-                        }
-                        else
-                        {
-                            _gains.push_back(0);
-                            _gains.push_back(0);
-                        }
-                        _motors_start.push_back(std::make_tuple(slave_id,_value,_gains));
-                    }
-                    _brake_cmds.push_back(std::make_tuple(slave_id,to_underlying(PdoAuxCmdType::BRAKE_RELEASE)));
-                }
-            }
-
-            bool release_breke_req=false;
-
-            if(!_motors_start.empty())
-            {
-                _motor_start_req=_client->start_motors(_motors_start);
-                if(!_motor_start_req)
-                {
-                    QMessageBox msgBox;
-                    msgBox.setText("Cannot perform the start command on the slaves requested");
-                    msgBox.exec();
-
-                    return;
-                }
-                else
-                {
-                    release_breke_req=_client->pdo_aux_cmd(_brake_cmds);  // USE PDO COMMAND
-                }
-            }
-            else
-            {
-                if(!_brake_cmds.empty())
-                {
-                    RD_SDO rd_sdo{};
-                    for(int i=0;i<_brake_cmds.size();i++)
-                    {
-                        int esc_id,brake_req;
-                        std::tie(esc_id,brake_req) = _brake_cmds[i];
-                        WR_SDO wr_sdo{};
-                        wr_sdo.push_back(std::make_tuple("ctrl_status_cmd",std::to_string(brake_req)));
-                        release_breke_req &= _client->set_wr_sdo(esc_id,rd_sdo,wr_sdo); // USE SDO COMMAND
-                    }
-                }
-                else
-                {
-                    QMessageBox msgBox;
-                    msgBox.setText("No Slave selected, please select at least one slave");
-                    msgBox.exec();
-
-                    return;
-                }
-            }
-
-            if(release_breke_req)
-            {
-                std::this_thread::sleep_for(1000ms);
-                if(_client->pdo_aux_cmd_sts(_brake_cmds))
-                {
-                    _mode_type_combobox->setEnabled(false);
-                    _send_ref=true;
-                    _motor_start_req = true; // motors started in IDLE
-
-                    _notallbtn->setEnabled(false);
-                    _allbtn->setEnabled(false);
-
-                    for (auto& [slave_id, slider_wid]:_sw_map_selected)
-                    {
-                        slider_wid->disable_joint_enabled();
-                    }
-
-
-                    QMessageBox msgBox;
-                    msgBox.setText("All slaves requested have performed the command successfully");
-                    msgBox.exec();
-                }
-                else
-                {
-                    QMessageBox msgBox;
-                    msgBox.setText("Wrong status of the brakes requested");
-                    msgBox.exec();
-                }
-            }
-            else
-            {
-                QMessageBox msgBox;
-                msgBox.setText("Cannot perform the release brake command on the slaves requested");
-                msgBox.exec();
-            }
-        }
-    }
-
-}
-
-void EcGuiStart::OnUDPFreqChanged()
-{
-    double udp_freq=getUDPFreq();
-    double udp_s_req= 1/udp_freq;
-    
-    _hysteresis_battery_level=  _HYST_THRESHOLD * udp_freq; 
+    _hysteresis_battery_level=  _HYST_THRESHOLD * freq; 
     
     if(_hysteresis_battery_level <= 1)
     {
         _hysteresis_battery_level= 2; // twice of communication time (i.e 5s-->10s or 10s-->20s)
     }
 
-    _udp_ms_req=(int) 1000*udp_s_req;
+    _time_ms=(int) 1000*time_s;
     
 
 /**** RX STOP and START *****/
 
-    _UDPTimer_receive->stop();
+    _receive_timer->stop();
 
     _ec_pdo_read->restart_receive_timer();
 
-    _UDPTimer_receive->start(_udp_ms_req);
+    _receive_timer->start(_time_ms);
 
-    _client->set_loop_time(_udp_ms_req);
+    _client->set_loop_time(_time_ms);
 
 
 /**** RX STOP and START *****/
@@ -730,10 +299,10 @@ void EcGuiStart::onSendStopBtnReleased()
     
     if((_send_stop_btn->text()=="Send")&&(_send_ref))
     {
-        _first_send_udp_comm=true;
+        _first_send=true;
 
-        _UDPTimer_send->start(_udp_ms_req);
-        _udp_freq_combobox->setEnabled(false);
+        _send_timer->start(_time_ms);
+        _freq_combobox->setEnabled(false);
         _send_stop_btn->setText("Stop");
 
         for (auto& [slave_id, slider_wid]:_sw_map_selected)
@@ -750,7 +319,7 @@ void EcGuiStart::onSendStopBtnReleased()
     }
     else
     {
-        _UDPTimer_send->stop();
+        _send_timer->stop();
         for (auto& [slave_id, slider_wid]:_position_sw_map)
         {
             slider_wid->disable_slider();
@@ -759,7 +328,7 @@ void EcGuiStart::onSendStopBtnReleased()
             _torque_sw_map[slave_id]->disable_slider();
 
         }
-        _udp_freq_combobox->setEnabled(true);
+        _freq_combobox->setEnabled(true);
         _send_stop_btn->setText("Send");
 
         if(!_send_ref)
@@ -771,19 +340,19 @@ void EcGuiStart::onSendStopBtnReleased()
         }
         else
         {
-            _first_send_udp_comm=true;
-            UDP_Communication_send();  //STOP the motors using the actual position of the motor and zero feedforward torque (in impedance) or zero velocity.
+            _first_send=true;
+            send();  //STOP the motors using the actual position of the motor and zero feedforward torque (in impedance) or zero velocity.
         }
-        _first_send_udp_comm=false;
+        _first_send=false;
     }
 }
 
 double  EcGuiStart::filtering(SecondOrderFilter<double>::Ptr filter,double actual_value)
 {
-    if(_first_send_udp_comm)
+    if(_first_send)
     {
         filter->reset(actual_value);
-        double ts=((double) _udp_ms_req)/1000;
+        double ts=((double) _time_ms)/1000;
         filter->setTimeStep(ts);
     }
 
@@ -795,7 +364,7 @@ double  EcGuiStart::filtering(SecondOrderFilter<double>::Ptr filter,double actua
 }
 
 
-void EcGuiStart::UDP_Communication_send()
+void EcGuiStart::send()
 {
     _motors_ref.clear();
     _motor_ref_flags = MotorRefFlags::FLAG_MULTI_REF;
@@ -848,11 +417,11 @@ void EcGuiStart::UDP_Communication_send()
        _client->set_motors_references(_motor_ref_flags, _motors_ref);
     }
 
-    _first_send_udp_comm=false;
+    _first_send=false;
 
 }
 
-void EcGuiStart::UDP_Communication_receive()
+void EcGuiStart::receive()
 {
     if(_client->is_client_alive())
     {

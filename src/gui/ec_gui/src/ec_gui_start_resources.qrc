@@ -1,8 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>ec_gui_start.ui</file>
-        <file>slider_widget.ui</file>
-        <file>slider_widget_calib.ui</file>
         <file>icons/48px-Document-open.png</file>
         <file>icons/48px-Document-save-as.png</file>
         <file>icons/48px-Document-save.png</file>
@@ -20,5 +18,7 @@
         <file>icons/light_bulb.png</file>
         <file>icons/record.png</file>
         <file>icons/connection.png</file>
+        <file>components/slider_widget_calib.ui</file>
+        <file>components/slider_widget.ui</file>
     </qresource>
 </RCC>

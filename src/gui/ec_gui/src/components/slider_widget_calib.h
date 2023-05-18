@@ -8,7 +8,7 @@
 #include <functional>
 
 #include <memory>
-#include "Utils.h"
+#include "ec_gui_utils.h"
 
 
 class SliderWidgetCalib : public QWidget

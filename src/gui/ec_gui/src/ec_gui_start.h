@@ -10,6 +10,7 @@
 #include "cmn_utils.h"
 #include "ec_pdo_read.h"
 #include "ec_utils.h"
+#include "ec_gui_cmd.h"
 #include <QMainWindow>
 
 class EcGuiStart : public QMainWindow
@@ -40,67 +41,47 @@ public:
 
     ~EcGuiStart();
 
-    std::string getFieldType() const;
-    std::string getModeType() const;
-    double getUDPFreq() const;
-
-    void onApplyCmdReleased();
+    double getFreq() const;
     void onSendStopBtnReleased();
-    void onReceiveStopBtnReleased();
-    void onNotAllCmdReleased();
-    void onAllCmdReleased();
-    void onLED_ON_OFF_Released();
     void onStopPlotting();
     
 public slots:
-    void readCommand();
-    void readModeType();
-    void OnUDPFreqChanged();
-    void UDP_Communication_send();
-    double filtering(SecondOrderFilter<double>::Ptr filter,double actual_value);
-    void UDP_Communication_receive();
+    void OnFreqChanged();
+    void send();
+    void receive();
     void warnig_level_batt();
     
 
 private:
-
+  double filtering(SecondOrderFilter<double>::Ptr filter,double actual_value);
+  
   EcUtils::EC_CONFIG  _ec_config;
   std::map<int ,joint_info_t > _joint_info_map;
   std::vector<int> _slave_id_led;
-  QVBoxLayout *_l;
-
+  
   std::map<int, SliderWidget*> _position_sw_map;
   std::map<int, SliderWidget*> _velocity_sw_map;
 
   std::map<int, SliderWidget*> _position_t_sw_map;
   std::map<int, SliderWidget*> _torque_sw_map;
   std::map<int, SliderWidget*> _sw_map_selected;
+  std::shared_ptr<EcGuiCmd> _ec_gui_cmd;
 
-  ClientCmdType _ctrl_cmd_type;
-
-  MST _motors_start = {};
-  PAC _brake_cmds = {};
   std::vector<float> _gains;
   float _value;
-  int _udp_ms_req;
+  int _time_ms;
   int _hysteresis_battery_level;
 
-  bool _motor_start_req,_send_ref;
-  bool _first_send_udp_comm;
+  bool _send_ref;
+  bool _first_send;
 
   QTreeWidget * _tree_wid;
-
-  QComboBox * _fieldtype_combobox;
-  QComboBox * _mode_type_combobox;
-  QComboBox * _udp_freq_combobox;
+  QComboBox * _freq_combobox;
 
 
   QVBoxLayout *_sliders_poslayout,*_sliders_vellayout,*_sliders_torqlayout;
-  QTabWidget *_tabcontrol;
 
-  QDialogButtonBox  * _cmd_manager;
-  QPushButton * _applybtn;
-  QPushButton *_send_stop_btn,*_notallbtn,*_allbtn;
+  QPushButton *_send_stop_btn;
   QPushButton * _stop_plotting_btn;
 
   QLCDNumber *_battery_level;
@@ -108,7 +89,7 @@ private:
   bool _flashing,_first_detection;
   int _count_warning,_count_not_warning;
 
-  QTimer *_UDPTimer_send,*_UDPTimer_receive;
+  QTimer *_send_timer,*_receive_timer;
 
   EcIface::Ptr _client;
   std::vector<MR> _motors_ref;

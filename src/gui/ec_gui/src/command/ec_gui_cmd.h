@@ -5,6 +5,7 @@
 #include <QWidget>
 
 #include "ec_utils.h"
+#include "slider_widget.h"
 
 class EcGuiCmd : public QWidget
 {
@@ -12,6 +13,10 @@ class EcGuiCmd : public QWidget
 public:
 
     EcGuiCmd(EcIface::Ptr client,
+             std::map<int, SliderWidget*> position_sw_map,
+             std::map<int, SliderWidget*> velocity_sw_map,
+             std::map<int, SliderWidget*> position_t_sw_map,
+             std::map<int, SliderWidget*> torque_sw_map,
              QWidget * parent = 0);
 
     ~EcGuiCmd();
@@ -54,12 +59,12 @@ private:
 
   EcIface::Ptr _client;
   
-//   std::map<int, SliderWidget*> _position_sw_map;
-//   std::map<int, SliderWidget*> _velocity_sw_map;
-// 
-//   std::map<int, SliderWidget*> _position_t_sw_map;
-//   std::map<int, SliderWidget*> _torque_sw_map;
-//   std::map<int, SliderWidget*> _sw_map_selected;
+  std::map<int, SliderWidget*> _position_sw_map;
+  std::map<int, SliderWidget*> _velocity_sw_map;
+
+  std::map<int, SliderWidget*> _position_t_sw_map;
+  std::map<int, SliderWidget*> _torque_sw_map;
+  std::map<int, SliderWidget*> _sw_map_selected;
 
 };
 

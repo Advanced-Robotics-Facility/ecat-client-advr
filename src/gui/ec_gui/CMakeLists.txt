@@ -18,14 +18,19 @@ IF(TEST_GUI)
     ADD_DEFINITIONS(-DTEST)
 ENDIF(TEST_GUI)
 
+include_directories(src/utils/
+                    src/command/
+                    src/pdo/
+                    src/components)
 
 # compile widget
 add_library(ec_gui_lib STATIC
     src/ec_gui_start.cpp
-    src/qcustomplot.cpp
     src/ec_gui_start_resources.qrc
-    src/slider_widget.cpp
-    src/slider_widget_calib.cpp
+    src/components/slider_widget.cpp
+    src/components/slider_widget_calib.cpp
+    src/command/ec_gui_cmd.cpp
+    src/pdo/qcustomplot.cpp
     )
 
 target_link_libraries(ec_gui_lib
