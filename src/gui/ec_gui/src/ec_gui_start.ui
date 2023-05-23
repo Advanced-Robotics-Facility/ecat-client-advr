@@ -46,6 +46,7 @@
     <property name="title">
      <string>Edit</string>
     </property>
+    <addaction name="actionRead"/>
     <addaction name="actionRecord"/>
     <addaction name="actionCut"/>
    </widget>
@@ -84,6 +85,7 @@
    <addaction name="actionSave"/>
    <addaction name="actionSave_as"/>
    <addaction name="actionPrint"/>
+   <addaction name="actionRead"/>
    <addaction name="actionRecord"/>
   </widget>
   <widget class="QDockWidget" name="Command">
@@ -412,8 +414,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>1532</width>
-              <height>161</height>
+              <width>1537</width>
+              <height>166</height>
              </rect>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_6">
@@ -441,8 +443,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>1532</width>
-              <height>161</height>
+              <width>1537</width>
+              <height>166</height>
              </rect>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_10">
@@ -470,8 +472,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>1532</width>
-              <height>161</height>
+              <width>1537</width>
+              <height>166</height>
              </rect>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_13">
@@ -614,7 +616,7 @@
   <action name="actionOpen">
    <property name="icon">
     <iconset resource="ec_gui_start_resources.qrc">
-     <normaloff>:/icons/48px-Document-open.png</normaloff>:/icons/48px-Document-open.png</iconset>
+     <normaloff>:/icon/48px-Document-open.png</normaloff>:/icon/48px-Document-open.png</iconset>
    </property>
    <property name="text">
     <string>Open</string>
@@ -623,7 +625,7 @@
   <action name="actionConnnect_to">
    <property name="icon">
     <iconset resource="ec_gui_start_resources.qrc">
-     <normaloff>:/icons/connection.png</normaloff>:/icons/connection.png</iconset>
+     <normaloff>:/icon/connection.png</normaloff>:/icon/connection.png</iconset>
    </property>
    <property name="text">
     <string>Connnect to</string>
@@ -632,7 +634,7 @@
   <action name="actionSave">
    <property name="icon">
     <iconset resource="ec_gui_start_resources.qrc">
-     <normaloff>:/icons/48px-Document-save.png</normaloff>:/icons/48px-Document-save.png</iconset>
+     <normaloff>:/icon/48px-Document-save.png</normaloff>:/icon/48px-Document-save.png</iconset>
    </property>
    <property name="text">
     <string>Save</string>
@@ -641,7 +643,7 @@
   <action name="actionSave_as">
    <property name="icon">
     <iconset resource="ec_gui_start_resources.qrc">
-     <normaloff>:/icons/48px-Document-save-as.png</normaloff>:/icons/48px-Document-save-as.png</iconset>
+     <normaloff>:/icon/48px-Document-save-as.png</normaloff>:/icon/48px-Document-save-as.png</iconset>
    </property>
    <property name="text">
     <string>Save as</string>
@@ -650,7 +652,7 @@
   <action name="actionRecord">
    <property name="icon">
     <iconset resource="ec_gui_start_resources.qrc">
-     <normaloff>:/icons/record.png</normaloff>:/icons/record.png</iconset>
+     <normaloff>:/icon/record.png</normaloff>:/icon/record.png</iconset>
    </property>
    <property name="text">
     <string>Record</string>
@@ -664,7 +666,7 @@
   <action name="actionPrint">
    <property name="icon">
     <iconset resource="ec_gui_start_resources.qrc">
-     <normaloff>:/icons/48px-Printer.png</normaloff>:/icons/48px-Printer.png</iconset>
+     <normaloff>:/icon/48px-Printer.png</normaloff>:/icon/48px-Printer.png</iconset>
    </property>
    <property name="text">
     <string>Print</string>
@@ -683,6 +685,15 @@
   <action name="actionSRDF">
    <property name="text">
     <string>SRDF</string>
+   </property>
+  </action>
+  <action name="actionRead">
+   <property name="icon">
+    <iconset resource="ec_gui_start_resources.qrc">
+     <normaloff>:/icon/read.png</normaloff>:/icon/read.png</iconset>
+   </property>
+   <property name="text">
+    <string>Read</string>
    </property>
   </action>
  </widget>

@@ -21,16 +21,19 @@ ENDIF(TEST_GUI)
 include_directories(src/utils/
                     src/command/
                     src/pdo/
-                    src/components)
+                    src/component/slider
+                    src/component/plot)
 
 # compile widget
 add_library(ec_gui_lib STATIC
     src/ec_gui_start.cpp
     src/ec_gui_start_resources.qrc
-    src/components/slider_widget.cpp
-    src/components/slider_widget_calib.cpp
+    src/component/slider/ec_gui_slider.cpp
+    src/component/slider/slider_widget.cpp
+    src/component/slider/slider_widget_calib.cpp
+    src/component/plot/qcustomplot.cpp
     src/command/ec_gui_cmd.cpp
-    src/pdo/qcustomplot.cpp
+    src/pdo/ec_gui_pdo.cpp
     )
 
 target_link_libraries(ec_gui_lib

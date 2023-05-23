@@ -1,18 +1,14 @@
 ﻿#include "ec_gui_cmd.h"
 
 using namespace std::chrono;
-EcGuiCmd::EcGuiCmd(EcIface::Ptr client,
-                   std::map<int, SliderWidget*> position_sw_map,
-                   std::map<int, SliderWidget*> velocity_sw_map,
-                   std::map<int, SliderWidget*> position_t_sw_map,
-                   std::map<int, SliderWidget*> torque_sw_map,
+EcGuiCmd::EcGuiCmd(EcGuiSlider::Ptr ec_gui_slider,
+                   std::vector<int> slave_id_led,
+                   EcIface::Ptr client,
                    QWidget *parent) :
     QWidget(parent),
     _client(client),
-    _position_sw_map(position_sw_map),
-    _velocity_sw_map(velocity_sw_map),
-    _position_t_sw_map(position_t_sw_map),
-    _torque_sw_map(torque_sw_map)
+    _ec_gui_slider(ec_gui_slider),
+    _slave_id_led(slave_id_led)
 {
 
     /*  EtherCAT Master commands */
@@ -54,11 +50,33 @@ EcGuiCmd::EcGuiCmd(EcIface::Ptr client,
 
     connect(_allbtn, &QPushButton::released,
             this, &EcGuiCmd::onAllCmdReleased);
-
+    
 
     _motor_start_req=_send_ref=false;
-    _value=0;
+    _ctrl_cmd=0;
     readCommand();
+    
+    for(int led_index=0; led_index < _slave_id_led.size() ;led_index++)
+    {
+        auto slave_id = _slave_id_led[led_index];
+        if(_slider_map.position_sw_map.count(slave_id)>0)
+        {
+            _slider_map.position_sw_map[slave_id]->hide_led_on_off_btn(false);
+            auto pos_led_on_off_btn= _slider_map.position_sw_map[slave_id]->get_led_on_off_btn();
+            pos_led_on_off_btn->setStyleSheet("background: red; color: #00FF00");
+            connect(pos_led_on_off_btn, &QPushButton::released,this, &EcGuiCmd::onLED_ON_OFF_Released); 
+
+            _slider_map.velocity_sw_map[slave_id]->hide_led_on_off_btn(false);
+            auto vel_led_on_off_btn= _slider_map.velocity_sw_map[slave_id]->get_led_on_off_btn();
+            vel_led_on_off_btn->setStyleSheet("background: red; color: #00FF00");
+            connect(vel_led_on_off_btn, &QPushButton::released,this, &EcGuiCmd::onLED_ON_OFF_Released); 
+
+            _slider_map.position_t_sw_map[slave_id]->hide_led_on_off_btn(false);
+            auto pos_t_led_on_off_btn= _slider_map.position_t_sw_map[slave_id]->get_led_on_off_btn();
+            pos_t_led_on_off_btn->setStyleSheet("background: red; color: #00FF00");
+            connect(pos_t_led_on_off_btn, &QPushButton::released,this, &EcGuiCmd::onLED_ON_OFF_Released); 
+        }    
+    }
 }
 
 std::string EcGuiCmd::getFieldType() const
@@ -98,7 +116,7 @@ std::string EcGuiCmd::getModeType() const
 
 void EcGuiCmd::enable_disable_pid()
 {
-    for (auto& [slave_id, slider_wid]:_sw_map_selected)
+    for (auto& [slave_id, slider_wid]:_actual_sw_map_selected)
     {
         auto joint_calib_selected=slider_wid->get_wid_calibration();
         for(int calib_index=0; calib_index < joint_calib_selected->get_slider_numb(); calib_index++)
@@ -106,17 +124,17 @@ void EcGuiCmd::enable_disable_pid()
             if(getModeType() == "Idle")
             {
                 joint_calib_selected->disable_slider_calib(calib_index);
-                if(_value == 0xD4)
+                if(_ctrl_cmd == 0xD4)
                 {
-                    _torque_sw_map[slave_id]->get_wid_calibration()->disable_slider_calib(calib_index);
+                    _slider_map.torque_sw_map[slave_id]->get_wid_calibration()->disable_slider_calib(calib_index);
                 }
             }
             else
             {
                 joint_calib_selected->enable_slider_calib(calib_index);
-                if(_value == 0xD4)
+                if(_ctrl_cmd == 0xD4)
                 {
-                    _torque_sw_map[slave_id]->get_wid_calibration()->enable_slider_calib(calib_index);
+                    _slider_map.torque_sw_map[slave_id]->get_wid_calibration()->enable_slider_calib(calib_index);
                 }
             }
         }
@@ -124,53 +142,59 @@ void EcGuiCmd::enable_disable_pid()
 }
 void EcGuiCmd::readModeType()
 {
-    if(getModeType() == "Position")
+    _slider_map = _ec_gui_slider->get_sliders();
+    
+    if(getModeType() != "Idle")
     {
-        _tabcontrol->setTabEnabled(0,true);
-        _tabcontrol->setTabEnabled(1,false);
-        _tabcontrol->setTabEnabled(2,false);
-
-        _tabcontrol->setCurrentIndex(0);
-        _value=0x3B;
-        _sw_map_selected.clear();
-        _sw_map_selected=_position_sw_map;
-    }
-    else if(getModeType() == "Velocity")
-    {
-        _tabcontrol->setTabEnabled(0,false);
-        _tabcontrol->setTabEnabled(1,true);
-        _tabcontrol->setTabEnabled(2,false);
-
-        _tabcontrol->setCurrentIndex(1);
-        _value=0x71;
-        _sw_map_selected.clear();
-        _sw_map_selected=_velocity_sw_map;
-    }
-    else if(getModeType() == "Impedance")
-    {
-        _tabcontrol->setTabEnabled(0,false);
-        _tabcontrol->setTabEnabled(1,false);
-        _tabcontrol->setTabEnabled(2,true);
-        _tabcontrol->setCurrentIndex(2);
-        _value=0xD4;
-        _sw_map_selected.clear();
-        _sw_map_selected=_position_t_sw_map;
-    }
-    else if(getModeType() == "Idle")
-    {
+        _actual_sw_map_selected.clear();
+        if(getModeType() == "Position")
+        {
+            _tabcontrol->setTabEnabled(0,true);
+            _tabcontrol->setTabEnabled(1,false);
+            _tabcontrol->setTabEnabled(2,false);
+            _tabcontrol->setCurrentIndex(0);
+            
+            _ctrl_cmd=0x3B;
+            _actual_sw_map_selected=_slider_map.position_sw_map;
+        }
+        else if(getModeType() == "Velocity")
+        {
+            _tabcontrol->setTabEnabled(0,false);
+            _tabcontrol->setTabEnabled(1,true);
+            _tabcontrol->setTabEnabled(2,false);
+            _tabcontrol->setCurrentIndex(1);
+            
+            _ctrl_cmd=0x71;
+            _actual_sw_map_selected=_slider_map.velocity_sw_map;
+        }
+        else if(getModeType() == "Impedance")
+        {
+            _tabcontrol->setTabEnabled(0,false);
+            _tabcontrol->setTabEnabled(1,false);
+            _tabcontrol->setTabEnabled(2,true);
+            _tabcontrol->setCurrentIndex(2);
+            
+            _ctrl_cmd=0xD4;
+            _actual_sw_map_selected=_slider_map.position_t_sw_map;
+        }
+        else
+        {
+            throw std::runtime_error("Error: Found not valid starting mode");
+        }
     }
     else
     {
-        throw std::runtime_error("Error: Found not valid starting mode");
+        _actual_sw_map_selected=_slider_map.actual_sw_map_selected;
     }
     
+    _ec_gui_slider->set_actual_sliders(_actual_sw_map_selected);
     enable_disable_pid();  
 }
 
 void EcGuiCmd::onNotAllCmdReleased()
 {
     /* Uncheck all checkboxes of Joint WID */
-    for (auto& [slave_id, slider_wid]:_sw_map_selected)
+    for (auto& [slave_id, slider_wid]:_actual_sw_map_selected)
     {
         slider_wid->uncheck_joint_enabled();
     }
@@ -180,7 +204,7 @@ void EcGuiCmd::onNotAllCmdReleased()
 void EcGuiCmd::onAllCmdReleased()
 {
     /* Check all checkboxes of Slider WID */
-    for (auto& [slave_id, slider_wid]:_sw_map_selected)
+    for (auto& [slave_id, slider_wid]:_actual_sw_map_selected)
     {
         slider_wid->check_joint_enabled();
     }
@@ -198,7 +222,7 @@ void EcGuiCmd::onLED_ON_OFF_Released()
 {
     PAC led_cmds = {};
     QPushButton* led_on_off_btn = qobject_cast<QPushButton*>(sender());
-    for (auto& [slave_id, slider_wid]:_sw_map_selected)
+    for (auto& [slave_id, slider_wid]:_actual_sw_map_selected)
     {
         auto actual_led_on_off_btn = slider_wid->get_led_on_off_btn();
         bool led_on_off_cmd_result=false;
@@ -243,13 +267,13 @@ void EcGuiCmd::onLED_ON_OFF_Released()
             else
             {
                 
-                auto pos_led_on_off_btn= _position_sw_map[slave_id]->get_led_on_off_btn();
+                auto pos_led_on_off_btn= _slider_map.position_sw_map[slave_id]->get_led_on_off_btn();
                 pos_led_on_off_btn->setText(led_text);
                 pos_led_on_off_btn->setStyleSheet(led_style);
-                auto vel_led_on_off_btn= _velocity_sw_map[slave_id]->get_led_on_off_btn();
+                auto vel_led_on_off_btn= _slider_map.velocity_sw_map[slave_id]->get_led_on_off_btn();
                 vel_led_on_off_btn->setText(led_text);
                 vel_led_on_off_btn->setStyleSheet(led_style);
-                auto pos_t_led_on_off_btn= _position_t_sw_map[slave_id]->get_led_on_off_btn();
+                auto pos_t_led_on_off_btn= _slider_map.position_t_sw_map[slave_id]->get_led_on_off_btn();
                 pos_t_led_on_off_btn->setText(led_text);
                 pos_t_led_on_off_btn->setStyleSheet(led_style);
             }
@@ -265,7 +289,7 @@ void EcGuiCmd::fill_start_stop_cmd()
     _motors_start.clear();
     _brake_cmds.clear();
     _motors_selected = false;
-    for (auto& [slave_id, slider_wid]:_sw_map_selected)
+    for (auto& [slave_id, slider_wid]:_actual_sw_map_selected)
     {
         if(slider_wid->is_joint_enabled())
         {
@@ -287,10 +311,10 @@ void EcGuiCmd::fill_start_stop_cmd()
                     {
                         _gains.push_back(joint_calib_selected->get_slider_value(calib_index));
                     }
-                    if(_value==0xD4)
+                    if(_ctrl_cmd==0xD4)
                     {
                         _gains.erase(_gains.begin()+1);
-                        joint_calib_selected=_torque_sw_map[slave_id]->get_wid_calibration();
+                        joint_calib_selected=_slider_map.torque_sw_map[slave_id]->get_wid_calibration();
                         for(int calib_index=0; calib_index < joint_calib_selected->get_slider_numb(); calib_index++)
                         {
                             _gains.push_back(joint_calib_selected->get_slider_value(calib_index));
@@ -301,7 +325,7 @@ void EcGuiCmd::fill_start_stop_cmd()
                         _gains.push_back(0);
                         _gains.push_back(0);
                     }
-                    _motors_start.push_back(std::make_tuple(slave_id,_value,_gains));
+                    _motors_start.push_back(std::make_tuple(slave_id,_ctrl_cmd,_gains));
                 }
                 
                 if(slider_wid->is_joint_braked())
@@ -349,15 +373,6 @@ bool EcGuiCmd::braking_cmd_req()
 void EcGuiCmd::onApplyCmdReleased()
 {
     QString cmd_message;
-    // @NOTE to be tested.
-    for (auto& [slave_id, slider_wid]:_position_sw_map)
-    {
-        slider_wid->align_spinbox();
-        _position_t_sw_map[slave_id]->align_spinbox();
-        _velocity_sw_map[slave_id]->align_spinbox(0.0);
-        _torque_sw_map[slave_id]->align_spinbox(0.0);
-    }
-    
     if((_motor_start_req)&&(_ctrl_cmd_type==ClientCmdType::START))
     {
         cmd_message="Motor(s) already started, please launch STOP EtherCAT command";
@@ -368,6 +383,9 @@ void EcGuiCmd::onApplyCmdReleased()
     }
     else
     {
+        // @NOTE to be tested.
+        _ec_gui_slider->reset_sliders();
+        
         _motor_start_req=false;
         _send_ref=false;
         
@@ -431,7 +449,7 @@ void EcGuiCmd::onApplyCmdReleased()
                 _notallbtn->setEnabled(false);
                 _allbtn->setEnabled(false);
 
-                for (auto& [slave_id, slider_wid]:_sw_map_selected)
+                for (auto& [slave_id, slider_wid]:_actual_sw_map_selected)
                 {
                     slider_wid->disable_joint_enabled();
                 }
@@ -440,6 +458,12 @@ void EcGuiCmd::onApplyCmdReleased()
     }
     
     launch_cmd_message(cmd_message);
+}
+
+bool EcGuiCmd::get_cmd_sts(float &ctrl_cmd)
+{
+    ctrl_cmd = _ctrl_cmd;
+    return _send_ref;
 }
 
 EcGuiCmd::~EcGuiCmd()

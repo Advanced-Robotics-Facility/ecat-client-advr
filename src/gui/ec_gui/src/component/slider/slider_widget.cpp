@@ -16,7 +16,7 @@ QWidget * LoadUiFile(QWidget * parent)
     
     QUiLoader loader;
 
-    QFile file(":/components/slider_widget.ui");
+    QFile file(":/component/slider/slider_widget.ui");
     file.open(QFile::ReadOnly);
 
     QWidget *formWidget = loader.load(&file, parent);
@@ -122,6 +122,7 @@ SliderWidget::SliderWidget (const QString&  joint_name,
     _joint_enabled = findChild<QCheckBox *>("JointEnabled");
     _joint_is_braked = findChild<QCheckBox *>("joint_is_braked");
     _led_on_off = findChild<QPushButton *>("LED_ON_OFF");
+    _led_on_off->hide();
 
     _slider_filtered=std::make_shared<SecondOrderFilter<double>>(12.0,1.0,1.0,init_value);
 
@@ -237,9 +238,9 @@ bool SliderWidget::is_joint_braked()
 }
 
 
-void SliderWidget::hide_led_on_off_btn()
+void SliderWidget::hide_led_on_off_btn(bool hide)
 {
-    _led_on_off->setHidden(true);
+    _led_on_off->setHidden(hide);
 }
 
 QPushButton* SliderWidget::get_led_on_off_btn()

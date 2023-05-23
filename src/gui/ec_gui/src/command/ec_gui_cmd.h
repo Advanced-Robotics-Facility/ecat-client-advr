@@ -5,22 +5,22 @@
 #include <QWidget>
 
 #include "ec_utils.h"
-#include "slider_widget.h"
+#include "ec_gui_slider.h"
 
 class EcGuiCmd : public QWidget
 {
      Q_OBJECT
 public:
 
-    EcGuiCmd(EcIface::Ptr client,
-             std::map<int, SliderWidget*> position_sw_map,
-             std::map<int, SliderWidget*> velocity_sw_map,
-             std::map<int, SliderWidget*> position_t_sw_map,
-             std::map<int, SliderWidget*> torque_sw_map,
+    typedef std::shared_ptr<EcGuiCmd> Ptr;
+    EcGuiCmd(EcGuiSlider::Ptr ec_gui_slider,
+             std::vector<int> slave_id_led,
+             EcIface::Ptr client,
              QWidget * parent = 0);
 
     ~EcGuiCmd();
 
+    bool get_cmd_sts(float &ctrl_cmd);
     void onApplyCmdReleased();
     void onNotAllCmdReleased();
     void onAllCmdReleased();
@@ -43,7 +43,7 @@ private:
   MST _motors_start = {};
   PAC _brake_cmds = {};
   std::vector<float> _gains;
-  float _value;
+  float _ctrl_cmd;
 
 
   bool _motor_start_req,_send_ref,_motors_selected;
@@ -58,14 +58,10 @@ private:
   QPushButton *_notallbtn,*_allbtn;
 
   EcIface::Ptr _client;
-  
-  std::map<int, SliderWidget*> _position_sw_map;
-  std::map<int, SliderWidget*> _velocity_sw_map;
-
-  std::map<int, SliderWidget*> _position_t_sw_map;
-  std::map<int, SliderWidget*> _torque_sw_map;
-  std::map<int, SliderWidget*> _sw_map_selected;
-
+  EcGuiSlider::Ptr _ec_gui_slider;
+  EcGuiSlider::slider_map_t _slider_map;
+  std::map<int, SliderWidget*> _actual_sw_map_selected;
+  std::vector<int> _slave_id_led;
 };
 
 #endif // EC_GUI:CMD_H

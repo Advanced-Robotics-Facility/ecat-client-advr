@@ -44,7 +44,7 @@ public:
     void check_joint_enabled();
     void uncheck_joint_enabled();
     bool is_joint_braked();
-    void hide_led_on_off_btn();
+    void hide_led_on_off_btn(bool hide);
     std::string get_joint_name();
     QPushButton* get_led_on_off_btn();
     SliderWidgetCalib *get_wid_calibration();

@@ -15,14 +15,14 @@ int main(int argc, char *argv[])
     QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
     QApplication a(argc, argv);
 
-    std::map<int ,EcGuiStart::joint_info_t > joint_info_map;
+    std::map<int ,EcGuiSlider::joint_info_t > joint_info_map;
 
     // ********************* TEST ****************************////
 #ifdef TEST
     for(int i=11; i<37; i++)
     {
 
-        EcGuiStart::joint_info_t joint_info_s;
+        EcGuiSlider::joint_info_t joint_info_s;
 
         joint_info_s.joint_name    ="joint_id_"+std::to_string(i);
         joint_info_s.actual_pos    =0.0;
@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
                         {
                             std::map<std::string,float> slaves_sdo_data=motor_info_map[slave_id];
 
-                            EcGuiStart::joint_info_t joint_info_s;
+                            EcGuiSlider::joint_info_t joint_info_s;
 
                             joint_info_s.joint_name    ="joint_id_"+std::to_string(slave_id);
                             joint_info_s.actual_pos    =slaves_sdo_data.at("motor_pos");

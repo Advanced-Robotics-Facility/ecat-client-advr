@@ -17,7 +17,7 @@ QWidget * LoadUiFile(QWidget * parent)
     
     QUiLoader loader;
 
-    QFile file(":/components/slider_widget_calib.ui");
+    QFile file(":/component/slider/slider_widget_calib.ui");
     file.open(QFile::ReadOnly);
 
     QWidget *formWidget = loader.load(&file, parent);

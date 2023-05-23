@@ -1,129 +1,62 @@
-#ifndef EC_PDO_READ_H
-#define EC_PDO_READ_H
+#include "ec_gui_pdo.h"
+#include "ec_gui_utils.h"
 
-#include <QtUiTools>
-#include <QWidget>
-
-#include "ec_utils.h"
-#include "qcustomplot.h"
-
-
-class EcPDORead
+EcGuiPdo::EcGuiPdo(EcGuiSlider::Ptr ec_gui_slider,EcIface::Ptr client, QWidget *parent):
+QWidget(parent),
+_client(client),
+_ec_gui_slider(ec_gui_slider)
 {
-public:
-      EcPDORead(EcIface::Ptr client,
-                QTreeWidget *tree_wid) :
-      _client(client),
-      _tree_wid(tree_wid)
-      {
-        _receive_timer= new QElapsedTimer();
+    _tree_wid = parent->findChild<QTreeWidget *>("MotorData");
 
-        _custom_plot = new QCustomPlot();
-        
-        // make left and bottom axes transfer their ranges to right and top axes:
-        QCustomPlot::connect(_custom_plot->xAxis, SIGNAL(rangeChanged(QCPRange)), _custom_plot->xAxis2, SLOT(setRange(QCPRange)));
-        QCustomPlot::connect(_custom_plot->yAxis, SIGNAL(rangeChanged(QCPRange)), _custom_plot->yAxis2, SLOT(setRange(QCPRange)));
+    _receive_timer= new QElapsedTimer();
+    
+    _custom_plot = new QCustomPlot();
 
-        // Allow user to drag axis ranges with mouse, zoom with mouse wheel and select graphs by clicking:
-        _custom_plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    // make left and bottom axes transfer their ranges to right and top axes:
+    QCustomPlot::connect(_custom_plot->xAxis, SIGNAL(rangeChanged(QCPRange)), _custom_plot->xAxis2, SLOT(setRange(QCPRange)));
+    QCustomPlot::connect(_custom_plot->yAxis, SIGNAL(rangeChanged(QCPRange)), _custom_plot->yAxis2, SLOT(setRange(QCPRange)));
+
+    // Allow user to drag axis ranges with mouse, zoom with mouse wheel and select graphs by clicking:
+    _custom_plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
 
 
-        QSharedPointer<QCPAxisTickerTime> timeTicker(new QCPAxisTickerTime);
-        timeTicker->setTimeFormat("%s");
-        _custom_plot->xAxis->setTicker(timeTicker);
-        _custom_plot->xAxis->setLabel("Time [s]");
-        _custom_plot->axisRect()->setupFullAxesBox();
-        _custom_plot->yAxis->setRange(-100, 100);
-        
-        _update_plot=_first_update=_clear_plot=false;
+    QSharedPointer<QCPAxisTickerTime> timeTicker(new QCPAxisTickerTime);
+    timeTicker->setTimeFormat("%s");
+    _custom_plot->xAxis->setTicker(timeTicker);
+    _custom_plot->xAxis->setLabel("Time [s]");
+    _custom_plot->axisRect()->setupFullAxesBox();
+    _custom_plot->yAxis->setRange(-100, 100);
+    
+    auto cplot  = parent->findChild<QVBoxLayout *>("cplot");
+    cplot->addWidget(_custom_plot);
+    
+    _stop_plotting_btn = parent->findChild<QPushButton *>("stopPlotting");
 
-#ifdef TEST
-        for(int i=11; i<37; i++)
-        {
-            _internal_motor_status_map[i] = std::make_tuple(10,10,0,0,100,25,25,0,0,0,0,0);
-        }
-#endif
-      };
+    connect(_stop_plotting_btn, &QPushButton::released,
+           this, &EcGuiPdo::onStopPlotting);
+
+    _update_plot=_first_update=_clear_plot=false;
+
+    #ifdef TEST
+    for(int i=11; i<37; i++)
+    {
+        _internal_motor_status_map[i] = std::make_tuple(10,10,0,0,100,25,25,0,0,0,0,0);
+    }
+    #endif
+}
       
-      ~EcPDORead(){};
-      
-      void restart_receive_timer()
-      {
-        _receive_timer->restart();
-      }
+EcGuiPdo::~EcGuiPdo(){}
 
-      QCustomPlot* get_custom_plot()
-      {
-         return _custom_plot;
-      }
+/********************************************************* READ PDO***********************************************************************************************/
       
-      void update_plot();
-      void read_motor_status();
-      void read_ft6_status();
-      void read_pow_status();
-      void read_imu_status();
-      void stop_plotting();
+void EcGuiPdo::restart_receive_timer()
+{
+    _receive_timer->restart();
+}
 
-private:
-      EcIface::Ptr _client;
-      MotorStatusMap _internal_motor_status_map;
-      QTreeWidget *_tree_wid;
-      QElapsedTimer *_receive_timer;
-      QCustomPlot *_custom_plot;
-      std::map<std::string,QCPGraph *> _graph_pdo_map;
-      std::map<std::string,QColor> _color_pdo_map;
-      bool _update_plot,_first_update,_clear_plot;
-      qint64 _ms_receive_time;
-      double _s_receive_time;
-      float _currentHue = 0.0;
-      
-      QList<QString> _motor_pdo_fields= {"Link Position",
-                                         "Motor Position",
-                                         "Link Velocity",
-                                         "Motor Velocity",
-                                         "Torque",
-                                         "Motor Temperature",
-                                         "Board Temperature",
-                                         "fault",
-                                         "rtt",
-                                         "op_idx_ack",
-                                         "aux",          
-                                         "Brake_Sts",
-                                         "LED_Sts"};
-                                        
-       QList<QString> _ft6_pdo_fields=  {"force_x",
-                                         "force_y",
-                                         "force_z",
-                                         "torque_x",
-                                         "torque_y",
-                                         "torque_z"};
-                                         
-       QList<QString> _pow_pdo_fields=  {"v_batt",
-                                         "v_load",
-                                         "i_load",
-                                         "temp_pcb",
-                                         "temp_heatsink",
-                                         "temp_batt"};
-                                         
-        QList<QString> _imu_pdo_fields=  {"ang_vel_x",
-                                          "ang_vel_y",
-                                          "ang_vel_z",
-                                          "lin_acc_x",
-                                          "lin_acc_y",
-                                          "lin_acc_z",
-                                          "orientation_x",
-                                          "orientation_y",
-                                          "orientation_z",
-                                          "orientation_w"};
-                                          
-        void create_color(std::string esc_id_pdo);
-        QTreeWidgetItem * search_slave_into_treewid(std::string esc_id_name);
-        QTreeWidgetItem * initial_setup(std::string esc_id_name,QList<QString> pdo_fields);
-        void fill_data(std::string esc_id_name,QTreeWidgetItem * topLevel,QList<QString> pdo_fields,std::vector<float> pdo);
-};
 
 /************************************* SEARCH SLAVE INTO TREE WID ***************************************/
-inline QTreeWidgetItem * EcPDORead::search_slave_into_treewid(std::string esc_id_name)
+QTreeWidgetItem * EcGuiPdo::search_slave_into_treewid(std::string esc_id_name)
 {
     QTreeWidgetItem * topLevel_read=nullptr;
     for(int i=0;i<_tree_wid->topLevelItemCount();i++)
@@ -140,7 +73,7 @@ inline QTreeWidgetItem * EcPDORead::search_slave_into_treewid(std::string esc_id
 /************************************* SEARCH SLAVE INTO TREE WID ***************************************/
 
 /************************************* GENERATE COLORS FOR THE GRAPH ***************************************/
-inline void EcPDORead::create_color(std::string esc_id_pdo)
+void EcGuiPdo::create_color(std::string esc_id_pdo)
 {
     auto color= QColor::fromHslF(_currentHue, 1.0, 0.5);
     _currentHue += 0.618033988749895f;
@@ -150,7 +83,7 @@ inline void EcPDORead::create_color(std::string esc_id_pdo)
 /************************************* GENERATE COLORS FOR THE GRAPH ***************************************/
 
 /************************************* INITIAL SETUP ***************************************/
-inline QTreeWidgetItem * EcPDORead::initial_setup(std::string esc_id_name,QList<QString> pdo_fields)
+QTreeWidgetItem * EcGuiPdo::initial_setup(std::string esc_id_name,QList<QString> pdo_fields)
 {
       QTreeWidgetItem * topLevelrtn = new QTreeWidgetItem();
       topLevelrtn->setText(1,QString::fromStdString(esc_id_name));
@@ -175,7 +108,7 @@ inline QTreeWidgetItem * EcPDORead::initial_setup(std::string esc_id_name,QList<
 /************************************* INITIAL SETUP ***************************************/
 
 /************************************* FILL DATA ***************************************/
-inline void EcPDORead::fill_data(std::string esc_id_name,QTreeWidgetItem * topLevel,QList<QString> pdo_fields,std::vector<float> pdo)
+void EcGuiPdo::fill_data(std::string esc_id_name,QTreeWidgetItem * topLevel,QList<QString> pdo_fields,std::vector<float> pdo)
 {
     /************************************* TIME ************************************************/
     topLevel->setText(0,QString::number(_s_receive_time, 'f', 3));
@@ -220,7 +153,18 @@ inline void EcPDORead::fill_data(std::string esc_id_name,QTreeWidgetItem * topLe
     }
 }
 
-inline void EcPDORead::read_motor_status()
+void EcGuiPdo::read()
+{
+    /************************************* READ PDOs  ********************************************/
+    update_plot();
+    read_motor_status();
+    read_ft6_status();
+    read_pow_status();
+    read_imu_status();
+    /************************************* READ PDOs  ********************************************/
+}
+
+void EcGuiPdo::read_motor_status()
 {
     auto motors_status_map= _client->get_motors_status();
     if(motors_status_map.empty())
@@ -321,7 +265,7 @@ inline void EcPDORead::read_motor_status()
     }
 }
 
-inline void EcPDORead::read_ft6_status()
+void EcGuiPdo::read_ft6_status()
 {
     auto ft6_status_map= _client->get_ft6_status();
     /*************************************FT*****************************************************************/
@@ -344,7 +288,7 @@ inline void EcPDORead::read_ft6_status()
     /*************************************FT*****************************************************************/
 }
 
-inline void EcPDORead::read_pow_status()
+inline void EcGuiPdo::read_pow_status()
 {
     auto pow_status_map= _client->get_pow_status();
     /*************************************Power Board*****************************************************************/
@@ -367,7 +311,7 @@ inline void EcPDORead::read_pow_status()
     /*************************************Power Board*****************************************************************/
 }
 
-inline void EcPDORead::read_imu_status()
+void EcGuiPdo::read_imu_status()
 {
     auto imu_status_map= _client->get_imu_status();
     /*************************************IMU*****************************************************************/
@@ -390,7 +334,7 @@ inline void EcPDORead::read_imu_status()
     /*************************************IMU*****************************************************************/
 }
 
-inline void EcPDORead::update_plot()
+void EcGuiPdo::update_plot()
 {
     _ms_receive_time= _receive_timer->elapsed();
     _s_receive_time=(double) _ms_receive_time/1000;
@@ -423,7 +367,7 @@ inline void EcPDORead::update_plot()
         }
     }
 }
-inline void EcPDORead::stop_plotting()
+inline void EcGuiPdo::onStopPlotting()
 {
     for(int i=0;i<_tree_wid->topLevelItemCount();i++)
     {
@@ -436,6 +380,91 @@ inline void EcPDORead::stop_plotting()
     }
 }
 
-#endif // EC_PDO_READ_H
+/********************************************************* READ PDO***********************************************************************************************/
 
 
+/********************************************************* WRITE PDO***********************************************************************************************/
+void EcGuiPdo::set_filter(bool first_send, int time_ms)
+{
+    _first_send = first_send;
+    _time_ms = time_ms;
+}
+
+void EcGuiPdo:: set_ctrl_mode(float ctrl_cmd)
+{
+    _ctrl_cmd = ctrl_cmd;
+}
+
+double  EcGuiPdo::filtering(SecondOrderFilter<double>::Ptr filter,double actual_value)
+{
+    if(_first_send)
+    {
+        filter->reset(actual_value);
+        double ts=((double) _time_ms)/1000;
+        filter->setTimeStep(ts);
+        
+        _first_send=false;
+    }
+
+    // Second Order Filtering
+
+    double value_filtered=filter->process(actual_value);
+
+    return value_filtered;
+}
+
+
+void EcGuiPdo::write()
+{
+    _motors_ref.clear();
+    _motor_ref_flags = MotorRefFlags::FLAG_MULTI_REF;
+    
+    EcGuiSlider::slider_map_t slider_map=_ec_gui_slider->get_sliders();
+
+    for (auto& [slave_id, slider_wid]:slider_map.actual_sw_map_selected)
+    {
+        _gains.clear();
+        auto gains_calib_selected=slider_map.actual_sw_map_selected[slave_id]->get_wid_calibration();
+
+        for(int calib_index=0; calib_index < gains_calib_selected->get_slider_numb(); calib_index++)
+        {
+            double gain_filtered=filtering(gains_calib_selected->get_slider_filter(calib_index),gains_calib_selected->get_slider_value(calib_index));
+            _gains.push_back(gain_filtered);
+        }
+        if(_ctrl_cmd==0xD4)
+        {
+            _gains.erase(_gains.begin()+1);
+            auto gains_t_calib= slider_map.torque_sw_map[slave_id]->get_wid_calibration();
+            for(int calib_index=0; calib_index < gains_t_calib->get_slider_numb(); calib_index++)
+            {
+                double gain_t_filtered=filtering(gains_t_calib->get_slider_filter(calib_index),gains_t_calib->get_slider_value(calib_index));
+                _gains.push_back(gain_t_filtered);
+            }
+        }
+        else
+        {
+            _gains.push_back(0);
+            _gains.push_back(0);
+        }
+
+        double pos_ref= filtering(slider_map.position_sw_map[slave_id]->get_filer(),slider_map.position_sw_map[slave_id]->get_spinbox_value());
+        if(_ctrl_cmd==0xD4)
+        {
+            pos_ref= filtering(slider_map.position_t_sw_map[slave_id]->get_filer(),slider_map.position_t_sw_map[slave_id]->get_spinbox_value());
+        }
+
+        double vel_ref= filtering(slider_map.velocity_sw_map[slave_id]->get_filer(),slider_map.velocity_sw_map[slave_id]->get_spinbox_value());
+        double tor_ref= filtering(slider_map.torque_sw_map[slave_id]->get_filer(),slider_map.torque_sw_map[slave_id]->get_spinbox_value());
+                                   
+        MR references{slave_id, _ctrl_cmd, pos_ref, vel_ref, tor_ref, _gains[0], _gains[1],_gains[2], _gains[3], _gains[4],1,0,0};
+        //            ID      CTRL_MODE, POS_REF, VEL_RF, TOR_REF,  GAIN_1,    GAIN_2,   GAIN_3,   GAIN_4,    GAIN_5, OP, IDX,AUX  OP->1 means NO_OP
+        _motors_ref.push_back(references);
+
+
+    }
+    if(!_motors_ref.empty())
+    {
+       _client->set_motors_references(_motor_ref_flags, _motors_ref);
+    }
+}
+/********************************************************* WRITE PDO***********************************************************************************************/
