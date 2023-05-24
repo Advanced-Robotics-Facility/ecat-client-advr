@@ -43,6 +43,8 @@ _ec_gui_slider(ec_gui_slider)
         _internal_motor_status_map[i] = std::make_tuple(10,10,0,0,100,25,25,0,0,0,0,0);
     }
     #endif
+    
+    _slider_map=_ec_gui_slider->get_sliders();
 }
       
 EcGuiPdo::~EcGuiPdo(){}
@@ -204,6 +206,17 @@ void EcGuiPdo::read_motor_status()
                     {
                         float value=boost::get<float>(dynamic_get(k,motor_status));
                         data=QString::number(value, 'f', 6);
+                        /************************************* ALIGN POSITION SLIDERS with the motor position ********************************************/
+                        if(k==1)
+                        {
+                            double motor_pos=boost::get<float>(dynamic_get(k,motor_status));
+                            if(_slider_map.position_sw_map.count(esc_id)>0)
+                            {
+                                _slider_map.position_sw_map[esc_id]->set_actual_slider_value(motor_pos);
+                                _slider_map.position_t_sw_map[esc_id]->set_actual_slider_value(motor_pos);
+                            }
+                        }
+                        /************************************* ALIGN POSITION SLIDERS with the motor position ********************************************/
                     }
                     else
                     {
@@ -393,6 +406,7 @@ void EcGuiPdo::set_filter(bool first_send, int time_ms)
 void EcGuiPdo:: set_ctrl_mode(float ctrl_cmd)
 {
     _ctrl_cmd = ctrl_cmd;
+    _slider_map=_ec_gui_slider->get_sliders(); // read only actual slider widget map.
 }
 
 double  EcGuiPdo::filtering(SecondOrderFilter<double>::Ptr filter,double actual_value)
@@ -402,8 +416,6 @@ double  EcGuiPdo::filtering(SecondOrderFilter<double>::Ptr filter,double actual_
         filter->reset(actual_value);
         double ts=((double) _time_ms)/1000;
         filter->setTimeStep(ts);
-        
-        _first_send=false;
     }
 
     // Second Order Filtering
@@ -419,12 +431,10 @@ void EcGuiPdo::write()
     _motors_ref.clear();
     _motor_ref_flags = MotorRefFlags::FLAG_MULTI_REF;
     
-    EcGuiSlider::slider_map_t slider_map=_ec_gui_slider->get_sliders();
-
-    for (auto& [slave_id, slider_wid]:slider_map.actual_sw_map_selected)
+    for (auto& [slave_id, slider_wid]:_slider_map.actual_sw_map_selected)
     {
         _gains.clear();
-        auto gains_calib_selected=slider_map.actual_sw_map_selected[slave_id]->get_wid_calibration();
+        auto gains_calib_selected=_slider_map.actual_sw_map_selected[slave_id]->get_wid_calibration();
 
         for(int calib_index=0; calib_index < gains_calib_selected->get_slider_numb(); calib_index++)
         {
@@ -434,7 +444,7 @@ void EcGuiPdo::write()
         if(_ctrl_cmd==0xD4)
         {
             _gains.erase(_gains.begin()+1);
-            auto gains_t_calib= slider_map.torque_sw_map[slave_id]->get_wid_calibration();
+            auto gains_t_calib= _slider_map.torque_sw_map[slave_id]->get_wid_calibration();
             for(int calib_index=0; calib_index < gains_t_calib->get_slider_numb(); calib_index++)
             {
                 double gain_t_filtered=filtering(gains_t_calib->get_slider_filter(calib_index),gains_t_calib->get_slider_value(calib_index));
@@ -447,20 +457,20 @@ void EcGuiPdo::write()
             _gains.push_back(0);
         }
 
-        double pos_ref= filtering(slider_map.position_sw_map[slave_id]->get_filer(),slider_map.position_sw_map[slave_id]->get_spinbox_value());
+        double pos_ref= filtering(_slider_map.position_sw_map[slave_id]->get_filer(),_slider_map.position_sw_map[slave_id]->get_spinbox_value());
         if(_ctrl_cmd==0xD4)
         {
-            pos_ref= filtering(slider_map.position_t_sw_map[slave_id]->get_filer(),slider_map.position_t_sw_map[slave_id]->get_spinbox_value());
+            pos_ref= filtering(_slider_map.position_t_sw_map[slave_id]->get_filer(),_slider_map.position_t_sw_map[slave_id]->get_spinbox_value());
         }
 
-        double vel_ref= filtering(slider_map.velocity_sw_map[slave_id]->get_filer(),slider_map.velocity_sw_map[slave_id]->get_spinbox_value());
-        double tor_ref= filtering(slider_map.torque_sw_map[slave_id]->get_filer(),slider_map.torque_sw_map[slave_id]->get_spinbox_value());
+        double vel_ref= filtering(_slider_map.velocity_sw_map[slave_id]->get_filer(),_slider_map.velocity_sw_map[slave_id]->get_spinbox_value());
+        double tor_ref= filtering(_slider_map.torque_sw_map[slave_id]->get_filer(),_slider_map.torque_sw_map[slave_id]->get_spinbox_value());
                                    
         MR references{slave_id, _ctrl_cmd, pos_ref, vel_ref, tor_ref, _gains[0], _gains[1],_gains[2], _gains[3], _gains[4],1,0,0};
         //            ID      CTRL_MODE, POS_REF, VEL_RF, TOR_REF,  GAIN_1,    GAIN_2,   GAIN_3,   GAIN_4,    GAIN_5, OP, IDX,AUX  OP->1 means NO_OP
         _motors_ref.push_back(references);
 
-
+        _first_send=false; // Note: not remove from here, used for all filters.
     }
     if(!_motors_ref.empty())
     {

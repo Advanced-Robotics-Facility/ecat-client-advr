@@ -81,6 +81,8 @@ EcGuiStart::EcGuiStart(std::map<int ,EcGuiSlider::joint_info_t> joint_info_map,E
     _ec_gui_slider = std::make_shared<EcGuiSlider>(_joint_info_map,
                                                    this);
     
+    EcGuiSlider::slider_map_t _slider_map=_ec_gui_slider->get_sliders();
+    
     _ec_gui_pdo = std::make_shared<EcGuiPdo>(_ec_gui_slider,
                                              _client,
                                              this);
@@ -202,7 +204,7 @@ void EcGuiStart::onSendStopBtnReleased()
 
 void EcGuiStart::send()
 {
-    if(_ec_gui_cmd->get_cmd_sts(_ctrl_cmd))
+    if(_ec_gui_cmd->get_cmd_sts(_ctrl_cmd)) // stop motors command
     {
         _ec_gui_pdo->write();
     }
@@ -219,23 +221,6 @@ void EcGuiStart::receive()
         /************************************* READ PDOs  ********************************************/
         _ec_gui_pdo->read();
         /************************************* READ PDOs  ********************************************/
-        
-        EcGuiSlider::slider_map_t slider_map=_ec_gui_slider->get_sliders();
-        auto motors_status_map= _client->get_motors_status();
-        if(!motors_status_map.empty())
-        {
-            for ( const auto &[esc_id, motor_status] : motors_status_map)
-            {
-                /************************************* ALIGN POSITION SLIDERS with the motor position ********************************************/
-                double motor_pos=std::get<1>(motor_status);
-                if(slider_map.position_sw_map.count(esc_id)>0)
-                {
-                    slider_map.position_sw_map[esc_id]->set_actual_slider_value(motor_pos);
-                    slider_map.position_t_sw_map[esc_id]->set_actual_slider_value(motor_pos);
-                }
-                /************************************* ALIGN POSITION SLIDERS with the motor position ********************************************/
-            }
-        }
         
         /************************************* CHECK BATTERY LEVEL ********************************************/
         auto pow_status_map= _client->get_pow_status();

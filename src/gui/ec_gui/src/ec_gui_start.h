@@ -44,6 +44,7 @@ private:
   std::vector<int> _slave_id_led;
   
   EcGuiSlider::Ptr _ec_gui_slider;
+  EcGuiSlider::slider_map_t _slider_map;
   EcGuiPdo::Ptr _ec_gui_pdo;
   EcGuiCmd::Ptr _ec_gui_cmd;
 

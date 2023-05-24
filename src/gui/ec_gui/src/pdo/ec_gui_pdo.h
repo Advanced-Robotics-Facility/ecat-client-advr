@@ -32,6 +32,7 @@ public:
 private:
       EcIface::Ptr _client;
       EcGuiSlider::Ptr _ec_gui_slider;
+      EcGuiSlider::slider_map_t _slider_map;
       
       //************************ READ PDO ******************************
       MotorStatusMap _internal_motor_status_map;

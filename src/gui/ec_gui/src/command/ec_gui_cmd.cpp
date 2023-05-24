@@ -54,6 +54,9 @@ EcGuiCmd::EcGuiCmd(EcGuiSlider::Ptr ec_gui_slider,
 
     _motor_start_req=_send_ref=false;
     _ctrl_cmd=0;
+    
+    _slider_map = _ec_gui_slider->get_sliders();
+    
     readCommand();
     
     for(int led_index=0; led_index < _slave_id_led.size() ;led_index++)
@@ -61,17 +64,17 @@ EcGuiCmd::EcGuiCmd(EcGuiSlider::Ptr ec_gui_slider,
         auto slave_id = _slave_id_led[led_index];
         if(_slider_map.position_sw_map.count(slave_id)>0)
         {
-            _slider_map.position_sw_map[slave_id]->hide_led_on_off_btn(false);
+            _slider_map.position_sw_map[slave_id]->unhide_led_on_off_btn();
             auto pos_led_on_off_btn= _slider_map.position_sw_map[slave_id]->get_led_on_off_btn();
             pos_led_on_off_btn->setStyleSheet("background: red; color: #00FF00");
             connect(pos_led_on_off_btn, &QPushButton::released,this, &EcGuiCmd::onLED_ON_OFF_Released); 
 
-            _slider_map.velocity_sw_map[slave_id]->hide_led_on_off_btn(false);
+            _slider_map.velocity_sw_map[slave_id]->unhide_led_on_off_btn();
             auto vel_led_on_off_btn= _slider_map.velocity_sw_map[slave_id]->get_led_on_off_btn();
             vel_led_on_off_btn->setStyleSheet("background: red; color: #00FF00");
             connect(vel_led_on_off_btn, &QPushButton::released,this, &EcGuiCmd::onLED_ON_OFF_Released); 
 
-            _slider_map.position_t_sw_map[slave_id]->hide_led_on_off_btn(false);
+            _slider_map.position_t_sw_map[slave_id]->unhide_led_on_off_btn();
             auto pos_t_led_on_off_btn= _slider_map.position_t_sw_map[slave_id]->get_led_on_off_btn();
             pos_t_led_on_off_btn->setStyleSheet("background: red; color: #00FF00");
             connect(pos_t_led_on_off_btn, &QPushButton::released,this, &EcGuiCmd::onLED_ON_OFF_Released); 
@@ -142,8 +145,6 @@ void EcGuiCmd::enable_disable_pid()
 }
 void EcGuiCmd::readModeType()
 {
-    _slider_map = _ec_gui_slider->get_sliders();
-    
     if(getModeType() != "Idle")
     {
         _actual_sw_map_selected.clear();
@@ -405,6 +406,7 @@ void EcGuiCmd::onApplyCmdReleased()
                 {
                     cmd_message="Cannot perform the start command on the motor(s) requested";
                     launch_cmd_message(cmd_message);
+                    _send_ref=true;  //// *********************** ONLY FOR TEST
                     return;
                 }
             }

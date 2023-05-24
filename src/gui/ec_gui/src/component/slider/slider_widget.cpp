@@ -238,9 +238,14 @@ bool SliderWidget::is_joint_braked()
 }
 
 
-void SliderWidget::hide_led_on_off_btn(bool hide)
+void SliderWidget::hide_led_on_off_btn()
 {
-    _led_on_off->setHidden(hide);
+   _led_on_off->setHidden(true);
+}
+
+void SliderWidget::unhide_led_on_off_btn()
+{
+    _led_on_off->setHidden(false);
 }
 
 QPushButton* SliderWidget::get_led_on_off_btn()
