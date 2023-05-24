@@ -75,6 +75,20 @@ EcGuiStart::EcGuiStart(std::map<int ,EcGuiSlider::joint_info_t> joint_info_map,E
     _count_warning = _count_not_warning = 0;
     connect(_timer_change_color, SIGNAL(timeout()), this, SLOT(warnig_level_batt()));
     
+    _receive_action = findChild<QAction *>("actionReceive");
+    connect(_receive_action, SIGNAL(triggered()), this, SLOT(stat_receive()));
+    
+    _stop_receive_action = findChild<QAction *>("actionStopReceive");
+    connect(_stop_receive_action, SIGNAL(triggered()), this, SLOT(stop_receive()));
+    
+    _record_action = findChild<QAction *>("actionRecord");
+    connect(_record_action, SIGNAL(triggered()), this, SLOT(stat_record()));
+    
+    _stop_record_action = findChild<QAction *>("actionStopRecord");
+    connect(_stop_record_action, SIGNAL(triggered()), this, SLOT(stop_record()));
+    
+    _receive_started = _record_started = false;
+    
      
     _slave_id_led = _ec_config.slave_id_led;
     
@@ -142,13 +156,16 @@ void EcGuiStart::OnFreqChanged()
 
 /**** RX STOP and START *****/
 
-    _receive_timer->stop();
+    if(_receive_started)
+    {
+        _receive_timer->stop();
 
-    _ec_gui_pdo->restart_receive_timer();
+        _ec_gui_pdo->restart_receive_timer();
 
-    _receive_timer->start(_time_ms);
+        _receive_timer->start(_time_ms);
 
-    _client->set_loop_time(_time_ms);
+        _client->set_loop_time(_time_ms);
+    }
 
 
 /**** RX STOP and START *****/
@@ -211,6 +228,46 @@ void EcGuiStart::send()
     else
     {
         onSendStopBtnReleased(); // stop sending references
+    }
+}
+
+void EcGuiStart::stat_record()
+{
+    if(!_record_started)
+    {
+        _record_started = true;
+        _client->start_logging();
+    }
+}
+
+void EcGuiStart::stop_record()
+{
+    if(_record_started)
+    {
+        _record_started = false;
+        _client->stop_logging();
+    }
+}
+
+void EcGuiStart::stat_receive()
+{
+    if(!_receive_started)
+    {
+        _receive_started = true;
+        
+        _ec_gui_pdo->restart_receive_timer();
+
+        _receive_timer->start(_time_ms);
+    }
+}
+
+void EcGuiStart::stop_receive()
+{
+    if(_receive_started)
+    {
+        _receive_started = false;
+        
+        _receive_timer->stop();
     }
 }
 

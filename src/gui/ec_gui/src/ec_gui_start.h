@@ -35,8 +35,10 @@ public slots:
     void send();
     void receive();
     void warnig_level_batt();
-    
-
+    void stat_receive();
+    void stop_receive();
+    void stat_record();
+    void stop_record();
 private:
   
   EcUtils::EC_CONFIG  _ec_config;
@@ -64,8 +66,12 @@ private:
   int _count_warning,_count_not_warning;
 
   QTimer *_send_timer,*_receive_timer;
-
   EcIface::Ptr _client;
+  QAction *_receive_action,*_stop_receive_action;
+  bool _receive_started;
+
+  QAction *_record_action,*_stop_record_action;
+  bool _record_started;
 
 };
 

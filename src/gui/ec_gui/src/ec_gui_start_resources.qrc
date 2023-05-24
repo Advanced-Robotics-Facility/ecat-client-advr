@@ -21,5 +21,7 @@
         <file>icon/light_bulb.png</file>
         <file>icon/record.png</file>
         <file>icon/read.png</file>
+        <file>icon/stop_read.png</file>
+        <file>icon/stop_record.png</file>
     </qresource>
 </RCC>

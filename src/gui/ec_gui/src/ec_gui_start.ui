@@ -46,8 +46,10 @@
     <property name="title">
      <string>Edit</string>
     </property>
-    <addaction name="actionRead"/>
+    <addaction name="actionReceive"/>
+    <addaction name="actionStopReceive"/>
     <addaction name="actionRecord"/>
+    <addaction name="actionStopRecord"/>
     <addaction name="actionCut"/>
    </widget>
    <widget class="QMenu" name="menuConnection">
@@ -85,8 +87,10 @@
    <addaction name="actionSave"/>
    <addaction name="actionSave_as"/>
    <addaction name="actionPrint"/>
-   <addaction name="actionRead"/>
+   <addaction name="actionReceive"/>
+   <addaction name="actionStopReceive"/>
    <addaction name="actionRecord"/>
+   <addaction name="actionStopRecord"/>
   </widget>
   <widget class="QDockWidget" name="Command">
    <property name="maximumSize">
@@ -687,13 +691,31 @@
     <string>SRDF</string>
    </property>
   </action>
-  <action name="actionRead">
+  <action name="actionReceive">
    <property name="icon">
     <iconset resource="ec_gui_start_resources.qrc">
      <normaloff>:/icon/read.png</normaloff>:/icon/read.png</iconset>
    </property>
    <property name="text">
-    <string>Read</string>
+    <string>Receive</string>
+   </property>
+  </action>
+  <action name="actionStopReceive">
+   <property name="icon">
+    <iconset resource="ec_gui_start_resources.qrc">
+     <normaloff>:/icon/stop_read.png</normaloff>:/icon/stop_read.png</iconset>
+   </property>
+   <property name="text">
+    <string>Stop Receive</string>
+   </property>
+  </action>
+  <action name="actionStopRecord">
+   <property name="icon">
+    <iconset resource="ec_gui_start_resources.qrc">
+     <normaloff>:/icon/stop_record.png</normaloff>:/icon/stop_record.png</iconset>
+   </property>
+   <property name="text">
+    <string>Stop Record</string>
    </property>
   </action>
  </widget>
