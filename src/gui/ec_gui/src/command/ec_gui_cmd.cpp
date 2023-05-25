@@ -51,6 +51,19 @@ EcGuiCmd::EcGuiCmd(EcGuiSlider::Ptr ec_gui_slider,
     connect(_allbtn, &QPushButton::released,
             this, &EcGuiCmd::onAllCmdReleased);
     
+        /* Getting command manager (Apply) */
+    auto dis_enable_brakes = parent->findChild<QDialogButtonBox *>("DisEnableBrakes");
+
+   _notallbtn_brake = dis_enable_brakes->button(QDialogButtonBox::NoToAll);
+
+    connect(_notallbtn_brake, &QPushButton::released,
+            this, &EcGuiCmd::onNotAllBrakeReleased);
+
+    _allbtn_brake = dis_enable_brakes->button(QDialogButtonBox::YesToAll);
+
+    connect(_allbtn_brake, &QPushButton::released,
+            this, &EcGuiCmd::onAllBrakeReleased);
+    
 
     _motor_start_req=_send_ref=false;
     _ctrl_cmd=0;
@@ -208,6 +221,26 @@ void EcGuiCmd::onAllCmdReleased()
     for (auto& [slave_id, slider_wid]:_actual_sw_map_selected)
     {
         slider_wid->check_joint_enabled();
+    }
+
+}
+
+void EcGuiCmd::onNotAllBrakeReleased()
+{
+    /* Uncheck all checkboxes of Joint WID */
+    for (auto& [slave_id, slider_wid]:_actual_sw_map_selected)
+    {
+        slider_wid->uncheck_joint_braked();
+    }
+
+}
+
+void EcGuiCmd::onAllBrakeReleased()
+{
+    /* Check all checkboxes of Slider WID */
+    for (auto& [slave_id, slider_wid]:_actual_sw_map_selected)
+    {
+        slider_wid->check_joint_braked();
     }
 
 }
@@ -406,7 +439,6 @@ void EcGuiCmd::onApplyCmdReleased()
                 {
                     cmd_message="Cannot perform the start command on the motor(s) requested";
                     launch_cmd_message(cmd_message);
-                    _send_ref=true;  //// *********************** ONLY FOR TEST
                     return;
                 }
             }

@@ -93,9 +93,15 @@
    <addaction name="actionStopRecord"/>
   </widget>
   <widget class="QDockWidget" name="Command">
+   <property name="minimumSize">
+    <size>
+     <width>1152</width>
+     <height>430</height>
+    </size>
+   </property>
    <property name="maximumSize">
     <size>
-     <width>524287</width>
+     <width>2000</width>
      <height>524287</height>
     </size>
    </property>
@@ -419,7 +425,7 @@
               <x>0</x>
               <y>0</y>
               <width>1537</width>
-              <height>166</height>
+              <height>177</height>
              </rect>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_6">
@@ -448,7 +454,7 @@
               <x>0</x>
               <y>0</y>
               <width>1537</width>
-              <height>166</height>
+              <height>177</height>
              </rect>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_10">
@@ -477,7 +483,7 @@
               <x>0</x>
               <y>0</y>
               <width>1537</width>
-              <height>166</height>
+              <height>177</height>
              </rect>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_13">
@@ -493,14 +499,66 @@
       </widget>
      </item>
      <item>
-      <widget class="QDialogButtonBox" name="DisEnableSlaves">
-       <property name="layoutDirection">
-        <enum>Qt::RightToLeft</enum>
-       </property>
-       <property name="standardButtons">
-        <set>QDialogButtonBox::NoToAll|QDialogButtonBox::YesToAll</set>
-       </property>
-      </widget>
+      <layout class="QHBoxLayout" name="horizontalLayout_14">
+       <item>
+        <widget class="QLabel" name="label_4">
+         <property name="maximumSize">
+          <size>
+           <width>150</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Motor Selection     </string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDialogButtonBox" name="DisEnableSlaves">
+         <property name="maximumSize">
+          <size>
+           <width>200</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="layoutDirection">
+          <enum>Qt::RightToLeft</enum>
+         </property>
+         <property name="standardButtons">
+          <set>QDialogButtonBox::NoToAll|QDialogButtonBox::YesToAll</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_5">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Brake Selection     </string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDialogButtonBox" name="DisEnableBrakes">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="layoutDirection">
+          <enum>Qt::RightToLeft</enum>
+         </property>
+         <property name="standardButtons">
+          <set>QDialogButtonBox::NoToAll|QDialogButtonBox::YesToAll</set>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item>
       <widget class="QPushButton" name="SendStopBtn">
@@ -521,10 +579,10 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="PDO">
+  <widget class="QDockWidget" name="DataObject">
    <property name="minimumSize">
     <size>
-     <width>500</width>
+     <width>685</width>
      <height>470</height>
     </size>
    </property>
@@ -538,7 +596,7 @@
     <set>QDockWidget::AllDockWidgetFeatures</set>
    </property>
    <property name="windowTitle">
-    <string>PDO</string>
+    <string>Data Object</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>8</number>
@@ -546,38 +604,85 @@
    <widget class="QWidget" name="dockWidgetContents_5">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QTreeWidget" name="MotorData">
-       <column>
-        <property name="text">
-         <string>Time</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string> Motor Name</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Data</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Dir</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Raw Data</string>
-        </property>
-       </column>
+      <widget class="QTabWidget" name="tabWidget">
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <widget class="QWidget" name="tab">
+        <attribute name="title">
+         <string>PDO</string>
+        </attribute>
+        <layout class="QHBoxLayout" name="horizontalLayout_7">
+         <item>
+          <widget class="QTreeWidget" name="MotorData">
+           <column>
+            <property name="text">
+             <string>Time</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Slave Name</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Data</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Dir</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Raw Data</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tab_2">
+        <attribute name="title">
+         <string>SDO</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QTreeWidget" name="treeWidget">
+           <column>
+            <property name="text">
+             <string>Slave Name</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>SDO Name</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>SDO Value</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDialogButtonBox" name="buttonBox">
+           <property name="standardButtons">
+            <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Ok|QDialogButtonBox::Open|QDialogButtonBox::Reset|QDialogButtonBox::RestoreDefaults|QDialogButtonBox::Save</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
       </widget>
      </item>
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="Graph">
+  <widget class="QDockWidget" name="Graphics">
    <property name="minimumSize">
     <size>
      <width>500</width>
@@ -588,7 +693,7 @@
     <set>QDockWidget::AllDockWidgetFeatures</set>
    </property>
    <property name="windowTitle">
-    <string>Graph</string>
+    <string>Graphics</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>8</number>

@@ -48,6 +48,15 @@ EcGuiStart::EcGuiStart(std::map<int ,EcGuiSlider::joint_info_t> joint_info_map,E
 
     /* Load ui */
     auto wid = LoadUiFile(this);
+    
+    _command_dw = findChild<QDockWidget *>("Command");
+    connect(_command_dw, SIGNAL(topLevelChanged(bool)), this, SLOT(DwTopLevelChanged(bool)));
+    
+    _pdo_dw = findChild<QDockWidget *>("DataObject");
+    connect(_pdo_dw, SIGNAL(topLevelChanged(bool)), this, SLOT(DwTopLevelChanged(bool)));
+    
+    _graphics_dw = findChild<QDockWidget *>("Graphics");
+    connect(_graphics_dw, SIGNAL(topLevelChanged(bool)), this, SLOT(DwTopLevelChanged(bool)));
 
     /*frequency */
 
@@ -133,6 +142,15 @@ EcGuiStart::EcGuiStart(std::map<int ,EcGuiSlider::joint_info_t> joint_info_map,E
     OnFreqChanged();
 }
 
+
+void EcGuiStart::DwTopLevelChanged(bool isFloating)
+{
+    auto dw = qobject_cast<QDockWidget*>(sender());
+	if(isFloating)
+	{	dw->setWindowFlags(Qt::Window);
+		dw->show();
+	}
+}
 
 double EcGuiStart::getFreq() const
 {

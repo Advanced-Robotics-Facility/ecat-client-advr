@@ -39,8 +39,10 @@ public slots:
     void stop_receive();
     void stat_record();
     void stop_record();
+    void DwTopLevelChanged(bool isFloating);
 private:
   
+  QDockWidget *_command_dw,*_pdo_dw,*_graphics_dw;
   EcUtils::EC_CONFIG  _ec_config;
   std::map<int ,EcGuiSlider::joint_info_t> _joint_info_map;
   std::vector<int> _slave_id_led;

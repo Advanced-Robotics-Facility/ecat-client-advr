@@ -24,6 +24,8 @@ public:
     void onApplyCmdReleased();
     void onNotAllCmdReleased();
     void onAllCmdReleased();
+    void onNotAllBrakeReleased();
+    void onAllBrakeReleased();
     void onLED_ON_OFF_Released();
     
 public slots:
@@ -56,6 +58,7 @@ private:
   QDialogButtonBox  * _cmd_manager;
   QPushButton * _applybtn;
   QPushButton *_notallbtn,*_allbtn;
+  QPushButton *_notallbtn_brake,*_allbtn_brake;
 
   EcIface::Ptr _client;
   EcGuiSlider::Ptr _ec_gui_slider;

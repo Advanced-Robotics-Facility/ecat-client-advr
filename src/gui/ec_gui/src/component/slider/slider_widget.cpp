@@ -237,6 +237,16 @@ bool SliderWidget::is_joint_braked()
     return _joint_is_braked->isChecked();
 }
 
+void SliderWidget::check_joint_braked()
+{
+     _joint_is_braked->setChecked(true);
+}
+
+void SliderWidget::uncheck_joint_braked()
+{
+    _joint_is_braked->setChecked(false);
+}
+
 
 void SliderWidget::hide_led_on_off_btn()
 {
