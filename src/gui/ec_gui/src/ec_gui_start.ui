@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1620</width>
-    <height>943</height>
+    <height>999</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -31,6 +31,9 @@
      <height>20</height>
     </rect>
    </property>
+   <property name="nativeMenuBar">
+    <bool>true</bool>
+   </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>File</string>
@@ -44,7 +47,7 @@
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
-     <string>Edit</string>
+     <string>Measurement</string>
     </property>
     <addaction name="actionReceive"/>
     <addaction name="actionStopReceive"/>
@@ -57,6 +60,7 @@
      <string>Connection</string>
     </property>
     <addaction name="actionConnnect_to"/>
+    <addaction name="actionConfiguration"/>
    </widget>
    <widget class="QMenu" name="menuRobot">
     <property name="title">
@@ -67,14 +71,37 @@
     <addaction name="actionSRDF"/>
    </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuEdit"/>
    <addaction name="menuConnection"/>
+   <addaction name="menuEdit"/>
    <addaction name="menuRobot"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
+   <property name="minimumSize">
+    <size>
+     <width>0</width>
+     <height>0</height>
+    </size>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>9</pointsize>
+    </font>
+   </property>
+   <property name="contextMenuPolicy">
+    <enum>Qt::DefaultContextMenu</enum>
+   </property>
    <property name="windowTitle">
     <string>toolBar</string>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>35</width>
+     <height>35</height>
+    </size>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonTextUnderIcon</enum>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -83,10 +110,13 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionOpen"/>
-   <addaction name="actionConnnect_to"/>
    <addaction name="actionSave"/>
    <addaction name="actionSave_as"/>
    <addaction name="actionPrint"/>
+   <addaction name="separator"/>
+   <addaction name="actionConnnect_to"/>
+   <addaction name="actionConfiguration"/>
+   <addaction name="separator"/>
    <addaction name="actionReceive"/>
    <addaction name="actionStopReceive"/>
    <addaction name="actionRecord"/>
@@ -435,7 +465,7 @@
               <x>0</x>
               <y>0</y>
               <width>1076</width>
-              <height>183</height>
+              <height>185</height>
              </rect>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_6">
@@ -464,7 +494,7 @@
               <x>0</x>
               <y>0</y>
               <width>1076</width>
-              <height>183</height>
+              <height>185</height>
              </rect>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_10">
@@ -493,7 +523,7 @@
               <x>0</x>
               <y>0</y>
               <width>1076</width>
-              <height>183</height>
+              <height>185</height>
              </rect>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_13">
@@ -593,7 +623,7 @@
    <property name="minimumSize">
     <size>
      <width>500</width>
-     <height>417</height>
+     <height>419</height>
     </size>
    </property>
    <property name="maximumSize">
@@ -781,7 +811,7 @@
             <item>
              <widget class="QPushButton" name="pushButton_5">
               <property name="text">
-               <string>EtherCAT</string>
+               <string>Start EtherCAT Master</string>
               </property>
              </widget>
             </item>
@@ -805,7 +835,7 @@
             <item>
              <widget class="QPushButton" name="pushButton_4">
               <property name="text">
-               <string>Server</string>
+               <string>Start Server</string>
               </property>
              </widget>
             </item>
@@ -847,7 +877,7 @@
              <enum>Qt::RightToLeft</enum>
             </property>
             <property name="text">
-             <string>Frequecy   </string>
+             <string>Frequency   </string>
             </property>
            </widget>
           </item>
@@ -971,6 +1001,9 @@
    <property name="text">
     <string>Connnect to</string>
    </property>
+   <property name="font">
+    <font/>
+   </property>
   </action>
   <action name="actionSave">
    <property name="icon">
@@ -1053,6 +1086,15 @@
    </property>
    <property name="text">
     <string>Stop Record</string>
+   </property>
+  </action>
+  <action name="actionConfiguration">
+   <property name="icon">
+    <iconset resource="ec_gui_start_resources.qrc">
+     <normaloff>:/icon/48px-Preferences-system.png</normaloff>:/icon/48px-Preferences-system.png</iconset>
+   </property>
+   <property name="text">
+    <string>Configuration</string>
    </property>
   </action>
  </widget>
