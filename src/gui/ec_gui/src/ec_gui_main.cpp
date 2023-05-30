@@ -8,8 +8,6 @@
 
 #include "ec_utils.h"
 
-#define CENT_AC 0x15
-
 int main(int argc, char *argv[])
 {
     QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
@@ -72,88 +70,6 @@ int main(int argc, char *argv[])
         }
         // *************** AUTODETECTION *************** //
         EcIface::Ptr client=ec_client_utils->make_ec_iface();
-        
-        SSI slave_info;
-        
-        if(client->retrieve_slaves_info(slave_info))
-        {
-            if(slave_info.empty())
-            {
-                QMessageBox msgBox;
-                msgBox.setText("Cannot find Joints on the EtherCAT network"
-                            ", please control the EtherCAT Master and restart the GUI");
-                msgBox.exec();
-            }
-            else
-            {
-
-                // *************** END AUTODETECTION *************** //
-
-                // GET Mechanical Limits
-                joint_info_map.clear();
-                std::map<int,RR_SDO> motor_info_map;
-                RD_SDO rd_sdo = { "motor_pos","Min_pos","Max_pos","motor_vel","Max_vel","torque","Max_tor"};
-                WR_SDO wr_sdo = {};
-                int motors_counter=0;
-                
-                for ( auto &[slave_id, type, pos] : slave_info )
-                {
-                    if(type==CENT_AC)
-                    {
-                        motors_counter++;
-                        
-                        RR_SDO rr_sdo_info;
-                        if(client->retrieve_rr_sdo(slave_id,rd_sdo,wr_sdo,rr_sdo_info))
-                        {    
-                            if(!rr_sdo_info.empty())
-                            {
-                                motor_info_map[slave_id]=rr_sdo_info;
-                            }
-                        }
-                    }
-
-                }
-
-                if((motor_info_map.size()!=motors_counter)|| (motor_info_map.empty()))
-                {
-                    QMessageBox msgBox;
-                    msgBox.setText("Cannot find the SDO information requested, mechanical limits and actual position, velocity and torque for all motors"
-                                ", please control the EtherCAT Slave setup and restart the GUI");
-                    msgBox.exec();
-                }
-                else
-                {
-                    for ( auto &[slave_id, type, pos] : slave_info )
-                    {
-                        if(motor_info_map.count(slave_id)>0)
-                        {
-                            std::map<std::string,float> slaves_sdo_data=motor_info_map[slave_id];
-
-                            EcGuiSlider::joint_info_t joint_info_s;
-
-                            joint_info_s.joint_name    ="joint_id_"+std::to_string(slave_id);
-                            joint_info_s.actual_pos    =slaves_sdo_data.at("motor_pos");
-                            joint_info_s.min_pos       =slaves_sdo_data.at("Min_pos");
-                            joint_info_s.max_pos       =slaves_sdo_data.at("Max_pos");
-                            if(joint_info_s.max_pos<joint_info_s.min_pos)
-                            {
-                            double aux_value=joint_info_s.min_pos;
-                            joint_info_s.min_pos=joint_info_s.max_pos;
-                            joint_info_s.max_pos=aux_value;
-                            }
-                            joint_info_s.actual_vel    =slaves_sdo_data.at("motor_vel");
-                            joint_info_s.max_vel       =slaves_sdo_data.at("Max_vel");
-                            joint_info_s.actual_torq   =slaves_sdo_data.at("torque");
-                            joint_info_s.max_torq      =slaves_sdo_data.at("Max_tor");
-
-
-                            joint_info_map[slave_id]=joint_info_s;
-                            // parse the message taking the information requested. Save it into the joint_info_map.
-                        }
-                    }
-                }
-            }
-        }
         
         if(!joint_info_map.empty())
         {

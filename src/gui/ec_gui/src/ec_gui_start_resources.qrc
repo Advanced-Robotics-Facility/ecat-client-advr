@@ -23,6 +23,9 @@
         <file>icon/read.png</file>
         <file>icon/stop_read.png</file>
         <file>icon/stop_record.png</file>
-        <file>icon/network.png</file>
+        <file>icon/server.jpeg</file>
+        <file>icon/EmbeddedPC.png</file>
+        <file>icon/Ethercat.png</file>
+        <file>icon/laptop.png</file>
     </qresource>
 </RCC>

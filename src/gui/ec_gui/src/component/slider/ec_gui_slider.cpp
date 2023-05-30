@@ -115,6 +115,35 @@ void EcGuiSlider::disable_sliders()
     }
 }
 
+void EcGuiSlider::delete_items(QLayout * layout)
+{
+    if ( layout != NULL )
+    {
+        QLayoutItem* item;
+        while ( ( item = layout->takeAt( 0 ) ) != NULL )
+        {
+            delete item->widget();
+            delete item;
+        }
+    }
+}
+
+void EcGuiSlider::delete_sliders()
+{
+    _slider_map.actual_sw_map_selected.clear();
+    
+    delete_items(_sliders_poslayout->layout());
+    _slider_map.position_sw_map.clear();
+    
+    delete_items(_sliders_vellayout->layout());
+    _slider_map.velocity_sw_map.clear();
+    
+    delete_items(_sliders_torqlayout->layout());
+    _slider_map.position_t_sw_map.clear();
+    _slider_map.torque_sw_map.clear();
+    
+}
+
 EcGuiSlider::slider_map_t EcGuiSlider::get_sliders()
 {
     return _slider_map;

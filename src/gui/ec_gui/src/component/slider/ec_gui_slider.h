@@ -49,6 +49,7 @@ public:
     void reset_sliders();
     void enable_sliders();
     void disable_sliders();
+    void delete_sliders();
 
 private:
   
@@ -58,6 +59,7 @@ private:
   float _control_mode;
 
   QVBoxLayout *_sliders_poslayout,*_sliders_vellayout,*_sliders_torqlayout;
+  void delete_items(QLayout * layout);
 
 };
 

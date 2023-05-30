@@ -40,9 +40,12 @@ public slots:
     void stat_record();
     void stop_record();
     void DwTopLevelChanged(bool isFloating);
+    void onScanDeviceReleased();
 private:
   
   QDockWidget *_command_dw,*_pdo_dw,*_graphics_dw;
+  QPushButton *_scan_device;
+  
   EcUtils::EC_CONFIG  _ec_config;
   std::map<int ,EcGuiSlider::joint_info_t> _joint_info_map;
   std::vector<int> _slave_id_led;
@@ -75,6 +78,7 @@ private:
   QAction *_record_action,*_stop_record_action;
   bool _record_started;
 
+  void error_on_scannig();
 };
 
 #endif // EC_GUI_START_H

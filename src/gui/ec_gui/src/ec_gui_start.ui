@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1620</width>
-    <height>999</height>
+    <height>1001</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -268,7 +268,7 @@
   <widget class="QDockWidget" name="Command">
    <property name="minimumSize">
     <size>
-     <width>786</width>
+     <width>800</width>
      <height>400</height>
     </size>
    </property>
@@ -464,8 +464,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>1076</width>
-              <height>185</height>
+              <width>1126</width>
+              <height>186</height>
              </rect>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_6">
@@ -493,8 +493,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>1076</width>
-              <height>185</height>
+              <width>1126</width>
+              <height>186</height>
              </rect>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_10">
@@ -522,8 +522,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>1076</width>
-              <height>185</height>
+              <width>1126</width>
+              <height>186</height>
              </rect>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_13">
@@ -622,13 +622,13 @@
   <widget class="QDockWidget" name="MeasurementSetup">
    <property name="minimumSize">
     <size>
-     <width>500</width>
-     <height>419</height>
+     <width>450</width>
+     <height>400</height>
     </size>
    </property>
    <property name="maximumSize">
     <size>
-     <width>500</width>
+     <width>550</width>
      <height>500</height>
     </size>
    </property>
@@ -647,338 +647,359 @@
    <widget class="QWidget" name="dockWidgetContents">
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
-      <layout class="QGridLayout" name="gridLayout_2">
-       <item row="0" column="1">
-        <widget class="QGroupBox" name="groupBox_4">
-         <property name="title">
-          <string/>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_4">
-          <item>
-           <widget class="QLabel" name="label_7">
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>20</height>
-             </size>
+      <widget class="QScrollArea" name="scrollArea_4">
+       <property name="widgetResizable">
+        <bool>true</bool>
+       </property>
+       <widget class="QWidget" name="scrollAreaWidgetContents_4">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>430</width>
+          <height>380</height>
+         </rect>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
+          <widget class="QTreeWidget" name="NetworkSetup">
+           <property name="frameShape">
+            <enum>QFrame::StyledPanel</enum>
+           </property>
+           <property name="tabKeyNavigation">
+            <bool>false</bool>
+           </property>
+           <property name="showDropIndicator" stdset="0">
+            <bool>true</bool>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>60</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="indentation">
+            <number>20</number>
+           </property>
+           <property name="uniformRowHeights">
+            <bool>false</bool>
+           </property>
+           <property name="allColumnsShowFocus">
+            <bool>true</bool>
+           </property>
+           <property name="wordWrap">
+            <bool>false</bool>
+           </property>
+           <property name="headerHidden">
+            <bool>false</bool>
+           </property>
+           <property name="expandsOnDoubleClick">
+            <bool>true</bool>
+           </property>
+           <property name="columnCount">
+            <number>3</number>
+           </property>
+           <attribute name="headerVisible">
+            <bool>true</bool>
+           </attribute>
+           <attribute name="headerCascadingSectionResizes">
+            <bool>true</bool>
+           </attribute>
+           <attribute name="headerMinimumSectionSize">
+            <number>36</number>
+           </attribute>
+           <attribute name="headerDefaultSectionSize">
+            <number>100</number>
+           </attribute>
+           <attribute name="headerShowSortIndicator" stdset="0">
+            <bool>false</bool>
+           </attribute>
+           <attribute name="headerStretchLastSection">
+            <bool>true</bool>
+           </attribute>
+           <column>
+            <property name="text">
+             <string/>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>IP</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Port</string>
+            </property>
+           </column>
+           <item>
+            <property name="text">
+             <string>EtherCAT Measurement Setup                 </string>
             </property>
             <property name="font">
              <font>
-              <pointsize>11</pointsize>
+              <pointsize>9</pointsize>
              </font>
             </property>
             <property name="text">
-             <string>IP: localhost</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_8">
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>20</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>11</pointsize>
-             </font>
+             <string/>
             </property>
             <property name="text">
-             <string>Port: 54321</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="comboBox">
-            <property name="maximumSize">
-             <size>
-              <width>80</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="currentIndex">
-             <number>1</number>
+             <string/>
             </property>
             <item>
              <property name="text">
-              <string>TCP</string>
+              <string>My Computer</string>
+             </property>
+             <property name="icon">
+              <iconset resource="ec_gui_start_resources.qrc">
+               <normaloff>:/icon/laptop.png</normaloff>:/icon/laptop.png</iconset>
+             </property>
+             <property name="text">
+              <string>localhost</string>
+             </property>
+             <property name="text">
+              <string>54321</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>UDP</string>
+              <string>Server</string>
+             </property>
+             <property name="icon">
+              <iconset resource="ec_gui_start_resources.qrc">
+               <normaloff>:/icon/server.jpeg</normaloff>:/icon/server.jpeg</iconset>
+             </property>
+             <property name="text">
+              <string>localhost</string>
+             </property>
+             <property name="text">
+              <string>54321</string>
+             </property>
+             <property name="flags">
+              <set>ItemIsSelectable|ItemIsEditable|ItemIsDragEnabled|ItemIsDropEnabled|ItemIsUserCheckable|ItemIsEnabled</set>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>ROS2</string>
+              <string>EtherCAT Master</string>
              </property>
-            </item>
-           </widget>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_4">
-            <item>
-             <widget class="QLabel" name="label_6">
-              <property name="maximumSize">
-               <size>
-                <width>150</width>
-                <height>150</height>
-               </size>
+             <property name="icon">
+              <iconset resource="ec_gui_start_resources.qrc">
+               <normaloff>:/icon/EmbeddedPC.png</normaloff>:/icon/EmbeddedPC.png</iconset>
+             </property>
+             <property name="text">
+              <string>localhost</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="flags">
+              <set>ItemIsSelectable|ItemIsEditable|ItemIsDragEnabled|ItemIsDropEnabled|ItemIsUserCheckable|ItemIsEnabled</set>
+             </property>
+             <item>
+              <property name="text">
+               <string>EtherCAT Device</string>
               </property>
-              <property name="layoutDirection">
-               <enum>Qt::LeftToRight</enum>
+              <property name="font">
+               <font>
+                <pointsize>9</pointsize>
+               </font>
+              </property>
+              <property name="icon">
+               <iconset resource="ec_gui_start_resources.qrc">
+                <normaloff>:/icon/Ethercat.png</normaloff>:/icon/Ethercat.png</iconset>
               </property>
               <property name="text">
                <string/>
               </property>
-              <property name="pixmap">
-               <pixmap resource="ec_gui_start_resources.qrc">:/icon/network.png</pixmap>
-              </property>
-              <property name="scaledContents">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="Line" name="line">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton">
-            <property name="text">
-             <string>Scan Slave</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="0" column="2">
-        <widget class="QGroupBox" name="groupBox_6">
-         <property name="font">
-          <font>
-           <kerning>true</kerning>
-          </font>
-         </property>
-         <property name="title">
-          <string/>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_10">
-          <item>
-           <spacer name="verticalSpacer">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Maximum</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>60</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_21">
-            <item>
-             <widget class="Line" name="line_6">
-              <property name="maximumSize">
-               <size>
-                <width>50</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="pushButton_5">
               <property name="text">
-               <string>Start EtherCAT Master</string>
+               <string/>
               </property>
-             </widget>
+             </item>
             </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_20">
-            <item>
-             <widget class="Line" name="line_7">
-              <property name="maximumSize">
-               <size>
-                <width>50</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="pushButton_4">
+           </item>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <item>
+            <widget class="QPushButton" name="EthercatMaster">
+             <property name="text">
+              <string>Start EtherCAT Master</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="Server">
+             <property name="text">
+              <string>Start Server</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="ScanDevice">
+             <property name="text">
+              <string>Scan Device</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_22">
+           <item>
+            <widget class="QLabel" name="label_6">
+             <property name="maximumSize">
+              <size>
+               <width>80</width>
+               <height>30</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>14</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>Protocol</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="comboBox">
+             <property name="font">
+              <font>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
+             <property name="currentIndex">
+              <number>1</number>
+             </property>
+             <item>
               <property name="text">
-               <string>Start Server</string>
+               <string>TCP</string>
               </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <widget class="QGroupBox" name="groupBox_7">
-       <property name="maximumSize">
-        <size>
-         <width>16777215</width>
-         <height>70</height>
-        </size>
-       </property>
-       <property name="title">
-        <string/>
-       </property>
-       <layout class="QVBoxLayout" name="verticalLayout_7">
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_22">
-          <item>
-           <widget class="QLabel" name="label">
-            <property name="maximumSize">
-             <size>
-              <width>150</width>
-              <height>30</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>14</pointsize>
-             </font>
-            </property>
-            <property name="layoutDirection">
-             <enum>Qt::RightToLeft</enum>
-            </property>
-            <property name="text">
-             <string>Frequency   </string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="Freq">
-            <property name="minimumSize">
-             <size>
-              <width>80</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>80</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>14</pointsize>
-             </font>
-            </property>
-            <property name="layoutDirection">
-             <enum>Qt::RightToLeft</enum>
-            </property>
-            <item>
-             <property name="text">
-              <string>300</string>
+             </item>
+             <item>
+              <property name="text">
+               <string>UDP</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>ROS2</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label">
+             <property name="maximumSize">
+              <size>
+               <width>150</width>
+               <height>30</height>
+              </size>
              </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>400</string>
+             <property name="font">
+              <font>
+               <pointsize>14</pointsize>
+              </font>
              </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>500</string>
+             <property name="layoutDirection">
+              <enum>Qt::RightToLeft</enum>
              </property>
-            </item>
-            <item>
              <property name="text">
-              <string>600</string>
+              <string>  Frequency </string>
              </property>
-            </item>
-            <item>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="Freq">
+             <property name="minimumSize">
+              <size>
+               <width>80</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>80</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>14</pointsize>
+              </font>
+             </property>
+             <property name="layoutDirection">
+              <enum>Qt::RightToLeft</enum>
+             </property>
+             <item>
+              <property name="text">
+               <string>300</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>400</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>500</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>600</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>700</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>800</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>900</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>1000</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_2">
+             <property name="maximumSize">
+              <size>
+               <width>40</width>
+               <height>30</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>14</pointsize>
+              </font>
+             </property>
              <property name="text">
-              <string>700</string>
+              <string> Hz</string>
              </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>800</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>900</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>1000</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_2">
-            <property name="maximumSize">
-             <size>
-              <width>40</width>
-              <height>30</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>14</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string> Hz</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
-        </item>
-       </layout>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
       </widget>
      </item>
     </layout>

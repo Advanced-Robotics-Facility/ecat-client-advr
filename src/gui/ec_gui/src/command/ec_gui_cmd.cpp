@@ -158,6 +158,7 @@ void EcGuiCmd::enable_disable_pid()
 }
 void EcGuiCmd::readModeType()
 {
+    _slider_map = _ec_gui_slider->get_sliders();
     if(getModeType() != "Idle")
     {
         _actual_sw_map_selected.clear();
