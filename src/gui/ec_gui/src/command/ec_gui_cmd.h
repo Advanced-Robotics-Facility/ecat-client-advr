@@ -27,6 +27,7 @@ public:
     void onNotAllBrakeReleased();
     void onAllBrakeReleased();
     void onLED_ON_OFF_Released();
+    void restart_ec_gui_cmd();
     
 public slots:
     void readCommand();

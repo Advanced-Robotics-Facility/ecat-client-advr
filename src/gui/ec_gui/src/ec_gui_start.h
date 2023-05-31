@@ -20,8 +20,7 @@ class EcGuiStart : public QMainWindow
 
 public:
 
-    explicit EcGuiStart(std::map<int ,EcGuiSlider::joint_info_t > joint_info_map,
-                        EcUtils::EC_CONFIG ec_config,
+    explicit EcGuiStart(EcUtils::EC_CONFIG ec_config,
                         EcIface::Ptr client,
                         QWidget *parent = nullptr);
 
@@ -47,7 +46,6 @@ private:
   QPushButton *_scan_device;
   
   EcUtils::EC_CONFIG  _ec_config;
-  std::map<int ,EcGuiSlider::joint_info_t> _joint_info_map;
   std::vector<int> _slave_id_led;
   
   EcGuiSlider::Ptr _ec_gui_slider;
@@ -78,7 +76,19 @@ private:
   QAction *_record_action,*_stop_record_action;
   bool _record_started;
 
+  
+  SSI _device_info;
+  std::map<int ,EcGuiSlider::joint_info_t > _joint_info_map;
+  MotorStatusMap _internal_motor_status_map;
+  FtStatusMap _internal_ft6_status_map;
+  PwrStatusMap _internal_pow_status_map;
+  ImuStatusMap _internal_imu_status_map;
+  
   void error_on_scannig();
+  void restart_gui();
+  void try_gui();
+  void scan_device();
+  void clear_device();
 };
 
 #endif // EC_GUI_START_H

@@ -9,8 +9,13 @@
 #include <QFile>
 
 #include <chrono>
-#define _HYST_THRESHOLD 5 // 5s 
+#define _HYST_THRESHOLD 5 // 5s
+
+#define LO_PWR_DC_MC 0x12
 #define CENT_AC 0x15
+#define FT6 0x20
+#define POW_F28M36_BOARD 0x32
+#define IMU_ANY 0x40
 
 using namespace std::chrono;
 
@@ -40,10 +45,9 @@ QWidget * LoadUiFile(QWidget * parent)
 
 }
 
-EcGuiStart::EcGuiStart(std::map<int ,EcGuiSlider::joint_info_t> joint_info_map,EcUtils::EC_CONFIG ec_config,EcIface::Ptr client,QWidget *parent) :
+EcGuiStart::EcGuiStart(EcUtils::EC_CONFIG ec_config,EcIface::Ptr client,QWidget *parent) :
     QMainWindow(parent),
     _ec_config(ec_config),
-    _joint_info_map(joint_info_map),
     _client(client)
 {
 
@@ -110,10 +114,7 @@ EcGuiStart::EcGuiStart(std::map<int ,EcGuiSlider::joint_info_t> joint_info_map,E
      
     _slave_id_led = _ec_config.slave_id_led;
     
-    _ec_gui_slider = std::make_shared<EcGuiSlider>(_joint_info_map,
-                                                   this);
-    
-    EcGuiSlider::slider_map_t _slider_map=_ec_gui_slider->get_sliders();
+    _ec_gui_slider = std::make_shared<EcGuiSlider>(this);
     
     _ec_gui_pdo = std::make_shared<EcGuiPdo>(_ec_gui_slider,
                                              _client,
@@ -150,7 +151,55 @@ EcGuiStart::EcGuiStart(std::map<int ,EcGuiSlider::joint_info_t> joint_info_map,E
 
     OnFreqChanged();
     
-    _ec_gui_slider->delete_sliders();
+    
+}
+
+void EcGuiStart::restart_gui()
+{
+    _ec_gui_slider->create_sliders(_joint_info_map);
+    _ec_gui_cmd->restart_ec_gui_cmd();
+    _ec_gui_pdo->restart_ec_gui_pdo();
+    
+    _ec_gui_pdo->set_internal_map(_internal_motor_status_map,
+                                  _internal_ft6_status_map,
+                                  _internal_pow_status_map,
+                                  _internal_imu_status_map);
+}
+
+void EcGuiStart::try_gui()
+{
+// ********************* TEST ****************************////
+
+    _device_info.push_back(std::make_tuple(201,POW_F28M36_BOARD,0));   // create power board
+    _internal_pow_status_map[201]={48.0,48.0,2.0,25.0,25.0,25.0};
+    for(int i=1; i<21; i++)
+    {
+        _device_info.push_back(std::make_tuple(i,CENT_AC,i));   // create motor board
+        EcGuiSlider::joint_info_t joint_info_s;
+
+        joint_info_s.joint_name    ="motor_id_"+std::to_string(i);
+        joint_info_s.actual_pos    =0.0;
+        joint_info_s.min_pos       =-1.0;
+        joint_info_s.max_pos       =1.0;
+        joint_info_s.actual_vel    =0.0;
+        joint_info_s.max_vel       =2.0;
+        joint_info_s.actual_torq   =0.0;
+        joint_info_s.max_torq      =5.0;
+
+        _joint_info_map[i]=joint_info_s;
+        _internal_motor_status_map[i] = std::make_tuple(10,10,0,0,100,25,25,0,0,0,0,0);
+    }
+    _device_info.push_back(std::make_tuple(100,FT6,21));   // create ft6 board
+    _internal_ft6_status_map[100]={10.0,5.0,2.0,100.0,125.0,130.0};
+    _device_info.push_back(std::make_tuple(101,FT6,22));   // create ft6 board
+    _internal_ft6_status_map[101]={10.0,5.0,2.0,100.0,125.0,130.0};
+    _device_info.push_back(std::make_tuple(102,IMU_ANY,23));   // create imu board
+    _internal_imu_status_map[102]={5.0,15.0,20.0,5.0,2.0,3.0,0,0,0,1};
+    _device_info.push_back(std::make_tuple(103,IMU_ANY,24));   // create imu board
+    _internal_imu_status_map[103]={5.0,15.0,20.0,5.0,2.0,3.0,0,0,0,1};
+
+// ********************* TEST ****************************////
+    
 }
 
 void EcGuiStart::error_on_scannig()
@@ -161,13 +210,25 @@ void EcGuiStart::error_on_scannig()
     msgBox.exec();
 }
 
-void EcGuiStart::onScanDeviceReleased()
+void EcGuiStart::clear_device()
 {
-    SSI slave_info;
-        
-    if(_client->retrieve_slaves_info(slave_info))
+    _device_info.clear();
+    _joint_info_map.clear();
+    
+    _internal_motor_status_map.clear();
+    _internal_ft6_status_map.clear();
+    _internal_pow_status_map.clear();
+    _internal_imu_status_map.clear();
+    
+    stop_receive();
+    stop_record();
+}
+
+void EcGuiStart::scan_device()
+{
+    if(_client->retrieve_slaves_info(_device_info))
     {
-        if(slave_info.empty())
+        if(_device_info.empty())
         {
             error_on_scannig();
         }
@@ -183,9 +244,9 @@ void EcGuiStart::onScanDeviceReleased()
             WR_SDO wr_sdo = {};
             int motors_counter=0;
             
-            for ( auto &[slave_id, type, pos] : slave_info )
+            for ( auto &[slave_id, type, pos] : _device_info )
             {
-                if(type==CENT_AC)
+                if(type==CENT_AC || type==LO_PWR_DC_MC)
                 {
                     motors_counter++;
                     
@@ -210,7 +271,7 @@ void EcGuiStart::onScanDeviceReleased()
             }
             else
             {
-                for ( auto &[slave_id, type, pos] : slave_info )
+                for ( auto &[slave_id, type, pos] : _device_info )
                 {
                     if(motor_info_map.count(slave_id)>0)
                     {
@@ -218,7 +279,7 @@ void EcGuiStart::onScanDeviceReleased()
 
                         EcGuiSlider::joint_info_t joint_info_s;
 
-                        joint_info_s.joint_name    ="joint_id_"+std::to_string(slave_id);
+                        joint_info_s.joint_name    ="motor_id_"+std::to_string(slave_id);
                         joint_info_s.actual_pos    =slaves_sdo_data.at("motor_pos");
                         joint_info_s.min_pos       =slaves_sdo_data.at("Min_pos");
                         joint_info_s.max_pos       =slaves_sdo_data.at("Max_pos");
@@ -244,6 +305,45 @@ void EcGuiStart::onScanDeviceReleased()
     else
     {
         error_on_scannig();
+    }
+}
+
+void EcGuiStart::onScanDeviceReleased()
+{
+    if(!_device_info.empty())
+    {
+        QMessageBox::StandardButton reply;
+        QMessageBox msgBox;
+        reply = msgBox.warning(this,msgBox.windowTitle(),
+                               tr("EtherCAT device(s) already scanned.\n"
+                               "Do you want to rescan?"),
+                                QMessageBox::Yes|QMessageBox::No);
+        
+        if(reply == QMessageBox::Yes)
+        {
+            clear_device();
+            scan_device();
+        }
+        else
+        {
+            return;
+        }
+    }
+    else
+    {
+        scan_device();
+    }
+    
+    if(_device_info.empty())
+    {
+#ifdef TEST 
+        try_gui();
+        restart_gui();
+#endif
+    }
+    else
+    {
+        restart_gui();
     }
         
 }
@@ -358,8 +458,19 @@ void EcGuiStart::stat_record()
 {
     if(!_record_started)
     {
-        _record_started = true;
-        _client->start_logging();
+        if(_device_info.empty())
+        {
+            QMessageBox msgBox;
+            msgBox.warning(this,msgBox.windowTitle(),
+                           tr("Cannot recod PDO.\n"
+                           "Please press scan device button"),
+                           QMessageBox::Ok);
+        }
+        else
+        {
+            _record_started = true;
+            _client->start_logging();
+        }
     }
 }
 
@@ -376,11 +487,22 @@ void EcGuiStart::stat_receive()
 {
     if(!_receive_started)
     {
-        _receive_started = true;
+        if(_device_info.empty())
+        {
+            QMessageBox msgBox;
+            msgBox.warning(this,msgBox.windowTitle(),
+                        tr("Cannot receive PDO.\n"
+                        "Please press scan device button"),
+                            QMessageBox::Ok);
+        }
+        else
+        {
+            _receive_started = true;
         
-        _ec_gui_pdo->restart_receive_timer();
+            _ec_gui_pdo->restart_receive_timer();
 
-        _receive_timer->start(_time_ms);
+            _receive_timer->start(_time_ms);
+        }
     }
 }
 

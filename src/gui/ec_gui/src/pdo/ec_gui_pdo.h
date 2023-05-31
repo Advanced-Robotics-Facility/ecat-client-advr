@@ -23,6 +23,12 @@ public:
       
       ~EcGuiPdo();
       
+      void set_internal_map(MotorStatusMap internal_motor_status_map, 
+                            FtStatusMap internal_ft6_status_map,
+                            PwrStatusMap internal_pow_status_map,
+                            ImuStatusMap internal_imu_status_map);
+      
+      void restart_ec_gui_pdo();
       void restart_receive_timer();
       void read();
       void set_filter(bool first_send, int time_ms);
@@ -36,6 +42,10 @@ private:
       
       //************************ READ PDO ******************************
       MotorStatusMap _internal_motor_status_map;
+      FtStatusMap _internal_ft6_status_map;
+      PwrStatusMap _internal_pow_status_map;
+      ImuStatusMap _internal_imu_status_map;
+      
       QTreeWidget *_tree_wid;
       QElapsedTimer *_receive_timer;
       QCustomPlot *_custom_plot;

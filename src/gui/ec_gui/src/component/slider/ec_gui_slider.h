@@ -39,17 +39,18 @@ public:
 
     typedef std::shared_ptr<EcGuiSlider> Ptr;
     
-    explicit EcGuiSlider(std::map<int ,joint_info_t > joint_info_map,
-                        QWidget *parent = nullptr);
+    explicit EcGuiSlider(QWidget *parent = nullptr);
 
     ~EcGuiSlider();
 
     slider_map_t get_sliders();
     void set_actual_sliders(std::map<int, SliderWidget*> actual_sw_map_selected);
+    
+    void create_sliders(std::map<int ,joint_info_t > joint_info_map);
+    void delete_sliders();
     void reset_sliders();
     void enable_sliders();
     void disable_sliders();
-    void delete_sliders();
 
 private:
   

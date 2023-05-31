@@ -68,10 +68,6 @@ EcGuiCmd::EcGuiCmd(EcGuiSlider::Ptr ec_gui_slider,
     _motor_start_req=_send_ref=false;
     _ctrl_cmd=0;
     
-    _slider_map = _ec_gui_slider->get_sliders();
-    
-    readCommand();
-    
     for(int led_index=0; led_index < _slave_id_led.size() ;led_index++)
     {
         auto slave_id = _slave_id_led[led_index];
@@ -93,6 +89,13 @@ EcGuiCmd::EcGuiCmd(EcGuiSlider::Ptr ec_gui_slider,
             connect(pos_t_led_on_off_btn, &QPushButton::released,this, &EcGuiCmd::onLED_ON_OFF_Released); 
         }    
     }
+}
+
+void EcGuiCmd::restart_ec_gui_cmd()
+{
+    _slider_map = _ec_gui_slider->get_sliders();
+    
+    readCommand();
 }
 
 std::string EcGuiCmd::getFieldType() const
@@ -158,7 +161,6 @@ void EcGuiCmd::enable_disable_pid()
 }
 void EcGuiCmd::readModeType()
 {
-    _slider_map = _ec_gui_slider->get_sliders();
     if(getModeType() != "Idle")
     {
         _actual_sw_map_selected.clear();
@@ -296,7 +298,7 @@ void EcGuiCmd::onLED_ON_OFF_Released()
             if(!led_on_off_cmd_result)
             {
                 QMessageBox msgBox;
-                msgBox.setText("Cannot perform LED switching on/off command on the slaves requested");
+                msgBox.setText("Cannot perform LED switching on/off command on the motors requested");
                 msgBox.exec();
             }
             else
@@ -428,7 +430,7 @@ void EcGuiCmd::onApplyCmdReleased()
         
         if(!_motors_selected)
         {
-            cmd_message="No Slave selected, please select at least one slave";
+            cmd_message="No Motor selected, please select at least one";
         }
         else
         {

@@ -7,7 +7,7 @@ _client(client),
 _ec_gui_slider(ec_gui_slider)
 {
     _tree_wid = parent->findChild<QTreeWidget *>("MotorData");
-
+    
     _receive_timer= new QElapsedTimer();
     
     _custom_plot = new QCustomPlot();
@@ -36,13 +36,6 @@ _ec_gui_slider(ec_gui_slider)
            this, &EcGuiPdo::onStopPlotting);
 
     _update_plot=_first_update=_clear_plot=false;
-
-    #ifdef TEST
-    for(int i=11; i<37; i++)
-    {
-        _internal_motor_status_map[i] = std::make_tuple(10,10,0,0,100,25,25,0,0,0,0,0);
-    }
-    #endif
     
     _slider_map=_ec_gui_slider->get_sliders();
 }
@@ -56,6 +49,34 @@ void EcGuiPdo::restart_receive_timer()
     _receive_timer->restart();
 }
 
+void EcGuiPdo::set_internal_map(MotorStatusMap internal_motor_status_map, 
+                                FtStatusMap internal_ft6_status_map,
+                                PwrStatusMap internal_pow_status_map,
+                                ImuStatusMap internal_imu_status_map)
+{
+    _internal_motor_status_map.clear();
+    _internal_motor_status_map = internal_motor_status_map;
+    
+    _internal_ft6_status_map.clear();
+    _internal_ft6_status_map = internal_ft6_status_map;
+    
+    _internal_pow_status_map.clear();
+    _internal_pow_status_map = internal_pow_status_map;
+    
+    _internal_imu_status_map.clear();
+    _internal_imu_status_map = internal_imu_status_map;
+}
+
+void EcGuiPdo::restart_ec_gui_pdo()
+{
+    _tree_wid->clear();
+    _custom_plot->clearGraphs();
+    _graph_pdo_map.clear();
+    _first_update=false;
+    _custom_plot->legend->setVisible(false);
+    _custom_plot->xAxis->setRange(0, 8, Qt::AlignRight);
+    _custom_plot->replot();
+}
 
 /************************************* SEARCH SLAVE INTO TREE WID ***************************************/
 QTreeWidgetItem * EcGuiPdo::search_slave_into_treewid(std::string esc_id_name)
@@ -128,22 +149,25 @@ void EcGuiPdo::fill_data(std::string esc_id_name,QTreeWidgetItem * topLevel,QLis
                 item->setText(2,data);
                 raw_data=raw_data+data+ " ";
                 
-                std::string esc_id_pdo = esc_id_name + "_" + _motor_pdo_fields.at(k).toStdString();
+                std::string esc_id_pdo = esc_id_name + "_" + pdo_fields.at(k).toStdString();
                 QCPGraph * graph_pdo=_graph_pdo_map[esc_id_pdo];
                 
-                if(!graph_pdo)
+                if(item->checkState(1)==Qt::Checked)
                 {
-                    graph_pdo = _custom_plot->addGraph();
-                    graph_pdo->setPen(QPen(_color_pdo_map[esc_id_pdo]));
-                    graph_pdo->setName(QString::fromStdString(esc_id_pdo));
-                    graph_pdo->addToLegend();
-                    _graph_pdo_map[esc_id_pdo]=graph_pdo;
+                    if(!graph_pdo)
+                    {
+                        graph_pdo = _custom_plot->addGraph();
+                        graph_pdo->setPen(QPen(_color_pdo_map[esc_id_pdo]));
+                        graph_pdo->setName(QString::fromStdString(esc_id_pdo));
+                        graph_pdo->addToLegend();
+                        _graph_pdo_map[esc_id_pdo]=graph_pdo;
+                    }
+                    
+                    // add data to lines:
+                    graph_pdo->addData(_s_receive_time,data.toDouble());
+                    //update plot
+                    _update_plot |= true;
                 }
-                
-                // add data to lines:
-                graph_pdo->addData(_s_receive_time,data.toDouble());
-                //update plot
-                _update_plot |= true;
             }
             /************************************* DATA ************************************************/
 
@@ -178,7 +202,7 @@ void EcGuiPdo::read_motor_status()
     {
         for ( const auto &[esc_id, motor_status] : motors_status_map)
         {
-            std::string esc_id_name="joint_id"+std::to_string(esc_id);
+            std::string esc_id_name="motor_id_"+std::to_string(esc_id);
             
             QTreeWidgetItem *topLevel=nullptr;
             topLevel= search_slave_into_treewid(esc_id_name);
@@ -281,12 +305,16 @@ void EcGuiPdo::read_motor_status()
 void EcGuiPdo::read_ft6_status()
 {
     auto ft6_status_map= _client->get_ft6_status();
+    if(ft6_status_map.empty())
+    {
+        ft6_status_map=_internal_ft6_status_map;
+    }
     /*************************************FT*****************************************************************/
      if(!ft6_status_map.empty())
      {
         for ( const auto &[esc_id, ft6_status] : ft6_status_map)
         {
-            std::string esc_id_name="joint_id"+std::to_string(esc_id);
+            std::string esc_id_name="ft6_id_"+std::to_string(esc_id);
             QTreeWidgetItem *topLevel=nullptr;
 
             topLevel=search_slave_into_treewid(esc_id_name);
@@ -304,12 +332,16 @@ void EcGuiPdo::read_ft6_status()
 inline void EcGuiPdo::read_pow_status()
 {
     auto pow_status_map= _client->get_pow_status();
+    if(pow_status_map.empty())
+    {
+        pow_status_map=_internal_pow_status_map;
+    }
     /*************************************Power Board*****************************************************************/
      if(!pow_status_map.empty())
      {
         for ( const auto &[esc_id, pow_status] : pow_status_map)
         {
-            std::string esc_id_name="joint_id"+std::to_string(esc_id);
+            std::string esc_id_name="pow_id_"+std::to_string(esc_id);
             QTreeWidgetItem *topLevel=nullptr;
 
             topLevel=search_slave_into_treewid(esc_id_name);
@@ -327,12 +359,16 @@ inline void EcGuiPdo::read_pow_status()
 void EcGuiPdo::read_imu_status()
 {
     auto imu_status_map= _client->get_imu_status();
+    if(imu_status_map.empty())
+    {
+        imu_status_map=_internal_imu_status_map;
+    }
     /*************************************IMU*****************************************************************/
      if(!imu_status_map.empty())
      {
         for ( const auto &[esc_id, imu_status] : imu_status_map)
         {
-            std::string esc_id_name="joint_id"+std::to_string(esc_id);
+            std::string esc_id_name="imu_id_"+std::to_string(esc_id);
             QTreeWidgetItem *topLevel=nullptr;
 
             topLevel=search_slave_into_treewid(esc_id_name);
