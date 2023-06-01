@@ -419,6 +419,11 @@ void EcUDP::getAndset_slaves_sdo(uint32_t esc_id, const RD_SDO &rd_sdo, const WR
     consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
 }
 
+bool EcUDP::retrieve_all_sdo(uint32_t esc_id,RR_SDO &rr_sdo)
+{
+    return false;
+}
+
 bool EcUDP::retrieve_rr_sdo(uint32_t esc_id,
                              const RD_SDO &rd_sdo, 
                              const WR_SDO &wr_sdo,

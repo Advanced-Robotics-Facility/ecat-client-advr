@@ -6,7 +6,7 @@ QWidget(parent),
 _client(client),
 _ec_gui_slider(ec_gui_slider)
 {
-    _tree_wid = parent->findChild<QTreeWidget *>("MotorData");
+    _tree_wid = parent->findChild<QTreeWidget *>("PDO");
     
     _receive_timer= new QElapsedTimer();
     
@@ -416,7 +416,8 @@ void EcGuiPdo::update_plot()
         }
     }
 }
-inline void EcGuiPdo::onStopPlotting()
+
+void EcGuiPdo::onStopPlotting()
 {
     for(int i=0;i<_tree_wid->topLevelItemCount();i++)
     {

@@ -11,6 +11,7 @@
 
 #include "ec_gui_slider.h"
 #include "ec_gui_pdo.h"
+#include "ec_gui_sdo.h"
 #include "ec_gui_cmd.h"
 
 
@@ -52,6 +53,7 @@ private:
   EcGuiSlider::Ptr _ec_gui_slider;
   EcGuiSlider::slider_map_t _slider_map;
   EcGuiPdo::Ptr _ec_gui_pdo;
+  EcGuiSdo::Ptr _ec_gui_sdo;
   EcGuiCmd::Ptr _ec_gui_cmd;
 
   int _time_ms;
@@ -84,6 +86,8 @@ private:
   FtStatusMap _internal_ft6_status_map;
   PwrStatusMap _internal_pow_status_map;
   ImuStatusMap _internal_imu_status_map;
+  SRD_SDO _internal_sdo_map;
+  SRD_SDO _sdo_map;
   
   void error_on_scannig();
   void restart_gui();

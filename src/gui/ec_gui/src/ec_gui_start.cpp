@@ -119,6 +119,9 @@ EcGuiStart::EcGuiStart(EcUtils::EC_CONFIG ec_config,EcIface::Ptr client,QWidget 
     _ec_gui_pdo = std::make_shared<EcGuiPdo>(_ec_gui_slider,
                                              _client,
                                              this);
+    
+    _ec_gui_sdo = std::make_shared<EcGuiSdo>(_client,
+                                             this);
 
     _ec_gui_cmd = std::make_shared<EcGuiCmd>(_ec_gui_slider,
                                              _client,
@@ -157,21 +160,38 @@ void EcGuiStart::restart_gui()
 {
     add_device();
     _ec_gui_slider->create_sliders(_joint_info_map);
-    _ec_gui_cmd->restart_ec_gui_cmd();
-    _ec_gui_pdo->restart_ec_gui_pdo();
     
+    _ec_gui_cmd->restart_ec_gui_cmd();
+    
+    _ec_gui_pdo->restart_ec_gui_pdo();
     _ec_gui_pdo->set_internal_map(_internal_motor_status_map,
                                   _internal_ft6_status_map,
                                   _internal_pow_status_map,
                                   _internal_imu_status_map);
+    
+    _ec_gui_sdo->set_internal_sdo_map(_internal_sdo_map);
+    _ec_gui_sdo->restart_ec_gui_sdo(_sdo_map);
 }
+
 
 void EcGuiStart::try_gui()
 {
 // ********************* TEST ****************************////
 
     _device_info.push_back(std::make_tuple(201,POW_F28M36_BOARD,0));   // create power board
+    
     _internal_pow_status_map[201]={48.0,48.0,2.0,25.0,25.0,25.0};
+    
+    RR_SDO rr_sdo_info_motor = {
+        { "motor_pos", 0.0},
+        { "Min_pos",  -1.0},
+        { "Max_pos",   1.0},
+        { "motor_vel", 0.0},
+        { "Max_vel",   2.0},
+        { "torque",    0.0},
+        { "Max_tor",   5.0}
+    };
+    
     for(int i=1; i<21; i++)
     {
         _device_info.push_back(std::make_tuple(i,CENT_AC,i));   // create motor board
@@ -188,6 +208,7 @@ void EcGuiStart::try_gui()
 
         _joint_info_map[i]=joint_info_s;
         _internal_motor_status_map[i] = std::make_tuple(10,10,0,0,100,25,25,0,0,0,0,0);
+        _internal_sdo_map[i] = rr_sdo_info_motor;
     }
     _device_info.push_back(std::make_tuple(100,FT6,21));   // create ft6 board
     _internal_ft6_status_map[100]={10.0,5.0,2.0,100.0,125.0,130.0};
@@ -255,6 +276,9 @@ void EcGuiStart::clear_device()
     _internal_pow_status_map.clear();
     _internal_imu_status_map.clear();
     
+    _sdo_map.clear();
+    _internal_sdo_map.clear();
+    
     stop_receive();
     stop_record();
 }
@@ -279,22 +303,24 @@ void EcGuiStart::scan_device()
             WR_SDO wr_sdo = {};
             int motors_counter=0;
             
-            for ( auto &[slave_id, type, pos] : _device_info )
+            for ( auto &[esc_id, type, pos] : _device_info )
             {
+                RR_SDO rr_sdo_info;
                 if(type==CENT_AC || type==LO_PWR_DC_MC)
                 {
                     motors_counter++;
-                    
-                    RR_SDO rr_sdo_info;
-                    if(_client->retrieve_rr_sdo(slave_id,rd_sdo,wr_sdo,rr_sdo_info))
+                    if(_client->retrieve_rr_sdo(esc_id,rd_sdo,wr_sdo,rr_sdo_info))
                     {    
                         if(!rr_sdo_info.empty())
                         {
-                            motor_info_map[slave_id]=rr_sdo_info;
+                            motor_info_map[esc_id]=rr_sdo_info;
                         }
                     }
                 }
-
+                /********************* RETRIEVE ALL SDO */////////////
+                rr_sdo_info.clear();
+                _client->retrieve_all_sdo(esc_id,rr_sdo_info);
+                _sdo_map[esc_id] = rr_sdo_info;
             }
 
             if((motor_info_map.size()!=motors_counter)|| (motor_info_map.empty()))

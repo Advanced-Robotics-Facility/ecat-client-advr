@@ -23,6 +23,7 @@ using MST = std::vector<std::tuple<int32_t, int32_t, std::vector<float>>>;
 using RD_SDO = std::vector<std::string>;
 using WR_SDO = std::vector<std::tuple<std::string, std::string>>;
 using RR_SDO = std::map<std::string, float>;
+using SRD_SDO = std::map<uint32_t, RR_SDO>;
 
 // PdoAuxCommand
 using PAC = std::vector<std::tuple<int32_t, int32_t>>;

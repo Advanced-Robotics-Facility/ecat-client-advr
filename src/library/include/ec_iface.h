@@ -40,6 +40,7 @@ public:
     virtual bool pdo_aux_cmd(const PAC & pac) = 0;
 
     virtual bool retrieve_slaves_info(SSI &slave_info) = 0;
+    virtual bool retrieve_all_sdo(uint32_t esc_id,RR_SDO &rr_sdo) = 0;
     virtual bool retrieve_rr_sdo(uint32_t esc_id,
                                  const RD_SDO &rd_sdo, 
                                  const WR_SDO &wr_sdo,

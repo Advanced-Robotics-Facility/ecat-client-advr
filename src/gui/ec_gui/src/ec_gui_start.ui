@@ -125,7 +125,7 @@
   <widget class="QDockWidget" name="DataObject">
    <property name="minimumSize">
     <size>
-     <width>685</width>
+     <width>861</width>
      <height>470</height>
     </size>
    </property>
@@ -157,7 +157,7 @@
         </attribute>
         <layout class="QHBoxLayout" name="horizontalLayout_7">
          <item>
-          <widget class="QTreeWidget" name="MotorData">
+          <widget class="QTreeWidget" name="PDO">
            <column>
             <property name="text">
              <string>Time</string>
@@ -193,7 +193,7 @@
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
-          <widget class="QTreeWidget" name="treeWidget">
+          <widget class="QTreeWidget" name="SDO">
            <column>
             <property name="text">
              <string>Slave Name</string>
@@ -212,9 +212,12 @@
           </widget>
          </item>
          <item>
-          <widget class="QDialogButtonBox" name="buttonBox">
+          <widget class="QDialogButtonBox" name="SDOManager">
+           <property name="layoutDirection">
+            <enum>Qt::LeftToRight</enum>
+           </property>
            <property name="standardButtons">
-            <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Ok|QDialogButtonBox::Open|QDialogButtonBox::Reset|QDialogButtonBox::RestoreDefaults|QDialogButtonBox::Save</set>
+            <set>QDialogButtonBox::Reset|QDialogButtonBox::RestoreDefaults|QDialogButtonBox::Save</set>
            </property>
           </widget>
          </item>
@@ -464,7 +467,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>1126</width>
+              <width>1026</width>
               <height>186</height>
              </rect>
             </property>
@@ -493,7 +496,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>1126</width>
+              <width>1026</width>
               <height>186</height>
              </rect>
             </property>
@@ -522,7 +525,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>1126</width>
+              <width>1026</width>
               <height>186</height>
              </rect>
             </property>
@@ -656,7 +659,7 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>430</width>
+          <width>530</width>
           <height>380</height>
          </rect>
         </property>

@@ -21,6 +21,7 @@ ENDIF(TEST_GUI)
 include_directories(src/utils/
                     src/command/
                     src/pdo/
+                    src/sdo/
                     src/component/slider
                     src/component/plot)
 
@@ -34,6 +35,7 @@ add_library(ec_gui_lib STATIC
     src/component/plot/qcustomplot.cpp
     src/command/ec_gui_cmd.cpp
     src/pdo/ec_gui_pdo.cpp
+    src/sdo/ec_gui_sdo.cpp
     )
 
 target_link_libraries(ec_gui_lib
