@@ -27,5 +27,6 @@
         <file>icon/EmbeddedPC.png</file>
         <file>icon/Ethercat.png</file>
         <file>icon/laptop.png</file>
+        <file>icon/esc_icon.png</file>
     </qresource>
 </RCC>

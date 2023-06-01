@@ -2,13 +2,11 @@
 
 using namespace std::chrono;
 EcGuiCmd::EcGuiCmd(EcGuiSlider::Ptr ec_gui_slider,
-                   std::vector<int> slave_id_led,
                    EcIface::Ptr client,
                    QWidget *parent) :
     QWidget(parent),
     _client(client),
-    _ec_gui_slider(ec_gui_slider),
-    _slave_id_led(slave_id_led)
+    _ec_gui_slider(ec_gui_slider)
 {
 
     /*  EtherCAT Master commands */

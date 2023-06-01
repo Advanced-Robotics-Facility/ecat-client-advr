@@ -14,7 +14,6 @@ public:
 
     typedef std::shared_ptr<EcGuiCmd> Ptr;
     EcGuiCmd(EcGuiSlider::Ptr ec_gui_slider,
-             std::vector<int> slave_id_led,
              EcIface::Ptr client,
              QWidget * parent = 0);
 

@@ -44,6 +44,7 @@ private:
   
   QDockWidget *_command_dw,*_pdo_dw,*_graphics_dw;
   QPushButton *_scan_device;
+  QTreeWidget * _net_tree_wid;
   
   EcUtils::EC_CONFIG  _ec_config;
   std::vector<int> _slave_id_led;
@@ -87,6 +88,7 @@ private:
   void error_on_scannig();
   void restart_gui();
   void try_gui();
+  void add_device();
   void scan_device();
   void clear_device();
 };

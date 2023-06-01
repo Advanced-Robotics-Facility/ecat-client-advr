@@ -63,9 +63,9 @@ EcGuiStart::EcGuiStart(EcUtils::EC_CONFIG ec_config,EcIface::Ptr client,QWidget 
     _graphics_dw = findChild<QDockWidget *>("Graphics");
     connect(_graphics_dw, SIGNAL(topLevelChanged(bool)), this, SLOT(DwTopLevelChanged(bool)));
     
-    auto ms_wid = findChild<QTreeWidget *>("NetworkSetup");
-    ms_wid->resizeColumnToContents(0);
-    ms_wid->expandAll();
+    _net_tree_wid = findChild<QTreeWidget *>("NetworkSetup");
+    _net_tree_wid->resizeColumnToContents(0);
+    _net_tree_wid->expandAll();
     
     _scan_device = findChild<QPushButton *>("ScanDevice");
     connect(_scan_device, &QPushButton::released,
@@ -121,7 +121,6 @@ EcGuiStart::EcGuiStart(EcUtils::EC_CONFIG ec_config,EcIface::Ptr client,QWidget 
                                              this);
 
     _ec_gui_cmd = std::make_shared<EcGuiCmd>(_ec_gui_slider,
-                                             _slave_id_led,
                                              _client,
                                              this);
 
@@ -156,6 +155,7 @@ EcGuiStart::EcGuiStart(EcUtils::EC_CONFIG ec_config,EcIface::Ptr client,QWidget 
 
 void EcGuiStart::restart_gui()
 {
+    add_device();
     _ec_gui_slider->create_sliders(_joint_info_map);
     _ec_gui_cmd->restart_ec_gui_cmd();
     _ec_gui_pdo->restart_ec_gui_pdo();
@@ -210,8 +210,43 @@ void EcGuiStart::error_on_scannig()
     msgBox.exec();
 }
 
+void EcGuiStart::add_device()
+{
+    auto ec_device_item =_net_tree_wid->topLevelItem(0)->child(2)->child(0);
+    for ( auto &[esc_id, type, pos] : _device_info )
+    {
+        QTreeWidgetItem * type_item = new QTreeWidgetItem();
+        std::string type_str = "   type: "+std::to_string(type);
+        type_item->setText(0,QString::fromStdString(type_str));
+        type_item->setFont(0,QFont("Sans Serif", 10));
+        
+        QTreeWidgetItem * pos_item = new QTreeWidgetItem();
+        std::string pos_str = "   pos: "+std::to_string(pos);
+        pos_item->setText(0,QString::fromStdString(pos_str));
+        pos_item->setFont(0,QFont("Sans Serif", 10));
+        
+        QTreeWidgetItem * esc_item = new QTreeWidgetItem();
+        std::string esc_id_name = "esc_id_"+std::to_string(esc_id);
+        esc_item->setText(0,QString::fromStdString(esc_id_name));
+        esc_item->setFont(0,QFont("Sans Serif", 12));
+        esc_item->setIcon(0,QIcon(":/icon/esc_icon.png"));
+        
+        esc_item->addChild(type_item);
+        esc_item->addChild(pos_item);
+        ec_device_item->addChild(esc_item);
+        
+    }
+}
+
 void EcGuiStart::clear_device()
 {
+    auto ec_device_item =_net_tree_wid->topLevelItem(0)->child(2)->child(0);
+    while(ec_device_item->childCount()>0)
+    {
+        auto child = ec_device_item->child(0);
+        ec_device_item->removeChild(child);
+    }
+    
     _device_info.clear();
     _joint_info_map.clear();
     
