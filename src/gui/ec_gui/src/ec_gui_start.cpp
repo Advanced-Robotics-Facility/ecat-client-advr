@@ -376,14 +376,23 @@ void EcGuiStart::onScanDeviceReleased()
         QMessageBox::StandardButton reply;
         QMessageBox msgBox;
         reply = msgBox.warning(this,msgBox.windowTitle(),
-                               tr("EtherCAT device(s) already scanned.\n"
-                               "Do you want to rescan?"),
+                            tr("EtherCAT device(s) already scanned.\n"
+                            "Do you want to rescan?"),
                                 QMessageBox::Yes|QMessageBox::No);
         
         if(reply == QMessageBox::Yes)
         {
-            clear_device();
-            scan_device();
+            if(!_ec_gui_cmd->get_cmd_sts(_ctrl_cmd))
+            {
+                clear_device();
+                scan_device();
+            }
+            else
+            {
+                msgBox.critical(this,msgBox.windowTitle(),
+                                tr("Cannot rescan EtherCAT device(s) already started or controlled.\n"));
+                return;
+            }
         }
         else
         {
