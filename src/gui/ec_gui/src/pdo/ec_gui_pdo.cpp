@@ -1,9 +1,8 @@
 #include "ec_gui_pdo.h"
 #include "ec_gui_utils.h"
 
-EcGuiPdo::EcGuiPdo(EcGuiSlider::Ptr ec_gui_slider,EcIface::Ptr client, QWidget *parent):
+EcGuiPdo::EcGuiPdo(EcGuiSlider::Ptr ec_gui_slider, QWidget *parent):
 QWidget(parent),
-_client(client),
 _ec_gui_slider(ec_gui_slider)
 {
     _tree_wid = parent->findChild<QTreeWidget *>("PDO");
@@ -67,8 +66,11 @@ void EcGuiPdo::set_internal_map(MotorStatusMap internal_motor_status_map,
     _internal_imu_status_map = internal_imu_status_map;
 }
 
-void EcGuiPdo::restart_ec_gui_pdo()
+void EcGuiPdo::restart_ec_gui_pdo(EcIface::Ptr client)
 {
+    _client.reset();
+    _client=client;
+    
     _tree_wid->clear();
     _custom_plot->clearGraphs();
     _graph_pdo_map.clear();

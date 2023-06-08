@@ -22,6 +22,7 @@ include_directories(src/utils/
                     src/command/
                     src/pdo/
                     src/sdo/
+                    src/wrapper/
                     src/component/slider
                     src/component/plot)
 
@@ -36,6 +37,7 @@ add_library(ec_gui_lib STATIC
     src/command/ec_gui_cmd.cpp
     src/pdo/ec_gui_pdo.cpp
     src/sdo/ec_gui_sdo.cpp
+    src/wrapper/ec_gui_wrapper.cpp
     )
 
 target_link_libraries(ec_gui_lib

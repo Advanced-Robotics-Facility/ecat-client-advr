@@ -1,5 +1,4 @@
 #include "slider_widget.h"
-#include <iostream>
 
 inline void initSlidersResource()
 {

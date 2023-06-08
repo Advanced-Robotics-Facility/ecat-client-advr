@@ -2,9 +2,8 @@
 #include "ec_gui_utils.h"
 #define SDO_VALUE_COL 2
 
-EcGuiSdo::EcGuiSdo(EcIface::Ptr client, QWidget *parent):
-QWidget(parent),
-_client(client)
+EcGuiSdo::EcGuiSdo(QWidget *parent):
+QWidget(parent)
 {
     _sdo_tree_wid = parent->findChild<QTreeWidget *>("SDO");
     _sdo_tree_wid->setEditTriggers(QAbstractItemView::EditKeyPressed| QAbstractItemView::SelectedClicked);
@@ -90,8 +89,11 @@ void EcGuiSdo::OnMouseClicked(QTreeWidgetItem* item, int column)
     } 
 }
 
-void EcGuiSdo::restart_ec_gui_sdo(SRD_SDO sdo_map)
+void EcGuiSdo::restart_ec_gui_sdo(EcIface::Ptr client,SRD_SDO sdo_map)
 {
+    _client.reset();
+    _client=client;
+    
     _sdo_tree_wid->clear();
     
     _sdo_map.clear();

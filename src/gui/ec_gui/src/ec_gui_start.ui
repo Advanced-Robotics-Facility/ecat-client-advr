@@ -827,16 +827,16 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_4">
            <item>
-            <widget class="QPushButton" name="EthercatMaster">
+            <widget class="QPushButton" name="StartEthercatSystem">
              <property name="text">
-              <string>Start EtherCAT Master</string>
+              <string>Start EtherCAT System</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="Server">
+            <widget class="QPushButton" name="StopEthercatSystem">
              <property name="text">
-              <string>Start Server</string>
+              <string>Stop EtherCAT System</string>
              </property>
             </widget>
            </item>

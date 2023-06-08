@@ -2,10 +2,8 @@
 
 using namespace std::chrono;
 EcGuiCmd::EcGuiCmd(EcGuiSlider::Ptr ec_gui_slider,
-                   EcIface::Ptr client,
                    QWidget *parent) :
     QWidget(parent),
-    _client(client),
     _ec_gui_slider(ec_gui_slider)
 {
 
@@ -66,6 +64,8 @@ EcGuiCmd::EcGuiCmd(EcGuiSlider::Ptr ec_gui_slider,
     _motor_start_req=_send_ref=false;
     _ctrl_cmd=0;
     
+    readCommand();
+    
     for(int led_index=0; led_index < _slave_id_led.size() ;led_index++)
     {
         auto slave_id = _slave_id_led[led_index];
@@ -89,10 +89,15 @@ EcGuiCmd::EcGuiCmd(EcGuiSlider::Ptr ec_gui_slider,
     }
 }
 
-void EcGuiCmd::restart_ec_gui_cmd()
+void EcGuiCmd::restart_ec_gui_cmd(EcIface::Ptr client)
 {
+    _client.reset();
+    _client=client;
+    
     _slider_map = _ec_gui_slider->get_sliders();
     
+    _fieldtype_combobox->setCurrentIndex(0);
+    _mode_type_combobox->setCurrentIndex(0);
     readCommand();
 }
 
@@ -196,10 +201,6 @@ void EcGuiCmd::readModeType()
         {
             throw std::runtime_error("Error: Found not valid starting mode");
         }
-    }
-    else
-    {
-        _actual_sw_map_selected=_slider_map.actual_sw_map_selected;
     }
     
     _ec_gui_slider->set_actual_sliders(_actual_sw_map_selected);

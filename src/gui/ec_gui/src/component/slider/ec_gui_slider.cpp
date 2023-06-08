@@ -90,9 +90,11 @@ void EcGuiSlider::delete_sliders()
 {
     _slider_map.actual_sw_map_selected.clear();
     
+
     delete_items(_sliders_poslayout->layout());
     _slider_map.position_sw_map.clear();
     
+
     delete_items(_sliders_vellayout->layout());
     _slider_map.velocity_sw_map.clear();
     

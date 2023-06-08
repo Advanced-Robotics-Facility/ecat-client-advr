@@ -14,12 +14,11 @@ public:
     
         typedef std::shared_ptr<EcGuiSdo> Ptr;
 
-        EcGuiSdo(EcIface::Ptr client,
-                 QWidget * parent = 0);
+        EcGuiSdo(QWidget * parent = 0);
 
         ~EcGuiSdo();
         
-        void restart_ec_gui_sdo(SRD_SDO sdo_map);
+        void restart_ec_gui_sdo(EcIface::Ptr client,SRD_SDO sdo_map);
         void set_internal_sdo_map(SRD_SDO internal_sdo_map);
  
 public slots:

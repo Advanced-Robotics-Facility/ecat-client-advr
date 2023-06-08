@@ -14,7 +14,6 @@ public:
 
     typedef std::shared_ptr<EcGuiCmd> Ptr;
     EcGuiCmd(EcGuiSlider::Ptr ec_gui_slider,
-             EcIface::Ptr client,
              QWidget * parent = 0);
 
     ~EcGuiCmd();
@@ -26,7 +25,7 @@ public:
     void onNotAllBrakeReleased();
     void onAllBrakeReleased();
     void onLED_ON_OFF_Released();
-    void restart_ec_gui_cmd();
+    void restart_ec_gui_cmd(EcIface::Ptr client);
     
 public slots:
     void readCommand();

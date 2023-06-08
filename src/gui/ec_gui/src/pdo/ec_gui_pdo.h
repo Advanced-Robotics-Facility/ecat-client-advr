@@ -18,7 +18,6 @@ public:
       typedef std::shared_ptr<EcGuiPdo> Ptr;
     
       EcGuiPdo(EcGuiSlider::Ptr ec_gui_slider,
-               EcIface::Ptr client,
                QWidget * parent = 0);
       
       ~EcGuiPdo();
@@ -28,7 +27,7 @@ public:
                             PwrStatusMap internal_pow_status_map,
                             ImuStatusMap internal_imu_status_map);
       
-      void restart_ec_gui_pdo();
+      void restart_ec_gui_pdo(EcIface::Ptr client);
       void restart_receive_timer();
       void read();
       void set_filter(bool first_send, int time_ms);
