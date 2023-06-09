@@ -10,6 +10,7 @@
 #include "ec_utils.h"
 
 #include "ec_gui_wrapper.h"
+#include "ec_gui_terminal.h"
 
 
 class EcGuiStart : public QMainWindow
@@ -27,6 +28,7 @@ public slots:
     void onStartEtherCATSystem();
     void onStopEtherCATSystem();
     void onScanDeviceReleased();
+    
 private:
   
   EcGuiWrapper::ec_wrapper_info_t _ec_wrapper_info;
@@ -40,6 +42,7 @@ private:
   void kill_exe(QProcess *process,QString exe_name);
   QStringList _ssh_command;
   QString _ec_master_stoud,_server_stdout;
+  EcGuiTerminal::Ptr _ec_master_terminal, _server_terminal;
   
   void on_ec_process_readyReadStandardOutput();
   void on_server_process_readyReadStandardOutput();

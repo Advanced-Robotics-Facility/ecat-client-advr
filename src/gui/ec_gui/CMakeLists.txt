@@ -24,7 +24,8 @@ include_directories(src/utils/
                     src/sdo/
                     src/wrapper/
                     src/component/slider
-                    src/component/plot)
+                    src/component/plot
+                    src/component/terminal)
 
 # compile widget
 add_library(ec_gui_lib STATIC
@@ -34,6 +35,7 @@ add_library(ec_gui_lib STATIC
     src/component/slider/slider_widget.cpp
     src/component/slider/slider_widget_calib.cpp
     src/component/plot/qcustomplot.cpp
+    src/component/terminal/ec_gui_terminal.cpp
     src/command/ec_gui_cmd.cpp
     src/pdo/ec_gui_pdo.cpp
     src/sdo/ec_gui_sdo.cpp

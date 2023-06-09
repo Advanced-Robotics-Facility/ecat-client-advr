@@ -625,7 +625,7 @@
   <widget class="QDockWidget" name="MeasurementSetup">
    <property name="minimumSize">
     <size>
-     <width>450</width>
+     <width>400</width>
      <height>400</height>
     </size>
    </property>
@@ -678,7 +678,7 @@
            <property name="iconSize">
             <size>
              <width>60</width>
-             <height>30</height>
+             <height>25</height>
             </size>
            </property>
            <property name="indentation">
@@ -700,7 +700,7 @@
             <bool>true</bool>
            </property>
            <property name="columnCount">
-            <number>3</number>
+            <number>5</number>
            </property>
            <attribute name="headerVisible">
             <bool>true</bool>
@@ -727,6 +727,11 @@
            </column>
            <column>
             <property name="text">
+             <string>Host Name</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
              <string>IP</string>
             </property>
            </column>
@@ -735,14 +740,28 @@
              <string>Port</string>
             </property>
            </column>
+           <column>
+            <property name="text">
+             <string>Terminal</string>
+            </property>
+            <property name="textAlignment">
+             <set>AlignLeading|AlignVCenter</set>
+            </property>
+           </column>
            <item>
             <property name="text">
-             <string>EtherCAT Measurement Setup                 </string>
+             <string>EtherCAT System Setup                 </string>
             </property>
             <property name="font">
              <font>
               <pointsize>9</pointsize>
              </font>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="text">
+             <string/>
             </property>
             <property name="text">
              <string/>
@@ -759,10 +778,16 @@
                <normaloff>:/icon/laptop.png</normaloff>:/icon/laptop.png</iconset>
              </property>
              <property name="text">
+              <string>user</string>
+             </property>
+             <property name="text">
               <string>localhost</string>
              </property>
              <property name="text">
               <string>54321</string>
+             </property>
+             <property name="text">
+              <string/>
              </property>
             </item>
             <item>
@@ -774,10 +799,23 @@
                <normaloff>:/icon/server.jpeg</normaloff>:/icon/server.jpeg</iconset>
              </property>
              <property name="text">
+              <string>user</string>
+             </property>
+             <property name="text">
               <string>localhost</string>
              </property>
              <property name="text">
               <string>54321</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="textAlignment">
+              <set>AlignTrailing|AlignVCenter</set>
+             </property>
+             <property name="icon">
+              <iconset resource="ec_gui_start_resources.qrc">
+               <normaloff>:/icon/terminal.png</normaloff>:/icon/terminal.png</iconset>
              </property>
              <property name="flags">
               <set>ItemIsSelectable|ItemIsEditable|ItemIsDragEnabled|ItemIsDropEnabled|ItemIsUserCheckable|ItemIsEnabled</set>
@@ -792,10 +830,20 @@
                <normaloff>:/icon/EmbeddedPC.png</normaloff>:/icon/EmbeddedPC.png</iconset>
              </property>
              <property name="text">
+              <string>user</string>
+             </property>
+             <property name="text">
               <string>localhost</string>
              </property>
              <property name="text">
               <string/>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="ec_gui_start_resources.qrc">
+               <normaloff>:/icon/terminal.png</normaloff>:/icon/terminal.png</iconset>
              </property>
              <property name="flags">
               <set>ItemIsSelectable|ItemIsEditable|ItemIsDragEnabled|ItemIsDropEnabled|ItemIsUserCheckable|ItemIsEnabled</set>
@@ -812,6 +860,12 @@
               <property name="icon">
                <iconset resource="ec_gui_start_resources.qrc">
                 <normaloff>:/icon/Ethercat.png</normaloff>:/icon/Ethercat.png</iconset>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="text">
+               <string/>
               </property>
               <property name="text">
                <string/>

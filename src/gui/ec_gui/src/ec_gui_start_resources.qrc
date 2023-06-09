@@ -28,5 +28,7 @@
         <file>icon/Ethercat.png</file>
         <file>icon/laptop.png</file>
         <file>icon/esc_icon.png</file>
+        <file>component/terminal/ec_gui_terminal.ui</file>
+        <file>icon/terminal.png</file>
     </qresource>
 </RCC>
