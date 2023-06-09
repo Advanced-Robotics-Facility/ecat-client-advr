@@ -100,7 +100,7 @@ void EcGuiStart::on_ec_process_readyReadStandardOutput()
    _ec_master_stoud.clear();
    while(_ec_master_process->canReadLine()){
        _ec_master_stoud = _ec_master_process->readLine();
-       qDebug() << _ec_master_stoud;
+       _ec_master_terminal->setText(_ec_master_stoud);
   }
 }
 
@@ -109,7 +109,7 @@ void EcGuiStart::on_server_process_readyReadStandardOutput()
    _server_stdout.clear();
    while(_server_process->canReadLine()){
        _server_stdout = _server_process->readLine();
-       qDebug() << _server_stdout;
+       _server_terminal->setText(_server_stdout);
   }
 }
 
@@ -161,25 +161,25 @@ void EcGuiStart::onStartEtherCATSystem()
     _ssh_command.append("user");
     _ssh_command.append("ssh");
     _ssh_command.append("user@127.0.01");
-//     
-//     QString bin_file_name = "'repl'";
-//     kill_exe(_ec_master_process,bin_file_name);
-//     auto bin_file_path = find_exe(_ec_master_process,bin_file_name,_ec_master_stoud);
-//     if(!bin_file_path.isEmpty())
-//     {
-//         start_exe(_ec_master_process,bin_file_path);
-//     }
-//     
-//     bin_file_name = "'udp_server'";
-//     kill_exe(_server_process,bin_file_name);
-//     
-//     bin_file_path.clear();
-//     bin_file_path = find_exe(_server_process,bin_file_name,_server_stdout);
-// 
-//     if(!bin_file_path.isEmpty())
-//     {
-//         start_exe(_server_process,bin_file_path);
-//     }
+    
+    QString bin_file_name = "'repl'";
+    kill_exe(_ec_master_process,bin_file_name);
+    auto bin_file_path = find_exe(_ec_master_process,bin_file_name,_ec_master_stoud);
+    if(!bin_file_path.isEmpty())
+    {
+        start_exe(_ec_master_process,bin_file_path);
+    }
+    
+    bin_file_name = "'udp_server'";
+    kill_exe(_server_process,bin_file_name);
+    
+    bin_file_path.clear();
+    bin_file_path = find_exe(_server_process,bin_file_name,_server_stdout);
+
+    if(!bin_file_path.isEmpty())
+    {
+        start_exe(_server_process,bin_file_path);
+    }
 }
 
 void EcGuiStart::onStopEtherCATSystem()

@@ -43,7 +43,7 @@ QWidget(parent)
 
 void EcGuiTerminal::setText(QString terminal_line)
 {
-
+    _terminal_txt->setText(terminal_line);
 }
 
 
