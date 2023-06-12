@@ -799,7 +799,7 @@
                <normaloff>:/icon/server.jpeg</normaloff>:/icon/server.jpeg</iconset>
              </property>
              <property name="text">
-              <string>user</string>
+              <string>embedded</string>
              </property>
              <property name="text">
               <string>localhost</string>
@@ -830,7 +830,7 @@
                <normaloff>:/icon/EmbeddedPC.png</normaloff>:/icon/EmbeddedPC.png</iconset>
              </property>
              <property name="text">
-              <string>user</string>
+              <string>embedded</string>
              </property>
              <property name="text">
               <string>localhost</string>

@@ -55,6 +55,7 @@ EcGuiStart::EcGuiStart(EcIface::Ptr client,QWidget *parent) :
     _net_tree_wid = findChild<QTreeWidget *>("NetworkSetup");
     _net_tree_wid->resizeColumnToContents(0);
     _net_tree_wid->expandAll();
+    connect(_net_tree_wid, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)),this, SLOT(OnMouseDoubleClicked(QTreeWidgetItem*, int)));
     
     auto ec_sys_start = findChild<QPushButton *>("StartEthercatSystem");
     connect(ec_sys_start, &QPushButton::released,
@@ -113,6 +114,20 @@ void EcGuiStart::on_server_process_readyReadStandardOutput()
   }
 }
 
+void EcGuiStart::OnMouseDoubleClicked(QTreeWidgetItem* item, int column)
+{
+    if(column == 4 && item->text(0)=="Server")
+    {
+        _server_terminal->show();
+        _server_terminal->setWindowState(Qt::WindowActive);
+    }
+    else if(column == 4 && item->text(0)=="EtherCAT Master")
+    {
+        _ec_master_terminal->show();
+        _ec_master_terminal->setWindowState(Qt::WindowActive);
+    }
+}
+
 
 QString EcGuiStart::find_exe(QProcess * process,QString exe_name,QString& stdout)
 {
@@ -153,8 +168,6 @@ void EcGuiStart::start_exe(QProcess *process,QString bin_file_path)
 
 void EcGuiStart::onStartEtherCATSystem()
 {
-    _ec_master_terminal->show();
-    _server_terminal->show();
     _ssh_command.clear();
     
     _ssh_command.append("-p");

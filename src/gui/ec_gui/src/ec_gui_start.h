@@ -28,6 +28,7 @@ public slots:
     void onStartEtherCATSystem();
     void onStopEtherCATSystem();
     void onScanDeviceReleased();
+    void OnMouseDoubleClicked(QTreeWidgetItem* item, int column);
     
 private:
   
