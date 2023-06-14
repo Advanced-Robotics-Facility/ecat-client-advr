@@ -817,9 +817,6 @@
               <iconset resource="ec_gui_start_resources.qrc">
                <normaloff>:/icon/terminal.png</normaloff>:/icon/terminal.png</iconset>
              </property>
-             <property name="flags">
-              <set>ItemIsSelectable|ItemIsEditable|ItemIsDragEnabled|ItemIsDropEnabled|ItemIsUserCheckable|ItemIsEnabled</set>
-             </property>
             </item>
             <item>
              <property name="text">
@@ -844,9 +841,6 @@
              <property name="icon">
               <iconset resource="ec_gui_start_resources.qrc">
                <normaloff>:/icon/terminal.png</normaloff>:/icon/terminal.png</iconset>
-             </property>
-             <property name="flags">
-              <set>ItemIsSelectable|ItemIsEditable|ItemIsDragEnabled|ItemIsDropEnabled|ItemIsUserCheckable|ItemIsEnabled</set>
              </property>
              <item>
               <property name="text">

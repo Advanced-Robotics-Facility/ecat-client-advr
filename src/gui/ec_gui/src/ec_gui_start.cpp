@@ -9,6 +9,7 @@
 #include <QFile>
 
 #include <chrono>
+
 #define _HYST_THRESHOLD 5 // 5s
 
 #define LO_PWR_DC_MC 0x12
@@ -16,6 +17,9 @@
 #define FT6 0x20
 #define POW_F28M36_BOARD 0x32
 #define IMU_ANY 0x40
+#define HOSTNAME_COL 1
+#define HOSTIP_COL 2
+#define HOSTPORT_COL 3
 
 using namespace std::chrono;
 
@@ -55,7 +59,26 @@ EcGuiStart::EcGuiStart(EcIface::Ptr client,QWidget *parent) :
     _net_tree_wid = findChild<QTreeWidget *>("NetworkSetup");
     _net_tree_wid->resizeColumnToContents(0);
     _net_tree_wid->expandAll();
+    _net_tree_wid->installEventFilter(this);
     connect(_net_tree_wid, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)),this, SLOT(OnMouseDoubleClicked(QTreeWidgetItem*, int)));
+    
+    _net_item = nullptr;
+    _net_column=-1;
+    
+    _server_hostname=_net_tree_wid->topLevelItem(0)->child(1)->text(1);
+    
+    if(_net_tree_wid->topLevelItem(0)->child(1)->text(2)=="localhost")
+    {
+        _server_ip="127.0.0.1";
+    }
+    else
+    {
+        _server_ip=_net_tree_wid->topLevelItem(0)->child(1)->text(2);
+    }
+    _server_port=_net_tree_wid->topLevelItem(0)->child(1)->text(3);
+    
+    connect(_net_tree_wid, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)),this, SLOT(OnMouseClicked(QTreeWidgetItem*, int)));
+
     
     auto ec_sys_start = findChild<QPushButton *>("StartEthercatSystem");
     connect(ec_sys_start, &QPushButton::released,
@@ -126,6 +149,65 @@ void EcGuiStart::OnMouseDoubleClicked(QTreeWidgetItem* item, int column)
         _ec_master_terminal->show();
         _ec_master_terminal->setWindowState(Qt::WindowActive);
     }
+}
+
+void EcGuiStart::set_ec_network()
+{
+    _server_hostname=_net_tree_wid->topLevelItem(0)->child(1)->text(1);
+    _net_tree_wid->topLevelItem(0)->child(2)->setText(HOSTNAME_COL,_server_hostname);
+    
+    _net_tree_wid->topLevelItem(0)->child(2)->setText(HOSTIP_COL,_net_tree_wid->topLevelItem(0)->child(1)->text(2));
+    if(_net_tree_wid->topLevelItem(0)->child(1)->text(2)=="localhost")
+    {
+        _server_ip="127.0.0.1";
+    }
+    else
+    {
+        _server_ip=_net_tree_wid->topLevelItem(0)->child(1)->text(2);
+    }
+    
+    _server_port=_net_tree_wid->topLevelItem(0)->child(1)->text(3);
+    _net_tree_wid->topLevelItem(0)->child(0)->setText(HOSTPORT_COL,_server_port);
+    
+    _net_tree_wid->closePersistentEditor(_net_item,_net_column); // close old editor
+    _net_item = nullptr;
+    _net_column=-1;
+}
+
+bool EcGuiStart::eventFilter( QObject* o, QEvent* e )
+{
+    if( o == _net_tree_wid && e->type() == QEvent::KeyRelease)
+    {
+        QKeyEvent *qkey = static_cast<QKeyEvent*>(e);
+        if(qkey->key() == Qt::Key_Return)
+        {
+            set_ec_network();
+        }
+    }
+    return false;
+}
+
+void EcGuiStart::OnMouseClicked(QTreeWidgetItem* item, int column)
+{
+    if(_net_item != nullptr)
+    {
+        _net_tree_wid->closePersistentEditor(_net_item,_net_column); // close old editor
+    }
+
+    _net_item = item;
+    _net_column=column;
+
+    if((item->text(0)=="Server") &&
+       ((column == HOSTNAME_COL) || 
+        (column == HOSTIP_COL)   ||
+        (column == HOSTPORT_COL)))    
+    {
+        _net_tree_wid->openPersistentEditor(item,column);
+    }
+    else
+    {
+        _net_tree_wid->closePersistentEditor(item,column);
+    } 
 }
 
 

@@ -29,6 +29,10 @@ public slots:
     void onStopEtherCATSystem();
     void onScanDeviceReleased();
     void OnMouseDoubleClicked(QTreeWidgetItem* item, int column);
+    void OnMouseClicked(QTreeWidgetItem* item, int column);
+    
+protected:
+        bool eventFilter( QObject* o, QEvent* e );
     
 private:
   
@@ -36,6 +40,8 @@ private:
   EcGuiWrapper::Ptr _ec_gui_wrapper;
   
   QTreeWidget * _net_tree_wid;
+  QTreeWidgetItem* _net_item;
+  int _net_column;
   
   QProcess *_ec_master_process,*_server_process;
   QString find_exe(QProcess * process,QString exe_name,QString& stdout);
@@ -44,9 +50,11 @@ private:
   QStringList _ssh_command;
   QString _ec_master_stoud,_server_stdout;
   EcGuiTerminal::Ptr _ec_master_terminal, _server_terminal;
+  QString _server_hostname,_server_ip,_server_port;
   
   void on_ec_process_readyReadStandardOutput();
   void on_server_process_readyReadStandardOutput();
+  void set_ec_network();
   void error_on_scannig();
   void restart_gui();
   void try_gui();
