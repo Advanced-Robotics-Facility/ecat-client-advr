@@ -52,6 +52,7 @@ private:
   QString _ec_master_stoud,_server_stdout;
   EcGuiTerminal::Ptr _ec_master_terminal, _server_terminal;
   QString _server_hostname,_server_ip,_server_port,_server_protocol;
+  bool _etherCAT_sys_started;
   
   QComboBox * _protocol_combobox;
   

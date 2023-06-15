@@ -128,6 +128,8 @@ EcGuiStart::EcGuiStart(QWidget *parent) :
     _server_terminal=std::make_shared<EcGuiTerminal>();
     _server_terminal->setWindowTitle("Server terminal");
     _server_terminal->setAttribute( Qt::WA_QuitOnClose, false );
+    
+    _etherCAT_sys_started=false;
 }
 
 void EcGuiStart::on_ec_process_readyReadStandardOutput()
@@ -332,57 +334,68 @@ void EcGuiStart::create_ssh_cmd()
 
 void EcGuiStart::onStartEtherCATSystem()
 {
-    create_ssh_cmd();
     
-    QString bin_file_name = "'repl'";
-    kill_process(_ec_master_process,bin_file_name,_ec_master_stoud);
-    auto bin_file_path = find_process(_ec_master_process,bin_file_name,_ec_master_stoud);
-    if(!bin_file_path.isEmpty())
+    if(!_etherCAT_sys_started)
     {
-        start_process(_ec_master_process,bin_file_path);
-    }
+        create_ssh_cmd();
     
-    bin_file_name = "'udp_server'";
-    kill_process(_server_process,bin_file_name,_server_stdout);
-    
-    bin_file_path.clear();
-    bin_file_path = find_process(_server_process,bin_file_name,_server_stdout);
+        QString bin_file_name = "'repl'";
+        kill_process(_ec_master_process,bin_file_name,_ec_master_stoud);
+        auto bin_file_path = find_process(_ec_master_process,bin_file_name,_ec_master_stoud);
+        if(!bin_file_path.isEmpty())
+        {
+            start_process(_ec_master_process,bin_file_path);
+        }
+        
+        bin_file_name = "'udp_server'";
+        kill_process(_server_process,bin_file_name,_server_stdout);
+        
+        bin_file_path.clear();
+        bin_file_path = find_process(_server_process,bin_file_name,_server_stdout);
 
-    if(!bin_file_path.isEmpty())
-    {
-        start_process(_server_process,bin_file_path);
+        if(!bin_file_path.isEmpty())
+        {
+            start_process(_server_process,bin_file_path);
+        }
+        
+        sleep(1);
+        create_ec_iface();
+        
+        _etherCAT_sys_started=true;
     }
-    
-    sleep(1);
-    create_ec_iface();
 }
 
 void EcGuiStart::onStopEtherCATSystem()
 {
-    create_ssh_cmd();
-    
-    if(_ec_wrapper_info.client)
+    if(_etherCAT_sys_started)
     {
-        if(_ec_wrapper_info.client->is_client_alive())
+        create_ssh_cmd();
+        
+        if(_ec_wrapper_info.client)
         {
-            _ec_wrapper_info.client->stop_client();
+            if(_ec_wrapper_info.client->is_client_alive())
+            {
+                _ec_wrapper_info.client->stop_client();
+            }
+            _ec_wrapper_info.client.reset();
         }
-        _ec_wrapper_info.client.reset();
+        
+        QString bin_file_name = "'udp_server'";
+        _server_process->close();
+        kill_process(_server_process,bin_file_name,_server_stdout);
+        
+        _ec_master_process->close();
+        bin_file_name = "'repl'";
+        kill_process(_ec_master_process,bin_file_name,_ec_master_stoud);
+        
+        clear_device();
+        EcGuiWrapper::ec_wrapper_info_t _ec_wrapper_info_reset;
+        _ec_wrapper_info=_ec_wrapper_info_reset;
+        
+        restart_gui();
+        
+        _etherCAT_sys_started=false;
     }
-    
-    QString bin_file_name = "'udp_server'";
-    _server_process->close();
-    kill_process(_server_process,bin_file_name,_server_stdout);
-    
-    _ec_master_process->close();
-    bin_file_name = "'repl'";
-    kill_process(_ec_master_process,bin_file_name,_ec_master_stoud);
-    
-    clear_device();
-    EcGuiWrapper::ec_wrapper_info_t _ec_wrapper_info_reset;
-    _ec_wrapper_info=_ec_wrapper_info_reset;
-    
-    restart_gui();
 }
 
 void EcGuiStart::restart_gui()
