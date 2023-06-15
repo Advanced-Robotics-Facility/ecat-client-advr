@@ -6,6 +6,12 @@
 using namespace std;
 using namespace std::chrono;
 
+EcUtils::EcUtils(EC_CONFIG ec_cfg):
+_ec_cfg(ec_cfg)
+{
+    
+}
+
 EcUtils::EcUtils(const YAML::Node & ec_cfg)
 {   
     
@@ -147,7 +153,7 @@ EcIface::Ptr EcUtils::make_ec_iface()
     }
     else
     {
-        throw std::runtime_error("EtherCAT client protocol not recognized, protocols allowed are upd, zmq, ros2 and iddp");
+        throw std::runtime_error("EtherCAT client protocol not recognized, protocols allowed are tcp, udp, ros2 and iddp");
     }
     
     if(ec_iface_ptr != nullptr)

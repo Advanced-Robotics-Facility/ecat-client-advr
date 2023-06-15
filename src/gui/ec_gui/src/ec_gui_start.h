@@ -19,8 +19,7 @@ class EcGuiStart : public QMainWindow
 
 public:
 
-    explicit EcGuiStart(EcIface::Ptr client,
-                        QWidget *parent = nullptr);
+    explicit EcGuiStart(QWidget *parent = nullptr);
 
     ~EcGuiStart();
 
@@ -30,6 +29,7 @@ public slots:
     void onScanDeviceReleased();
     void OnMouseDoubleClicked(QTreeWidgetItem* item, int column);
     void OnMouseClicked(QTreeWidgetItem* item, int column);
+    void OnProtocolChanged();
     
 protected:
         bool eventFilter( QObject* o, QEvent* e );
@@ -44,13 +44,16 @@ private:
   int _net_column;
   
   QProcess *_ec_master_process,*_server_process;
-  QString find_exe(QProcess * process,QString exe_name,QString& stdout);
-  void start_exe(QProcess *process,QString bin_file_path);
-  void kill_exe(QProcess *process,QString exe_name);
+  QString find_running_process(QProcess * process,QString bin_name,QString& stdout);
+  QString find_process(QProcess * process,QString bin_name,QString& stdout);
+  void start_process(QProcess *process,QString bin_file_path);
+  void kill_process(QProcess *process,QString bin_name,QString& stdout);
   QStringList _ssh_command;
   QString _ec_master_stoud,_server_stdout;
   EcGuiTerminal::Ptr _ec_master_terminal, _server_terminal;
-  QString _server_hostname,_server_ip,_server_port;
+  QString _server_hostname,_server_ip,_server_port,_server_protocol;
+  
+  QComboBox * _protocol_combobox;
   
   void on_ec_process_readyReadStandardOutput();
   void on_server_process_readyReadStandardOutput();
@@ -61,6 +64,8 @@ private:
   void add_device();
   void scan_device();
   void clear_device();
+  void create_ec_iface();
+  void create_ssh_cmd();
 };
 
 #endif // EC_GUI_START_H

@@ -918,7 +918,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QComboBox" name="comboBox">
+            <widget class="QComboBox" name="Protocol">
              <property name="font">
               <font>
                <pointsize>12</pointsize>
@@ -929,17 +929,17 @@
              </property>
              <item>
               <property name="text">
-               <string>TCP</string>
+               <string>tcp</string>
               </property>
              </item>
              <item>
               <property name="text">
-               <string>UDP</string>
+               <string>udp</string>
               </property>
              </item>
              <item>
               <property name="text">
-               <string>ROS2</string>
+               <string>ros2</string>
               </property>
              </item>
             </widget>

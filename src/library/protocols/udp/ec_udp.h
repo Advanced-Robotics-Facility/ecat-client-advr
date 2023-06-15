@@ -112,7 +112,7 @@ private:
     ClientStatus _client_status;
 
 private:
-    std::shared_ptr<spdlog::logger> consoleLog;
+    std::shared_ptr<spdlog::logger> _consoleLog;
 
     // last received motor data
     MotorStatusMap _motor_status_map;

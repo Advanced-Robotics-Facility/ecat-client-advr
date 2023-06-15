@@ -65,8 +65,12 @@ EcUDP::EcUDP(std::string host_address,uint32_t host_port) :
     _actual_server_status= ServerStatus::IDLE;
     _client_status=ClientStatus::IDLE;
     
-    createLogger("console","client");
-    consoleLog=spdlog::get("console");
+    _consoleLog=spdlog::get("console");
+    if(!_consoleLog)
+    {
+        createLogger("console","client");
+        _consoleLog=spdlog::get("console");
+    }
     
     _ec_logger = std::make_shared<EcLogger>();
 }
@@ -77,12 +81,13 @@ EcUDP::~EcUDP()
     {
         if ( _ec_udp_thread->joinable() ) 
         {
-            consoleLog->info("EtherCAT Client thread stopped");
+            _consoleLog->info("EtherCAT Client thread stopped");
             _ec_udp_thread->join();
         }
     }
     
-    consoleLog->info("That's all folks");
+    _consoleLog->info("That's all folks");
+    _consoleLog.reset();
 }
 
 
@@ -92,7 +97,7 @@ void EcUDP::server_replies_handler(char*buf, size_t size)
 {   
     size_t offset {};
     auto reply = proto.getCliReqSrvRep(buf, size, offset);
-    consoleLog->info( " SRV REP : {}", magic_enum::enum_name(reply));
+    _consoleLog->info( " SRV REP : {}", magic_enum::enum_name(reply));
     int64_t ts;
     int64_t usecs_since_epoch = getTsEpoch<std::chrono::microseconds>();
     SCA server_args;
@@ -103,13 +108,13 @@ void EcUDP::server_replies_handler(char*buf, size_t size)
         case CliReqSrvRep::CONNECTED :
             this->proto.getCliReqSrvRepPayload(buf, size, offset, server_args);
             std::tie(hash, std::ignore) = server_args;
-            consoleLog->info(" <-- Connected ! {}", hash);
+            _consoleLog->info(" <-- Connected ! {}", hash);
             _client_status=ClientStatus::CONNECTED;
             break;
     
         case CliReqSrvRep::PONG :
             this->proto.getCliReqSrvRepPayload(buf, size, offset, ts);
-            consoleLog->info( "PING PONG rtt {} us", usecs_since_epoch-ts);
+            _consoleLog->info( "PING PONG rtt {} us", usecs_since_epoch-ts);
             break;
     
         default:
@@ -158,7 +163,7 @@ void EcUDP::repl_replies_handler(char *buf, size_t size)
     _reply_err_msg="";
     
     int ret = proto.getReplReply(buf, size, _repl_req_rep, _reply_err_msg);
-    consoleLog->info( "   REPL REP : {} {}", magic_enum::enum_name(_repl_req_rep), _reply_err_msg);
+    _consoleLog->info( "   REPL REP : {} {}", magic_enum::enum_name(_repl_req_rep), _reply_err_msg);
 
     switch ( _repl_req_rep ) {
     
@@ -166,7 +171,7 @@ void EcUDP::repl_replies_handler(char *buf, size_t size)
             {
                 ret = proto.getReplReplySlaveInfo(buf,size,_slave_info,_reply_err_msg);
                 for ( auto &[id, type, pos] : _slave_info ) {
-                    consoleLog->info( "     id {} type {} pos {}", id, type, pos);
+                    _consoleLog->info( "     id {} type {} pos {}", id, type, pos);
                 }
             }
             break;
@@ -177,7 +182,7 @@ void EcUDP::repl_replies_handler(char *buf, size_t size)
                 _rr_sdo.clear();
                 ret = proto.getReplReplySdoCmd(buf,size, esc_id, _rr_sdo,_reply_err_msg);
                 for ( auto &[k,v] : _rr_sdo ) {
-                    consoleLog->info( " <-- id {} : {} = {}", esc_id, k, v);
+                    _consoleLog->info( " <-- id {} : {} = {}", esc_id, k, v);
                 }
             }
             break;
@@ -214,7 +219,7 @@ void EcUDP::motor_status_handler(char *buf, size_t size)
                 float link_pos,motor_pos,link_vel,motor_vel,torque,motor_temp,board_temp,aux;
                 uint32_t fault,rtt,op_idx_ack,cmd_aux_sts;
                 std::tie(link_pos,motor_pos,link_vel,motor_vel,torque,motor_temp,board_temp,fault,rtt,op_idx_ack,aux,cmd_aux_sts) = values;
-                //consoleLog->info( " motor_status {}: {} {} {} {} ", cnt,esc_id, motor_pos, motor_vel,torque);
+                //_consoleLog->info( " motor_status {}: {} {} {} {} ", cnt,esc_id, motor_pos, motor_vel,torque);
             } catch (std::out_of_range oor) {}
         }
     }
@@ -241,7 +246,7 @@ void EcUDP::ft6_status_handler(char *buf, size_t size)
 
     if ( ! (cnt % 100) ) {
         for ( const auto &[esc_id, values] : _ft_status_map) {
-            //consoleLog->info( " ft_status {}: {} {} ", cnt,esc_id,values[0] );
+            //_consoleLog->info( " ft_status {}: {} {} ", cnt,esc_id,values[0] );
         }
     }
     
@@ -267,7 +272,7 @@ void EcUDP::pwr_status_handler(char *buf, size_t size)
 
     if ( ! (cnt % 100) ) {
         for ( const auto &[esc_id, values] : _pow_status_map) {
-            //consoleLog->info( " pwr_status {}: {} {} {} ", cnt,esc_id,values[0],values[1] );
+            //_consoleLog->info( " pwr_status {}: {} {} {} ", cnt,esc_id,values[0],values[1] );
         }
     }
     
@@ -288,11 +293,11 @@ void EcUDP::connect()
         CCA client_args = std::make_tuple(CLIENT_PORT, get_period_ms());
         auto sizet = proto.packClientRequest(sendBuffer, CliReqSrvRep::CONNECT, client_args);
         do_send(sendBuffer.data(),  sendBuffer.size() );
-        consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
+        _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
     }
     else
     {
-        consoleLog->info("Client already connected, cannot perform the connect command");
+        _consoleLog->info("Client already connected, cannot perform the connect command");
     }
 
 }
@@ -305,7 +310,7 @@ void EcUDP::disconnect()
         uint32_t payload = 0xCACA0;
         auto sizet = proto.packClientRequest(sendBuffer, CliReqSrvRep::DISCONNECT, payload);
         do_send(sendBuffer.data(),  sendBuffer.size() );
-        consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
+        _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
         _client_status=ClientStatus::IDLE;
     }
 }
@@ -320,7 +325,7 @@ void EcUDP::ping(bool test)
     }  
     auto sizet = proto.packClientRequest(sendBuffer, cliReq, microseconds_since_epoch);
     do_send(sendBuffer.data(),  sendBuffer.size() );
-    consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
+    _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
 }
 
 void EcUDP::quit_server()
@@ -329,7 +334,7 @@ void EcUDP::quit_server()
     uint32_t payload = 0xC1A0C1A0;
     auto sizet = proto.packClientRequest(sendBuffer, CliReqSrvRep::QUIT, payload);
     do_send(sendBuffer.data(),  sendBuffer.size() );
-    consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
+    _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
 }
 
 bool EcUDP::get_reply_from_server(ReplReqRep cmd_req)
@@ -342,7 +347,7 @@ bool EcUDP::get_reply_from_server(ReplReqRep cmd_req)
     
     if(_client_alive)
     {
-        consoleLog->info(" Command requested ---> {} Command reply--->{} ", cmd_req, _repl_req_rep);
+        _consoleLog->info(" Command requested ---> {} Command reply--->{} ", cmd_req, _repl_req_rep);
         if(cmd_req == _repl_req_rep)
         {
             if(_reply_err_msg == "OkI")
@@ -367,7 +372,7 @@ void EcUDP::get_slaves_info()
     CBuff sendBuffer{};
     auto sizet = proto.packReplRequest(sendBuffer, ReplReqRep::SLAVES_INFO);
     do_send(sendBuffer.data(), sendBuffer.size() );
-    consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
+    _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
 }
 
 bool EcUDP::retrieve_slaves_info(SSI &slave_info)
@@ -400,7 +405,7 @@ bool EcUDP::retrieve_slaves_info(SSI &slave_info)
         }
         else
         {
-            consoleLog->error("UDP client not alive, please stop the main process!");
+            _consoleLog->error("UDP client not alive, please stop the main process!");
             return false;
         }
     }
@@ -416,7 +421,7 @@ void EcUDP::getAndset_slaves_sdo(uint32_t esc_id, const RD_SDO &rd_sdo, const WR
 
     auto sizet = proto.packReplRequestSdoCmd (sendBuffer, rdwr_sdo);
     do_send(sendBuffer.data(), sendBuffer.size() );
-    consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
+    _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
 }
 
 bool EcUDP::retrieve_all_sdo(uint32_t esc_id,RR_SDO &rr_sdo)
@@ -453,7 +458,7 @@ bool EcUDP::retrieve_rr_sdo(uint32_t esc_id,
         }
         else
         {
-            consoleLog->error("UDP client not alive, please stop the main process");
+            _consoleLog->error("UDP client not alive, please stop the main process");
             return false;
         }
     }
@@ -486,7 +491,7 @@ bool EcUDP::set_wr_sdo(uint32_t esc_id,
         }
         else
         {
-            consoleLog->error("UDP client not alive, please stop the main process");
+            _consoleLog->error("UDP client not alive, please stop the main process");
             return false;
         }
     }
@@ -499,12 +504,12 @@ bool EcUDP::start_motors(const MST &motors_start)
 
     if(_client_status==ClientStatus::MOTORS_STARTED)
     {
-        consoleLog->error("Motors already started, stop the motors before performing start motors command");
+        _consoleLog->error("Motors already started, stop the motors before performing start motors command");
         return ret_cmd_status;
     }
     else if(_client_status==ClientStatus::MOTORS_CTRL)
     {
-        consoleLog->error("Motors are controlled, stop the motors before performing start motors command");
+        _consoleLog->error("Motors are controlled, stop the motors before performing start motors command");
         return ret_cmd_status;
     }
     else
@@ -529,7 +534,7 @@ bool EcUDP::start_motors(const MST &motors_start)
                 CBuffT<4096u> sendBuffer{};
                 auto sizet = proto.packReplRequestMotorsStart(sendBuffer, motors_start);
                 do_send(sendBuffer.data(), sendBuffer.size() );
-                consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
+                _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
                 ret_cmd_status = get_reply_from_server(ReplReqRep::START_MOTOR);
 
                 if(ret_cmd_status)
@@ -544,7 +549,7 @@ bool EcUDP::start_motors(const MST &motors_start)
             }
             else
             {
-                consoleLog->error("UDP client not alive, please stop the main process");
+                _consoleLog->error("UDP client not alive, please stop the main process");
                 return false;
             }
         }
@@ -567,7 +572,7 @@ bool EcUDP::stop_motors()
             CBuff sendBuffer{};
             auto sizet = proto.packReplRequest(sendBuffer, ReplReqRep::STOP_MOTOR);
             do_send(sendBuffer.data(), sendBuffer.size() );
-            consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
+            _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
             
             ret_cmd_status = get_reply_from_server(ReplReqRep::STOP_MOTOR);
             if(ret_cmd_status)
@@ -590,7 +595,7 @@ bool EcUDP::stop_motors()
         }
         else
         {
-            consoleLog->error("UDP client not alive, please stop the main process");
+            _consoleLog->error("UDP client not alive, please stop the main process");
             return false;
         }
     }
@@ -606,12 +611,12 @@ bool EcUDP::pdo_aux_cmd(const PAC & pac)
         CBuffT<4096u> sendBuffer{};
         auto sizet = proto.packReplRequestSetPdoAuxCmd(sendBuffer, pac);
         do_send(sendBuffer.data(), sendBuffer.size() );
-        consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
+        _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
         ret_cmd_status=true;
     }
     else
     {
-        consoleLog->error("UDP client not alive, please stop the main process");
+        _consoleLog->error("UDP client not alive, please stop the main process");
     }
 
     return ret_cmd_status;
@@ -642,25 +647,25 @@ bool EcUDP::pdo_aux_cmd_sts(const PAC & pac)
                 
                 case to_underlying(PdoAuxCmdType::BRAKE_RELEASE):{
                     if(brake_sts!=1){ 
-                        consoleLog->error("esc_id: {}, brake status: {} ---> brake requested: {} ",esc_id, brake_sts, PdoAuxCmdType::BRAKE_RELEASE);
+                        _consoleLog->error("esc_id: {}, brake status: {} ---> brake requested: {} ",esc_id, brake_sts, PdoAuxCmdType::BRAKE_RELEASE);
                         return false;
                     }
                 }break;
                 case to_underlying(PdoAuxCmdType::BRAKE_ENGAGE):{
                     if(brake_sts!=2){ 
-                        consoleLog->error("esc_id: {}, brake status: {} ---> brake requested: {} ",esc_id, brake_sts, PdoAuxCmdType::BRAKE_ENGAGE);
+                        _consoleLog->error("esc_id: {}, brake status: {} ---> brake requested: {} ",esc_id, brake_sts, PdoAuxCmdType::BRAKE_ENGAGE);
                         return false;
                     }
                 }break;
                 case to_underlying(PdoAuxCmdType::LED_ON):{
                     if(led_sts!=1){ 
-                        consoleLog->error("esc_id: {}, led status: {} ---> led requested: {} ",esc_id, led_sts, PdoAuxCmdType::LED_ON);
+                        _consoleLog->error("esc_id: {}, led status: {} ---> led requested: {} ",esc_id, led_sts, PdoAuxCmdType::LED_ON);
                         return false;
                     }
                 }break;
                 case to_underlying(PdoAuxCmdType::LED_OFF):{
                     if(led_sts!=0){ 
-                        consoleLog->error("esc_id: {}, led status: {} ---> led requested: {} ",esc_id, led_sts, PdoAuxCmdType::LED_OFF);
+                        _consoleLog->error("esc_id: {}, led status: {} ---> led requested: {} ",esc_id, led_sts, PdoAuxCmdType::LED_OFF);
                         return false;
                     }
                 }break;
@@ -668,7 +673,7 @@ bool EcUDP::pdo_aux_cmd_sts(const PAC & pac)
         }
         else
         {
-            consoleLog->error("esc_id: {}, doesn't exist, please restart the request", esc_id);
+            _consoleLog->error("esc_id: {}, doesn't exist, please restart the request", esc_id);
             return false; // return false if the esc id it's not present into the motor status map.
         }
     }
@@ -687,17 +692,17 @@ void EcUDP::feed_motors(const MSR & m_ref)
             CBuffT<4096u> sendBuffer{};
             auto sizet = proto.packReplRequestSetMotorsRefs(sendBuffer, m_ref);
             do_send(sendBuffer.data(), sendBuffer.size() );
-            consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
+            _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
             _ec_logger->log_motors_ref(_motors_references);
         }
         else
         {
-            consoleLog->error("Cannot send references to the motors since not controlled, stop sending them");
+            _consoleLog->error("Cannot send references to the motors since not controlled, stop sending them");
         }
     }
     else
     {
-        consoleLog->error("UDP client not alive, please stop the main process");
+        _consoleLog->error("UDP client not alive, please stop the main process");
     }
 }
 
@@ -708,11 +713,11 @@ void EcUDP::set_motors_gains(const MSG &motors_gains)
         CBuffT<4096u> sendBuffer{};
         auto sizet = proto.packReplRequestSetMotorsGains(sendBuffer, motors_gains);
         do_send(sendBuffer.data(), sendBuffer.size() );
-        consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
+        _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
     }
     else
     {
-        consoleLog->error("UDP client not alive, please stop the main process");
+        _consoleLog->error("UDP client not alive, please stop the main process");
     }
 }
 //******************************* COMMANDS *****************************************************//
@@ -728,7 +733,7 @@ void EcUDP::set_loop_time(uint32_t period_ms)
 void EcUDP::start_client(uint32_t period_ms,bool logging)
 {
 
-    consoleLog->info(" EtherCAT Client UDP Started " + make_daytime_string());
+    _consoleLog->info(" EtherCAT Client UDP Started " + make_daytime_string());
     
     set_loop_time(period_ms);
         
@@ -853,20 +858,20 @@ void EcUDP::set_motors_references(const MotorRefFlags & motor_ref_flags,const st
            }
            else
            {
-                consoleLog->error("Motors references vector is empty!, please fill the vector");
+                _consoleLog->error("Motors references vector is empty!, please fill the vector");
            }
        }
        else
        {
            if(motor_ref_flags!=MotorRefFlags::FLAG_NONE)
            {
-                consoleLog->error("Wrong motors references flag!");
+                _consoleLog->error("Wrong motors references flag!");
            }
        }
     }
     else
     {
-        consoleLog->error("UDP client not alive, please stop the main process");
+        _consoleLog->error("UDP client not alive, please stop the main process");
     }
 
     _mutex_motor_reference->unlock();
@@ -931,7 +936,7 @@ void EcUDP::restore_wait_reply_time()
 
 void EcUDP::receive_error(std::error_code ec)
 {
-    consoleLog->error( " Receive Error {}", ec.message());
+    _consoleLog->error( " Receive Error {}", ec.message());
 }
 
 

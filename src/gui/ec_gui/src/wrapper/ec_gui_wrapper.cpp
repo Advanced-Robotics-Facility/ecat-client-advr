@@ -132,7 +132,8 @@ void EcGuiWrapper::restart_gui_wrapper(ec_wrapper_info_t ec_wrapper_info)
     
     _ec_wrapper_info = ec_wrapper_info;
     
-    _ec_wrapper_info.client->set_loop_time(_time_ms);
+    if(_ec_wrapper_info.client)
+        _ec_wrapper_info.client->set_loop_time(_time_ms);
 
     _ec_gui_slider->create_sliders(_ec_wrapper_info.joint_info_map);
     
@@ -179,6 +180,11 @@ void EcGuiWrapper::setFreq()
     }
 
     _time_ms=(int) 1000*time_s;
+}
+
+int EcGuiWrapper::get_period_ms()
+{
+    return _time_ms;
 }
 
 void EcGuiWrapper::OnFreqChanged()

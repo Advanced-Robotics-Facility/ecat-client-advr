@@ -44,6 +44,7 @@ public:
     bool get_wrapper_send_sts();
     void setFreq();
     void onSendStopBtnReleased();
+    int get_period_ms();
 
 public slots:
     void DwTopLevelChanged(bool isFloating);

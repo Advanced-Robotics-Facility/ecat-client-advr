@@ -9,12 +9,6 @@ class EcUtils
 {
 public:
     
-    typedef std::shared_ptr<EcUtils> Ptr;
-    
-    EcUtils(const YAML::Node & ec_cfg);
-    
-    ~EcUtils();
-    
     typedef struct EC_CONFIG_t{
         
         std::string protocol;
@@ -30,6 +24,13 @@ public:
         std::vector<int> slave_id_led;
         
     }EC_CONFIG;
+    
+    typedef std::shared_ptr<EcUtils> Ptr;
+    
+    EcUtils(EC_CONFIG ec_cfg);
+    EcUtils(const YAML::Node & ec_cfg);
+    
+    ~EcUtils();
     
     EC_CONFIG get_ec_cfg();
     EcIface::Ptr make_ec_iface(); // EtherCAT Client Interface

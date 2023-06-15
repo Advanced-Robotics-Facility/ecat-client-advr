@@ -1,4 +1,5 @@
 ﻿#include "ec_gui_start.h"
+#include "ec_utils.h"
 
 #include <iostream>
 #include <csignal>
@@ -49,10 +50,9 @@ QWidget * LoadUiFile(QWidget * parent)
 
 }
 
-EcGuiStart::EcGuiStart(EcIface::Ptr client,QWidget *parent) :
+EcGuiStart::EcGuiStart(QWidget *parent) :
     QMainWindow(parent)
 {
-    _ec_wrapper_info.client = client;
     /* Load ui */
     auto wid = LoadUiFile(this);
     
@@ -108,6 +108,17 @@ EcGuiStart::EcGuiStart(EcIface::Ptr client,QWidget *parent) :
     connect(_server_process, &QProcess::readyReadStandardOutput,
             this, &EcGuiStart::on_server_process_readyReadStandardOutput);
     
+    /*protocl */
+
+    _protocol_combobox = findChild<QComboBox *>("Protocol");
+    _protocol_combobox->setCurrentIndex(1); // set Default UDP.
+    _server_protocol = _protocol_combobox->currentText();
+    
+    /* connection of frequency function */
+    connect(_protocol_combobox, SIGNAL(currentIndexChanged(int)),this,
+        SLOT(OnProtocolChanged())
+    );
+    
     _ec_gui_wrapper = std::make_shared<EcGuiWrapper>(this);
     
     _ec_master_terminal=std::make_shared<EcGuiTerminal>();
@@ -148,6 +159,42 @@ void EcGuiStart::OnMouseDoubleClicked(QTreeWidgetItem* item, int column)
     {
         _ec_master_terminal->show();
         _ec_master_terminal->setWindowState(Qt::WindowActive);
+    }
+}
+
+void EcGuiStart::OnProtocolChanged()
+{
+    _server_protocol = _protocol_combobox->currentText();
+}
+
+void EcGuiStart::create_ec_iface()
+{
+    if(_ec_wrapper_info.client)
+    {
+        if(_ec_wrapper_info.client->is_client_alive())
+        {
+            _ec_wrapper_info.client->stop_client();
+        }
+    }
+    
+    EcUtils::EC_CONFIG ec_cfg;
+    
+    ec_cfg.protocol=_server_protocol.toStdString();
+    ec_cfg.host_name=_server_ip.toStdString();
+    ec_cfg.host_port=_server_port.toUInt();
+    ec_cfg.period_ms = _ec_gui_wrapper->get_period_ms();
+    ec_cfg.logging = false;
+    
+    EcUtils::Ptr ec_utils = std::make_shared<EcUtils>(ec_cfg);
+    
+    _ec_wrapper_info.client.reset();
+    try{
+        _ec_wrapper_info.client = ec_utils->make_ec_iface();
+    }
+    catch ( std::exception &e )
+    {
+        QMessageBox msgBox;
+        msgBox.critical(this,msgBox.windowTitle(),tr(e.what()));
     }
 }
 
@@ -210,15 +257,16 @@ void EcGuiStart::OnMouseClicked(QTreeWidgetItem* item, int column)
     } 
 }
 
-
-QString EcGuiStart::find_exe(QProcess * process,QString exe_name,QString& stdout)
+QString EcGuiStart::find_running_process(QProcess * process,QString bin_name,QString& stdout)
 {
     QStringList cmd;
     QString bin_file;
     
     cmd = _ssh_command;
-    cmd.append("'which'"); // remember comment out: .bashrc all line of # If not running interactively, don't do anything
-    cmd.append(exe_name);
+    cmd.append("'pgrep'"); // remember comment out: .bashrc all line of # If not running interactively, don't do anything
+    cmd.append(bin_name);
+    
+    stdout.clear();
     process->start("sshpass", cmd);
     if(process->waitForFinished())
     {
@@ -228,18 +276,43 @@ QString EcGuiStart::find_exe(QProcess * process,QString exe_name,QString& stdout
     return bin_file;
 }
 
-void EcGuiStart::kill_exe(QProcess *process,QString exe_name)
+
+QString EcGuiStart::find_process(QProcess * process,QString bin_name,QString& stdout)
 {
     QStringList cmd;
+    QString bin_file;
     
-    cmd=_ssh_command;
-    cmd.append("'killall'");
-    cmd.append(exe_name);
+    cmd = _ssh_command;
+    cmd.append("'which'"); // remember comment out: .bashrc all line of # If not running interactively, don't do anything
+    cmd.append(bin_name);
+    
+    stdout.clear();
     process->start("sshpass", cmd);
-    process->waitForFinished();
+    if(process->waitForFinished())
+    {
+       bin_file = stdout;
+    }
+
+    return bin_file;
 }
 
-void EcGuiStart::start_exe(QProcess *process,QString bin_file_path)
+void EcGuiStart::kill_process(QProcess *process,QString bin_name,QString& stdout)
+{
+    QString pid=find_running_process(process,bin_name,stdout);
+    if(pid!="")
+    {
+        QStringList cmd;
+        
+        cmd=_ssh_command;
+        cmd.append("'killall'");
+        cmd.append(bin_name);
+        
+        process->start("sshpass", cmd);
+        process->waitForFinished();
+    }
+}
+
+void EcGuiStart::start_process(QProcess *process,QString bin_file_path)
 {
     QStringList cmd;
     
@@ -248,45 +321,68 @@ void EcGuiStart::start_exe(QProcess *process,QString bin_file_path)
     process->start("sshpass", cmd);
 }
 
-void EcGuiStart::onStartEtherCATSystem()
+void EcGuiStart::create_ssh_cmd()
 {
     _ssh_command.clear();
-    
     _ssh_command.append("-p");
     _ssh_command.append("user");
     _ssh_command.append("ssh");
     _ssh_command.append("user@127.0.01");
+}
+
+void EcGuiStart::onStartEtherCATSystem()
+{
+    create_ssh_cmd();
     
     QString bin_file_name = "'repl'";
-    kill_exe(_ec_master_process,bin_file_name);
-    auto bin_file_path = find_exe(_ec_master_process,bin_file_name,_ec_master_stoud);
+    kill_process(_ec_master_process,bin_file_name,_ec_master_stoud);
+    auto bin_file_path = find_process(_ec_master_process,bin_file_name,_ec_master_stoud);
     if(!bin_file_path.isEmpty())
     {
-        start_exe(_ec_master_process,bin_file_path);
+        start_process(_ec_master_process,bin_file_path);
     }
     
     bin_file_name = "'udp_server'";
-    kill_exe(_server_process,bin_file_name);
+    kill_process(_server_process,bin_file_name,_server_stdout);
     
     bin_file_path.clear();
-    bin_file_path = find_exe(_server_process,bin_file_name,_server_stdout);
+    bin_file_path = find_process(_server_process,bin_file_name,_server_stdout);
 
     if(!bin_file_path.isEmpty())
     {
-        start_exe(_server_process,bin_file_path);
+        start_process(_server_process,bin_file_path);
     }
+    
+    sleep(1);
+    create_ec_iface();
 }
 
 void EcGuiStart::onStopEtherCATSystem()
 {
-    _ec_master_process->close();
-    QString bin_file_name = "'repl'";
-    kill_exe(_ec_master_process,bin_file_name);
+    create_ssh_cmd();
     
+    if(_ec_wrapper_info.client)
+    {
+        if(_ec_wrapper_info.client->is_client_alive())
+        {
+            _ec_wrapper_info.client->stop_client();
+        }
+        _ec_wrapper_info.client.reset();
+    }
+    
+    QString bin_file_name = "'udp_server'";
     _server_process->close();
-    bin_file_name = "'udp_server'";
-    kill_exe(_server_process,bin_file_name);
+    kill_process(_server_process,bin_file_name,_server_stdout);
     
+    _ec_master_process->close();
+    bin_file_name = "'repl'";
+    kill_process(_ec_master_process,bin_file_name,_ec_master_stoud);
+    
+    clear_device();
+    EcGuiWrapper::ec_wrapper_info_t _ec_wrapper_info_reset;
+    _ec_wrapper_info=_ec_wrapper_info_reset;
+    
+    restart_gui();
 }
 
 void EcGuiStart::restart_gui()
@@ -490,6 +586,22 @@ void EcGuiStart::scan_device()
 
 void EcGuiStart::onScanDeviceReleased()
 {
+    if(!_ec_wrapper_info.client)
+    {
+        create_ssh_cmd();
+        QString pid=find_running_process(_server_process,"'udp_server'",_server_stdout);
+        if(pid!="")
+        {
+            create_ec_iface();
+        }
+        else
+        {
+            QMessageBox msgBox;
+            msgBox.critical(this,msgBox.windowTitle(),tr("Cannot find the server in running mode, please start it and retry!"));
+            return;
+        }
+    }
+    
     if(!_ec_wrapper_info.device_info.empty())
     {
         QMessageBox::StandardButton reply;
@@ -521,6 +633,7 @@ void EcGuiStart::onScanDeviceReleased()
         scan_device();
     }
     
+
     if(_ec_wrapper_info.device_info.empty())
     {
 #ifdef TEST 
@@ -531,28 +644,13 @@ void EcGuiStart::onScanDeviceReleased()
     else
     {
         restart_gui();
-    }
-        
+    } 
 }
 
 EcGuiStart::~EcGuiStart()
 {
-    if(_ec_wrapper_info.client->is_client_alive())
-    {
-        _ec_wrapper_info.client->stop_client();
-    }
+    onStopEtherCATSystem();
     
-    _ec_master_process->close();
-    _server_process->close();
-    
-    if(!_ssh_command.isEmpty())
-    {
-        QString bin_file_name = "'repl'";
-        kill_exe(_ec_master_process,bin_file_name);
-        bin_file_name = "'udp_server'";
-        kill_exe(_server_process,bin_file_name);
-    }
-    
-    _ec_master_process->kill();
     _server_process->kill();
+    _ec_master_process->kill();
 }
