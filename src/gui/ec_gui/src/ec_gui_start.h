@@ -46,12 +46,12 @@ private:
   QProcess *_ec_master_process,*_server_process;
   QString find_running_process(QProcess * process,QString bin_name,QString& stdout);
   QString find_process(QProcess * process,QString bin_name,QString& stdout);
-  void start_process(QProcess *process,QString bin_file_path);
+  void start_process(QProcess *process,QString bin_file_path,QString option);
   void kill_process(QProcess *process,QString bin_name,QString& stdout);
   QStringList _ssh_command;
   QString _ec_master_stoud,_server_stdout;
   EcGuiTerminal::Ptr _ec_master_terminal, _server_terminal;
-  QString _server_hostname,_server_ip,_server_port,_server_protocol;
+  QString _server_hostname,_server_ip,_server_port,_server_protocol,_server_pwd;
   bool _etherCAT_sys_started;
   
   QComboBox * _protocol_combobox;
@@ -66,7 +66,7 @@ private:
   void scan_device();
   void clear_device();
   void create_ec_iface();
-  void create_ssh_cmd();
+  bool create_ssh_cmd();
 };
 
 #endif // EC_GUI_START_H
