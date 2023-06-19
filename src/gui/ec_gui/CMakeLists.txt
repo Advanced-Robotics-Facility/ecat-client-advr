@@ -23,6 +23,7 @@ include_directories(src/utils/
                     src/pdo/
                     src/sdo/
                     src/wrapper/
+                    src/network/
                     src/component/slider
                     src/component/plot
                     src/component/terminal)
@@ -40,6 +41,7 @@ add_library(ec_gui_lib STATIC
     src/pdo/ec_gui_pdo.cpp
     src/sdo/ec_gui_sdo.cpp
     src/wrapper/ec_gui_wrapper.cpp
+    src/network/ec_gui_net.cpp
     )
 
 target_link_libraries(ec_gui_lib

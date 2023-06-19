@@ -18,9 +18,7 @@
 #define FT6 0x20
 #define POW_F28M36_BOARD 0x32
 #define IMU_ANY 0x40
-#define HOSTNAME_COL 1
-#define HOSTIP_COL 2
-#define HOSTPORT_COL 3
+
 
 using namespace std::chrono;
 
@@ -59,27 +57,7 @@ EcGuiStart::EcGuiStart(QWidget *parent) :
     _net_tree_wid = findChild<QTreeWidget *>("NetworkSetup");
     _net_tree_wid->resizeColumnToContents(0);
     _net_tree_wid->expandAll();
-    _net_tree_wid->installEventFilter(this);
-    connect(_net_tree_wid, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)),this, SLOT(OnMouseDoubleClicked(QTreeWidgetItem*, int)));
     
-    _net_item = nullptr;
-    _net_column=-1;
-    
-    _server_hostname=_net_tree_wid->topLevelItem(0)->child(1)->text(1);
-    
-    if(_net_tree_wid->topLevelItem(0)->child(1)->text(2)=="localhost")
-    {
-        _server_ip="127.0.0.1";
-    }
-    else
-    {
-        _server_ip=_net_tree_wid->topLevelItem(0)->child(1)->text(2);
-    }
-    _server_port=_net_tree_wid->topLevelItem(0)->child(1)->text(3);
-    _server_pwd="";
-    
-    connect(_net_tree_wid, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)),this, SLOT(OnMouseClicked(QTreeWidgetItem*, int)));
-
     
     auto ec_sys_start = findChild<QPushButton *>("StartEthercatSystem");
     connect(ec_sys_start, &QPushButton::released,
@@ -93,124 +71,16 @@ EcGuiStart::EcGuiStart(QWidget *parent) :
     connect(scan_device, &QPushButton::released,
             this, &EcGuiStart::onScanDeviceReleased);
     
-    _ec_master_process = new QProcess(this);
-    _ec_master_process->setReadChannel(QProcess::StandardOutput);
-    _ec_master_process->setProcessChannelMode(QProcess::MergedChannels);
-    _ec_master_process->setCurrentReadChannel(QProcess::StandardOutput);
     
-    connect(_ec_master_process, &QProcess::readyReadStandardOutput,
-            this, &EcGuiStart::on_ec_process_readyReadStandardOutput);
-    
-    _server_process = new QProcess(this);
-    _server_process->setReadChannel(QProcess::StandardOutput);
-    _server_process->setProcessChannelMode(QProcess::MergedChannels);
-    _server_process->setCurrentReadChannel(QProcess::StandardOutput);
-    
-    connect(_server_process, &QProcess::readyReadStandardOutput,
-            this, &EcGuiStart::on_server_process_readyReadStandardOutput);
-    
-    /*protocl */
-
-    _protocol_combobox = findChild<QComboBox *>("Protocol");
-    _protocol_combobox->setCurrentIndex(1); // set Default UDP.
-    _server_protocol = _protocol_combobox->currentText();
-    
-    /* connection of frequency function */
-    connect(_protocol_combobox, SIGNAL(currentIndexChanged(int)),this,
-        SLOT(OnProtocolChanged())
-    );
-    
+    _ec_gui_net = std::make_shared<EcGuiNet>(this);
     _ec_gui_wrapper = std::make_shared<EcGuiWrapper>(this);
     
-    _ec_master_terminal=std::make_shared<EcGuiTerminal>();
-    _ec_master_terminal->setWindowTitle("EtherCAT Master terminal");
-    _ec_master_terminal->setAttribute( Qt::WA_QuitOnClose, false );
-    
-    _server_terminal=std::make_shared<EcGuiTerminal>();
-    _server_terminal->setWindowTitle("Server terminal");
-    _server_terminal->setAttribute( Qt::WA_QuitOnClose, false );
-    
+
     _etherCAT_sys_started=false;
 }
 
 
-void EcGuiStart::OnMouseDoubleClicked(QTreeWidgetItem* item, int column)
-{
-    if(column == 4 && item->text(0)=="Server")
-    {
-        _server_terminal->show();
-        _server_terminal->setWindowState(Qt::WindowActive);
-    }
-    else if(column == 4 && item->text(0)=="EtherCAT Master")
-    {
-        _ec_master_terminal->show();
-        _ec_master_terminal->setWindowState(Qt::WindowActive);
-    }
-}
 
-void EcGuiStart::OnProtocolChanged()
-{
-    _server_protocol = _protocol_combobox->currentText();
-}
-
-void EcGuiStart::set_ec_network()
-{
-    _server_hostname=_net_tree_wid->topLevelItem(0)->child(1)->text(1);
-    _net_tree_wid->topLevelItem(0)->child(2)->setText(HOSTNAME_COL,_server_hostname);
-    
-    _net_tree_wid->topLevelItem(0)->child(2)->setText(HOSTIP_COL,_net_tree_wid->topLevelItem(0)->child(1)->text(2));
-    if(_net_tree_wid->topLevelItem(0)->child(1)->text(2)=="localhost")
-    {
-        _server_ip="127.0.0.1";
-    }
-    else
-    {
-        _server_ip=_net_tree_wid->topLevelItem(0)->child(1)->text(2);
-    }
-    
-    _server_port=_net_tree_wid->topLevelItem(0)->child(1)->text(3);
-    _net_tree_wid->topLevelItem(0)->child(0)->setText(HOSTPORT_COL,_server_port);
-    
-    _net_tree_wid->closePersistentEditor(_net_item,_net_column); // close old editor
-    _net_item = nullptr;
-    _net_column=-1;
-}
-
-bool EcGuiStart::eventFilter( QObject* o, QEvent* e )
-{
-    if( o == _net_tree_wid && e->type() == QEvent::KeyRelease)
-    {
-        QKeyEvent *qkey = static_cast<QKeyEvent*>(e);
-        if(qkey->key() == Qt::Key_Return)
-        {
-            set_ec_network();
-        }
-    }
-    return false;
-}
-
-void EcGuiStart::OnMouseClicked(QTreeWidgetItem* item, int column)
-{
-    if(_net_item != nullptr)
-    {
-        _net_tree_wid->closePersistentEditor(_net_item,_net_column); // close old editor
-    }
-
-    _net_item = item;
-    _net_column=column;
-
-    if((item->text(0)=="Server") &&
-       ((column == HOSTNAME_COL) || 
-        (column == HOSTIP_COL)   ||
-        (column == HOSTPORT_COL)))    
-    {
-        _net_tree_wid->openPersistentEditor(item,column);
-    }
-    else
-    {
-        _net_tree_wid->closePersistentEditor(item,column);
-    } 
-}
 
 void EcGuiStart::create_ec_iface()
 {
@@ -222,11 +92,13 @@ void EcGuiStart::create_ec_iface()
         }
     }
     
+    auto ec_net_info = _ec_gui_net->get_net_setup();
+    
     EcUtils::EC_CONFIG ec_cfg;
     
-    ec_cfg.protocol=_server_protocol.toStdString();
-    ec_cfg.host_name=_server_ip.toStdString();
-    ec_cfg.host_port=_server_port.toUInt();
+    ec_cfg.protocol=ec_net_info.protocol;
+    ec_cfg.host_name=ec_net_info.host_name;
+    ec_cfg.host_port=ec_net_info.host_port;
     ec_cfg.period_ms = _ec_gui_wrapper->get_period_ms();
     ec_cfg.logging = false;
     
@@ -244,217 +116,51 @@ void EcGuiStart::create_ec_iface()
 }
 
 
-void EcGuiStart::on_ec_process_readyReadStandardOutput()
-{
-   _ec_master_stoud.clear();
-   while(_ec_master_process->canReadLine()){
-       _ec_master_stoud = _ec_master_process->readLine();
-       _ec_master_terminal->setText(_ec_master_stoud);
-  }
-}
-
-void EcGuiStart::on_server_process_readyReadStandardOutput()
-{
-   _server_stdout.clear();
-   while(_server_process->canReadLine()){
-       _server_stdout = _server_process->readLine();
-       _server_terminal->setText(_server_stdout);
-  }
-}
-
-QString EcGuiStart::find_running_process(QProcess * process,QString bin_name,QString& stdout)
-{
-    QStringList cmd;
-    QString bin_pid="";
-    
-    cmd = _ssh_command;
-    cmd.append("'pgrep'"); // remember comment out: .bashrc all line of # If not running interactively, don't do anything
-    cmd.append(bin_name);
-    
-    stdout.clear();
-    process->start("sshpass", cmd);
-    if(process->waitForFinished())
-    {
-       bin_pid = stdout;
-    }
-    bin_pid = bin_pid.remove(QChar('\n'));
-
-    return bin_pid;
-}
-
-
-QString EcGuiStart::find_process(QProcess * process,QString bin_name,QString& stdout)
-{
-    QStringList cmd;
-    QString bin_file_path="";
-    
-    cmd = _ssh_command;
-    cmd.append("'which'"); // remember comment out: .bashrc all line of # If not running interactively, don't do anything
-    cmd.append(bin_name);
-    
-    stdout.clear();
-    process->start("sshpass", cmd);
-    if(process->waitForFinished())
-    {
-       bin_file_path = stdout;
-    }
-    
-    bin_file_path = bin_file_path.remove(QChar('\n'));
-
-    return bin_file_path;
-}
-
-void EcGuiStart::kill_process(QProcess *process,QString bin_name,QString& stdout)
-{
-    QString pid=find_running_process(process,bin_name,stdout);
-    if(pid!="")
-    {
-        QStringList cmd;
-        
-        cmd=_ssh_command;
-        cmd.append("'killall'");
-        cmd.append(bin_name);
-        
-        process->start("sshpass", cmd);
-        process->waitForFinished();
-    }
-}
-
-void EcGuiStart::start_process(QProcess *process,QString bin_file_path,QString option)
-{
-    QStringList cmd;
-    
-    cmd=_ssh_command;  
-    cmd.append(bin_file_path);
-    if(option!="")
-    {
-        cmd.append(option);
-    }
-    process->start("sshpass", cmd);
-}
-
-bool EcGuiStart::create_ssh_cmd()
-{
-    _ssh_command.clear();
-    _ssh_command.append("-p");
-    
-    QInputDialog server_pwd;
-    QString new_pwd = server_pwd.getText(this, server_pwd.windowTitle(),
-                                         tr("Server password:"), QLineEdit::Normal,
-                                         "");
-    if (!new_pwd.isEmpty())
-    {
-        _server_pwd=new_pwd;
-    }
-    else
-    {
-        QMessageBox msgBox;
-        msgBox.setText("Password cannot be empty");
-        msgBox.exec();
-        return false;
-    }
-    
-    _ssh_command.append(_server_pwd);
-    _ssh_command.append("ssh");
-    _ssh_command.append(_server_hostname+"@"+_server_ip);
-
-    QStringList cmd = _ssh_command;
-    cmd.append("'whoami'");
-    _server_process->start("sshpass", cmd);
-    _server_process->waitForFinished();
-    
-    auto host_name = _server_stdout;
-    host_name = host_name.remove(QChar('\n'));
-    
-    if(host_name != _server_hostname)
-    {
-        QMessageBox msgBox;
-        msgBox.setText("Problem on the ssh command, please verify the EtherCAT system setup");
-        msgBox.exec();
-        return false;
-    }
-
-    return true;
-}
 
 void EcGuiStart::onStartEtherCATSystem()
 {
-    
+    QMessageBox msgBox;
     if(!_etherCAT_sys_started)
     {
-        if(!create_ssh_cmd())
+        /******************************STAR EtherCAT Master and Server ************************************************/
+        if(!_ec_gui_net->start_network())
         {
             return;
         }
-    
-        QString bin_file_name = "'repl'";
-        kill_process(_ec_master_process,bin_file_name,_ec_master_stoud);
-        auto bin_file_path = find_process(_ec_master_process,bin_file_name,_ec_master_stoud);
-        
-        /******************************START EtherCAT Master ************************************************/
-        if(!bin_file_path.isEmpty())
-        {
-            QString option="";
-            if(_server_protocol=="udp")
-            {
-                option="-f ~/.ecat_master/configs/zipc_config.yaml";  
-            }
-            
-            start_process(_ec_master_process,bin_file_path,option);
-        }
-        
-        /******************************START SEVER ************************************************/
-        bin_file_name = "'udp_server'";
-        kill_process(_server_process,bin_file_name,_server_stdout);
-        
-        bin_file_path.clear();
-        bin_file_path = find_process(_server_process,bin_file_name,_server_stdout);
-
-        if(!bin_file_path.isEmpty())
-        {
-            start_process(_server_process,bin_file_path,"");
-            sleep(1);
-        }
-        
         /******************************STAR CLIENT ************************************************/
         sleep(1);
         create_ec_iface();
         _etherCAT_sys_started=true;
         
-        QMessageBox msgBox;
         msgBox.setText("EtherCAT Master system started");
-        msgBox.exec();
+        
     }
     else
     {
-        QMessageBox msgBox;
         msgBox.setText("EtherCAT Master system already started");
-        msgBox.exec();
     }
+    msgBox.exec();
 }
 
-void EcGuiStart::onStopEtherCATSystem()
+void EcGuiStart::stopping_client()
 {
+    if(_ec_wrapper_info.client)
+    {
+        if(_ec_wrapper_info.client->is_client_alive())
+        {
+            _ec_wrapper_info.client->stop_client();
+        }
+        _ec_wrapper_info.client.reset();
+    }
+}
+bool EcGuiStart::stopping_ec_sys()
+{
+    bool etherCAT_sys_stopped=false;
     if(_etherCAT_sys_started)
     {
-        /******************************STOP CLIENT ************************************************/
-        if(_ec_wrapper_info.client)
-        {
-            if(_ec_wrapper_info.client->is_client_alive())
-            {
-                _ec_wrapper_info.client->stop_client();
-            }
-            _ec_wrapper_info.client.reset();
-        }
-        /******************************STOP SEVER ************************************************/
-        QString bin_file_name = "'udp_server'";
-        _server_process->close();
-        kill_process(_server_process,bin_file_name,_server_stdout);
-        
-        /******************************STOP EtherCAT Master ************************************************/
-        _ec_master_process->close();
-        bin_file_name = "'repl'";
-        kill_process(_ec_master_process,bin_file_name,_ec_master_stoud);
+        stopping_client();
+        /******************************STOP EtherCAT Master and Server ************************************************/
+        _ec_gui_net->stop_network();
         
         /******************************CLEAN UP THE GUI ************************************************/
         clear_device();
@@ -464,17 +170,25 @@ void EcGuiStart::onStopEtherCATSystem()
         restart_gui();
         
         _etherCAT_sys_started=false;
-        
-        QMessageBox msgBox;
+        etherCAT_sys_stopped=true;
+
+    }
+    
+    return etherCAT_sys_stopped;
+}
+
+void EcGuiStart::onStopEtherCATSystem()
+{
+    QMessageBox msgBox;
+    if(stopping_ec_sys())
+    {
         msgBox.setText("EtherCAT Master system stopped");
-        msgBox.exec();
     }
     else
     {
-        QMessageBox msgBox;
         msgBox.setText("EtherCAT Master system already stopped");
-        msgBox.exec();
     }
+    msgBox.exec();
 }
 
 void EcGuiStart::restart_gui()
@@ -680,9 +394,7 @@ void EcGuiStart::onScanDeviceReleased()
 {
     if(!_ec_wrapper_info.client)
     {
-        create_ssh_cmd();
-        QString pid=find_running_process(_server_process,"'udp_server'",_server_stdout);
-        if(pid!="")
+        if(_ec_gui_net->check_network())
         {
             create_ec_iface();
         }
@@ -741,9 +453,8 @@ void EcGuiStart::onScanDeviceReleased()
 
 EcGuiStart::~EcGuiStart()
 {
-    if(_etherCAT_sys_started)
-        onStopEtherCATSystem();
-    
-    _server_process->kill();
-    _ec_master_process->kill();
+   if(!stopping_ec_sys())
+   {
+       stopping_client();
+   }
 }
