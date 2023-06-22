@@ -406,10 +406,7 @@ void EcGuiWrapper::receive()
     }
     else
     {
-        QMessageBox msgBox;
-        msgBox.setText("Server is not alive!");
-        msgBox.exec();
-        QApplication::closeAllWindows();
+        stop_receive();
     }
 }
 
