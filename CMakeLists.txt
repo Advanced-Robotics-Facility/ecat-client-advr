@@ -9,8 +9,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # avoid installing catkin-related files
 set(CATKIN_BUILD_BINARY_PACKAGE TRUE)
 
-option(COMPILE_EXAMPLE "Enable to compile an example for the UDP communication" ON)
-option(COMPILE_GUI "Enable to compile the client GUI" ON)
+option(COMPILE_EXAMPLE "Enable to compile examples" ON)
+option(COMPILE_GUI "Enable to compile the GUI" ON)
+option(COMPILE_MATLAB "Enable to compile the matlab" ON)
 
 find_package(Boost REQUIRED system)
 
@@ -55,4 +56,9 @@ endif()
 if(${COMPILE_GUI})
 	  # compile ec gui
 	  add_subdirectory(src/gui/ec_gui)
+endif()
+
+if(${COMPILE_MATLAB})
+	  # compile ec block
+	  add_subdirectory(src/matlab/ec_block/)
 endif()

@@ -1,4 +1,5 @@
 project(ec_library)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # compile ecat library test
 add_library(ec_library STATIC
