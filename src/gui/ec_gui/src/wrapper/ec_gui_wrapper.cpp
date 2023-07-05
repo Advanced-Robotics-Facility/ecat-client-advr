@@ -54,7 +54,7 @@ EcGuiWrapper::EcGuiWrapper(QWidget *parent) :
     connect(_timer_change_color, SIGNAL(timeout()), this, SLOT(warnig_level_batt()));
     
     _receive_action = parent->findChild<QAction *>("actionReceive");
-    connect(_receive_action, SIGNAL(triggered()), this, SLOT(stat_receive()));
+    connect(_receive_action, SIGNAL(triggered()), this, SLOT(start_receive()));
     
     _stop_receive_action = parent->findChild<QAction *>("actionStopReceive");
     connect(_stop_receive_action, SIGNAL(triggered()), this, SLOT(stop_receive()));
@@ -310,7 +310,7 @@ void EcGuiWrapper::stop_record()
     }
 }
 
-void EcGuiWrapper::stat_receive()
+void EcGuiWrapper::start_receive()
 {
     if(!check_client_setup())
         return;

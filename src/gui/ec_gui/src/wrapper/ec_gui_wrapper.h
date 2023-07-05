@@ -52,7 +52,7 @@ public slots:
     void send();
     void receive();
     void warnig_level_batt();
-    void stat_receive();
+    void start_receive();
     void stop_receive();
     void stat_record();
     void stop_record();
