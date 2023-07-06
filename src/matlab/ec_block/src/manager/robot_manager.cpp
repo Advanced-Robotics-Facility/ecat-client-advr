@@ -9,11 +9,11 @@
 // Class factory API
 #include <shlibpp/SharedLibraryClassApi.h>
 
-SHLIBPP_DEFINE_SHARED_SUBCLASS(XBotBlock_RobotManager, XBB_RobotManager::XBotBlock_RobotManager, blockfactory::core::Block);
+SHLIBPP_DEFINE_SHARED_SUBCLASS(RobotManager, EcBlock::RobotManager, blockfactory::core::Block);
 
-using namespace XBB_RobotManager;
+using namespace EcBlock;
 
-unsigned XBotBlock_RobotManager::numberOfParameters()
+unsigned RobotManager::numberOfParameters()
 {
     // The base blockfactory::core::Block class needs parameters (e.g. the ClassName).
     // You must specify here how many more parameters this class needs.
@@ -23,7 +23,7 @@ unsigned XBotBlock_RobotManager::numberOfParameters()
 
 // This method should let BlockInformation know the parameters metadata.
 // BlockFactory will use this information to gather the parameters from the active engine.
-bool XBotBlock_RobotManager::parseParameters(blockfactory::core::BlockInformation* blockInfo)
+bool RobotManager::parseParameters(blockfactory::core::BlockInformation* blockInfo)
 { 
     // Initialize information for our parameter
     int rows = 1;
@@ -56,10 +56,10 @@ bool XBotBlock_RobotManager::parseParameters(blockfactory::core::BlockInformatio
     return paramParsedOk;
 }
 
-bool XBotBlock_RobotManager::readParameters(blockfactory::core::BlockInformation* blockInfo)
+bool RobotManager::readParameters(blockfactory::core::BlockInformation* blockInfo)
 {
     // Parse the parameters
-    if (!XBotBlock_RobotManager::parseParameters(blockInfo)) {
+    if (!RobotManager::parseParameters(blockInfo)) {
         bfError <<  "Failed to parse parameters.";
         return false;
     }
@@ -111,7 +111,7 @@ bool XBotBlock_RobotManager::readParameters(blockfactory::core::BlockInformation
 
 // Keep in mind that after this step, all the allocated memory will be deleted.
 // Memory persistency is guaranteed starting from the initialize() method.
-bool XBotBlock_RobotManager::configureSizeAndPorts(blockfactory::core::BlockInformation* blockInfo)
+bool RobotManager::configureSizeAndPorts(blockfactory::core::BlockInformation* blockInfo)
 {
     // The base blockfactory::core::Block class needs to be configured first
     if (!blockfactory::core::Block::configureSizeAndPorts(blockInfo)) {
@@ -193,13 +193,13 @@ bool XBotBlock_RobotManager::configureSizeAndPorts(blockfactory::core::BlockInfo
 
 // Function to perform the sensing on the robot (internal and external) 
 // synchronizing it (only with internal robot) with a model 
-bool XBotBlock_RobotManager::robot_sensing()
+bool RobotManager::robot_sensing()
 {
     
     return true;
 }
 
-bool XBotBlock_RobotManager::initialize(blockfactory::core::BlockInformation* blockInfo)
+bool RobotManager::initialize(blockfactory::core::BlockInformation* blockInfo)
 {
     // The base blockfactory::core::Block class need to be initialized first
     if (!Block::initialize(blockInfo)) {
@@ -294,7 +294,7 @@ bool XBotBlock_RobotManager::initialize(blockfactory::core::BlockInformation* bl
     return true;
 }
 
-bool XBotBlock_RobotManager::output(const blockfactory::core::BlockInformation* blockInfo)
+bool RobotManager::output(const blockfactory::core::BlockInformation* blockInfo)
 {
     // perform sensing operation
     if(_do_sense)
@@ -350,7 +350,7 @@ bool XBotBlock_RobotManager::output(const blockfactory::core::BlockInformation* 
     
 }
 
-bool XBotBlock_RobotManager::terminate(const blockfactory::core::BlockInformation* /*blockInfo*/)
+bool RobotManager::terminate(const blockfactory::core::BlockInformation* /*blockInfo*/)
 {
     // clear robot and model map
     EcBlockUtils::clearRobot();

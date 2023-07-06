@@ -8,11 +8,11 @@
 #include "manager/reading.h"
 #include "manager/reference.h"
 
-namespace XBB_RobotManager{
-    class XBotBlock_RobotManager;
+namespace EcBlock{
+    class RobotManager;
 }
 
-class XBB_RobotManager::XBotBlock_RobotManager : public blockfactory::core::Block
+class EcBlock::RobotManager : public blockfactory::core::Block
 {
 private:
     EcIface::Ptr _robot_new;
@@ -38,8 +38,8 @@ public:
     static const std::string ClassName;
     
     
-    XBotBlock_RobotManager() = default;
-    ~XBotBlock_RobotManager() override = default;
+    RobotManager() = default;
+    ~RobotManager() override = default;
 
     unsigned numberOfParameters() override;
     bool parseParameters(blockfactory::core::BlockInformation* blockInfo) override;
