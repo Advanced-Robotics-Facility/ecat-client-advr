@@ -3,6 +3,7 @@
 
 std::map<std::string,std::map<uint8_t, XBot::ModelInterface::Ptr>> EcBlockUtils::_mdl_map;
 EcIface::Ptr EcBlockUtils::_client;
+std::vector<int> EcBlockUtils::_robot_joint_id;
 
 XBot::ConfigOptions EcBlockUtils::RetrieveRobotConfig()
 {
@@ -132,6 +133,20 @@ bool EcBlockUtils::RetrieveRobot(bool allow_new_robot,
                     auto ec_client_cfg_file = YAML::LoadFile(ec_client_cfg_path);
                     EcUtils::Ptr  ec_client_utils=std::make_shared<EcUtils>(ec_client_cfg_file);
                     EcIface::Ptr client=ec_client_utils->make_ec_iface();
+                    
+                    SSI slave_info;
+                    if(client->retrieve_slaves_info(slave_info))
+                    {   
+                        if(!slave_info.empty())
+                        {
+                            for ( auto &[id, type, pos] : slave_info ) {
+                                if((type==0x15) || (type==0x12))//HP or LP motor
+                                {
+                                    _robot_joint_id.push_back(id);
+                                }
+                            }
+                        }
+                    }
                 }catch(std::exception &ex){
                     error_info= ex.what();
                     return false;
@@ -150,6 +165,10 @@ bool EcBlockUtils::RetrieveRobot(bool allow_new_robot,
     return true;
 }
 
+std::vector<int>  EcBlockUtils::get_robot_joint()
+{
+    return _robot_joint_id;
+}
 
 void EcBlockUtils::clearRobot()
 {
@@ -160,6 +179,7 @@ void EcBlockUtils::clearRobot()
             _client->stop_client();
         }
     }
+    _client.reset();
 }
 
 

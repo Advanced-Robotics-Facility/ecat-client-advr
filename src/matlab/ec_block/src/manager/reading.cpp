@@ -1,4 +1,4 @@
-#include "Managers/Readings.h"
+#include "manager/reading.h"
 
 #include <BlockFactory/Core/Log.h>
 #include <BlockFactory/Core/Parameter.h>

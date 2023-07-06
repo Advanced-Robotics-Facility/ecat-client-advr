@@ -1,10 +1,10 @@
-#include "Managers/RobotManager.h"
+#include "manager/robot_manager.h"
 
 #include <BlockFactory/Core/Log.h>
 #include <BlockFactory/Core/Parameter.h>
 #include <BlockFactory/Core/Signal.h>
 
-#define PARAM_NUM 4
+#define PARAM_NUM 3
 
 // Class factory API
 #include <shlibpp/SharedLibraryClassApi.h>
@@ -29,8 +29,7 @@ bool XBotBlock_RobotManager::parseParameters(blockfactory::core::BlockInformatio
     int rows = 1;
     int cols = 1;
     unsigned index = Block::numberOfParameters(); // Indices start from 0
-    std::string name[PARAM_NUM] = {"RobotName",
-                                   "UseExtRobot",
+    std::string name[PARAM_NUM] = {"UseExtRobot",
                                    "ReadingsList",
                                    "ReferencesList"}; // This label is used later to access the paramemeter
                                    
@@ -64,21 +63,6 @@ bool XBotBlock_RobotManager::readParameters(blockfactory::core::BlockInformation
         bfError <<  "Failed to parse parameters.";
         return false;
     }
-
-    // get robot name parameter
-    _robot_name="";
-    if (!m_parameters.getParameter("RobotName", _robot_name)) {
-        bfError << "Failed to parse robot name parameter";
-        return false;
-    }   
-    
-    // check robot name is an empty string
-    if(_robot_name=="")
-    {
-        bfError << "Missing Robot Name";
-        return false;
-    }
-    
     // get use external robot parameter
     std::string use_ext_robot="";
     if (!m_parameters.getParameter("UseExtRobot", use_ext_robot)) {

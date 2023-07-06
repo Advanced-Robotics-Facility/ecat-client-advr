@@ -3,12 +3,12 @@
 # ===========
 
 ######## RobotManager Library ################################
-include_directories(../include/Managers/)
+include_directories(../include/manager/)
 # Create the plugin library. This must be a SHARED library.
 add_library(RobotManager SHARED
-    src/Managers/RobotManager.cpp
-    src/Managers/Readings.cpp
-    src/Managers/References.cpp)
+    src/manager/robot_manager.cpp
+    src/manager/reading.cpp
+    src/manager/reference.cpp)
 
 # Manually set the name of the output library. This is not required and it
 # is done only for sake of clarity.

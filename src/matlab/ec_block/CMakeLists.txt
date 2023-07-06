@@ -40,6 +40,6 @@ target_include_directories(ec_block_utils
     PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include/common>)
 
-include(cmake/Managers.cmake)
+include(cmake/manager.cmake)
 #include(Utilities)
 #include(Sensors)

@@ -5,8 +5,8 @@
 #include <string>
 #include <XBotInterface/ModelInterface.h>
 
-#include "Managers/Readings.h"
-#include "Managers/References.h"
+#include "manager/reading.h"
+#include "manager/reference.h"
 
 namespace XBB_RobotManager{
     class XBotBlock_RobotManager;
@@ -26,13 +26,9 @@ private:
     
     UseExtRobot _use_ext_robot;
 
-    
-    std::string _robot_name,_model_name;
     std::vector<std::string> _readings_list,_references_list;
     std::shared_ptr<XBB_Readings::XBotBlock_Readings> _readings_ptr;
     std::shared_ptr<XBB_References::XBotBlock_References> _references_ptr;
-
-    int _n_joint;
     
     bool _do_sense, _do_move,_avoid_first_move;
     

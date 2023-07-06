@@ -23,6 +23,8 @@ public:
                               EcIface::Ptr &robot,
                               std::string &error_info);
     
+    static std::vector<int>  get_robot_joint();
+    
     static bool RetrieveModelId(uint8_t &model_id);
     
     static bool isValidModelID(uint8_t model_id);
@@ -35,6 +37,7 @@ public:
 private:
     static std::map<std::string,std::map<uint8_t, XBot::ModelInterface::Ptr>> _mdl_map;
     static EcIface::Ptr _client;
+    static std::vector<int> _robot_joint_id;
 };
 
 #endif // EC_BLOCK_UTILS_H
