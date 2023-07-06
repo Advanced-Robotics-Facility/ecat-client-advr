@@ -4,7 +4,7 @@
 #include <BlockFactory/Core/Parameter.h>
 #include <BlockFactory/Core/Signal.h>
 
-using namespace EcBlock_Reading;
+using namespace EcBlock;
 
 
 Reading::Reading(XBot::XBotInterface::Ptr xbi,

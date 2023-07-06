@@ -9,9 +9,9 @@
 // Class factory API
 #include <shlibpp/SharedLibraryClassApi.h>
 
-SHLIBPP_DEFINE_SHARED_SUBCLASS(RobotManager, EcBlock_RobotManager::RobotManager, blockfactory::core::Block);
+SHLIBPP_DEFINE_SHARED_SUBCLASS(RobotManager, EcBlock::RobotManager, blockfactory::core::Block);
 
-using namespace EcBlock_RobotManager;
+using namespace EcBlock;
 
 unsigned RobotManager::numberOfParameters()
 {
@@ -162,7 +162,7 @@ bool RobotManager::configureSizeAndPorts(blockfactory::core::BlockInformation* b
     // create readings class configuring size and ports.
     if(!_readings_list.empty())
     {
-        _readings_ptr = std::make_shared<EcBlock_Reading::Reading>(_robot,_readings_list,outputPortInfo.size());
+        _readings_ptr = std::make_shared<EcBlock::Reading>(_robot,_readings_list,outputPortInfo.size());
         _readings_ptr->configureSizeAndPorts(outputPortInfo);
     }
     
@@ -170,8 +170,8 @@ bool RobotManager::configureSizeAndPorts(blockfactory::core::BlockInformation* b
     // create references class configuring size and ports.
     if(!_references_list.empty())
     {
-        auto mode = XBB_References::XBotBlock_References::Mode::ROBOT;
-        _references_ptr = std::make_shared<XBB_References::XBotBlock_References>(_robot,
+        auto mode = EcBlock::Reference::Mode::ROBOT;
+        _references_ptr = std::make_shared<EcBlock::Reference>(_robot,
                                                                                  mode,
                                                                                  _references_list,
                                                                                  inputPortInfo.size(),
@@ -252,7 +252,7 @@ bool RobotManager::initialize(blockfactory::core::BlockInformation* blockInfo)
     // readings creation and initialization with initial sense.
     if(!_readings_list.empty())
     {
-        _readings_ptr = std::make_shared<EcBlock_Reading::Reading>(_robot,_readings_list,start_out_port);
+        _readings_ptr = std::make_shared<EcBlock::Reading>(_robot,_readings_list,start_out_port);
         
         // first sense to read actual value
         if(!robot_sensing())
@@ -279,8 +279,8 @@ bool RobotManager::initialize(blockfactory::core::BlockInformation* blockInfo)
     if(!_references_list.empty())
     {
         // MODE is necessary because XBotInterface library has different methods to set the references from robot and model.
-        auto mode = XBB_References::XBotBlock_References::Mode::ROBOT;
-        _references_ptr = std::make_shared<XBB_References::XBotBlock_References>(_robot,
+        auto mode = EcBlock::Reference::Mode::ROBOT;
+        _references_ptr = std::make_shared<EcBlock::Reference>(_robot,
                                                                                  mode,
                                                                                  _references_list,
                                                                                  start_input_port,

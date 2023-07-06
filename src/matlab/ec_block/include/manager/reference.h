@@ -7,11 +7,11 @@
 #include <memory>
 #include <string>
 
-namespace XBB_References {
-    class XBotBlock_References;
+namespace EcBlock {
+    class Reference;
 }
 
-class XBB_References::XBotBlock_References
+class EcBlock::Reference
 {
 public:
  
@@ -65,14 +65,14 @@ public:
     static const std::string ClassName;
     
     
-    XBotBlock_References(XBot::XBotInterface::Ptr xbi,
+    Reference(XBot::XBotInterface::Ptr xbi,
                          Mode mode,
                          std::vector<std::string> references_list,
                          size_t in_start_port,
                          size_t out_start_port,
                          bool limits_check,
                          bool limits_enforce);
-    ~XBotBlock_References(){};
+    ~Reference(){};
 
     void configureSizeAndPorts(blockfactory::core::InputPortsInfo &inputPortInfo,
                                blockfactory::core::OutputPortsInfo &outputPortInfo);

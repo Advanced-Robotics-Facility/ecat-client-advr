@@ -5,15 +5,15 @@
 #include <BlockFactory/Core/Parameter.h>
 #include <BlockFactory/Core/Signal.h>
 
-using namespace XBB_References;
+using namespace EcBlock;
 
-XBotBlock_References::XBotBlock_References(XBot::XBotInterface::Ptr xbi,
-                                           Mode mode,
-                                           std::vector<std::string> references_list,
-                                           size_t in_start_port,
-                                           size_t out_start_port,
-                                           bool limits_check,
-                                           bool limits_enforce):
+Reference::Reference(XBot::XBotInterface::Ptr xbi,
+                     Mode mode,
+                     std::vector<std::string> references_list,
+                     size_t in_start_port,
+                     size_t out_start_port,
+                     bool limits_check,
+                     bool limits_enforce):
 _xbi(xbi),
 _mode(mode),
 _references_list(references_list),
@@ -36,7 +36,7 @@ _limits_enforce(limits_enforce)
 
 // Keep in mind that after this step, all the allocated memory will be deleted.
 // Memory persistency is guaranteed starting from the initialize() method.
-void XBotBlock_References::configureSizeAndPorts(blockfactory::core::InputPortsInfo &inputPortInfo,
+void Reference::configureSizeAndPorts(blockfactory::core::InputPortsInfo &inputPortInfo,
                                                  blockfactory::core::OutputPortsInfo &outputPortInfo)
 {
     size_t ports = _references_list.size();
@@ -67,7 +67,7 @@ void XBotBlock_References::configureSizeAndPorts(blockfactory::core::InputPortsI
 }
 
 
-bool XBotBlock_References::setReferences(const blockfactory::core::BlockInformation* blockInfo,std::string &error_info)
+bool Reference::setReferences(const blockfactory::core::BlockInformation* blockInfo,std::string &error_info)
 {
     size_t index_check_limits=0;
     // set all ouput of the list
@@ -257,7 +257,7 @@ bool XBotBlock_References::setReferences(const blockfactory::core::BlockInformat
 
 // NOTE: only output fuction was developed for the references, the intialization phase is not needed.
 
-bool XBotBlock_References::output(const blockfactory::core::BlockInformation* blockInfo)
+bool Reference::output(const blockfactory::core::BlockInformation* blockInfo)
 {
     std::string error_info="";
     if(!setReferences(blockInfo,error_info))

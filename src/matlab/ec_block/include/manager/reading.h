@@ -7,11 +7,11 @@
 #include <memory>
 #include <string>
 
-namespace EcBlock_Reading {
+namespace EcBlock {
     class Reading;
 }
 
-class EcBlock_Reading::Reading
+class EcBlock::Reading
 {
 private:
     
