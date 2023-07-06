@@ -8,11 +8,11 @@
 #include "manager/reading.h"
 #include "manager/reference.h"
 
-namespace EcBlock{
+namespace EcBlock_RobotManager{
     class RobotManager;
 }
 
-class EcBlock::RobotManager : public blockfactory::core::Block
+class EcBlock_RobotManager::RobotManager : public blockfactory::core::Block
 {
 private:
     EcIface::Ptr _robot_new;
@@ -27,7 +27,7 @@ private:
     UseExtRobot _use_ext_robot;
 
     std::vector<std::string> _readings_list,_references_list;
-    std::shared_ptr<XBB_Readings::XBotBlock_Readings> _readings_ptr;
+    std::shared_ptr<EcBlock_Reading::Reading> _readings_ptr;
     std::shared_ptr<XBB_References::XBotBlock_References> _references_ptr;
     
     bool _do_sense, _do_move,_avoid_first_move;

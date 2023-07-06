@@ -7,11 +7,11 @@
 #include <memory>
 #include <string>
 
-namespace XBB_Readings {
-    class XBotBlock_Readings;
+namespace EcBlock_Reading {
+    class Reading;
 }
 
-class XBB_Readings::XBotBlock_Readings
+class EcBlock_Reading::Reading
 {
 private:
     
@@ -61,10 +61,10 @@ public:
     static const std::string ClassName;
     
     
-    XBotBlock_Readings(XBot::XBotInterface::Ptr xbi,
+    Reading(XBot::XBotInterface::Ptr xbi,
                        std::vector<std::string> readings_list,
                        size_t start_port);
-    ~XBotBlock_Readings(){};
+    ~Reading(){};
 
     void configureSizeAndPorts(blockfactory::core::OutputPortsInfo &outputPortInfo);
     bool getReadings(const blockfactory::core::BlockInformation* blockInfo,std::string &error_info);

@@ -9,9 +9,9 @@
 // Class factory API
 #include <shlibpp/SharedLibraryClassApi.h>
 
-SHLIBPP_DEFINE_SHARED_SUBCLASS(RobotManager, EcBlock::RobotManager, blockfactory::core::Block);
+SHLIBPP_DEFINE_SHARED_SUBCLASS(RobotManager, EcBlock_RobotManager::RobotManager, blockfactory::core::Block);
 
-using namespace EcBlock;
+using namespace EcBlock_RobotManager;
 
 unsigned RobotManager::numberOfParameters()
 {
@@ -162,7 +162,7 @@ bool RobotManager::configureSizeAndPorts(blockfactory::core::BlockInformation* b
     // create readings class configuring size and ports.
     if(!_readings_list.empty())
     {
-        _readings_ptr = std::make_shared<XBB_Readings::XBotBlock_Readings>(_robot,_readings_list,outputPortInfo.size());
+        _readings_ptr = std::make_shared<EcBlock_Reading::Reading>(_robot,_readings_list,outputPortInfo.size());
         _readings_ptr->configureSizeAndPorts(outputPortInfo);
     }
     
@@ -252,7 +252,7 @@ bool RobotManager::initialize(blockfactory::core::BlockInformation* blockInfo)
     // readings creation and initialization with initial sense.
     if(!_readings_list.empty())
     {
-        _readings_ptr = std::make_shared<XBB_Readings::XBotBlock_Readings>(_robot,_readings_list,start_out_port);
+        _readings_ptr = std::make_shared<EcBlock_Reading::Reading>(_robot,_readings_list,start_out_port);
         
         // first sense to read actual value
         if(!robot_sensing())

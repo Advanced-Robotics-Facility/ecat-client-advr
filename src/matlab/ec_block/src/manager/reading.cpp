@@ -4,12 +4,12 @@
 #include <BlockFactory/Core/Parameter.h>
 #include <BlockFactory/Core/Signal.h>
 
-using namespace XBB_Readings;
+using namespace EcBlock_Reading;
 
 
-XBotBlock_Readings::XBotBlock_Readings(XBot::XBotInterface::Ptr xbi,
-                                       std::vector<std::string> readings_list,
-                                       size_t start_port):
+Reading::Reading(XBot::XBotInterface::Ptr xbi,
+                 std::vector<std::string> readings_list,
+                 size_t start_port):
 _xbi(xbi),
 _readings_list(readings_list),
 _start_port(start_port)
@@ -27,7 +27,7 @@ _start_port(start_port)
 
 // Keep in mind that after this step, all the allocated memory will be deleted.
 // Memory persistency is guaranteed starting from the initialize() method.
-void XBotBlock_Readings::configureSizeAndPorts(blockfactory::core::OutputPortsInfo &outputPortInfo)
+void Reading::configureSizeAndPorts(blockfactory::core::OutputPortsInfo &outputPortInfo)
 {
     size_t ports = _readings_list.size();
     
@@ -41,7 +41,7 @@ void XBotBlock_Readings::configureSizeAndPorts(blockfactory::core::OutputPortsIn
     }
 }
 
-bool XBotBlock_Readings::getReadings(const blockfactory::core::BlockInformation* blockInfo,std::string &error_info)
+bool Reading::getReadings(const blockfactory::core::BlockInformation* blockInfo,std::string &error_info)
 {
     // set all ouput of the list
     for(size_t i=0; i < _readings_list.size();i++)
@@ -135,7 +135,7 @@ bool XBotBlock_Readings::getReadings(const blockfactory::core::BlockInformation*
     return true;
 }
 
-bool XBotBlock_Readings::initialize(blockfactory::core::BlockInformation* blockInfo)
+bool Reading::initialize(blockfactory::core::BlockInformation* blockInfo)
 {
     std::string error_info="";
     if(!getReadings(blockInfo,error_info))
@@ -148,7 +148,7 @@ bool XBotBlock_Readings::initialize(blockfactory::core::BlockInformation* blockI
 }
 
 
-bool XBotBlock_Readings::output(const blockfactory::core::BlockInformation* blockInfo)
+bool Reading::output(const blockfactory::core::BlockInformation* blockInfo)
 {
     std::string error_info="";
     if(!getReadings(blockInfo,error_info))
