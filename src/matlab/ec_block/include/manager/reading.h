@@ -1,11 +1,7 @@
 #include <BlockFactory/Core/Block.h>
 #include <BlockFactory/Core/BlockInformation.h>
 
-#include <XBotInterface/RobotInterface.h>
-#include <XBotInterface/Utils.h>
-
-#include <memory>
-#include <string>
+#include "ec_block_utils.h"
 
 namespace EcBlock {
     class Reading;
@@ -15,7 +11,8 @@ class EcBlock::Reading
 {
 private:
     
-    XBot::XBotInterface::Ptr _xbi;
+    EcIface::Ptr _robot;
+    std::vector<int> _q_id;
 
     std::vector<std::string> _readings_list;
 
@@ -30,14 +27,13 @@ private:
         qM,
         qJdot,
         qMdot,
-        qJddot,
         tau,
         qTemp,
-        K,
-        D,
-        qJ_ref,
-        qJdot_ref,
-        tau_ref,
+        bTemp,
+        gainP,
+        gainD,
+        fault,
+        cmd_aux_sts,
     };
     
     std::map<std::string, Readings_Options> _readings_options {
@@ -46,14 +42,13 @@ private:
         { "qM", qM },
         { "qJdot", qJdot },
         { "qMdot", qMdot },
-        { "qJddot", qJddot },
         { "tau", tau },
         { "qTemp", qTemp },
-        { "K", K },
-        { "D", D },
-        { "qJ_ref", qJ_ref },
-        { "qJdot_ref", qJdot_ref },
-        { "tau_ref", tau_ref }
+        { "bTemp", bTemp },
+        { "gainP", gainP },
+        { "gainD", gainD },
+        { "fault", fault },
+        { "cmd_aux_sts",cmd_aux_sts }
     };
 
 public:
@@ -61,14 +56,14 @@ public:
     static const std::string ClassName;
     
     
-    Reading(XBot::XBotInterface::Ptr xbi,
-                       std::vector<std::string> readings_list,
-                       size_t start_port);
+    Reading(EcIface::Ptr robot,
+            std::vector<std::string> readings_list,
+            size_t start_port);
     ~Reading(){};
 
     void configureSizeAndPorts(blockfactory::core::OutputPortsInfo &outputPortInfo);
-    bool getReadings(const blockfactory::core::BlockInformation* blockInfo,std::string &error_info);
-    bool initialize(blockfactory::core::BlockInformation* blockInfo);
-    bool output(const blockfactory::core::BlockInformation* blockInfo);
+    bool getReadings(const blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map,std::string &error_info);
+    bool initialize(blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map);
+    bool output(const blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map);
 };
 

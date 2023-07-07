@@ -4,7 +4,7 @@
 #include <BlockFactory/Core/Parameter.h>
 #include <BlockFactory/Core/Signal.h>
 
-#define PARAM_NUM 3
+#define PARAM_NUM 2
 
 // Class factory API
 #include <shlibpp/SharedLibraryClassApi.h>
@@ -29,8 +29,7 @@ bool RobotManager::parseParameters(blockfactory::core::BlockInformation* blockIn
     int rows = 1;
     int cols = 1;
     unsigned index = Block::numberOfParameters(); // Indices start from 0
-    std::string name[PARAM_NUM] = {"UseExtRobot",
-                                   "ReadingsList",
+    std::string name[PARAM_NUM] = {"ReadingsList",
                                    "ReferencesList"}; // This label is used later to access the paramemeter
                                    
     auto type = blockfactory::core::ParameterType::STRING;
@@ -63,26 +62,7 @@ bool RobotManager::readParameters(blockfactory::core::BlockInformation* blockInf
         bfError <<  "Failed to parse parameters.";
         return false;
     }
-    // get use external robot parameter
-    std::string use_ext_robot="";
-    if (!m_parameters.getParameter("UseExtRobot", use_ext_robot)) {
-        bfError << "Failed to parse use external robot paramemeter";
-        return false;
-    }
-    
-    // Check the content of the parameter
-    if (use_ext_robot == "Off") {
-        _use_ext_robot = UseExtRobot::OFF;
-    }
-    else if (use_ext_robot == "On") {
-        _use_ext_robot = UseExtRobot::ON;
-    }
-    else {
-        bfError << "Use external option:  " << use_ext_robot << " not recognized";
-        return false;
-    }
-    
-
+   
     // get readings list parameter
     std::string readings_list="";
     if (!m_parameters.getParameter("ReadingsList", readings_list)) {
@@ -91,7 +71,7 @@ bool RobotManager::readParameters(blockfactory::core::BlockInformation* blockInf
     }
     
     // convert string to string vector
-    EcBlockUtils::checkParamSelected(readings_list,_readings_list);
+    EcBlockUtils::check_param_selected(readings_list,_readings_list);
     
 
     
@@ -103,7 +83,7 @@ bool RobotManager::readParameters(blockfactory::core::BlockInformation* blockInf
     }
     
     // convert string to string vector
-    EcBlockUtils::checkParamSelected(references_list,_references_list);
+    EcBlockUtils::check_param_selected(references_list,_references_list);
     
     
     return true;
@@ -123,41 +103,9 @@ bool RobotManager::configureSizeAndPorts(blockfactory::core::BlockInformation* b
        return false;
     }
     
-    std::string error_info = "";
-    bool allow_new_robot;
-
     // Store together the port information objects
     blockfactory::core::InputPortsInfo inputPortInfo;
     blockfactory::core::OutputPortsInfo outputPortInfo;
-
-    if(_use_ext_robot == UseExtRobot::ON)
-    {
-        // retrieve robot
-        allow_new_robot=false;
-        bool robot_retrieved = EcBlockUtils::RetrieveRobot(allow_new_robot,_robot_new,error_info);
-        
-        if(!robot_retrieved)
-        {
-            // avoiding error detection during robot retrieving.
-            // This operation is done in the configureSizeAndPorts function to detect JOINT NUMBER
-            // if there is an error, by default the joint number is equal to 1.
-            // Inside the initialize phase will be detected the error.
-        }
-    }
-    else
-    {
-        // create robot
-        allow_new_robot=true;
-        bool robot_created = EcBlockUtils::RetrieveRobot(allow_new_robot,_robot_new,error_info);
-        
-        if(!robot_created)
-        {
-            // avoiding error detection during robot creation.
-            // This operation is done in the configureSizeAndPorts function to detect JOINT NUMBER
-            // if there is an error, by default the joint number is equal to 1.
-            // Inside the initialize phase will be detected the error.
-        }
-    }
     
     // create readings class configuring size and ports.
     if(!_readings_list.empty())
@@ -170,15 +118,8 @@ bool RobotManager::configureSizeAndPorts(blockfactory::core::BlockInformation* b
     // create references class configuring size and ports.
     if(!_references_list.empty())
     {
-        auto mode = EcBlock::Reference::Mode::ROBOT;
-        _references_ptr = std::make_shared<EcBlock::Reference>(_robot,
-                                                                                 mode,
-                                                                                 _references_list,
-                                                                                 inputPortInfo.size(),
-                                                                                 outputPortInfo.size(),
-                                                                                false,
-                                                                                false);
-        _references_ptr->configureSizeAndPorts(inputPortInfo,outputPortInfo);
+        _references_ptr = std::make_shared<EcBlock::Reference>(_robot,_references_list,inputPortInfo.size());
+        _references_ptr->configureSizeAndPorts(inputPortInfo);
     }
          
     // Store the port information into the BlockInformation
@@ -193,10 +134,10 @@ bool RobotManager::configureSizeAndPorts(blockfactory::core::BlockInformation* b
 
 // Function to perform the sensing on the robot (internal and external) 
 // synchronizing it (only with internal robot) with a model 
-bool RobotManager::robot_sensing()
+void RobotManager::robot_sensing()
 {
-    
-    return true;
+    _motors_status_map.clear();
+    _motors_status_map=_robot->get_motors_status();
 }
 
 bool RobotManager::initialize(blockfactory::core::BlockInformation* blockInfo)
@@ -211,56 +152,31 @@ bool RobotManager::initialize(blockfactory::core::BlockInformation* blockInfo)
        return false;
     }
     
-    std::string error_info;
-    bool allow_new_robot;
+    std::string error_info="";
     
     size_t start_input_port=0;
     size_t start_out_port=0;
     
     _do_sense = _do_move = _avoid_first_move = false;
+    // retrieve robot
+    bool robot_retrieved = EcBlockUtils::retrieve_robot(_robot,error_info);
     
-    if(_use_ext_robot == UseExtRobot::OFF)
+    // check errors during the creation
+    if(!robot_retrieved)
     {
-        error_info = "";
-        allow_new_robot=true;
-        // create robot and robot id
-        bool robot_created = EcBlockUtils::RetrieveRobot(allow_new_robot,_robot_new,error_info);
-        
-        // check errors during the creation
-        if(!robot_created)
-        {
-            bfError << "Robot not created, reason: " << error_info;
-            return false;
-        }
+        bfError << "Robot not retrieved, reason: " << error_info;
+        return false;
     }
-    else
-    {
-        
-        error_info = "";
-        allow_new_robot=false;
-        // retrieve robot and robot id
-        bool robot_retrieved = EcBlockUtils::RetrieveRobot(allow_new_robot,_robot_new,error_info);
-        
-        // check errors during robot and robot id retrieving
-        if(!robot_retrieved)
-        {
-            bfError << "Robot not retrieved, reason: " << error_info;
-            return false;
-        }
-    }
-    
+
     // readings creation and initialization with initial sense.
     if(!_readings_list.empty())
     {
         _readings_ptr = std::make_shared<EcBlock::Reading>(_robot,_readings_list,start_out_port);
         
         // first sense to read actual value
-        if(!robot_sensing())
-        {
-            return false;
-        }
+        robot_sensing();
 
-        if(!_readings_ptr->initialize(blockInfo))
+        if(!_readings_ptr->initialize(blockInfo,_motors_status_map))
         {
             return false;
         }
@@ -279,14 +195,7 @@ bool RobotManager::initialize(blockfactory::core::BlockInformation* blockInfo)
     if(!_references_list.empty())
     {
         // MODE is necessary because XBotInterface library has different methods to set the references from robot and model.
-        auto mode = EcBlock::Reference::Mode::ROBOT;
-        _references_ptr = std::make_shared<EcBlock::Reference>(_robot,
-                                                                                 mode,
-                                                                                 _references_list,
-                                                                                 start_input_port,
-                                                                                 start_out_port,
-                                                                                 false,
-                                                                                 false);
+        _references_ptr = std::make_shared<EcBlock::Reference>(_robot,_references_list,start_input_port);
         
         _do_move = true;
     }
@@ -299,16 +208,13 @@ bool RobotManager::output(const blockfactory::core::BlockInformation* blockInfo)
     // perform sensing operation
     if(_do_sense)
     {
-        if(!robot_sensing())
-        {
-            return false;
-        }
+        robot_sensing();
     }
 
     // get robot input
     if(_readings_ptr != nullptr)
     {
-        if(!_readings_ptr->output(blockInfo))
+        if(!_readings_ptr->output(blockInfo,_motors_status_map))
         {
             return false;
         }
@@ -321,7 +227,8 @@ bool RobotManager::output(const blockfactory::core::BlockInformation* blockInfo)
     // added avoid first move check in order to avoid to set wrong references.
     if(_references_ptr != nullptr && !_avoid_first_move)
     {
-        if(!_references_ptr->output(blockInfo))
+        _motors_ref.clear();
+        if(!_references_ptr->output(blockInfo,_motors_ref))
         {
             return false;
         }
@@ -333,12 +240,7 @@ bool RobotManager::output(const blockfactory::core::BlockInformation* blockInfo)
         // unit delay during sensing and moving operation
         if(!_avoid_first_move)
         {
-            //move robot
-            if(!_robot->move())
-            {
-                bfError << "Error during the move operation";
-                return false;
-            }
+            _robot->set_motors_references(MotorRefFlags::FLAG_MULTI_REF,_motors_ref);
         }
         else
         {
@@ -353,7 +255,7 @@ bool RobotManager::output(const blockfactory::core::BlockInformation* blockInfo)
 bool RobotManager::terminate(const blockfactory::core::BlockInformation* /*blockInfo*/)
 {
     // clear robot and model map
-    EcBlockUtils::clearRobot();
+    EcBlockUtils::clear_robot();
     EcBlockUtils::clearModelMap();
     return true;
     

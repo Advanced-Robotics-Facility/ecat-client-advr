@@ -3,7 +3,6 @@
 
 #include <memory>
 #include <string>
-#include <XBotInterface/ModelInterface.h>
 
 #include "manager/reading.h"
 #include "manager/reference.h"
@@ -15,17 +14,9 @@ namespace EcBlock{
 class EcBlock::RobotManager : public blockfactory::core::Block
 {
 private:
-    EcIface::Ptr _robot_new;
-    XBot::RobotInterface::Ptr _robot;
-    
-    enum class UseExtRobot
-    {
-        OFF,
-        ON
-    };
-    
-    UseExtRobot _use_ext_robot;
-
+    EcIface::Ptr _robot;
+    MotorStatusMap _motors_status_map;
+    std::vector<MR> _motors_ref;
     std::vector<std::string> _readings_list,_references_list;
     std::shared_ptr<EcBlock::Reading> _readings_ptr;
     std::shared_ptr<EcBlock::Reference> _references_ptr;
@@ -45,7 +36,7 @@ public:
     bool parseParameters(blockfactory::core::BlockInformation* blockInfo) override;
     bool readParameters(blockfactory::core::BlockInformation* blockInfo);
     bool configureSizeAndPorts(blockfactory::core::BlockInformation* blockInfo) override;
-    bool robot_sensing();
+    void robot_sensing();
     bool initialize(blockfactory::core::BlockInformation* blockInfo) override;
     bool output(const blockfactory::core::BlockInformation* blockInfo) override;
     bool terminate(const blockfactory::core::BlockInformation* blockInfo) override;

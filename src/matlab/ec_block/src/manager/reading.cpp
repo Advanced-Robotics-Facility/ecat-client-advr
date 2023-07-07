@@ -7,22 +7,16 @@
 using namespace EcBlock;
 
 
-Reading::Reading(XBot::XBotInterface::Ptr xbi,
+Reading::Reading(EcIface::Ptr robot,
                  std::vector<std::string> readings_list,
                  size_t start_port):
-_xbi(xbi),
+_robot(robot),
 _readings_list(readings_list),
 _start_port(start_port)
-{
-    // create class and save the XBotInterface ptr, list and start port (input and output)
-    // initialize joint_number to one
-    _joint_number = 1;
-    
-    //override joint_number
-    if(_xbi != nullptr)
-    {
-        _joint_number = _xbi->getJointNum();
-    }
+{    
+   std::string error_info="";
+   _joint_number = EcBlockUtils::retrive_joint_numb(error_info);
+   _q_id = EcBlockUtils::retrive_joint_id();
 }
 
 // Keep in mind that after this step, all the allocated memory will be deleted.
@@ -41,7 +35,7 @@ void Reading::configureSizeAndPorts(blockfactory::core::OutputPortsInfo &outputP
     }
 }
 
-bool Reading::getReadings(const blockfactory::core::BlockInformation* blockInfo,std::string &error_info)
+bool Reading::getReadings(const blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map,std::string &error_info)
 {
     // set all ouput of the list
     for(size_t i=0; i < _readings_list.size();i++)
@@ -58,58 +52,88 @@ bool Reading::getReadings(const blockfactory::core::BlockInformation* blockInfo,
         {
             // save into auxiliary vector the readings information
             Eigen::VectorXd aux_vector;
+            aux_vector.resize(_q_id.size());
+            
             switch(_readings_options.at(_readings_list[i]))
             {
                 case q_ID: {
-                            std::vector<int> q_id=_xbi->getEnabledJointId();
-                            aux_vector.resize(q_id.size());
                             for(int i=0;i<aux_vector.size();i++)
                             {
-                                aux_vector[i]=q_id[i];
+                                aux_vector[i]=_q_id[i];
                             }
                         }break;
                 case qJ: {
-                            _xbi->getJointPosition(aux_vector);
+                            for(int i=0;i<aux_vector.size();i++)
+                            {
+                                aux_vector[i]=std::get<0>(motors_status_map[_q_id[i]]);
+                            }
                         }break;
                         
                 case qM: {
-                            _xbi->getMotorPosition(aux_vector);
+                            for(int i=0;i<aux_vector.size();i++)
+                            {
+                                aux_vector[i]=std::get<1>(motors_status_map[_q_id[i]]);
+                            }
                         }break;
                         
-                case qJdot:  {
-                                _xbi->getJointVelocity(aux_vector);
+                case qJdot: {
+                                for(int i=0;i<aux_vector.size();i++)
+                                {
+                                    aux_vector[i]=std::get<2>(motors_status_map[_q_id[i]]);
+                                }
                             }break;
                             
-                case qMdot:  {
-                                _xbi->getMotorVelocity(aux_vector);
+                case qMdot: {
+                                for(int i=0;i<aux_vector.size();i++)
+                                {
+                                    aux_vector[i]=std::get<3>(motors_status_map[_q_id[i]]);
+                                }
                             }break;
-                case qJddot:    {
-                                    _xbi->getJointAcceleration(aux_vector);
-                                }break;
                 case tau:   {
-                                _xbi->getJointEffort(aux_vector);
-                            }break;
+                                for(int i=0;i<aux_vector.size();i++)
+                                {
+                                    aux_vector[i]=std::get<4>(motors_status_map[_q_id[i]]);
+                                }
+                            }break; 
                 case qTemp: {
-                                _xbi->getTemperature(aux_vector);
+                                for(int i=0;i<aux_vector.size();i++)
+                                {
+                                    aux_vector[i]=std::get<5>(motors_status_map[_q_id[i]]);
+                                }
                             }break;
-                case K: {
-                            _xbi->getStiffness(aux_vector);
-                        }break;
-                case D: {
-                            _xbi->getDamping(aux_vector);
-                        }break;
-                case qJ_ref: {
-                                _xbi->getPositionReference(aux_vector);
+                case bTemp: {
+                                for(int i=0;i<aux_vector.size();i++)
+                                {
+                                    aux_vector[i]=std::get<5>(motors_status_map[_q_id[i]]);
+                                }
                             }break;
-                        
-                case qJdot_ref:  {
-                                    _xbi->getVelocityReference(aux_vector);
-                                }break;
-                            
-                case tau_ref:   {
-                                _xbi->getEffortReference(aux_vector);
+                case gainP:{
+                                auto gains = EcBlockUtils::retrieve_joint_gains();
+                                for(int i=0;i<aux_vector.size();i++)
+                                {
+                                    aux_vector[i]=gains[0];
+                                }
                             }break;
-                
+                case gainD:{
+                                auto gains = EcBlockUtils::retrieve_joint_gains();
+                                for(int i=0;i<aux_vector.size();i++)
+                                {
+                                    aux_vector[i]=gains[2];
+                                    //aux_vector[i]=gains[1]; //control mode.
+                                }
+                            }break;
+                case fault: {
+                                for(int i=0;i<aux_vector.size();i++)
+                                {
+                                    aux_vector[i]=std::get<7>(motors_status_map[_q_id[i]]);
+                                }
+                            }break;
+                case cmd_aux_sts: {
+                                for(int i=0;i<aux_vector.size();i++)
+                                {
+                                    aux_vector[i]=std::get<11>(motors_status_map[_q_id[i]]);
+                                }
+                            }break;
             }
             
             // check the auxiliary vector size with output signal size
@@ -135,10 +159,10 @@ bool Reading::getReadings(const blockfactory::core::BlockInformation* blockInfo,
     return true;
 }
 
-bool Reading::initialize(blockfactory::core::BlockInformation* blockInfo)
+bool Reading::initialize(blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map)
 {
     std::string error_info="";
-    if(!getReadings(blockInfo,error_info))
+    if(!getReadings(blockInfo,motors_status_map,error_info))
     {
         bfError << "Joint readings failed, reason: " << error_info;
         return false;
@@ -148,10 +172,10 @@ bool Reading::initialize(blockfactory::core::BlockInformation* blockInfo)
 }
 
 
-bool Reading::output(const blockfactory::core::BlockInformation* blockInfo)
+bool Reading::output(const blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map)
 {
     std::string error_info="";
-    if(!getReadings(blockInfo,error_info))
+    if(!getReadings(blockInfo,motors_status_map,error_info))
     {
         bfError << "Joint readings failed, reason: " << error_info;
         return false;
