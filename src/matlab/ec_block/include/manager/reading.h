@@ -13,6 +13,7 @@ private:
     
     EcIface::Ptr _robot;
     std::vector<int> _q_id;
+    int _ctrl_mode;
 
     std::vector<std::string> _readings_list;
 

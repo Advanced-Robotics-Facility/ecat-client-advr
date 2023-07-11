@@ -17,6 +17,7 @@ _start_port(start_port)
    std::string error_info="";
    _joint_number = EcBlockUtils::retrive_joint_numb(error_info);
    _q_id = EcBlockUtils::retrive_joint_id();
+   _ctrl_mode=EcBlockUtils::retrive_ctrl_mode();
 }
 
 // Keep in mind that after this step, all the allocated memory will be deleted.
@@ -118,8 +119,14 @@ bool Reading::getReadings(const blockfactory::core::BlockInformation* blockInfo,
                                 auto gains = EcBlockUtils::retrieve_joint_gains();
                                 for(int i=0;i<aux_vector.size();i++)
                                 {
-                                    aux_vector[i]=gains[2];
-                                    //aux_vector[i]=gains[1]; //control mode.
+                                    if(_ctrl_mode == 0xD4)
+                                    {
+                                        aux_vector[i]=gains[1];
+                                    }
+                                    else
+                                    {
+                                        aux_vector[i]=gains[2];
+                                    }
                                 }
                             }break;
                 case fault: {

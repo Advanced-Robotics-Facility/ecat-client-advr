@@ -17,6 +17,7 @@ _in_start_port(in_start_port)
     std::string error_info="";
    _joint_number = EcBlockUtils::retrive_joint_numb(error_info);
    _q_id = EcBlockUtils::retrive_joint_id();
+   _ctrl_mode=EcBlockUtils::retrive_ctrl_mode();
 }
 
 
@@ -61,34 +62,62 @@ bool Reference::setReferences(const blockfactory::core::BlockInformation* blockI
         // use an auxiliary vectory to save the input signal values
         Eigen::VectorXd aux_vector;
         aux_vector.resize(_joint_number);
-        
         for (size_t  k=0; k < aux_vector.size(); ++k)
         {
             aux_vector[k]=input->get<double>(k);
         }
-        
         // verify if the element of the list exists like option
         if(_references_options.count(_references_list[i]) > 0)
         {
             // set aux_vector like reference 
             switch(_references_options.at(_references_list[i]))
             {
-                case qJ_ref: {             
+                case qJ_ref: {   
+                                for(size_t i=0; i < motors_ref.size();i++)
+                                {
+                                    MR mot_ref = motors_ref[i];
+                                    std::get<2>(mot_ref) = aux_vector[i];
+                                }
                             }break;
                 
                             
-                case qJdot_ref:  {
-                                  
+                case qJdot_ref: {
+                                    for(size_t i=0; i < motors_ref.size();i++)
+                                    {
+                                        MR mot_ref = motors_ref[i];
+                                        std::get<3>(mot_ref) = aux_vector[i];
+                                    }
                                 }break;   
                 
               
                 case tau_ref:   {
-                            
+                                    for(size_t i=0; i < motors_ref.size();i++)
+                                    {
+                                        MR mot_ref = motors_ref[i];
+                                        std::get<4>(mot_ref) = aux_vector[i];
+                                    }
                                 }break;
 
                 case K_ref: {
+                                for(size_t i=0; i < motors_ref.size();i++)
+                                {
+                                    MR mot_ref = motors_ref[i];
+                                    std::get<5>(mot_ref) = aux_vector[i];
+                                }
                             }break;
                 case D_ref: {
+                                for(size_t i=0; i < motors_ref.size();i++)
+                                {
+                                    MR mot_ref = motors_ref[i];
+                                    if(_ctrl_mode == 0xD4)
+                                    {
+                                        std::get<6>(mot_ref) = aux_vector[i];
+                                    }
+                                    else
+                                    {
+                                        std::get<7>(mot_ref) = aux_vector[i];
+                                    }
+                                }
                             }break;
                 
             }

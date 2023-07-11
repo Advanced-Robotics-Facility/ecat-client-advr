@@ -24,6 +24,7 @@ public:
     
     static std::vector<float> retrieve_joint_gains();
     static std::vector<int> retrive_joint_id();
+    static int retrive_ctrl_mode();
     static int retrive_joint_numb(std::string &error_info);
     
     static bool RetrieveModelId(uint8_t &model_id);

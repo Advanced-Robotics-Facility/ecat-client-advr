@@ -150,6 +150,17 @@ bool EcBlockUtils::retrieve_robot(EcIface::Ptr &robot,std::string &error_info)
     return true;
 }
 
+int EcBlockUtils::retrive_ctrl_mode()
+{
+    int ctrl_mode;
+    try{
+        auto ec_client_utils=retrieve_cfg();
+        ctrl_mode= ec_client_utils->get_ec_cfg().control_mode_type;
+    }catch(std::exception &ex){
+    }
+    return ctrl_mode;
+}
+
 std::vector<int> EcBlockUtils::retrive_joint_id()
 {
     return _joint_id;

@@ -22,6 +22,7 @@ private:
     
     int _joint_number;
     std::vector<int> _q_id;
+    int _ctrl_mode;
     
     enum References_Options
     {
