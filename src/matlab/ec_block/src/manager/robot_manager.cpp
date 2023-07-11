@@ -157,7 +157,7 @@ bool RobotManager::initialize(blockfactory::core::BlockInformation* blockInfo)
     size_t start_input_port=0;
     size_t start_out_port=0;
     
-    _do_sense = _do_move = _avoid_first_move = false;
+    _do_move = _avoid_first_move = false;
     // retrieve robot
     bool robot_retrieved = EcBlockUtils::retrieve_robot(_robot,error_info);
     
@@ -168,20 +168,18 @@ bool RobotManager::initialize(blockfactory::core::BlockInformation* blockInfo)
         return false;
     }
 
+    // first sense to read actual value
+    robot_sensing();
+    
     // readings creation and initialization with initial sense.
     if(!_readings_list.empty())
     {
         _readings_ptr = std::make_shared<EcBlock::Reading>(_robot,_readings_list,start_out_port);
-        
-        // first sense to read actual value
-        robot_sensing();
 
         if(!_readings_ptr->initialize(blockInfo,_motors_status_map))
         {
             return false;
         }
-        
-        _do_sense = true;
         
         // unit delay during sensing and moving operation
         _avoid_first_move=true;
@@ -198,6 +196,20 @@ bool RobotManager::initialize(blockfactory::core::BlockInformation* blockInfo)
         _references_ptr = std::make_shared<EcBlock::Reference>(_robot,_references_list,start_input_port);
         
         _do_move = true;
+        
+        auto q_id = EcBlockUtils::retrive_joint_id();
+        auto ctrl_mode = EcBlockUtils::retrive_ctrl_mode();
+        auto gains = EcBlockUtils::retrieve_joint_gains();
+        for(size_t i=0; i < q_id.size();i++)
+        {
+            auto id = q_id[i];
+            if(_motors_status_map.count(id) >0)
+            {
+                auto motor_pos = std::get<1>(_motors_status_map[id]);
+                _motors_ref.push_back(std::make_tuple(id,ctrl_mode,motor_pos,0.0,0.0,gains[0],gains[1],gains[2],gains[3],gains[4],1,0,0));
+            }
+        }                   
+        
     }
          
     return true;
@@ -205,29 +217,21 @@ bool RobotManager::initialize(blockfactory::core::BlockInformation* blockInfo)
 
 bool RobotManager::output(const blockfactory::core::BlockInformation* blockInfo)
 {
-    // perform sensing operation
-    if(_do_sense)
-    {
-        robot_sensing();
-    }
-
     // get robot input
     if(_readings_ptr != nullptr)
     {
+        // perform sensing operation
+        robot_sensing();
         if(!_readings_ptr->output(blockInfo,_motors_status_map))
         {
             return false;
         }
     }
     
-    // NOTE: no getting mechanical limits operation during this phase, 
-    //       since already done during one time on the initialization phase. 
-    
     // set robot output
     // added avoid first move check in order to avoid to set wrong references.
     if(_references_ptr != nullptr && !_avoid_first_move)
     {
-        _motors_ref.clear();
         if(!_references_ptr->output(blockInfo,_motors_ref))
         {
             return false;

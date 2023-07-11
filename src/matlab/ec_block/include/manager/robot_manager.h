@@ -21,7 +21,7 @@ private:
     std::shared_ptr<EcBlock::Reading> _readings_ptr;
     std::shared_ptr<EcBlock::Reference> _references_ptr;
     
-    bool _do_sense, _do_move,_avoid_first_move;
+    bool _do_move,_avoid_first_move;
     
     
 public:
