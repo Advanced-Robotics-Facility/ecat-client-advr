@@ -40,6 +40,12 @@ void Reference::configureSizeAndPorts(blockfactory::core::InputPortsInfo &inputP
 
 bool Reference::setReferences(const blockfactory::core::BlockInformation* blockInfo,std::vector<MR> &motors_ref,std::string &error_info)
 {
+    if(motors_ref.empty())
+    {
+        error_info = "Got an empty motor references structure";
+        return false;
+    }
+    
     // set all ouput of the list
     for(size_t i=0; i < _references_list.size();i++)
     {
@@ -138,7 +144,7 @@ bool Reference::output(const blockfactory::core::BlockInformation* blockInfo,std
     std::string error_info="";
     if(!setReferences(blockInfo,motors_ref,error_info))
     {
-        bfError << "Joint readings failed, reason: " << error_info;
+        bfError << "Joint references failed, reason: " << error_info;
         return false;
     }
     return true;    

@@ -1,9 +1,15 @@
 #include <common/ec_block_utils.h>
-
+#include <chrono>
 
 std::map<std::string,std::map<uint8_t, XBot::ModelInterface::Ptr>> EcBlockUtils::_mdl_map;
+
 EcIface::Ptr EcBlockUtils::_client;
+MotorStatusMap EcBlockUtils::_motors_status_map;
+std::vector<MR> EcBlockUtils::_motors_ref;
 std::vector<int> EcBlockUtils::_joint_id;
+
+using namespace std::chrono;
+
 
 char* EcBlockUtils::retrieve_cfg_path()
 {
@@ -132,14 +138,26 @@ bool EcBlockUtils::retrieve_robot(EcIface::Ptr &robot,std::string &error_info)
             {   
                 if(!slave_info.empty())
                 {
+                    std::vector<int> joint_id_read;
                     for ( auto &[id, type, pos] : slave_info ) {
                         if((type==0x15) || (type==0x12))//HP or LP motor
                         {
-                            //_joint_id.push_back(id);
+                            joint_id_read.push_back(id);
                         }
+                    }
+                    if(joint_id_read.size() != _joint_id.size())
+                    {
+                        error_info = "Homing position size different to the real robot joints number= " +std::to_string(joint_id_read.size());
+                        return false;
                     }
                 }
             }
+            
+            if(!init_robot(error_info))
+            {
+                return false;
+            }
+            
         }catch(std::exception &ex){
             error_info= ex.what();
             return false;
@@ -148,6 +166,93 @@ bool EcBlockUtils::retrieve_robot(EcIface::Ptr &robot,std::string &error_info)
     
     robot = _client;
     return true;
+}
+
+bool EcBlockUtils::init_robot(std::string &error_info)
+{
+    auto ctrl_mode = EcBlockUtils::retrive_ctrl_mode();
+    auto gains = EcBlockUtils::retrieve_joint_gains();
+    
+    MST motors_start = {};
+    PAC brake_cmds = {};
+    
+    _motors_status_map = _client->get_motors_status();
+    for(size_t i=0; i < _joint_id.size();i++)
+    {
+        auto id = _joint_id[i];
+        if(_motors_status_map.count(id) >0)
+        {
+            auto motor_pos = std::get<1>(_motors_status_map[id]);
+            _motors_ref.push_back(std::make_tuple(id,ctrl_mode,motor_pos,0.0,0.0,gains[0],gains[1],gains[2],gains[3],gains[4],1,0,0));
+            
+            motors_start.push_back(std::make_tuple(id,ctrl_mode,gains));
+            brake_cmds.push_back(std::make_tuple(id,to_underlying(PdoAuxCmdType::BRAKE_RELEASE)));
+        }
+    }   
+    
+    bool robot_init = true;
+    if(!motors_start.empty())
+    {
+        if(_client->start_motors(motors_start))
+        {
+            if(!brake_cmds.empty())
+            {
+                if(!_client->pdo_aux_cmd(brake_cmds))
+                {
+                    error_info= "Cannot perform the release brake command of the motors";
+                    robot_init=false;
+                }
+                else
+                {
+                    std::this_thread::sleep_for(1000ms); //wait 1s to check if the brakes are released
+                    if(!_client->pdo_aux_cmd_sts(brake_cmds))
+                    {
+                        error_info= "Error on brake status on the motors";
+                        robot_init=false;
+                    }
+                }
+            }
+        }
+        else
+        {
+            error_info= "Motors not started";
+            robot_init=false;
+        }
+    }
+    return robot_init;
+}
+
+void EcBlockUtils::stop_robot()
+{
+    PAC brake_cmds = {};
+
+    for(size_t i=0; i < _joint_id.size();i++)
+    {
+        auto id = _joint_id[i];
+        if(_motors_status_map.count(id) >0)
+        {
+            brake_cmds.push_back(std::make_tuple(id,to_underlying(PdoAuxCmdType::BRAKE_ENGAGE)));
+        }
+    }
+    
+    if(!brake_cmds.empty())
+    {
+        if(_client->pdo_aux_cmd(brake_cmds))
+        {
+            std::this_thread::sleep_for(1000ms); //wait 1s to check if the brakes are released
+            if(_client->pdo_aux_cmd_sts(brake_cmds))
+            {
+                _client->stop_motors();
+            }
+        }
+    }
+
+}
+
+
+std::vector<MR> EcBlockUtils::retrieve_motors_ref()
+{
+    return _motors_ref;
 }
 
 int EcBlockUtils::retrive_ctrl_mode()
@@ -161,10 +266,6 @@ int EcBlockUtils::retrive_ctrl_mode()
     return ctrl_mode;
 }
 
-std::vector<int> EcBlockUtils::retrive_joint_id()
-{
-    return _joint_id;
-}
 
 std::vector<float> EcBlockUtils::retrieve_joint_gains()
 {
@@ -175,6 +276,11 @@ std::vector<float> EcBlockUtils::retrieve_joint_gains()
     }catch(std::exception &ex){
     }
     return gains;
+}
+
+std::vector<int> EcBlockUtils::retrive_joint_id()
+{
+    return _joint_id;
 }
 
 int EcBlockUtils::retrive_joint_numb(std::string &error_info)
@@ -196,6 +302,8 @@ void EcBlockUtils::clear_robot()
 {
     if(_client != nullptr)
     {
+        stop_robot();
+        _client->stop_motors();
         if(_client->is_client_alive())
         {
             _client->stop_client();

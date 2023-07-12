@@ -33,6 +33,9 @@ private:
         bTemp,
         gainP,
         gainD,
+        qJ_ref,
+        qJdot_ref,
+        tau_ref,
         fault,
         cmd_aux_sts,
     };
@@ -48,6 +51,9 @@ private:
         { "bTemp", bTemp },
         { "gainP", gainP },
         { "gainD", gainD },
+        { "qJ_ref", qJ_ref },
+        { "qJdot_ref", qJdot_ref },
+        { "tau_ref", tau_ref },
         { "fault", fault },
         { "cmd_aux_sts",cmd_aux_sts }
     };

@@ -26,6 +26,7 @@ public:
     static std::vector<int> retrive_joint_id();
     static int retrive_ctrl_mode();
     static int retrive_joint_numb(std::string &error_info);
+    static std::vector<MR> retrieve_motors_ref();
     
     static bool RetrieveModelId(uint8_t &model_id);
     
@@ -40,6 +41,11 @@ private:
     static std::map<std::string,std::map<uint8_t, XBot::ModelInterface::Ptr>> _mdl_map;
     static EcIface::Ptr _client;
     static std::vector<int> _joint_id;
+    static MotorStatusMap _motors_status_map;
+    static std::vector<MR> _motors_ref;
+    
+    static bool init_robot(std::string &error_info);
+    static void stop_robot();
 };
 
 #endif // EC_BLOCK_UTILS_H

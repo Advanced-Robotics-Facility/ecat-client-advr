@@ -38,24 +38,31 @@ void Reading::configureSizeAndPorts(blockfactory::core::OutputPortsInfo &outputP
 
 bool Reading::getReadings(const blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map,std::string &error_info)
 {
+    if(motors_status_map.empty())
+    {
+        error_info = "Got an empty motor status map";
+        return false;
+    }
+    
+    auto motors_ref = EcBlockUtils::retrieve_motors_ref();
     // set all ouput of the list
-    for(size_t i=0; i < _readings_list.size();i++)
+    for(size_t port=0; port < _readings_list.size();port++)
     {
         // get ouput signal
-        blockfactory::core::OutputSignalPtr output= blockInfo->getOutputPortSignal(/*index=*/i + _start_port);
+        blockfactory::core::OutputSignalPtr output= blockInfo->getOutputPortSignal(/*index=*/port + _start_port);
         // Check the signal validity
         if (!output) {
             error_info = "Signal not valid";
             return false;
         }
         // verify if the element of the list exists like option
-        if(_readings_options.count(_readings_list[i]) > 0)
+        if(_readings_options.count(_readings_list[port]) > 0)
         {
             // save into auxiliary vector the readings information
             Eigen::VectorXd aux_vector;
             aux_vector.resize(_q_id.size());
             
-            switch(_readings_options.at(_readings_list[i]))
+            switch(_readings_options.at(_readings_list[port]))
             {
                 case q_ID: {
                             for(int i=0;i<aux_vector.size();i++)
@@ -109,24 +116,45 @@ bool Reading::getReadings(const blockfactory::core::BlockInformation* blockInfo,
                                 }
                             }break;
                 case gainP:{
-                                auto gains = EcBlockUtils::retrieve_joint_gains();
                                 for(int i=0;i<aux_vector.size();i++)
                                 {
-                                    aux_vector[i]=gains[0];
+                                    MR mot_ref = motors_ref[i];
+                                    aux_vector[i]=std::get<5>(mot_ref) ;
                                 }
                             }break;
                 case gainD:{
-                                auto gains = EcBlockUtils::retrieve_joint_gains();
                                 for(int i=0;i<aux_vector.size();i++)
                                 {
+                                    MR mot_ref = motors_ref[i];
                                     if(_ctrl_mode == 0xD4)
                                     {
-                                        aux_vector[i]=gains[1];
+                                        std::get<6>(mot_ref) = aux_vector[i];
                                     }
                                     else
                                     {
-                                        aux_vector[i]=gains[2];
+                                        std::get<7>(mot_ref) = aux_vector[i];
                                     }
+                                }
+                            }break;
+                case qJ_ref:{
+                                for(int i=0;i<aux_vector.size();i++)
+                                {
+                                    MR mot_ref = motors_ref[i];
+                                    aux_vector[i]=std::get<2>(mot_ref) ;
+                                }
+                            }break;
+                case qJdot_ref:{
+                                for(int i=0;i<aux_vector.size();i++)
+                                {
+                                    MR mot_ref = motors_ref[i];
+                                    aux_vector[i]=std::get<3>(mot_ref) ;
+                                }
+                            }break;
+                case tau_ref:{
+                                for(int i=0;i<aux_vector.size();i++)
+                                {
+                                    MR mot_ref = motors_ref[i];
+                                    aux_vector[i]=std::get<4>(mot_ref) ;
                                 }
                             }break;
                 case fault: {
