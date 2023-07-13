@@ -13,11 +13,6 @@
 
 #define _HYST_THRESHOLD 5 // 5s
 
-#define LO_PWR_DC_MC 0x12
-#define CENT_AC 0x15
-#define FT6 0x20
-#define POW_F28M36_BOARD 0x32
-#define IMU_ANY 0x40
 
 
 using namespace std::chrono;

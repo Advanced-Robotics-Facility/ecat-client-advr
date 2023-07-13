@@ -12,10 +12,6 @@
 #include <XBotInterface/ConfigOptions.h>
 
 
-// EtherCAT Motor type
-#define LO_PWR_DC_MC 0x12
-#define CENT_AC 0x15
-
 using namespace std::chrono;
 
 std::string STM_sts="IDLE";
@@ -75,15 +71,6 @@ int main()
         }
         
         std::vector<int> slave_id_vector;
-    
-// ********************* TEST ****************************////
-#ifdef TEST
-        for (auto &[id,value]: ec_client_cfg.homing_position)
-        {
-            slave_id_vector.push_back(id);
-        }
-#endif
-// ********************* TEST ****************************////
 
         // *************** START CLIENT  *************** //
         EcIface::Ptr client=ec_client_utils->make_ec_iface();
@@ -217,10 +204,13 @@ int main()
             std::cout << "NO MOTORS STARTED" << std::endl;
         }
 
-#ifdef TEST
-        if(STM_sts=="Connected")
+#ifdef TEST_EXAMPLES
+        if(!slave_id_vector.empty())
         {
-            STM_sts="Motor_Ctrl_SetGains";
+            if(STM_sts=="Connected")
+            {
+                STM_sts="Motor_Ctrl_SetGains";
+            }
         }
 #endif
                 
@@ -326,7 +316,7 @@ int main()
                     }
                 }
                     
-#ifdef TEST
+#ifdef TEST_EXAMPLES
                 if(!first_Rx)
                 {
                     first_Rx=true;

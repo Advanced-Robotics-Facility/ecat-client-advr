@@ -1,13 +1,5 @@
 project(ec_frequency_test)
 
-
-OPTION(TEST_MAIN "Testing Main concepts" OFF)
-
-IF(TEST_MAIN)
-    ADD_DEFINITIONS(-DTEST)
-ENDIF(TEST_MAIN)
-
-    
 # compile frequency test
 add_executable(ec_frequency_test
                src/ec_frequency_test.cpp)

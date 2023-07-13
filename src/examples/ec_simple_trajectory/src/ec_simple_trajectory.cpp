@@ -6,10 +6,6 @@
 
 #include "ec_utils.h"
 
-// EtherCAT Motor type
-#define LO_PWR_DC_MC 0x12
-#define CENT_AC 0x15
-
 using namespace std::chrono;
 
 int main()
@@ -39,15 +35,15 @@ int main()
         }
         
         std::vector<int> slave_id_vector;
-    
+        
 // ********************* TEST ****************************////
-#ifdef TEST
+#ifdef TEST_EXAMPLES
         for (auto &[id,value]: ec_client_cfg.homing_position)
         {
             slave_id_vector.push_back(id);
         }
 #endif
-// ********************* TEST ****************************////
+// ********************* TEST ****************************///
 
         // *************** START CLIENT  *************** //
         EcIface::Ptr client=ec_client_utils->make_ec_iface();
@@ -171,8 +167,11 @@ int main()
             std::cout << "NO MOTORS STARTED" << std::endl;
         }
 
-#ifdef TEST
-        send_ref=true;
+#ifdef TEST_EXAMPLES
+        if(!slave_id_vector.empty())
+        {
+            send_ref=true;
+        }
 #endif
                 
         if(send_ref)
@@ -275,7 +274,7 @@ int main()
                     }
                 }
                     
-#ifdef TEST
+#ifdef TEST_EXAMPLES
                 if(!first_Rx)
                 {
                     first_Rx=true;

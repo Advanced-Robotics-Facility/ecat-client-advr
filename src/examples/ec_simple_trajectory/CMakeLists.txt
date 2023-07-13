@@ -1,10 +1,5 @@
 project(ec_simple_trajectory)
 
-OPTION(TEST_MAIN "Testing Main concepts" OFF)
-
-IF(TEST_MAIN)
-    ADD_DEFINITIONS(-DTEST)
-ENDIF(TEST_MAIN)
 
 # compile main
 add_executable(ec_simple_trajectory
