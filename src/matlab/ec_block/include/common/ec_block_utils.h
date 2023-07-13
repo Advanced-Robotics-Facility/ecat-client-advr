@@ -21,6 +21,7 @@ public:
                               std::string &error_info);
     
     static bool retrieve_robot(EcIface::Ptr &robot,std::string &error_info);
+    static MotorStatusMap robot_sensing();
     
     static std::vector<float> retrieve_joint_gains();
     static std::vector<int> retrive_joint_id();
@@ -41,7 +42,6 @@ private:
     static std::map<std::string,std::map<uint8_t, XBot::ModelInterface::Ptr>> _mdl_map;
     static EcIface::Ptr _client;
     static std::vector<int> _joint_id;
-    static MotorStatusMap _motors_status_map;
     static std::vector<MR> _motors_ref;
     
     static bool init_robot(std::string &error_info);

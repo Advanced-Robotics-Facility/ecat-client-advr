@@ -132,14 +132,6 @@ bool RobotManager::configureSizeAndPorts(blockfactory::core::BlockInformation* b
 }
 
 
-// Function to perform the sensing on the robot (internal and external) 
-// synchronizing it (only with internal robot) with a model 
-void RobotManager::robot_sensing()
-{
-    _motors_status_map.clear();
-    _motors_status_map=_robot->get_motors_status();
-}
-
 bool RobotManager::initialize(blockfactory::core::BlockInformation* blockInfo)
 {
     // The base blockfactory::core::Block class need to be initialized first
@@ -174,7 +166,7 @@ bool RobotManager::initialize(blockfactory::core::BlockInformation* blockInfo)
         _readings_ptr = std::make_shared<EcBlock::Reading>(_robot,_readings_list,start_out_port);
 
         // first sense to read actual value
-        robot_sensing();
+        _motors_status_map = EcBlockUtils::robot_sensing();
         if(!_readings_ptr->initialize(blockInfo,_motors_status_map))
         {
             return false;
@@ -199,11 +191,17 @@ bool RobotManager::initialize(blockfactory::core::BlockInformation* blockInfo)
 
 bool RobotManager::output(const blockfactory::core::BlockInformation* blockInfo)
 {
+    if(!_robot->is_client_alive())
+    {
+        bfError << "EtherCAT Client not alive! ";
+        return false;
+    }
     // get robot input
     if(_readings_ptr != nullptr)
     {
         // perform sensing operation
-        robot_sensing();
+        _motors_status_map.clear();
+        _motors_status_map = EcBlockUtils::robot_sensing();
         if(!_readings_ptr->output(blockInfo,_motors_status_map))
         {
             return false;

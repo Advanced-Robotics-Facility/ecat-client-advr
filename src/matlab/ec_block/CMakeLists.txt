@@ -27,6 +27,12 @@ find_package(BlockFactory
     
 find_package(XBotInterface REQUIRED)
 
+OPTION(TEST_MATLAB "Testing MATLAB" OFF)
+
+IF(TEST_MATLAB)
+    ADD_DEFINITIONS(-DTEST_MATLAB)
+ENDIF(TEST_MATLAB)
+
 include_directories(include/common/)
 
 add_library(ec_block_utils SHARED
@@ -40,6 +46,9 @@ target_include_directories(ec_block_utils
     PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include/common>)
 
+install(TARGETS ec_block_utils
+    DESTINATION lib)    
+    
 include(cmake/manager.cmake)
 #include(Utilities)
 #include(Sensors)

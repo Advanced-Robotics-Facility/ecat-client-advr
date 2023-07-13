@@ -15,7 +15,7 @@ find_package(Qt5PrintSupport  5.9 REQUIRED)
 OPTION(TEST_GUI "Testing GUI concepts" OFF)
 
 IF(TEST_GUI)
-    ADD_DEFINITIONS(-DTEST)
+    ADD_DEFINITIONS(-DTEST_GUI)
 ENDIF(TEST_GUI)
 
 include_directories(src/utils/

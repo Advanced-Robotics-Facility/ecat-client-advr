@@ -435,7 +435,7 @@ void EcGuiStart::onScanDeviceReleased()
 
     if(_ec_wrapper_info.device_info.empty())
     {
-#ifdef TEST 
+#ifdef TEST_GUI 
         try_gui();
         restart_gui();
 #endif

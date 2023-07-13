@@ -1,14 +1,14 @@
 <deployment-project plugin="plugin.toolbox" plugin-version="1.0">
-  <configuration build-checksum="3618243003" file="/home/user/xbot2_ws/src/external/XBotBlock/matlab/XBotBlockToolbox/XBotBlockToolbox_gen.prj" location="/home/user/xbot2_ws/src/external/XBotBlock/matlab/XBotBlockToolbox" name="XBotBlockToolbox_gen" target="target.toolbox" target-name="Package Toolbox">
-    <param.appname>XBotBlockToolbox_vf0.1</param.appname>
+  <configuration build-checksum="3618243003" file="/home/user/Desktop/ecat_client_build/src/ecat-client-advr/src/matlab/ec_block/matlab/EcBlockToolbox/EcBlockToolbox_gen.prj" location="/home/user/Desktop/ecat_client_build/src/ecat-client-advr/src/matlab/ec_block/matlab/EcBlockToolbox" name="EcBlockToolbox_gen" target="target.toolbox" target-name="Package Toolbox">
+    <param.appname>EcBlockToolbox_v0.1</param.appname>
     <param.authnamewatermark>Davide Antonucci</param.authnamewatermark>
     <param.email>davide.antonucci@iit.it</param.email>
     <param.company>Istituto Italiano di Tecnologia</param.company>
-    <param.summary>XBotControl transformed into blocks</param.summary>
+    <param.summary>EtherCAT client transformed into blocks</param.summary>
     <param.description />
     <param.screenshot />
     <param.version>0.1</param.version>
-    <param.output>${PROJECT_ROOT}/XBotBlockToolbox_vf0.1.mltbx</param.output>
+    <param.output>${PROJECT_ROOT}/EcBlockToolbox_v0.1.mltbx</param.output>
     <param.products.name />
     <param.products.id />
     <param.products.version />
@@ -81,27 +81,22 @@
       <file>${PROJECT_ROOT}</file>
     </fileset.rootdir>
     <fileset.rootfiles>
-      <file>${PROJECT_ROOT}/Sensors.slx</file>
+      <file>${PROJECT_ROOT}/EcBlockToolbox.slx</file>
       <file>${PROJECT_ROOT}/Utilities.slx</file>
-      <file>${PROJECT_ROOT}/XBotBlockToolbox.slx</file>
       <file>${PROJECT_ROOT}/slblocks.m</file>
     </fileset.rootfiles>
     <fileset.depfun.included />
     <fileset.depfun.excluded />
     <fileset.package />
     <build-deliverables>
-      <file location="${PROJECT_ROOT}" name="XBotBlockToolbox_vf0.1.mltbx" optional="false">/home/user/xbot2_ws/src/external/XBotBlock/matlab/XBotBlockToolbox/XBotBlockToolbox_vf0.1.mltbx</file>
+      <file location="${PROJECT_ROOT}" name="EcBlockToolbox_v0.1.mltbx" optional="false">/home/user/Desktop/ecat_client_build/src/ecat-client-advr/src/matlab/ec_block/matlab/EcBlockToolbox/EcBlockToolbox_v0.1.mltbx</file>
     </build-deliverables>
     <workflow />
     <matlab>
-      <root>/usr/local/MATLAB/R2020b</root>
+      <root>/usr/local/MATLAB/R2022a</root>
       <toolboxes>
         <toolbox name="matlabcoder" />
         <toolbox name="embeddedcoder" />
-        <toolbox name="gpucoder" />
-        <toolbox name="fixedpoint" />
-        <toolbox name="matlabhdlcoder" />
-        <toolbox name="neuralnetwork" />
       </toolboxes>
       <toolbox>
         <matlabcoder>
@@ -113,26 +108,6 @@
           <enabled>true</enabled>
         </embeddedcoder>
       </toolbox>
-      <toolbox>
-        <gpucoder>
-          <enabled>true</enabled>
-        </gpucoder>
-      </toolbox>
-      <toolbox>
-        <fixedpoint>
-          <enabled>true</enabled>
-        </fixedpoint>
-      </toolbox>
-      <toolbox>
-        <matlabhdlcoder>
-          <enabled>true</enabled>
-        </matlabhdlcoder>
-      </toolbox>
-      <toolbox>
-        <neuralnetwork>
-          <enabled>true</enabled>
-        </neuralnetwork>
-      </toolbox>
     </matlab>
     <platform>
       <unix>true</unix>
@@ -143,7 +118,7 @@
       <vista>false</vista>
       <linux>true</linux>
       <solaris>false</solaris>
-      <osver>5.4.0-110-generic</osver>
+      <osver>5.15.0-76-generic</osver>
       <os32>false</os32>
       <os64>true</os64>
       <arch>glnxa64</arch>

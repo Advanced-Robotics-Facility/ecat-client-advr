@@ -36,7 +36,6 @@ public:
     bool parseParameters(blockfactory::core::BlockInformation* blockInfo) override;
     bool readParameters(blockfactory::core::BlockInformation* blockInfo);
     bool configureSizeAndPorts(blockfactory::core::BlockInformation* blockInfo) override;
-    void robot_sensing();
     bool initialize(blockfactory::core::BlockInformation* blockInfo) override;
     bool output(const blockfactory::core::BlockInformation* blockInfo) override;
     bool terminate(const blockfactory::core::BlockInformation* blockInfo) override;

@@ -22,6 +22,9 @@ target_link_libraries(RobotManager PRIVATE
 # Setup the include directories
 target_include_directories(RobotManager PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+    
+install(TARGETS RobotManager
+    DESTINATION lib)    
 
 ######## RobotManager Library ################################
 
