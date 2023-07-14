@@ -32,7 +32,7 @@ public:
     virtual bool pdo_aux_cmd_sts(const PAC & pac) = 0;
     
     // EtherCAT Client ADVR Facilty setters
-    virtual void set_motors_references(const MotorRefFlags &, const std::vector<MR> &) = 0;
+    virtual void set_motors_references(const MotorRefFlags, const std::vector<MR>) = 0;
     
     // EtherCAT Client ADVR Facilty commands
     virtual bool start_motors(const MST &) = 0;

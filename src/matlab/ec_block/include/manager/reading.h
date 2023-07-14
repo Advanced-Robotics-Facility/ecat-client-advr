@@ -1,7 +1,7 @@
 #include <BlockFactory/Core/Block.h>
 #include <BlockFactory/Core/BlockInformation.h>
 
-#include "ec_block_utils.h"
+#include <common/ec_block_utils.h>
 
 namespace EcBlock {
     class Reading;
@@ -10,9 +10,9 @@ namespace EcBlock {
 class EcBlock::Reading
 {
 private:
-    
-    EcIface::Ptr _robot;
     std::vector<int> _q_id;
+    std::vector<double> _q_home,_q_trj;
+    
     int _ctrl_mode;
 
     std::vector<std::string> _readings_list;
@@ -63,14 +63,13 @@ public:
     static const std::string ClassName;
     
     
-    Reading(EcIface::Ptr robot,
-            std::vector<std::string> readings_list,
+    Reading(std::vector<std::string> readings_list,
             size_t start_port);
     ~Reading(){};
 
     void configureSizeAndPorts(blockfactory::core::OutputPortsInfo &outputPortInfo);
-    bool getReadings(const blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map,std::string &error_info);
-    bool initialize(blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map);
-    bool output(const blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map);
+    bool getReadings(const blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map,std::vector<MR> motors_ref,std::string &error_info);
+    bool initialize(blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map,std::vector<MR> motors_ref);
+    bool output(const blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map,std::vector<MR> motors_ref);
 };
 

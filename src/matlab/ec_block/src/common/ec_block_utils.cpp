@@ -1,11 +1,9 @@
 #include <common/ec_block_utils.h>
 #include <chrono>
 
-std::map<std::string,std::map<uint8_t, XBot::ModelInterface::Ptr>> EcBlockUtils::_mdl_map;
-
 EcIface::Ptr EcBlockUtils::_client;
-std::vector<MR> EcBlockUtils::_motors_ref;
 std::vector<int> EcBlockUtils::_joint_id;
+std::vector<MR> EcBlockUtils::_motors_ref;
 
 using namespace std::chrono;
 
@@ -36,95 +34,7 @@ EcUtils::Ptr EcBlockUtils::retrieve_cfg()
     return ec_client_utils;
 }
                                                    
-bool EcBlockUtils::RetrieveModel(const std::string &model_name,
-                                 bool allow_new_model,
-                                 uint8_t &model_id,
-                                 XBot::ModelInterface::Ptr &model,
-                                 std::string &error_info)
-{
-    std::map<uint8_t, XBot::ModelInterface::Ptr> mdl_id_map;
-
-    if (!(_mdl_map.count(model_name)>0))
-    {
-        if(allow_new_model)
-        {
-            try{
-                
-                if(RetrieveModelId(model_id))
-                {
-                    auto ec_client_cfg_path = retrieve_cfg_path();
-                    
-                    XBot::ConfigOptions config = XBot::ConfigOptions::FromConfigFile(ec_client_cfg_path); 
-            
-                    model=XBot::ModelInterface::getModel(config);
-                    
-                    mdl_id_map[model_id]=model;
-                    
-                    _mdl_map[model_name]=mdl_id_map;
-                }
-                else
-                {
-                    error_info = "reached maximum number of models allowed";
-                    return false;
-                }
-                    
-                
-            }catch(std::exception &ex){
-                error_info = ex.what();
-                return false;
-            }
-        }
-        else
-        {
-            error_info = "model not found"; 
-            return false;
-        }
-        
-    }
-
-    mdl_id_map.clear();
-    mdl_id_map = _mdl_map.at(model_name) ;
-
-    if(!mdl_id_map.empty())
-    {
-        model_id = mdl_id_map.begin()->first; 
-        
-        model.reset();
-        model = mdl_id_map.begin()->second;
-    }
-    else
-    {
-        error_info = "got an empty model id map"; 
-        return false;
-    }
-
-    return true;
-}
-
-bool EcBlockUtils::RetrieveModelId(uint8_t &model_id)
-{
-    auto new_model_id =  _mdl_map.size() + 1;
-
-    uint8_t max_model_number = std::numeric_limits<uint8_t>::max();
-    
-    if(new_model_id > max_model_number)
-    {
-        model_id= max_model_number; // Max Models number = 255
-        return false;
-    }
-    else
-    {
-        model_id= (uint8_t) new_model_id;
-        return true;
-    }
-}
-
-void EcBlockUtils::clearModelMap()
-{
-    _mdl_map.clear();
-}
-
-bool EcBlockUtils::retrieve_robot(EcIface::Ptr &robot,std::string &error_info)
+bool EcBlockUtils::retrieve_ec_iface(std::string &error_info)
 {
     if(_client == nullptr)
     {
@@ -156,7 +66,7 @@ bool EcBlockUtils::retrieve_robot(EcIface::Ptr &robot,std::string &error_info)
                     }
                 }
             }
-            
+
             if(!init_robot(error_info))
             {
                 return false;
@@ -168,25 +78,39 @@ bool EcBlockUtils::retrieve_robot(EcIface::Ptr &robot,std::string &error_info)
         }
     }
     
-    robot = _client;
     return true;
 }
 
 bool EcBlockUtils::init_robot(std::string &error_info)
 {
-    auto ctrl_mode = EcBlockUtils::retrive_ctrl_mode();
-    auto gains = EcBlockUtils::retrieve_joint_gains();
+    int joint_number,ctrl_mode;
+    std::vector<float> gains;
+    std::vector<double> q_home,q_trj;
     
+    _joint_id.clear();
+    retrieve_ec_info(joint_number,_joint_id,ctrl_mode,gains,q_home,q_trj,error_info);
+
     MST motors_start = {};
     PAC brake_cmds = {};
     
-    auto motors_status_map = robot_sensing();
-    if(motors_status_map.empty())
+    MotorStatusMap motors_status_map;
+    FtStatusMap ft6_status_map;
+    ImuStatusMap imu_status_map;
+    PwrStatusMap pow_status_map;
+
+    if(ec_sense(motors_status_map,ft6_status_map,imu_status_map,pow_status_map,_motors_ref))
     {
-        error_info = "Robot not initialized, got an empty motors map status";
+        if(motors_status_map.empty())
+        {
+            error_info = "Robot not initialized, got an empty motors map status";
+            return false;
+        }
+    }
+    else
+    {
+        error_info = "EtherCAT Client not alive!";
         return false;
     }
-    
     _motors_ref.clear();
     for(size_t i=0; i < _joint_id.size();i++)
     {
@@ -200,7 +124,7 @@ bool EcBlockUtils::init_robot(std::string &error_info)
             //brake_cmds.push_back(std::make_tuple(id,to_underlying(PdoAuxCmdType::BRAKE_RELEASE)));
         }
     }   
-    
+
     bool robot_init = true;
     if(!motors_start.empty())
     {
@@ -230,23 +154,8 @@ bool EcBlockUtils::init_robot(std::string &error_info)
             robot_init=false;
         }
     }
-    return robot_init;
-}
 
-MotorStatusMap EcBlockUtils::robot_sensing()
-{
-    auto motors_status_map=_client->get_motors_status();
-    if(motors_status_map.empty())
-    {
-#ifdef TEST_MATLAB 
-        for(int i=0; i < _joint_id.size();i++)
-        {
-            int q_id = _joint_id[i];
-            motors_status_map[q_id] = std::make_tuple(10,10,0,0,100,25,25,0,0,0,0,0);
-        }
-#endif
-    }
-    return motors_status_map;
+    return robot_init;
 }
 
 void EcBlockUtils::stop_robot()
@@ -273,58 +182,7 @@ void EcBlockUtils::stop_robot()
 
 }
 
-
-std::vector<MR> EcBlockUtils::retrieve_motors_ref()
-{
-    return _motors_ref;
-}
-
-int EcBlockUtils::retrive_ctrl_mode()
-{
-    int ctrl_mode;
-    try{
-        auto ec_client_utils=retrieve_cfg();
-        ctrl_mode= ec_client_utils->get_ec_cfg().control_mode_type;
-    }catch(std::exception &ex){
-    }
-    return ctrl_mode;
-}
-
-
-std::vector<float> EcBlockUtils::retrieve_joint_gains()
-{
-    std::vector<float> gains;
-    try{
-        auto ec_client_utils=retrieve_cfg();
-        gains= ec_client_utils->get_ec_cfg().gains;
-    }catch(std::exception &ex){
-    }
-    return gains;
-}
-
-std::vector<int> EcBlockUtils::retrive_joint_id()
-{
-    return _joint_id;
-}
-
-int EcBlockUtils::retrive_joint_numb(std::string &error_info)
-{
-    int joint_numb=1;
-    _joint_id.clear();
-    
-    try{
-        auto ec_client_utils=retrieve_cfg();
-        joint_numb= ec_client_utils->get_ec_cfg().homing_position.size();
-        for ( auto &[id, home_pos] : ec_client_utils->get_ec_cfg().homing_position ) {
-            _joint_id.push_back(id);
-        }
-    }catch(std::exception &ex){
-        error_info= ex.what();
-    }
-    return joint_numb;
-}
-
-void EcBlockUtils::clear_robot()
+void EcBlockUtils::stop_ec_iface()
 {
     if(_client != nullptr)
     {
@@ -335,6 +193,92 @@ void EcBlockUtils::clear_robot()
         }
     }
     _client.reset();
+}
+
+void EcBlockUtils::retrieve_ec_info(int &joint_numb,
+                                    std::vector<int> &joint_id,
+                                    int &ctrl_mode,
+                                    std::vector<float> &gains,
+                                    std::vector<double> &q_home,
+                                    std::vector<double> &q_trj,
+                                    std::string &error_info)
+{
+    joint_numb=1;
+    
+    try{
+        auto ec_client_utils=retrieve_cfg();
+        
+        auto home_map= ec_client_utils->get_ec_cfg().homing_position;
+        auto trj_map = ec_client_utils->get_ec_cfg().trajectory;
+        
+        joint_numb= home_map.size();
+        ctrl_mode= ec_client_utils->get_ec_cfg().control_mode_type;
+        gains= ec_client_utils->get_ec_cfg().gains;
+
+        for ( auto &[id, home_pos] : home_map) {
+            joint_id.push_back(id);
+            q_home.push_back(home_pos);
+            q_trj.push_back(trj_map[id]);
+        }
+    }catch(std::exception &ex){
+        error_info= ex.what();
+    }
+
+}
+
+
+
+bool EcBlockUtils::ec_sense(MotorStatusMap &motors_status_map,
+                            FtStatusMap &ft6_status_map,
+                            ImuStatusMap &imu_status_map,
+                            PwrStatusMap &pow_status_map,
+                            std::vector<MR> &motors_ref)
+{
+    
+    if(!_client->is_client_alive())
+    {
+        return false;
+    }
+    
+    motors_status_map.clear();
+    motors_status_map=_client->get_motors_status();
+    
+    ft6_status_map.clear();
+    ft6_status_map = _client->get_ft6_status();
+    
+    imu_status_map.clear();
+    imu_status_map = _client->get_imu_status();
+    
+    pow_status_map.clear();
+    pow_status_map = _client->get_pow_status();
+
+    if(motors_status_map.empty())
+    {
+#ifdef TEST_MATLAB 
+        for(int i=0; i < _joint_id.size();i++)
+        {
+            int q_id = _joint_id[i];
+            motors_status_map[q_id] = std::make_tuple(0,0.0,0,0,0,0,0,0,0,0,0,0);
+        }
+#endif
+    }
+    
+    motors_ref = _motors_ref;
+    
+    return true;
+}
+
+bool EcBlockUtils::ec_move(MotorRefFlags flag,std::vector<MR> motors_ref)
+{
+    if(!_client->is_client_alive())
+    {
+        return false;
+    }
+    
+    _motors_ref = motors_ref;
+    _client->set_motors_references(flag,_motors_ref);
+    
+    return true;
 }
 
 

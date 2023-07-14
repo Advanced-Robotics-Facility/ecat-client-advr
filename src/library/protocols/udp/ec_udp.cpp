@@ -838,7 +838,7 @@ void EcUDP::periodicActivity()
 //******************************* Periodic Activity *****************************************************//
 
 
-void EcUDP::set_motors_references(const MotorRefFlags & motor_ref_flags,const std::vector<MR> &motors_references)
+void EcUDP::set_motors_references(const MotorRefFlags motor_ref_flags,const std::vector<MR> motors_references)
 {
     _mutex_motor_reference->lock();
 

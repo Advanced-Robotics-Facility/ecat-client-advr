@@ -1,8 +1,7 @@
 #include <BlockFactory/Core/Block.h>
 #include <BlockFactory/Core/BlockInformation.h>
 
-#include "ec_block_utils.h"
-
+#include <common/ec_block_utils.h>
 
 namespace EcBlock {
     class Reference;
@@ -13,9 +12,7 @@ class EcBlock::Reference
 public:
  
 private:
-    
-    EcIface::Ptr _robot;
-    
+
     std::vector<std::string> _references_list;
     
     size_t _in_start_port,_out_start_port;
@@ -46,8 +43,7 @@ public:
     static const std::string ClassName;
     
     
-    Reference(EcIface::Ptr robot,
-              std::vector<std::string> references_list,
+    Reference(std::vector<std::string> references_list,
               size_t in_start_port);
     ~Reference(){};
 

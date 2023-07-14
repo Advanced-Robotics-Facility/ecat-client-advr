@@ -8,14 +8,18 @@
 #include "manager/reference.h"
 
 namespace EcBlock{
-    class RobotManager;
+    class EcManager;
 }
 
-class EcBlock::RobotManager : public blockfactory::core::Block
+class EcBlock::EcManager : public blockfactory::core::Block
 {
 private:
-    EcIface::Ptr _robot;
     MotorStatusMap _motors_status_map;
+    FtStatusMap _ft6_status_map;
+    ImuStatusMap _imu_status_map;
+    PwrStatusMap _pow_status_map;
+    
+    
     std::vector<MR> _motors_ref;
     std::vector<std::string> _readings_list,_references_list;
     std::shared_ptr<EcBlock::Reading> _readings_ptr;
@@ -29,8 +33,8 @@ public:
     static const std::string ClassName;
     
     
-    RobotManager() = default;
-    ~RobotManager() override = default;
+    EcManager() = default;
+    ~EcManager() override = default;
 
     unsigned numberOfParameters() override;
     bool parseParameters(blockfactory::core::BlockInformation* blockInfo) override;

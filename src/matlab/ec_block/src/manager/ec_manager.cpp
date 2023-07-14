@@ -1,4 +1,4 @@
-#include "manager/robot_manager.h"
+#include "manager/ec_manager.h"
 
 #include <BlockFactory/Core/Log.h>
 #include <BlockFactory/Core/Parameter.h>
@@ -9,11 +9,11 @@
 // Class factory API
 #include <shlibpp/SharedLibraryClassApi.h>
 
-SHLIBPP_DEFINE_SHARED_SUBCLASS(RobotManager, EcBlock::RobotManager, blockfactory::core::Block);
+SHLIBPP_DEFINE_SHARED_SUBCLASS(EcManager, EcBlock::EcManager, blockfactory::core::Block);
 
 using namespace EcBlock;
 
-unsigned RobotManager::numberOfParameters()
+unsigned EcManager::numberOfParameters()
 {
     // The base blockfactory::core::Block class needs parameters (e.g. the ClassName).
     // You must specify here how many more parameters this class needs.
@@ -23,7 +23,7 @@ unsigned RobotManager::numberOfParameters()
 
 // This method should let BlockInformation know the parameters metadata.
 // BlockFactory will use this information to gather the parameters from the active engine.
-bool RobotManager::parseParameters(blockfactory::core::BlockInformation* blockInfo)
+bool EcManager::parseParameters(blockfactory::core::BlockInformation* blockInfo)
 { 
     // Initialize information for our parameter
     int rows = 1;
@@ -55,10 +55,10 @@ bool RobotManager::parseParameters(blockfactory::core::BlockInformation* blockIn
     return paramParsedOk;
 }
 
-bool RobotManager::readParameters(blockfactory::core::BlockInformation* blockInfo)
+bool EcManager::readParameters(blockfactory::core::BlockInformation* blockInfo)
 {
     // Parse the parameters
-    if (!RobotManager::parseParameters(blockInfo)) {
+    if (!EcManager::parseParameters(blockInfo)) {
         bfError <<  "Failed to parse parameters.";
         return false;
     }
@@ -91,7 +91,7 @@ bool RobotManager::readParameters(blockfactory::core::BlockInformation* blockInf
 
 // Keep in mind that after this step, all the allocated memory will be deleted.
 // Memory persistency is guaranteed starting from the initialize() method.
-bool RobotManager::configureSizeAndPorts(blockfactory::core::BlockInformation* blockInfo)
+bool EcManager::configureSizeAndPorts(blockfactory::core::BlockInformation* blockInfo)
 {
     // The base blockfactory::core::Block class needs to be configured first
     if (!blockfactory::core::Block::configureSizeAndPorts(blockInfo)) {
@@ -110,7 +110,7 @@ bool RobotManager::configureSizeAndPorts(blockfactory::core::BlockInformation* b
     // create readings class configuring size and ports.
     if(!_readings_list.empty())
     {
-        _readings_ptr = std::make_shared<EcBlock::Reading>(_robot,_readings_list,outputPortInfo.size());
+        _readings_ptr = std::make_shared<EcBlock::Reading>(_readings_list,outputPortInfo.size());
         _readings_ptr->configureSizeAndPorts(outputPortInfo);
     }
     
@@ -118,7 +118,7 @@ bool RobotManager::configureSizeAndPorts(blockfactory::core::BlockInformation* b
     // create references class configuring size and ports.
     if(!_references_list.empty())
     {
-        _references_ptr = std::make_shared<EcBlock::Reference>(_robot,_references_list,inputPortInfo.size());
+        _references_ptr = std::make_shared<EcBlock::Reference>(_references_list,inputPortInfo.size());
         _references_ptr->configureSizeAndPorts(inputPortInfo);
     }
          
@@ -132,7 +132,7 @@ bool RobotManager::configureSizeAndPorts(blockfactory::core::BlockInformation* b
 }
 
 
-bool RobotManager::initialize(blockfactory::core::BlockInformation* blockInfo)
+bool EcManager::initialize(blockfactory::core::BlockInformation* blockInfo)
 {
     // The base blockfactory::core::Block class need to be initialized first
     if (!Block::initialize(blockInfo)) {
@@ -150,28 +150,35 @@ bool RobotManager::initialize(blockfactory::core::BlockInformation* blockInfo)
     size_t start_out_port=0;
     
     _do_move = _avoid_first_move = false;
-    // retrieve robot
-    bool robot_retrieved = EcBlockUtils::retrieve_robot(_robot,error_info);
+    // retrieve ec
+    bool ec_retrieved = EcBlockUtils::retrieve_ec_iface(error_info);
     
     // check errors during the creation
-    if(!robot_retrieved)
+    if(!ec_retrieved)
     {
-        bfError << "Robot not retrieved, reason: " << error_info;
+        bfError << "EtherCAT Client not retrieved, reason: " << error_info;
         return false;
     }
     
     // readings creation and initialization with initial sense.
     if(!_readings_list.empty())
     {
-        _readings_ptr = std::make_shared<EcBlock::Reading>(_robot,_readings_list,start_out_port);
+        _readings_ptr = std::make_shared<EcBlock::Reading>(_readings_list,start_out_port);
 
         // first sense to read actual value
-        _motors_status_map = EcBlockUtils::robot_sensing();
-        if(!_readings_ptr->initialize(blockInfo,_motors_status_map))
+        if(EcBlockUtils::ec_sense(_motors_status_map,_ft6_status_map,_imu_status_map,_pow_status_map,_motors_ref))
         {
+            if(!_readings_ptr->initialize(blockInfo,_motors_status_map,_motors_ref))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            bfError << "EtherCAT Client not alive! ";
             return false;
         }
-        
+            
         // unit delay during sensing and moving operation
         _avoid_first_move=true;
     }
@@ -180,8 +187,7 @@ bool RobotManager::initialize(blockfactory::core::BlockInformation* blockInfo)
     // references creation and initialization.
     if(!_references_list.empty())
     {
-        // MODE is necessary because XBotInterface library has different methods to set the references from robot and model.
-        _references_ptr = std::make_shared<EcBlock::Reference>(_robot,_references_list,start_input_port);
+        _references_ptr = std::make_shared<EcBlock::Reference>(_references_list,start_input_port);
         
         _do_move = true;
     }
@@ -189,30 +195,27 @@ bool RobotManager::initialize(blockfactory::core::BlockInformation* blockInfo)
     return true;
 }
 
-bool RobotManager::output(const blockfactory::core::BlockInformation* blockInfo)
+bool EcManager::output(const blockfactory::core::BlockInformation* blockInfo)
 {
-    if(!_robot->is_client_alive())
+    if(!EcBlockUtils::ec_sense(_motors_status_map,_ft6_status_map,_imu_status_map,_pow_status_map,_motors_ref))
     {
         bfError << "EtherCAT Client not alive! ";
         return false;
     }
-    // get robot input
+    
+    // get ec input
     if(_readings_ptr != nullptr)
     {
-        // perform sensing operation
-        _motors_status_map.clear();
-        _motors_status_map = EcBlockUtils::robot_sensing();
-        if(!_readings_ptr->output(blockInfo,_motors_status_map))
+        if(!_readings_ptr->output(blockInfo,_motors_status_map,_motors_ref))
         {
             return false;
         }
     }
     
-    // set robot output
+    // set ec output
     // added avoid first move check in order to avoid to set wrong references.
     if(_references_ptr != nullptr && !_avoid_first_move)
     {
-        _motors_ref = EcBlockUtils::retrieve_motors_ref();
         if(!_references_ptr->output(blockInfo,_motors_ref))
         {
             return false;
@@ -225,7 +228,11 @@ bool RobotManager::output(const blockfactory::core::BlockInformation* blockInfo)
         // unit delay during sensing and moving operation
         if(!_avoid_first_move)
         {
-            _robot->set_motors_references(MotorRefFlags::FLAG_MULTI_REF,_motors_ref);
+            if(!EcBlockUtils::ec_move(MotorRefFlags::FLAG_MULTI_REF,_motors_ref))
+            {
+                bfError << "EtherCAT Client not alive! ";
+                return false;
+            }
         }
         else
         {
@@ -237,11 +244,10 @@ bool RobotManager::output(const blockfactory::core::BlockInformation* blockInfo)
     
 }
 
-bool RobotManager::terminate(const blockfactory::core::BlockInformation* /*blockInfo*/)
+bool EcManager::terminate(const blockfactory::core::BlockInformation* /*blockInfo*/)
 {
-    // clear robot and model map
-    EcBlockUtils::clear_robot();
-    EcBlockUtils::clearModelMap();
+    // stop ec
+    EcBlockUtils::stop_ec_iface();
     return true;
     
 }

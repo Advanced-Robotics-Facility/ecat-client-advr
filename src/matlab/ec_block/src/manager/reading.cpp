@@ -7,17 +7,14 @@
 using namespace EcBlock;
 
 
-Reading::Reading(EcIface::Ptr robot,
-                 std::vector<std::string> readings_list,
+Reading::Reading(std::vector<std::string> readings_list,
                  size_t start_port):
-_robot(robot),
 _readings_list(readings_list),
 _start_port(start_port)
 {    
    std::string error_info="";
-   _joint_number = EcBlockUtils::retrive_joint_numb(error_info);
-   _q_id = EcBlockUtils::retrive_joint_id();
-   _ctrl_mode=EcBlockUtils::retrive_ctrl_mode();
+   std::vector<float> gains;
+   EcBlockUtils::retrieve_ec_info(_joint_number,_q_id,_ctrl_mode,gains,_q_home,_q_trj,error_info);
 }
 
 // Keep in mind that after this step, all the allocated memory will be deleted.
@@ -36,7 +33,7 @@ void Reading::configureSizeAndPorts(blockfactory::core::OutputPortsInfo &outputP
     }
 }
 
-bool Reading::getReadings(const blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map,std::string &error_info)
+bool Reading::getReadings(const blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map,std::vector<MR> motors_ref,std::string &error_info)
 {
     if(motors_status_map.empty())
     {
@@ -44,7 +41,12 @@ bool Reading::getReadings(const blockfactory::core::BlockInformation* blockInfo,
         return false;
     }
     
-    auto motors_ref = EcBlockUtils::retrieve_motors_ref();
+    if(motors_ref.empty())
+    {
+        error_info = "Got an empty motor references structure for reading";
+        return false;
+    }
+
     // set all ouput of the list
     for(size_t port=0; port < _readings_list.size();port++)
     {
@@ -194,10 +196,10 @@ bool Reading::getReadings(const blockfactory::core::BlockInformation* blockInfo,
     return true;
 }
 
-bool Reading::initialize(blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map)
+bool Reading::initialize(blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map,std::vector<MR> motors_ref)
 {
     std::string error_info="";
-    if(!getReadings(blockInfo,motors_status_map,error_info))
+    if(!getReadings(blockInfo,motors_status_map,motors_ref,error_info))
     {
         bfError << "Joint readings failed, reason: " << error_info;
         return false;
@@ -207,10 +209,10 @@ bool Reading::initialize(blockfactory::core::BlockInformation* blockInfo,MotorSt
 }
 
 
-bool Reading::output(const blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map)
+bool Reading::output(const blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map,std::vector<MR> motors_ref)
 {
     std::string error_info="";
-    if(!getReadings(blockInfo,motors_status_map,error_info))
+    if(!getReadings(blockInfo,motors_status_map,motors_ref,error_info))
     {
         bfError << "Joint readings failed, reason: " << error_info;
         return false;

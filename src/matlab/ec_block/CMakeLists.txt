@@ -24,8 +24,6 @@ endif()
 find_package(BlockFactory
     REQUIRED COMPONENTS Core
     OPTIONAL_COMPONENTS Simulink)
-    
-find_package(XBotInterface REQUIRED)
 
 OPTION(TEST_MATLAB "Testing MATLAB" OFF)
 
@@ -39,7 +37,7 @@ add_library(ec_block_utils SHARED
             src/common/ec_block_utils.cpp)
 
 # Link the library with the Core component containing the core classes
-target_link_libraries(ec_block_utils PUBLIC ec_library PRIVATE ${XBotInterface_LIBRARIES})
+target_link_libraries(ec_block_utils PUBLIC ec_library)
             
 # Setup the include directories
 target_include_directories(ec_block_utils 

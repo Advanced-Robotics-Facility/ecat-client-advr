@@ -45,7 +45,7 @@ public:
     PwrStatusMap get_pow_status() final ;
     ImuStatusMap get_imu_status() final;
     
-    void set_motors_references(const MotorRefFlags &,const std::vector<MR> &) final;
+    void set_motors_references(const MotorRefFlags,const std::vector<MR>) final;
     
     bool start_motors(const MST &) final;
     bool stop_motors() final;
