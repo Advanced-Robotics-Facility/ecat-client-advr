@@ -132,6 +132,21 @@ EcUtils::EcUtils(const YAML::Node & ec_cfg)
             _ec_cfg.slave_id_led.clear();
         else
             _ec_cfg.slave_id_led=ec_cfg["control"]["slave_id_led"].as<std::vector<int>>();
+        
+        if(!ec_cfg["control"]["imu_id"])
+            _ec_cfg.imu_id.clear();
+        else
+            _ec_cfg.imu_id=ec_cfg["control"]["imu_id"].as<std::vector<int>>();
+    
+        if(!ec_cfg["control"]["ft_id"])
+            _ec_cfg.ft_id.clear();
+        else
+            _ec_cfg.ft_id=ec_cfg["control"]["ft_id"].as<std::vector<int>>();
+        
+        if(!ec_cfg["control"]["pow_id"])
+            _ec_cfg.pow_id.clear();
+        else
+            _ec_cfg.pow_id=ec_cfg["control"]["pow_id"].as<std::vector<int>>();
     }
 
 };

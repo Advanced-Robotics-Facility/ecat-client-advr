@@ -22,6 +22,9 @@ public:
         int control_mode_type;
         std::vector<float> gains;
         std::vector<int> slave_id_led;
+        std::vector<int> imu_id;
+        std::vector<int> ft_id;
+        std::vector<int> pow_id;
         
     }EC_CONFIG;
     

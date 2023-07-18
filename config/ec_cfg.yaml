@@ -32,6 +32,9 @@ control:
   repeat_trj: 1
 
   slave_id_led: [16,26,35]
+  imu_id: [102,103]
+  ft_id: [110,111]
+  pow_id: [201]
   
 XBotInterface:
   urdf_path: ${PWD}/urdf/mirror.urdf

@@ -1,4 +1,4 @@
-#include "manager/reference.h"
+#include "manager/ec_reference.h"
 #include "ec_block_utils.h"
 
 #include <BlockFactory/Core/Log.h>
@@ -15,7 +15,13 @@ _in_start_port(in_start_port)
     std::string error_info="";
     std::vector<float> gains;
     std::vector<double> q_home,q_trj;
-    EcBlockUtils::retrieve_ec_info(_joint_number,_q_id,_ctrl_mode,gains,q_home,q_trj,error_info);
+    EcBlockUtils::retrieve_motor_info(_q_id,_ctrl_mode,gains,q_home,q_trj,error_info);
+   
+    _joint_number= _q_id.size();
+   if(_joint_number == 0)
+   {
+       _joint_number = 1;
+   }
 }
 
 

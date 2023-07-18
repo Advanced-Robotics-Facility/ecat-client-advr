@@ -4,7 +4,7 @@
 #include <BlockFactory/Core/Parameter.h>
 #include <BlockFactory/Core/Signal.h>
 
-#define PARAM_NUM 2
+#define PARAM_NUM 3
 
 // Class factory API
 #include <shlibpp/SharedLibraryClassApi.h>
@@ -30,7 +30,8 @@ bool EcManager::parseParameters(blockfactory::core::BlockInformation* blockInfo)
     int cols = 1;
     unsigned index = Block::numberOfParameters(); // Indices start from 0
     std::string name[PARAM_NUM] = {"ReadingsList",
-                                   "ReferencesList"}; // This label is used later to access the paramemeter
+                                   "ReferencesList",
+                                   "ImuList"}; // This label is used later to access the paramemeter
                                    
     auto type = blockfactory::core::ParameterType::STRING;
    
@@ -74,7 +75,6 @@ bool EcManager::readParameters(blockfactory::core::BlockInformation* blockInfo)
     EcBlockUtils::check_param_selected(readings_list,_readings_list);
     
 
-    
     // get references list parameter
     std::string references_list="";
     if (!m_parameters.getParameter("ReferencesList", references_list)) {
@@ -84,7 +84,23 @@ bool EcManager::readParameters(blockfactory::core::BlockInformation* blockInfo)
     
     // convert string to string vector
     EcBlockUtils::check_param_selected(references_list,_references_list);
+
     
+    // get generaric ethercat slave list parameter
+    std::string imu_list="";
+    if (!m_parameters.getParameter("ImuList", imu_list)) {
+        bfError << "Failed to parse imu list paramemeter";
+        return false;
+    }
+    
+    // convert string to string vector
+    EcBlockUtils::check_param_selected(imu_list,_imu_list);
+    
+    if(_readings_list.empty() && _references_list.empty() && _imu_list.empty())
+    {
+        bfError << "NO param selected, please select at least one of it!"; 
+        return false;
+    }
     
     return true;
 }
@@ -112,6 +128,16 @@ bool EcManager::configureSizeAndPorts(blockfactory::core::BlockInformation* bloc
     {
         _readings_ptr = std::make_shared<EcBlock::Reading>(_readings_list,outputPortInfo.size());
         _readings_ptr->configureSizeAndPorts(outputPortInfo);
+    }
+    
+    // create imu class configuring size and ports.
+    if(!_imu_list.empty())
+    {
+        _imu_ptr = std::make_shared<EcBlock::Imu>(_imu_list,outputPortInfo.size());
+        if(!_imu_ptr->configureSizeAndPorts(outputPortInfo))
+        {
+            return false;
+        }
     }
     
     
@@ -150,8 +176,13 @@ bool EcManager::initialize(blockfactory::core::BlockInformation* blockInfo)
     size_t start_out_port=0;
     
     _do_move = _avoid_first_move = false;
+    bool start_robot_req=false;
+    if(!_readings_list.empty() || !_references_list.empty())
+    {
+        start_robot_req=true;
+    }
     // retrieve ec
-    bool ec_retrieved = EcBlockUtils::retrieve_ec_iface(error_info);
+    bool ec_retrieved = EcBlockUtils::retrieve_ec_iface(error_info,start_robot_req);
     
     // check errors during the creation
     if(!ec_retrieved)
@@ -160,27 +191,37 @@ bool EcManager::initialize(blockfactory::core::BlockInformation* blockInfo)
         return false;
     }
     
+    // first sense to read actual value
+    if(!EcBlockUtils::ec_sense(_motors_status_map,_ft6_status_map,_imu_status_map,_pow_status_map,_motors_ref))
+    {
+        bfError << "EtherCAT Client not alive! ";
+        return false;
+    }
+    
     // readings creation and initialization with initial sense.
     if(!_readings_list.empty())
     {
         _readings_ptr = std::make_shared<EcBlock::Reading>(_readings_list,start_out_port);
 
-        // first sense to read actual value
-        if(EcBlockUtils::ec_sense(_motors_status_map,_ft6_status_map,_imu_status_map,_pow_status_map,_motors_ref))
+        if(!_readings_ptr->initialize(blockInfo,_motors_status_map,_motors_ref))
         {
-            if(!_readings_ptr->initialize(blockInfo,_motors_status_map,_motors_ref))
-            {
-                return false;
-            }
-        }
-        else
-        {
-            bfError << "EtherCAT Client not alive! ";
             return false;
         }
-            
         // unit delay during sensing and moving operation
         _avoid_first_move=true;
+    }
+    
+    start_out_port = start_out_port + _readings_list.size();
+    
+    // imu creation and initialization with initial sense.
+    if(!_imu_list.empty())
+    {
+        _imu_ptr = std::make_shared<EcBlock::Imu>(_imu_list,start_out_port);
+
+        if(!_imu_ptr->initialize(blockInfo,_imu_status_map))
+        {
+            return false;
+        }
     }
     
     
@@ -207,6 +248,15 @@ bool EcManager::output(const blockfactory::core::BlockInformation* blockInfo)
     if(_readings_ptr != nullptr)
     {
         if(!_readings_ptr->output(blockInfo,_motors_status_map,_motors_ref))
+        {
+            return false;
+        }
+    }
+    
+    // get imu input
+    if(_imu_ptr != nullptr)
+    {
+        if(!_imu_ptr->output(blockInfo,_imu_status_map))
         {
             return false;
         }

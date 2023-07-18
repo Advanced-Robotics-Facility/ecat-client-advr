@@ -1,4 +1,4 @@
-#include "manager/reading.h"
+#include "manager/ec_reading.h"
 
 #include <BlockFactory/Core/Log.h>
 #include <BlockFactory/Core/Parameter.h>
@@ -14,7 +14,13 @@ _start_port(start_port)
 {    
    std::string error_info="";
    std::vector<float> gains;
-   EcBlockUtils::retrieve_ec_info(_joint_number,_q_id,_ctrl_mode,gains,_q_home,_q_trj,error_info);
+   EcBlockUtils::retrieve_motor_info(_q_id,_ctrl_mode,gains,_q_home,_q_trj,error_info);
+   
+   _joint_number= _q_id.size();
+   if(_joint_number == 0)
+   {
+       _joint_number = 1;
+   }
 }
 
 // Keep in mind that after this step, all the allocated memory will be deleted.

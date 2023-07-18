@@ -4,8 +4,9 @@
 #include <memory>
 #include <string>
 
-#include "manager/reading.h"
-#include "manager/reference.h"
+#include "manager/ec_reading.h"
+#include "manager/ec_reference.h"
+#include "sensor/ec_imu.h"
 
 namespace EcBlock{
     class EcManager;
@@ -21,9 +22,10 @@ private:
     
     
     std::vector<MR> _motors_ref;
-    std::vector<std::string> _readings_list,_references_list;
+    std::vector<std::string> _readings_list,_references_list,_imu_list;
     std::shared_ptr<EcBlock::Reading> _readings_ptr;
     std::shared_ptr<EcBlock::Reference> _references_ptr;
+    std::shared_ptr<EcBlock::Imu> _imu_ptr;
     
     bool _do_move,_avoid_first_move;
     
