@@ -2,7 +2,6 @@
 #include <chrono>
 
 EcIface::Ptr EcBlockUtils::_client;
-SSI EcBlockUtils::_slave_info;
 std::vector<int> EcBlockUtils::_joint_id;
 std::vector<MR> EcBlockUtils::_motors_ref;
 bool EcBlockUtils::_robot_started;
@@ -44,7 +43,8 @@ bool EcBlockUtils::retrieve_ec_iface(std::string &error_info,bool start_robot_re
             auto ec_client_utils=retrieve_cfg();
             _client=ec_client_utils->make_ec_iface();
             
-            if(!_client->retrieve_slaves_info(_slave_info))
+            SSI slave_info;
+            if(!_client->retrieve_slaves_info(slave_info))
             {   
 #ifndef TEST_MATLAB 
                 error_info="Error on get slave information command";
@@ -73,30 +73,6 @@ bool EcBlockUtils::start_robot(std::string &error_info)
     int ctrl_mode;
     std::vector<float> gains;
     std::vector<double> q_home,q_trj;
-    
-    if(!_slave_info.empty())
-    {
-        for(int i=0; i < _joint_id.size();i++)
-        {
-            bool found_motor=false;
-            int q_id = _joint_id[i];
-            for ( auto &[id, type, pos] : _slave_info ) {
-                if(q_id == id)
-                {
-                    if((type==CENT_AC) || (type==LO_PWR_DC_MC))//HP or LP motor
-                    {
-                        found_motor = true;
-                        break;
-                    }
-                }
-            }
-            if(!found_motor)
-            {
-                error_info = "Motort id= "+ std::to_string(q_id) + " not found in the robot";
-                return false;
-            }
-        }
-    }
     
     _joint_id.clear();
     retrieve_motor_info(_joint_id,ctrl_mode,gains,q_home,q_trj,error_info);

@@ -37,7 +37,6 @@ public:
     
 private:
     static EcIface::Ptr _client;
-    static SSI _slave_info;
     static std::vector<int> _joint_id;
     static std::vector<MR> _motors_ref;
     static bool _robot_started;

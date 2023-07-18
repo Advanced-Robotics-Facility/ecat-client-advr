@@ -30,33 +30,27 @@ bool Imu::configureSizeAndPorts(blockfactory::core::OutputPortsInfo &outputPortI
         if(_imu_option.count(_imu_list[i]) > 0)
         {
             std::vector<int> port_size;
-            if(_imu_list[i]=="imu_id")
+            switch(_imu_option.at(_imu_list[i]))
             {
-                port_size.push_back(_imu_number);
-            }
-            else
-            {
-                for(size_t k=0; k < _imu_number;k++)
-                {
-                    std::cout << _imu_list[i] << std::endl;
-                    switch(_imu_option.at(_imu_list[i]))
-                    {
 
-                        case imu_id:{}break;
-                        case quat:  {
-                                        port_size.push_back(4);
-                                    }break;
-                                    
-                        case a: {
-                                    port_size.push_back(3);
-                                }break;
-                        case omega: {
-                                        port_size.push_back(3);
-                                    }break;
-                    }
-                }
+                case imu_id:{
+                                port_size.push_back(_imu_number);
+                            }break;
+                case quat:  {
+                                port_size.push_back(4);
+                                port_size.push_back(_imu_number);
+                            }break;
+                            
+                case a: {
+                            port_size.push_back(3);
+                            port_size.push_back(_imu_number);
+                        }break;
+                case omega: {
+                                port_size.push_back(3);
+                                port_size.push_back(_imu_number);
+                            }break;
             }
-            
+
             blockfactory::core::Port::Info output{/*portIndex=*/i + _start_port,
                                                   port_size,
                                                   blockfactory::core::Port::DataType::DOUBLE};
@@ -97,39 +91,45 @@ bool Imu::getImu(const blockfactory::core::BlockInformation* blockInfo,ImuStatus
         {
             if(_imu_list[port]=="imu_id")
             {
-                for(int imu_id_index=0;imu_id_index<_imu_number;imu_id_index++)
-                {
-                    output->set(imu_id_index, _imu_id[imu_id_index]);
-                }
+   
             }
             else
             {
-//                 for(int imu_id_index=0;imu_id_index<_imu_number;imu_id_index++)
-//                 {
-//                     auto imu_status_id = imu_status_map[imu_id_index];
-//                     // save into auxiliary vector the IMU information
-//                     Eigen::Vector3d aux_vector;
-//                     switch(_imu_option.at(_imu_list[port]))
-//                     {
-//                         case imu_id:{}break;
-//                         case quat:  {
-//                                         output->set(imu_id_index, imu_status_id[9]);
-//                                         output->set(imu_id_index+1, imu_status_id[6]);
-//                                         output->set(imu_id_index+2, imu_status_id[7]);
-//                                         output->set(imu_id_index+3, imu_status_id[8]);
-//                                     }break;
-//                         case a: {
-//                                     output->set(imu_id_index, imu_status_id[0]);
-//                                     output->set(imu_id_index+1, imu_status_id[1]);
-//                                     output->set(imu_id_index+2, imu_status_id[2]);
-//                                 }break;
-//                         case omega: {
-//                                     output->set(imu_id_index, imu_status_id[3]);
-//                                     output->set(imu_id_index+1, imu_status_id[4]);
-//                                     output->set(imu_id_index+2, imu_status_id[5]);
-//                                     }break;              
-//                     }
-//                 }
+                for(int imu_id_index=0;imu_id_index<2;imu_id_index++)
+                {
+                    auto imu_id_read = _imu_id[imu_id_index];
+                    if(imu_status_map.count(imu_id_read) == 0)
+                    {
+                        error_info = "Imu id: " + std::to_string(imu_id_read) + " not found in imus map status, please check ec conf file";
+                        return false;
+                    }
+                        
+                    auto imu_status_id = imu_status_map[imu_id_read];
+                    // save into auxiliary vector the IMU information
+                    Eigen::Vector3d aux_vector;
+                    switch(_imu_option.at(_imu_list[port]))
+                    {
+                        case imu_id:    {
+                                            output->set(imu_id_index, imu_id_read);
+                                        } break;
+                        case quat:  {
+                                        output->set(imu_id_index, imu_status_id[9]);
+                                        output->set(imu_id_index+1, imu_status_id[6]);
+                                        output->set(imu_id_index+2, imu_status_id[7]);
+                                        output->set(imu_id_index+3, imu_status_id[8]);
+                                    }break;
+                        case a: {
+                                    output->set(imu_id_index, imu_status_id[0]);
+                                    output->set(imu_id_index+1, imu_status_id[1]);
+                                    output->set(imu_id_index+2, imu_status_id[2]);
+                                }break;
+                        case omega: {
+                                    output->set(imu_id_index, imu_status_id[3]);
+                                    output->set(imu_id_index+1, imu_status_id[4]);
+                                    output->set(imu_id_index+2, imu_status_id[5]);
+                                    }break;              
+                    }
+                }
             }
         }
         else

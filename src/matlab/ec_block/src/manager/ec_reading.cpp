@@ -70,113 +70,81 @@ bool Reading::getReadings(const blockfactory::core::BlockInformation* blockInfo,
             Eigen::VectorXd aux_vector;
             aux_vector.resize(_q_id.size());
             
-            switch(_readings_options.at(_readings_list[port]))
+            for(int i=0;i<aux_vector.size();i++)
             {
-                case q_ID: {
-                            for(int i=0;i<aux_vector.size();i++)
-                            {
-                                aux_vector[i]=_q_id[i];
-                            }
-                        }break;
-                case qJ: {
-                            for(int i=0;i<aux_vector.size();i++)
-                            {
-                                aux_vector[i]=std::get<0>(motors_status_map[_q_id[i]]);
-                            }
-                        }break;
-                        
-                case qM: {
-                            for(int i=0;i<aux_vector.size();i++)
-                            {
-                                aux_vector[i]=std::get<1>(motors_status_map[_q_id[i]]);
-                            }
-                        }break;
-                        
-                case qJdot: {
-                                for(int i=0;i<aux_vector.size();i++)
-                                {
-                                    aux_vector[i]=std::get<2>(motors_status_map[_q_id[i]]);
-                                }
-                            }break;
-                            
-                case qMdot: {
-                                for(int i=0;i<aux_vector.size();i++)
-                                {
-                                    aux_vector[i]=std::get<3>(motors_status_map[_q_id[i]]);
-                                }
-                            }break;
-                case tau:   {
-                                for(int i=0;i<aux_vector.size();i++)
-                                {
-                                    aux_vector[i]=std::get<4>(motors_status_map[_q_id[i]]);
-                                }
-                            }break; 
-                case qTemp: {
-                                for(int i=0;i<aux_vector.size();i++)
-                                {
-                                    aux_vector[i]=std::get<5>(motors_status_map[_q_id[i]]);
-                                }
-                            }break;
-                case bTemp: {
-                                for(int i=0;i<aux_vector.size();i++)
-                                {
-                                    aux_vector[i]=std::get<5>(motors_status_map[_q_id[i]]);
-                                }
-                            }break;
-                case gainP:{
-                                for(int i=0;i<aux_vector.size();i++)
-                                {
-                                    MR mot_ref = motors_ref[i];
-                                    aux_vector[i]=std::get<5>(mot_ref) ;
-                                }
-                            }break;
-                case gainD:{
-                                for(int i=0;i<aux_vector.size();i++)
-                                {
-                                    MR mot_ref = motors_ref[i];
-                                    if(_ctrl_mode == 0xD4)
-                                    {
-                                        std::get<6>(mot_ref) = aux_vector[i];
-                                    }
-                                    else
-                                    {
-                                        std::get<7>(mot_ref) = aux_vector[i];
-                                    }
-                                }
-                            }break;
-                case qJ_ref:{
-                                for(int i=0;i<aux_vector.size();i++)
-                                {
-                                    MR mot_ref = motors_ref[i];
-                                    aux_vector[i]=std::get<2>(mot_ref) ;
-                                }
-                            }break;
-                case qJdot_ref:{
-                                for(int i=0;i<aux_vector.size();i++)
-                                {
-                                    MR mot_ref = motors_ref[i];
-                                    aux_vector[i]=std::get<3>(mot_ref) ;
-                                }
-                            }break;
-                case tau_ref:{
-                                for(int i=0;i<aux_vector.size();i++)
-                                {
-                                    MR mot_ref = motors_ref[i];
-                                    aux_vector[i]=std::get<4>(mot_ref) ;
-                                }
-                            }break;
-                case fault: {
-                                for(int i=0;i<aux_vector.size();i++)
-                                {
-                                    aux_vector[i]=std::get<7>(motors_status_map[_q_id[i]]);
-                                }
-                            }break;
-                case cmd_aux_sts: {
-                                for(int i=0;i<aux_vector.size();i++)
-                                {
-                                    aux_vector[i]=std::get<11>(motors_status_map[_q_id[i]]);
-                                }
-                            }break;
+                auto motor_id = _q_id[i];
+                MR mot_ref = motors_ref[i];
+                if(motors_status_map.count(motor_id) == 0)
+                {
+                    error_info = "Motor id: " + std::to_string(motor_id) + " not found in motors map status, please check ec conf file";
+                    return false;
+                }
+                else if(motor_id != std::get<0>(mot_ref))
+                {
+                    error_info = "Motor id read: " + std::to_string(motor_id) + "different to motor references id: " + std::to_string(std::get<0>(mot_ref)) ;
+                    return false;
+                }
+                else
+                {        
+                    switch(_readings_options.at(_readings_list[port]))
+                    {
+                        case q_ID: {
+                                    aux_vector[i]=motor_id;
+                                }break;
+                        case qJ: {
+                                aux_vector[i]=std::get<0>(motors_status_map[motor_id]);
+                                }break;
+                                
+                        case qM: {
+                                    aux_vector[i]=std::get<1>(motors_status_map[motor_id]);
+                                }break;
+                                
+                        case qJdot: {
+                                        aux_vector[i]=std::get<2>(motors_status_map[motor_id]);
+                                    }break;
+                                    
+                        case qMdot: {
+                                        aux_vector[i]=std::get<3>(motors_status_map[motor_id]);
+                                    }break;
+                        case tau:   {
+                                        aux_vector[i]=std::get<4>(motors_status_map[motor_id]);
+                                    }break; 
+                        case qTemp: {
+                                        aux_vector[i]=std::get<5>(motors_status_map[motor_id]);
+                                    }break;
+                        case bTemp: {
+                                        aux_vector[i]=std::get<5>(motors_status_map[motor_id]);
+                                    }break;
+                        case gainP:{
+                                        aux_vector[i]=std::get<5>(mot_ref) ;
+                                    }break;
+                        case gainD:{
+                                        if(_ctrl_mode == 0xD4)
+                                        {
+                                            std::get<6>(mot_ref) = aux_vector[i];
+                                        }
+                                        else
+                                        {
+                                            std::get<7>(mot_ref) = aux_vector[i];
+                                        }
+                                    }break;
+                        case qJ_ref:{
+                                        aux_vector[i]=std::get<2>(mot_ref) ;
+                                    }break;
+                        case qJdot_ref:{
+                                        aux_vector[i]=std::get<3>(mot_ref) ;
+                                    }break;
+                        case tau_ref:{
+                                        aux_vector[i]=std::get<4>(mot_ref) ;
+                                    }break;
+                        case fault: {
+                                        aux_vector[i]=std::get<7>(motors_status_map[motor_id]);
+                                    }break;
+                        case cmd_aux_sts: {
+                                        aux_vector[i]=std::get<11>(motors_status_map[motor_id]);
+                                    }break;
+                    }
+                }
             }
             
             // check the auxiliary vector size with output signal size

@@ -79,52 +79,39 @@ bool Reference::setReferences(const blockfactory::core::BlockInformation* blockI
         // verify if the element of the list exists like option
         if(_references_options.count(_references_list[i]) > 0)
         {
-            // set aux_vector like reference 
-            switch(_references_options.at(_references_list[i]))
+            for(size_t j=0; j < motors_ref.size();j++)
             {
-                case qJ_ref: {   
-                                for(size_t i=0; i < motors_ref.size();i++)
-                                {
-                                    std::get<2>(motors_ref[i]) = aux_vector[i];
-                                }
-                            }break;
-                
-                            
-                case qJdot_ref: {
-                                    for(size_t i=0; i < motors_ref.size();i++)
-                                    {
-                                        std::get<3>(motors_ref[i]) = aux_vector[i];
-                                    }
-                                }break;   
-                
-              
-                case tau_ref:   {
-                                    for(size_t i=0; i < motors_ref.size();i++)
-                                    {
-                                        std::get<4>(motors_ref[i]) = aux_vector[i];
-                                    }
+                // set aux_vector like reference 
+                switch(_references_options.at(_references_list[i]))
+                {
+                    case qJ_ref: {   
+                                    std::get<2>(motors_ref[j]) = aux_vector[j];
                                 }break;
+                    
+                                
+                    case qJdot_ref: {
+                                        std::get<3>(motors_ref[j]) = aux_vector[j];
+                                    }break;   
+                    
+                
+                    case tau_ref:   {
+                                        std::get<4>(motors_ref[j]) = aux_vector[j];
+                                    }break;
 
-                case K_ref: {
-                                for(size_t i=0; i < motors_ref.size();i++)
-                                {
-                                    std::get<5>(motors_ref[i]) = aux_vector[i];
-                                }
-                            }break;
-                case D_ref: {
-                                for(size_t i=0; i < motors_ref.size();i++)
-                                {
+                    case K_ref: {
+                                    std::get<5>(motors_ref[j]) = aux_vector[j];
+                                }break;
+                    case D_ref: {
                                     if(_ctrl_mode == 0xD4)
                                     {
-                                        std::get<6>(motors_ref[i]) = aux_vector[i];
+                                        std::get<6>(motors_ref[j]) = aux_vector[j];
                                     }
                                     else
                                     {
-                                        std::get<7>(motors_ref[i]) = aux_vector[i];
+                                        std::get<7>(motors_ref[j]) = aux_vector[j];
                                     }
-                                }
-                            }break;
-                
+                                }break;
+                }
             }
         }
         else
