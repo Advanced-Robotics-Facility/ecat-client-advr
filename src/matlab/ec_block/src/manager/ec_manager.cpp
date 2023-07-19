@@ -4,7 +4,7 @@
 #include <BlockFactory/Core/Parameter.h>
 #include <BlockFactory/Core/Signal.h>
 
-#define PARAM_NUM 3
+#define PARAM_NUM 5
 
 // Class factory API
 #include <shlibpp/SharedLibraryClassApi.h>
@@ -31,7 +31,9 @@ bool EcManager::parseParameters(blockfactory::core::BlockInformation* blockInfo)
     unsigned index = Block::numberOfParameters(); // Indices start from 0
     std::string name[PARAM_NUM] = {"ReadingsList",
                                    "ReferencesList",
-                                   "ImuList"}; // This label is used later to access the paramemeter
+                                   "ImuList",
+                                   "FtList",
+                                   "PowList"}; // This label is used later to access the paramemeter
                                    
     auto type = blockfactory::core::ParameterType::STRING;
    
@@ -86,7 +88,7 @@ bool EcManager::readParameters(blockfactory::core::BlockInformation* blockInfo)
     EcBlockUtils::check_param_selected(references_list,_references_list);
 
     
-    // get generaric ethercat slave list parameter
+    // get  Imu list parameter
     std::string imu_list="";
     if (!m_parameters.getParameter("ImuList", imu_list)) {
         bfError << "Failed to parse imu list paramemeter";
@@ -96,7 +98,34 @@ bool EcManager::readParameters(blockfactory::core::BlockInformation* blockInfo)
     // convert string to string vector
     EcBlockUtils::check_param_selected(imu_list,_imu_list);
     
-    if(_readings_list.empty() && _references_list.empty() && _imu_list.empty())
+    
+    // get Ft list parameter
+    std::string ft_list="";
+    if (!m_parameters.getParameter("FtList", ft_list)) {
+        bfError << "Failed to parse ft list paramemeter";
+        return false;
+    }
+    
+    // convert string to string vector
+    EcBlockUtils::check_param_selected(ft_list,_ft_list);
+    
+    // get Pow list parameter
+    std::string pow_list="";
+    if (!m_parameters.getParameter("PowList", pow_list)) {
+        bfError << "Failed to parse pow list paramemeter";
+        return false;
+    }
+    
+    // convert string to string vector
+    EcBlockUtils::check_param_selected(pow_list,_pow_list);
+    
+    
+    
+    if(_readings_list.empty() && 
+        _references_list.empty() && 
+        _imu_list.empty() && 
+        _ft_list.empty() &&
+        _pow_list.empty())
     {
         bfError << "NO param selected, please select at least one of it!"; 
         return false;
@@ -140,6 +169,25 @@ bool EcManager::configureSizeAndPorts(blockfactory::core::BlockInformation* bloc
         }
     }
     
+    // create ft class configuring size and ports.
+    if(!_ft_list.empty())
+    {
+        _ft_ptr = std::make_shared<EcBlock::Ft>(_ft_list,outputPortInfo.size());
+        if(!_ft_ptr->configureSizeAndPorts(outputPortInfo))
+        {
+            return false;
+        }
+    }
+    
+    // create pow class configuring size and ports.
+    if(!_pow_list.empty())
+    {
+        _pow_ptr = std::make_shared<EcBlock::Pow>(_pow_list,outputPortInfo.size());
+        if(!_pow_ptr->configureSizeAndPorts(outputPortInfo))
+        {
+            return false;
+        }
+    }
     
     // create references class configuring size and ports.
     if(!_references_list.empty())
@@ -192,7 +240,7 @@ bool EcManager::initialize(blockfactory::core::BlockInformation* blockInfo)
     }
     
     // first sense to read actual value
-    if(!EcBlockUtils::ec_sense(_motors_status_map,_ft6_status_map,_imu_status_map,_pow_status_map,_motors_ref))
+    if(!EcBlockUtils::ec_sense(_motors_status_map,_ft_status_map,_imu_status_map,_pow_status_map,_motors_ref))
     {
         bfError << "EtherCAT Client not alive! ";
         return false;
@@ -224,6 +272,33 @@ bool EcManager::initialize(blockfactory::core::BlockInformation* blockInfo)
         }
     }
     
+    start_out_port = start_out_port + _imu_list.size();
+    
+    
+    // ft creation and initialization with initial sense.
+    if(!_ft_list.empty())
+    {
+        _ft_ptr = std::make_shared<EcBlock::Ft>(_ft_list,start_out_port);
+
+        if(!_ft_ptr->initialize(blockInfo,_ft_status_map))
+        {
+            return false;
+        }
+    }
+    
+    start_out_port = start_out_port + _ft_list.size();
+    
+    // pow creation and initialization with initial sense.
+    if(!_pow_list.empty())
+    {
+        _pow_ptr = std::make_shared<EcBlock::Pow>(_pow_list,start_out_port);
+
+        if(!_pow_ptr->initialize(blockInfo,_pow_status_map))
+        {
+            return false;
+        }
+    }
+    
     
     // references creation and initialization.
     if(!_references_list.empty())
@@ -238,7 +313,7 @@ bool EcManager::initialize(blockfactory::core::BlockInformation* blockInfo)
 
 bool EcManager::output(const blockfactory::core::BlockInformation* blockInfo)
 {
-    if(!EcBlockUtils::ec_sense(_motors_status_map,_ft6_status_map,_imu_status_map,_pow_status_map,_motors_ref))
+    if(!EcBlockUtils::ec_sense(_motors_status_map,_ft_status_map,_imu_status_map,_pow_status_map,_motors_ref))
     {
         bfError << "EtherCAT Client not alive! ";
         return false;
@@ -257,6 +332,24 @@ bool EcManager::output(const blockfactory::core::BlockInformation* blockInfo)
     if(_imu_ptr != nullptr)
     {
         if(!_imu_ptr->output(blockInfo,_imu_status_map))
+        {
+            return false;
+        }
+    }
+    
+    // get ft input
+    if(_ft_ptr != nullptr)
+    {
+        if(!_ft_ptr->output(blockInfo,_ft_status_map))
+        {
+            return false;
+        }
+    }
+    
+    // get pow input
+    if(_pow_ptr != nullptr)
+    {
+        if(!_pow_ptr->output(blockInfo,_pow_status_map))
         {
             return false;
         }

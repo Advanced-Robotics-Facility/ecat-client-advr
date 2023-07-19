@@ -113,20 +113,13 @@ bool Reading::getReadings(const blockfactory::core::BlockInformation* blockInfo,
                                         aux_vector[i]=std::get<5>(motors_status_map[motor_id]);
                                     }break;
                         case bTemp: {
-                                        aux_vector[i]=std::get<5>(motors_status_map[motor_id]);
+                                        aux_vector[i]=std::get<6>(motors_status_map[motor_id]);
                                     }break;
-                        case gainP:{
-                                        aux_vector[i]=std::get<5>(mot_ref) ;
+                        case q_home: {
+                                        aux_vector[i]=_q_home[i];
                                     }break;
-                        case gainD:{
-                                        if(_ctrl_mode == 0xD4)
-                                        {
-                                            std::get<6>(mot_ref) = aux_vector[i];
-                                        }
-                                        else
-                                        {
-                                            std::get<7>(mot_ref) = aux_vector[i];
-                                        }
+                        case q_trj: {
+                                        aux_vector[i]=_q_trj[i];
                                     }break;
                         case qJ_ref:{
                                         aux_vector[i]=std::get<2>(mot_ref) ;
@@ -137,6 +130,20 @@ bool Reading::getReadings(const blockfactory::core::BlockInformation* blockInfo,
                         case tau_ref:{
                                         aux_vector[i]=std::get<4>(mot_ref) ;
                                     }break;
+                        case gainP_ref:{
+                                        aux_vector[i]=std::get<5>(mot_ref) ;
+                                    }break;
+                        case gainD_ref:{
+                                        if(_ctrl_mode == 0xD4)
+                                        {
+                                            aux_vector[i]=std::get<6>(mot_ref);
+                                        }
+                                        else
+                                        {
+                                            aux_vector[i]=std::get<7>(mot_ref);
+                                        }
+                                    }break;            
+                                    
                         case fault: {
                                         aux_vector[i]=std::get<7>(motors_status_map[motor_id]);
                                     }break;

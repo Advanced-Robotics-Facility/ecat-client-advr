@@ -26,16 +26,16 @@ private:
         qJ_ref,
         qJdot_ref,
         tau_ref,
-        K_ref,
-        D_ref,
+        gainP_ref,
+        gainD_ref,
     };
     
     std::map<std::string, References_Options> _references_options {
         { "qJ_ref", qJ_ref },
         { "qJdot_ref", qJdot_ref },
         { "tau_ref", tau_ref },
-        { "K_ref", K_ref },
-        { "D_ref", D_ref }
+        { "gainP_ref", gainP_ref },
+        { "gainD_ref", gainD_ref }
     };
 
 public:

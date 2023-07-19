@@ -5,12 +5,16 @@
 ######## EcManager Library ################################
 include_directories(../include/manager/)
 include_directories(../include/sensor/)
+include_directories(../include/power/)
 # Create the plugin library. This must be a SHARED library.
 add_library(EcManager SHARED
     src/manager/ec_manager.cpp
     src/manager/ec_reading.cpp
     src/manager/ec_reference.cpp
-    src/sensor/ec_imu.cpp)
+    src/sensor/ec_imu.cpp
+    src/sensor/ec_ft.cpp
+    src/power/ec_pow.cpp
+    )
 
 # Manually set the name of the output library. This is not required and it
 # is done only for sake of clarity.

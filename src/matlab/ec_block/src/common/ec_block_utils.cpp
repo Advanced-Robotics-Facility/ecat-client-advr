@@ -267,13 +267,28 @@ bool EcBlockUtils::ec_sense(MotorStatusMap &motors_status_map,
         for(int i=0; i < _joint_id.size();i++)
         {
             int q_id = _joint_id[i];
-            motors_status_map[q_id] = std::make_tuple(0,0.0,0,0,0,0,0,0,0,0,0,0);
+            motors_status_map[q_id] = std::make_tuple(0,0,0,0,0,25,26,3,0,0,0,2);
         }
 #endif
     }
     
     ft6_status_map.clear();
     ft6_status_map = _client->get_ft6_status();
+
+    if(ft6_status_map.empty())
+    {
+#ifdef TEST_MATLAB 
+        std::vector<int> ft_id_v;
+        std::string error_info="";
+        retrieve_ft_info(ft_id_v,error_info);
+        for(int i=0; i < ft_id_v.size();i++)
+        {
+            int ft_id = ft_id_v[i];
+            float value_rand = (float) ft_id;
+            ft6_status_map[ft_id] = {value_rand,120,130,20,25,30};
+        }
+#endif
+    }
     
     imu_status_map.clear();
     imu_status_map = _client->get_imu_status();
@@ -281,21 +296,34 @@ bool EcBlockUtils::ec_sense(MotorStatusMap &motors_status_map,
     if(imu_status_map.empty())
     {
 #ifdef TEST_MATLAB 
-        std::vector<int> imu_id;
+        std::vector<int> imu_id_v;
         std::string error_info="";
-        retrieve_imu_info(imu_id,error_info);
-        for(int i=0; i < imu_id.size();i++)
+        retrieve_imu_info(imu_id_v,error_info);
+        for(int i=0; i < imu_id_v.size();i++)
         {
-            int im_id = imu_id[i];
-            float value_rand = (float) im_id;
-            imu_status_map[im_id] = {value_rand,15.0,20.0,5.0,2.0,3.0,0,0,0,1};
+            int imu_id = imu_id_v[i];
+            float value_rand = (float) imu_id;
+            imu_status_map[imu_id] = {value_rand,15.0,20.0,5.0,2.0,3.0,0,0,0,1};
         }
 #endif
     }
     
     pow_status_map.clear();
     pow_status_map = _client->get_pow_status();
-
+    
+    if(pow_status_map.empty())
+    {
+#ifdef TEST_MATLAB 
+        std::vector<int> pow_id_v;
+        std::string error_info="";
+        retrieve_pow_info(pow_id_v,error_info);
+        for(int i=0; i < pow_id_v.size();i++)
+        {
+            int pow_id = pow_id_v[i];
+            pow_status_map[pow_id] = {48.0,47.5,5.0,20,25,30};
+        }
+#endif
+    }
     
     motors_ref = _motors_ref;
     

@@ -98,10 +98,10 @@ bool Reference::setReferences(const blockfactory::core::BlockInformation* blockI
                                         std::get<4>(motors_ref[j]) = aux_vector[j];
                                     }break;
 
-                    case K_ref: {
+                    case gainP_ref: {
                                     std::get<5>(motors_ref[j]) = aux_vector[j];
                                 }break;
-                    case D_ref: {
+                    case gainD_ref: {
                                     if(_ctrl_mode == 0xD4)
                                     {
                                         std::get<6>(motors_ref[j]) = aux_vector[j];

@@ -89,46 +89,37 @@ bool Imu::getImu(const blockfactory::core::BlockInformation* blockInfo,ImuStatus
         // verify if the element of the list exists like option
         if(_imu_option.count(_imu_list[port]) > 0)
         {
-            if(_imu_list[port]=="imu_id")
+            for(int imu_id_index=0;imu_id_index<_imu_number;imu_id_index++)
             {
-   
-            }
-            else
-            {
-                for(int imu_id_index=0;imu_id_index<2;imu_id_index++)
+                auto imu_id_read = _imu_id[imu_id_index];
+                if(imu_status_map.count(imu_id_read) == 0)
                 {
-                    auto imu_id_read = _imu_id[imu_id_index];
-                    if(imu_status_map.count(imu_id_read) == 0)
-                    {
-                        error_info = "Imu id: " + std::to_string(imu_id_read) + " not found in imus map status, please check ec conf file";
-                        return false;
-                    }
-                        
-                    auto imu_status_id = imu_status_map[imu_id_read];
-                    // save into auxiliary vector the IMU information
-                    Eigen::Vector3d aux_vector;
-                    switch(_imu_option.at(_imu_list[port]))
-                    {
-                        case imu_id:    {
-                                            output->set(imu_id_index, imu_id_read);
-                                        } break;
-                        case quat:  {
-                                        output->set(imu_id_index, imu_status_id[9]);
-                                        output->set(imu_id_index+1, imu_status_id[6]);
-                                        output->set(imu_id_index+2, imu_status_id[7]);
-                                        output->set(imu_id_index+3, imu_status_id[8]);
-                                    }break;
-                        case a: {
-                                    output->set(imu_id_index, imu_status_id[0]);
-                                    output->set(imu_id_index+1, imu_status_id[1]);
-                                    output->set(imu_id_index+2, imu_status_id[2]);
+                    error_info = "Imu id: " + std::to_string(imu_id_read) + " not found in imus map status, please check ec conf file";
+                    return false;
+                }
+                    
+                auto imu_status_id = imu_status_map[imu_id_read];
+                switch(_imu_option.at(_imu_list[port]))
+                {
+                    case imu_id:    {
+                                        output->set(imu_id_index, imu_id_read);
+                                    } break;
+                    case quat:  {
+                                    output->set(4*imu_id_index, imu_status_id[9]);
+                                    output->set(4*imu_id_index+1, imu_status_id[6]);
+                                    output->set(4*imu_id_index+2, imu_status_id[7]);
+                                    output->set(4*imu_id_index+3, imu_status_id[8]);
                                 }break;
-                        case omega: {
-                                    output->set(imu_id_index, imu_status_id[3]);
-                                    output->set(imu_id_index+1, imu_status_id[4]);
-                                    output->set(imu_id_index+2, imu_status_id[5]);
-                                    }break;              
-                    }
+                    case a: {
+                                output->set(3*imu_id_index, imu_status_id[0]);
+                                output->set(3*imu_id_index+1, imu_status_id[1]);
+                                output->set(3*imu_id_index+2, imu_status_id[2]);
+                            }break;
+                    case omega: {
+                                output->set(3*imu_id_index, imu_status_id[3]);
+                                output->set(3*imu_id_index+1, imu_status_id[4]);
+                                output->set(3*imu_id_index+2, imu_status_id[5]);
+                                }break;              
                 }
             }
         }
