@@ -221,8 +221,8 @@ int main()
             bool motors_vel_check=false;
             bool led_off_req=false;
             
-            std::map<double,double> q_set_trj=ec_client_cfg.homing_position;
-            std::map<double,double> q_ref,qdot;
+            std::map<int,double> q_set_trj=ec_client_cfg.homing_position;
+            std::map<int,double> q_ref,qdot;
             
             std::vector<MR> motors_ref;
             uint32_t motor_ref_flags = 1;

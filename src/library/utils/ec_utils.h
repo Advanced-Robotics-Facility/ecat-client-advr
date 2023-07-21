@@ -16,12 +16,13 @@ public:
         uint32_t host_port;
         int period_ms; 
         bool logging;
-        std::map<double,double> homing_position,trajectory;
+        std::map<int,double> homing_position,trajectory;
         int homing_time_sec,trajectory_time_sec;
         int repeat_trj;
         int control_mode_type;
         std::vector<float> gains;
         std::vector<int> slave_id_led;
+        std::vector<int> motor_id;
         std::vector<int> imu_id;
         std::vector<int> ft_id;
         std::vector<int> pow_id;

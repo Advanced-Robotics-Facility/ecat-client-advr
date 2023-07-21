@@ -80,7 +80,22 @@ EcUtils::EcUtils(const YAML::Node & ec_cfg)
         }
         
         if(ec_cfg["control"]["homing_position"])
-            _ec_cfg.homing_position=ec_cfg["control"]["homing_position"].as<map<double,double>>();
+        {
+           auto homing_position = ec_cfg["control"]["homing_position"];
+           for(YAML::const_iterator it=homing_position.begin();it != homing_position.end();++it) {
+                int id = it->first.as<int>();   // <- key
+                double pos = it->second.as<double>(); // <- value
+                if(_ec_cfg.homing_position.count(id) == 0)
+                {
+                    _ec_cfg.homing_position[id]=pos;
+                    _ec_cfg.motor_id.push_back(id);
+                }
+                else
+                {
+                    throw std::runtime_error("The ID: " + std::to_string(id) + " already exists in the homing vector");
+                }
+            }
+        }
         
         if(_ec_cfg.homing_position.empty())
         {
@@ -100,7 +115,19 @@ EcUtils::EcUtils(const YAML::Node & ec_cfg)
         
         
         if(ec_cfg["control"]["trajectory"])
-            _ec_cfg.trajectory=ec_cfg["control"]["trajectory"].as<map<double,double>>();
+        {
+           _ec_cfg.trajectory=ec_cfg["control"]["trajectory"].as<map<int,double>>();
+           auto trajectory = ec_cfg["control"]["trajectory"];
+           int motor_id_index=0;
+           for(YAML::const_iterator it=trajectory.begin();it != trajectory.end();++it) {
+                int id = it->first.as<int>(); // <- key
+                if(id != _ec_cfg.motor_id[motor_id_index])
+                {
+                    throw std::runtime_error("The ID: " + std::to_string(id) + " in the trajectory vector doesn't exist or has different position in the homing vector");
+                }
+                motor_id_index++;
+            }
+        }
         
         if(_ec_cfg.trajectory.empty())
         {

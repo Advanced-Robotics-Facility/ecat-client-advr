@@ -198,17 +198,19 @@ void EcBlockUtils::retrieve_motor_info(std::vector<int> &joint_id,
 {
     try{
         auto ec_client_utils=retrieve_cfg();
-        
+       
+        auto motor_id_v = ec_client_utils->get_ec_cfg().motor_id;
         auto home_map= ec_client_utils->get_ec_cfg().homing_position;
         auto trj_map = ec_client_utils->get_ec_cfg().trajectory;
         
         ctrl_mode= ec_client_utils->get_ec_cfg().control_mode_type;
         gains= ec_client_utils->get_ec_cfg().gains;
 
-        for ( auto &[id, home_pos] : home_map) {
-            joint_id.push_back(id);
-            q_home.push_back(home_pos);
-            q_trj.push_back(trj_map[id]);
+        for ( int i=0;i<motor_id_v.size();i++) {
+            int motor_id = motor_id_v[i];
+            joint_id.push_back(motor_id);
+            q_home.push_back(home_map[motor_id]);
+            q_trj.push_back(trj_map[motor_id]);
         }
     }catch(std::exception &ex){
         error_info= ex.what();

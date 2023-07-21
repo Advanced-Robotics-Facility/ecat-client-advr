@@ -188,8 +188,8 @@ int main()
             bool first_Rx=false;
             
             std::string STM_sts="Homing";
-            std::map<double,double> q_set_trj=ec_client_cfg.homing_position;
-            std::map<double,double> q_ref,q_start,qdot;
+            std::map<int,double> q_set_trj=ec_client_cfg.homing_position;
+            std::map<int,double> q_ref,q_start,qdot;
 
             auto set_trj_time_ms=hm_time_ms;
             int trajectory_counter=0;
