@@ -70,7 +70,8 @@ int main()
         return 1;
         }
         
-        std::vector<int> slave_id_vector;
+         std::vector<int> slave_id_vector=ec_client_cfg.motor_id;
+
 
         // *************** START CLIENT  *************** //
         EcIface::Ptr client=ec_client_utils->make_ec_iface();
@@ -100,14 +101,23 @@ int main()
             if(!slave_info.empty())
             {
                 std::cout << "AUTODETECTION" << std::endl;
-                slave_id_vector.clear();  // clear in case of TEST flag is ON
-                for ( auto &[id, type, pos] : slave_info ) {
-                    if((type==CENT_AC) || (type==LO_PWR_DC_MC))//HP or LP motor
-                    {
-                        if(ec_client_cfg.homing_position.count(id))
+                for(int motor_id_index=0;motor_id_index<slave_id_vector.size();motor_id_index++)
+                {
+                    bool motor_found=false;
+                    for ( auto &[id, type, pos] : slave_info ) {
+                        if((type==CENT_AC) || (type==LO_PWR_DC_MC))//HP or LP motor
                         {
-                            slave_id_vector.push_back(id);
+                            if(id == ec_client_cfg.motor_id[motor_id_index])
+                            {
+                                motor_found=true;
+                                break;
+                            }
                         }
+                    }
+                
+                    if(!motor_found)
+                    {
+                        throw std::runtime_error("ID: " + std::to_string(ec_client_cfg.motor_id[motor_id_index]) + "not found");
                     }
                 }
 
@@ -393,7 +403,7 @@ int main()
                     
                 // ************************* SEND ALWAYS REFERENCES***********************************//
                 
-                // Tx "MOVE"  @NOTE: motors_ref done when the state machine switch between homing and trajectory after motor_ref will remain equal to old references 
+                // Tx "MOVE" 
                 if(!motors_ref.empty())
                 {
                     client->set_motors_references(MotorRefFlags::FLAG_MULTI_REF, motors_ref);
