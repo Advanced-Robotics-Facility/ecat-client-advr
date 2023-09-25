@@ -17,6 +17,8 @@ find_package(Boost REQUIRED system)
 
 find_package(yaml-cpp REQUIRED)
 
+find_package(Eigen3 REQUIRED)
+
 find_package(Git REQUIRED)
 execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive -- ${CMAKE_SOURCE_DIR}
 WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
@@ -42,6 +44,7 @@ find_package(ecat_master REQUIRED COMPONENTS ecat_udp ecat_core)
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/utils
     ${PROJECT_SOURCE_DIR}/src/library/protocols/udp
+    ${EIGEN3_INCLUDE_DIR}
     )
     
 #compile ec_library
