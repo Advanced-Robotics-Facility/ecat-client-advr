@@ -27,6 +27,7 @@ EcIDDP::EcIDDP(std::string host_address,uint32_t host_port):
     _mutex_pow_status= std::make_shared<std::mutex>();
     
     _mutex_imu_status= std::make_shared<std::mutex>();
+    
 }
 
 EcIDDP::~EcIDDP()
@@ -38,7 +39,9 @@ EcIDDP::~EcIDDP()
 
 void EcIDDP::th_init ( void * )
 {
-    
+    start_time = iit::ecat::get_time_ns();
+    tNow, tPre = start_time;
+    loop_cnt = 0;
 }
 
 void EcIDDP::set_loop_time(uint32_t period_ms)
@@ -52,7 +55,7 @@ void EcIDDP::start_client(uint32_t period_ms,bool logging)
 {
     // periodic
     struct timespec ts;
-    iit::ecat::us2ts(&ts, period_ms);
+    iit::ecat::us2ts(&ts, 1000*period_ms);
     // period.period is a timeval ... tv_usec 
     period.period = { ts.tv_sec, ts.tv_nsec / 1000 };
 #ifdef __COBALT__
@@ -102,6 +105,14 @@ void EcIDDP::stop_logging()
 
 void EcIDDP::th_loop( void * )
 {
+    
+    tNow = iit::ecat::get_time_ns();
+    s_loop ( tNow - tPre );
+    tPre = tNow;
+    
+    loop_cnt++;
+    
+    
     // Receive motors, imu, ft, power board pdo information // 
 
     // Send motors references
@@ -112,11 +123,11 @@ void EcIDDP::th_loop( void * )
     {
         if(_motor_ref_flags==MotorRefFlags::FLAG_MULTI_REF )
         {
-            // SEND TCP
+            // SEND IDDP 
         }
         else
         {
-           // SEND TCP
+           // SEND IDDP
         }
     }
 

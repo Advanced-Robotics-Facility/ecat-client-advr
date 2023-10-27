@@ -611,6 +611,86 @@ void EcZmqCmd::PDOs_aux_cmd(std::vector<aux_cmd_message_t> aux_cmds,
      msg=_fd_msg;
 }
 
+void EcZmqCmd::Motors_PDO_cmd(int ctrl_type,
+                              std::vector<iit::advr::Motors_PDO_cmd_Moto_PDO_cmd> refs,
+                              std::string &msg)
+{
+    // CLEAR ALL ZMQ STRUCTURES
+    clear_zmq_client_message();
+    
+    if(refs.empty())
+    {
+        /***** RUTURN IF aux cmds is empty  */////
+        _fault.set_type(EC_ZMQ_CMD_STATUS::WRONG_COMPOSITION);
+        _fault.set_info("References vector is empty");
+        _fault.set_recovery_info("Retry command");
+        return;
+    }
+
+    /***** Clear feedback message*/////
+    msg="";
+    
+    // Set ZMQ CMD */////
+    _fault.set_zmq_cmd("Motors_PDO_cmd");
+    
+    /***** MESSAGE HEADER*/////
+     _m_cmd="ESC_CMD";
+     
+     /***** set protocol buffer command */////
+    _pb_cmd.set_type(CmdType::MOTOR_PDO_CMD);
+    
+    
+    for(size_t i=0 ; i < refs.size() ; i++)
+    {
+        Motors_PDO_cmd_Moto_PDO_cmd *motor_pdo_cmd = _pb_cmd.mutable_motors_pdo_cmd()->add_motors_pdo();
+        motor_pdo_cmd->set_motor_id(refs[i].motor_id());
+        motor_pdo_cmd->set_pos_ref(refs[i].pos_ref());
+        motor_pdo_cmd->set_vel_ref(refs[i].vel_ref());
+        motor_pdo_cmd->set_tor_ref(refs[i].tor_ref());
+        
+        auto new_gains = motor_pdo_cmd->mutable_gains();
+        auto gains= refs[i].gains();
+        
+        if ( ! iit::advr::Gains_Type_IsValid(ctrl_type) ) {
+//         throw(ZCmdError(ZCmdErrorNum::RUNTIME_ERROR,
+//                         "Invalid gains_type"));
+        }
+        auto _ctrl_type = static_cast<iit::advr::Gains_Type>(ctrl_type);
+        if ( (_ctrl_type == iit::advr::Gains_Type_POSITION ||
+            _ctrl_type == iit::advr::Gains_Type_VELOCITY)) {
+            new_gains->set_type(_ctrl_type);
+            new_gains->set_pos_kp(gains.pos_kp());
+            new_gains->set_pos_kd(gains.pos_kd());
+        } else if ( _ctrl_type == iit::advr::Gains_Type_IMPEDANCE) {
+            new_gains->set_type(_ctrl_type);
+            new_gains->set_pos_kp(gains.pos_kp());
+            new_gains->set_pos_kd(gains.pos_kd());
+            new_gains->set_tor_kp(gains.tor_kp());
+            new_gains->set_tor_ki(gains.tor_ki());
+            new_gains->set_tor_kd(gains.tor_kd());
+        } else {
+            //throw(ZCmdError(ZCmdErrorNum::RUNTIME_ERROR,
+            //                "Gains_type not handled or wrong gains size"));
+        }
+        
+        
+        auto aux   = motor_pdo_cmd->mutable_aux_pdo();
+        
+
+    }
+     /***** Protocol buffer Serialization */////
+    _pb_cmd.SerializeToString(&_pb_msg_serialized);
+    /***** ZMQ MECHANISM */////
+    _multipart.push(message_t(_pb_msg_serialized.c_str(), _pb_msg_serialized.length()));
+    _multipart.push(message_t(_m_cmd.c_str(), _m_cmd.length()));
+    _multipart.send((*_publisher),ZMQ_NOBLOCK);
+
+    /***** ZMQ Received and protocol buffer De-Serialization */////
+     zmq_cmd_recv(_fd_msg,CmdType::PDO_AUX_CMD);
+     
+     msg=_fd_msg;
+    
+}
 
 void EcZmqCmd::zmq_cmd_recv(string& msg,CmdType cmd_sent)
 {

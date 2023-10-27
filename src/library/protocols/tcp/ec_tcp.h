@@ -38,11 +38,16 @@ public:
     virtual void th_init ( void * );    
     virtual void th_loop ( void * );
     
-
+private:
+    iit::ecat::stat_t   s_loop;
+    uint64_t            start_time, tNow, tPre;
+    uint64_t            loop_cnt;
+    
 private:
     EcLogger::Ptr _ec_logger;
     bool _client_alive;
     bool _logging;
+    std::shared_ptr<spdlog::logger> _consoleLog;
     
     // last received motor data
     MotorStatusMap _motor_status_map;

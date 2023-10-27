@@ -186,7 +186,6 @@ EcUtils::EC_CONFIG EcUtils::get_ec_cfg()
 EcIface::Ptr EcUtils::make_ec_iface()
 {
     EcIface::Ptr ec_iface_ptr;
-
     if(_ec_cfg.protocol == "udp")
     {
        auto ec_udp_ptr = std::make_shared<EcUDP>(_ec_cfg.host_name,_ec_cfg.host_port);

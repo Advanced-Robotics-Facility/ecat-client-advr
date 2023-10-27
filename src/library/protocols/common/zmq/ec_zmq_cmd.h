@@ -154,13 +154,14 @@ public:
         std::vector<float> y;
         
     };
-    
+
     struct aux_cmd_message_t{
     
         iit::advr::PDOs_aux_cmd_Aux_cmd_Type type;
         long int board_id;
         
     };
+    
     
     /**
     * @brief Constructor of EcZmqCmd Class.
@@ -301,6 +302,17 @@ public:
     */
     void PDOs_aux_cmd(std::vector<aux_cmd_message_t> aux_cmds,
                       std::string &msg);
+    
+    /**
+    * @brief Command to send references 
+    * 
+    * @param ctrl_type control type: controller types.
+    * @param aux_cmds refs: vector of references.
+    * @param msg p_msg: return feedback message from ZMQ communication.
+    */
+    void Motors_PDO_cmd(int ctrl_type,
+                        std::vector<iit::advr::Motors_PDO_cmd_Moto_PDO_cmd> refs,
+                        std::string &msg);
     
     
     /**

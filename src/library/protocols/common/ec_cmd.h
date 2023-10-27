@@ -3,6 +3,7 @@
 
 #include "ec_iface.h"
 #include "ec_zmq_cmd.h"
+#include "cmn_utils.h"
 
 class EcCmd : public EcIface
 {
@@ -51,6 +52,8 @@ private:
     SSI _slave_info;
     
     bool _client_alive;
+    const int _max_cmd_attemps=3;
+    std::shared_ptr<spdlog::logger> _consoleLog;
     
 };
 
