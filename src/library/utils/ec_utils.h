@@ -4,6 +4,8 @@
 #include <yaml-cpp/yaml.h>
 #include <thread>
 #include "ec_udp.h"
+#include "ec_tcp.h"
+#include "ec_iddp.h"
 
 class EcUtils
 {

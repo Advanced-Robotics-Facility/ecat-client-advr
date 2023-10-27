@@ -1,5 +1,5 @@
-#ifndef __EC_Client_CMD__
-#define __EC_Client_CMD__
+#ifndef __EC_ZMQ_CMD__
+#define __EC_ZMQ_CMD__
 
 #include <protobuf/repl_cmd.pb.h>
 #include <protobuf/ecat_pdo.pb.h>
@@ -9,7 +9,7 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 
-enum EC_CLIENT_CMD_STATUS : int {
+enum EC_ZMQ_CMD_STATUS : int {
 
     TIMEOUT=            0,
     NACK=               1,
@@ -20,24 +20,24 @@ enum EC_CLIENT_CMD_STATUS : int {
     
 };
 
-class EC_Client_CMD_Fault
+class EcZmqFault
 {
 public:
     
     /**
-    * @brief Constructor of EC Client Command Fault Class.
+    * @brief Constructor of EcZmqCmd Fault Class.
     *  This class is responsible to manage the fault coming from ZMQ communication.
     *
     */
-    EC_Client_CMD_Fault(){
+    EcZmqFault(){
          
     };
     
     /**
-    * @brief Destructor of EC Client Command Fault Class.
+    * @brief Destructor of EcZmqCmd Fault Class.
     * 
     */
-    ~EC_Client_CMD_Fault(){
+    ~EcZmqFault(){
         
     };
     
@@ -127,11 +127,11 @@ private:
     std::string _zmq_cmd;
 };
 
-class EC_Client_CMD
+class EcZmqCmd
 {
 public:
     
-    typedef std::shared_ptr<EC_Client_CMD> Ptr;
+    typedef std::shared_ptr<EcZmqCmd> Ptr;
     
     struct homing_par_t{
     
@@ -163,19 +163,19 @@ public:
     };
     
     /**
-    * @brief Constructor of EC Client Command Class.
+    * @brief Constructor of EcZmqCmd Class.
     * It needs of zmq uri (TCP/UDP) and of a timeout.
     * 
     * @param zmq_uri p_zmq_uri: ZMQ URI to create the communication.
     * @param timeout p_timeout: Timeout for the communication.
     */
-    EC_Client_CMD(std::string zmq_uri,int timeout);
+    EcZmqCmd(std::string zmq_uri,int timeout);
     
     /**
-    * @brief Destructor of EC Client Command Class-
+    * @brief Destructor of EcZmqCmd Class-
     * 
     */
-    ~EC_Client_CMD();
+    ~EcZmqCmd();
     
     
     /**
@@ -305,7 +305,7 @@ public:
     
     /**
     * @brief This method is responsible to wait the reply of ZMQ EtherCAT Server, 
-    * finding communication errors and and filling the EC_Client_CMD_Fault class. 
+    * finding communication errors and and filling the EcZmqFault class. 
     * 
     * @param msg p_msg: return feedback message from ZMQ communication.
     * @param cmd_sent p_cmd_sent: Checking of the command reply with the command sent. 
@@ -347,9 +347,9 @@ public:
     /**
     * @brief Return fault object of ZMQ communication.
     * 
-    * @return EC_Client_CMD_Fault
+    * @return EcZmqFault
     */
-    EC_Client_CMD_Fault get_fault();
+    EcZmqFault get_fault();
 
 private:
     
@@ -363,7 +363,7 @@ private:
     
     std::shared_ptr<zmq::context_t> _context;
     std::shared_ptr<zmq::socket_t>  _publisher;
-    EC_Client_CMD_Fault _fault;
+    EcZmqFault _fault;
   
 };
 

@@ -1,11 +1,11 @@
-#include "ec_client_cmd.h"
+#include "ec_zmq_cmd.h"
 #include <iostream>
 
 using namespace zmq;
 using namespace iit::advr;
 using namespace std;
 
-EC_Client_CMD::EC_Client_CMD(string zmq_uri,int timeout) :
+EcZmqCmd::EcZmqCmd(string zmq_uri,int timeout) :
 _zmq_uri(zmq_uri),_timeout(timeout)
 {   
 
@@ -20,17 +20,17 @@ _zmq_uri(zmq_uri),_timeout(timeout)
 
 };
 
-std::string EC_Client_CMD::get_zmq_uri()
+std::string EcZmqCmd::get_zmq_uri()
 {
     return _zmq_uri;
 }
 
-int EC_Client_CMD::get_zmq_timeout()
+int EcZmqCmd::get_zmq_timeout()
 {
     return _timeout;
 }
 
-void EC_Client_CMD::set_zmq_timeout(int timeout)
+void EcZmqCmd::set_zmq_timeout(int timeout)
 {
     _timeout=timeout;
     _publisher->setsockopt(ZMQ_RCVTIMEO, _timeout);
@@ -38,7 +38,7 @@ void EC_Client_CMD::set_zmq_timeout(int timeout)
 }
 
 
-void EC_Client_CMD::clear_zmq_client_message()
+void EcZmqCmd::clear_zmq_client_message()
 {
 
    /***** CLEAR protocol buffer command and reply */////
@@ -62,13 +62,13 @@ void EC_Client_CMD::clear_zmq_client_message()
     
 }
 
-EC_Client_CMD_Fault EC_Client_CMD::get_fault()
+EcZmqFault EcZmqCmd::get_fault()
 {
  return _fault;
 };
 
 
-void EC_Client_CMD::Ecat_Master_cmd(Ecat_Master_cmd_Type type,
+void EcZmqCmd::Ecat_Master_cmd(Ecat_Master_cmd_Type type,
                                     std::map<std::string ,std::string> args,
                                     std::string &msg)
 {
@@ -118,7 +118,7 @@ void EC_Client_CMD::Ecat_Master_cmd(Ecat_Master_cmd_Type type,
      msg=_fd_msg;
 }
 
-void EC_Client_CMD::FOE_Master(std::string filename,
+void EcZmqCmd::FOE_Master(std::string filename,
                     unsigned long int password,
                     std::string mcu_type,
                     long int slave_pos,
@@ -144,7 +144,7 @@ void EC_Client_CMD::FOE_Master(std::string filename,
     
     if((filename=="")||(password==0))
     {
-        _fault.set_type(EC_CLIENT_CMD_STATUS::WRONG_COMPOSITION);
+        _fault.set_type(EC_ZMQ_CMD_STATUS::WRONG_COMPOSITION);
         _fault.set_info("Filename or password not set!");
         _fault.set_recovery_info("Retry command");
         return;
@@ -181,7 +181,7 @@ void EC_Client_CMD::FOE_Master(std::string filename,
 }
 
 
-void EC_Client_CMD::Slave_SDO_info(Slave_SDO_info_Type type,
+void EcZmqCmd::Slave_SDO_info(Slave_SDO_info_Type type,
                                    long int board_id,
                                    std::string &msg)
 {
@@ -216,7 +216,7 @@ void EC_Client_CMD::Slave_SDO_info(Slave_SDO_info_Type type,
      msg=_fd_msg;
 }
 
-void EC_Client_CMD::Slave_SDO_cmd(long int board_id,
+void EcZmqCmd::Slave_SDO_cmd(long int board_id,
                                   std::vector<std::string> rd_sdo,
                                   std::map<std::string ,std::string> wr_sdo,
                                   std::string &msg)
@@ -240,7 +240,7 @@ void EC_Client_CMD::Slave_SDO_cmd(long int board_id,
     if((!rd_sdo.empty()) && (!wr_sdo.empty()))
     {
          /***** RUTURN IF READ and WRITE SDO ARE SET  */////
-        _fault.set_type(EC_CLIENT_CMD_STATUS::WRONG_COMPOSITION);
+        _fault.set_type(EC_ZMQ_CMD_STATUS::WRONG_COMPOSITION);
         _fault.set_info("Both rd_sdo and wr_sdo requested!");
         _fault.set_recovery_info("Retry command");
         return;
@@ -268,7 +268,7 @@ void EC_Client_CMD::Slave_SDO_cmd(long int board_id,
        else
        {
             /***** RUTURN IF BOTH READ and WRITE SDO ARE NOT SET  */////
-            _fault.set_type(EC_CLIENT_CMD_STATUS::WRONG_COMPOSITION);
+            _fault.set_type(EC_ZMQ_CMD_STATUS::WRONG_COMPOSITION);
             _fault.set_info("SDO read/write empty requested!");
             _fault.set_recovery_info("Retry command");
             return;
@@ -288,7 +288,7 @@ void EC_Client_CMD::Slave_SDO_cmd(long int board_id,
     
 }
 
-void EC_Client_CMD::Flash_cmd(Flash_cmd_Type type,
+void EcZmqCmd::Flash_cmd(Flash_cmd_Type type,
                               long int board_id,
                               std::string &msg)
 {
@@ -323,7 +323,7 @@ void EC_Client_CMD::Flash_cmd(Flash_cmd_Type type,
      msg=_fd_msg;
 }
 
-void EC_Client_CMD::Ctrl_cmd(Ctrl_cmd_Type type,
+void EcZmqCmd::Ctrl_cmd(Ctrl_cmd_Type type,
                              long int board_id,
                              float value,
                              std::vector<float> gains,
@@ -410,7 +410,7 @@ void EC_Client_CMD::Ctrl_cmd(Ctrl_cmd_Type type,
 }
 
 
-void EC_Client_CMD::Trajectory_Cmd(Trajectory_cmd_Type type,
+void EcZmqCmd::Trajectory_Cmd(Trajectory_cmd_Type type,
                                    std::string name,
                                    long int board_id,
                                    homing_par_t homing_par,
@@ -442,7 +442,7 @@ void EC_Client_CMD::Trajectory_Cmd(Trajectory_cmd_Type type,
         if(homing_par.x.empty())
         {
             /***** RUTURN IF BOTH READ and WRITE SDO ARE NOT SET  */////
-            _fault.set_type(EC_CLIENT_CMD_STATUS::WRONG_COMPOSITION);
+            _fault.set_type(EC_ZMQ_CMD_STATUS::WRONG_COMPOSITION);
             _fault.set_info("Empy x vector for Homing Trajectory");
             _fault.set_recovery_info("Retry command");
             return;
@@ -480,7 +480,7 @@ void EC_Client_CMD::Trajectory_Cmd(Trajectory_cmd_Type type,
            (smooth_par.x.size()!=smooth_par.y.size())) 
         {
             /***** RUTURN IF BOTH READ and WRITE SDO ARE NOT SET  */////
-            _fault.set_type(EC_CLIENT_CMD_STATUS::WRONG_COMPOSITION);
+            _fault.set_type(EC_ZMQ_CMD_STATUS::WRONG_COMPOSITION);
             _fault.set_info("Wring dimension of x or y vectors");
             _fault.set_recovery_info("Retry command");
             return;
@@ -512,7 +512,7 @@ void EC_Client_CMD::Trajectory_Cmd(Trajectory_cmd_Type type,
      
 }
 
-void EC_Client_CMD::Trj_queue_cmd(Trj_queue_cmd_Type type,
+void EcZmqCmd::Trj_queue_cmd(Trj_queue_cmd_Type type,
                                   std::vector<std::string> trj_names,
                                   std::string &msg)
 {   
@@ -542,7 +542,7 @@ void EC_Client_CMD::Trj_queue_cmd(Trj_queue_cmd_Type type,
     else
     {
         /***** RUTURN IF BOTH READ and WRITE SDO ARE NOT SET  */////
-        _fault.set_type(EC_CLIENT_CMD_STATUS::WRONG_COMPOSITION);
+        _fault.set_type(EC_ZMQ_CMD_STATUS::WRONG_COMPOSITION);
         _fault.set_info("trajectory vector names empy!");
         _fault.set_recovery_info("Retry command");
         return;
@@ -562,7 +562,7 @@ void EC_Client_CMD::Trj_queue_cmd(Trj_queue_cmd_Type type,
 
 }
 
-void EC_Client_CMD::PDOs_aux_cmd(std::vector<aux_cmd_message_t> aux_cmds,
+void EcZmqCmd::PDOs_aux_cmd(std::vector<aux_cmd_message_t> aux_cmds,
                                  std::string &msg)
 {
     // CLEAR ALL ZMQ STRUCTURES
@@ -571,7 +571,7 @@ void EC_Client_CMD::PDOs_aux_cmd(std::vector<aux_cmd_message_t> aux_cmds,
     if(aux_cmds.empty())
     {
         /***** RUTURN IF aux cmds is empty  */////
-        _fault.set_type(EC_CLIENT_CMD_STATUS::WRONG_COMPOSITION);
+        _fault.set_type(EC_ZMQ_CMD_STATUS::WRONG_COMPOSITION);
         _fault.set_info("Aux commands vector is empty");
         _fault.set_recovery_info("Retry command");
         return;
@@ -612,7 +612,7 @@ void EC_Client_CMD::PDOs_aux_cmd(std::vector<aux_cmd_message_t> aux_cmds,
 }
 
 
-void EC_Client_CMD::zmq_cmd_recv(string& msg,CmdType cmd_sent)
+void EcZmqCmd::zmq_cmd_recv(string& msg,CmdType cmd_sent)
 {
     message_t update;
 
@@ -628,14 +628,14 @@ void EC_Client_CMD::zmq_cmd_recv(string& msg,CmdType cmd_sent)
             {
                 if(_pb_reply.msg()!="")
                 {
-                    _fault.set_type(EC_CLIENT_CMD_STATUS::OK);
+                    _fault.set_type(EC_ZMQ_CMD_STATUS::OK);
                     _fault.set_info("No fault: Good communication");
                     _fault.set_recovery_info("None");
                     return;
                 }
                 else
                 {
-                    _fault.set_type(EC_CLIENT_CMD_STATUS::WRONG_FB_MSG);
+                    _fault.set_type(EC_ZMQ_CMD_STATUS::WRONG_FB_MSG);
                     _fault.set_info("Bad communication: Wrong message");
                     _fault.set_recovery_info("Retry command");
                 }
@@ -643,21 +643,21 @@ void EC_Client_CMD::zmq_cmd_recv(string& msg,CmdType cmd_sent)
             }
             else
             {
-                _fault.set_type(EC_CLIENT_CMD_STATUS::WRONG_CMD_TYPE);
+                _fault.set_type(EC_ZMQ_CMD_STATUS::WRONG_CMD_TYPE);
                 _fault.set_info("Bad communication: Received a wrong command type");
                 _fault.set_recovery_info("Retry command");
             }
         }
         else
         {
-            _fault.set_type(EC_CLIENT_CMD_STATUS::NACK);
+            _fault.set_type(EC_ZMQ_CMD_STATUS::NACK);
             _fault.set_info("NACK: Bad request");
             _fault.set_recovery_info("Retry to configure the request");
         }
     }
     else
     {
-        _fault.set_type(EC_CLIENT_CMD_STATUS::TIMEOUT);
+        _fault.set_type(EC_ZMQ_CMD_STATUS::TIMEOUT);
         _fault.set_info("Timeout reached, etherCAT master server might not be alive");
         _fault.set_recovery_info("Restart the master or verify its status");
         _publisher->close();
@@ -665,7 +665,7 @@ void EC_Client_CMD::zmq_cmd_recv(string& msg,CmdType cmd_sent)
     
 }
 
-EC_Client_CMD::~EC_Client_CMD()
+EcZmqCmd::~EcZmqCmd()
 {
 };
 
