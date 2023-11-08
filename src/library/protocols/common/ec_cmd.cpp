@@ -247,8 +247,6 @@ bool EcCmd::pdo_aux_cmd(const PAC & pac)
             attemps_cnt++;
         }
     }
-    _consoleLog->error("OPKKKKKKKKKKKKKKKKKKK");
-    sleep(1);
     
     return false;
 }
