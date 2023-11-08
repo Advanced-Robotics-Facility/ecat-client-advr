@@ -12,7 +12,6 @@ EcTCP::EcTCP(std::string host_address,uint32_t host_port):
         host_address.clear();
         host_address="127.0.0.1";
     }
-    
     _ec_logger = std::make_shared<EcLogger>();
     _logging=false;
     
@@ -126,14 +125,7 @@ void EcTCP::th_loop( void * )
     if(_motor_ref_flags!=MotorRefFlags::FLAG_NONE &&
         !_motors_references.empty())
     {
-        if(_motor_ref_flags==MotorRefFlags::FLAG_MULTI_REF )
-        {
-            // SEND TCP
-        }
-        else
-        {
-           // SEND TCP
-        }
+        feed_motors(_motors_references);
     }
 
     _mutex_motor_reference->unlock();
@@ -162,26 +154,26 @@ void EcTCP::set_motors_references(const MotorRefFlags motor_ref_flags,const std:
        {
            if(!motors_references.empty())
            {
-                _motor_ref_flags = motor_ref_flags;
+               _motor_ref_flags = motor_ref_flags;
                 _motors_references = motors_references;
                 _ec_logger->log_set_motors_ref(_motors_references);
            }
            else
            {
-                //_consoleLog->error("Motors references vector is empty!, please fill the vector");
+                _consoleLog->error("Motors references vector is empty!, please fill the vector");
            }
        }
        else
        {
            if(motor_ref_flags!=MotorRefFlags::FLAG_NONE)
            {
-                //_consoleLog->error("Wrong motors references flag!");
+                _consoleLog->error("Wrong motors references flag!");
            }
        }
     }
     else
     {
-        //_consoleLog->error("UDP client not alive, please stop the main process");
+        _consoleLog->error("TCP client not alive, please stop the main process");
     }
 
     _mutex_motor_reference->unlock();

@@ -45,6 +45,8 @@ public:
     bool set_wr_sdo(uint32_t esc_id,
                     const RD_SDO &rd_sdo,
                     const WR_SDO &wr_sdo) final;
+                    
+    void feed_motors(std::vector<MR> motors_references);
     
 
 private:
