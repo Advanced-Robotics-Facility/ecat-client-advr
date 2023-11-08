@@ -1,9 +1,0 @@
-string motor_name
-float32 min_pos
-float32 max_pos
-float32 max_vel
-float32 max_torq
----
-ec_msgs/SlaveCmdInfo[]  slaves_info
-ec_msgs/CmdStatus cmd_status
-

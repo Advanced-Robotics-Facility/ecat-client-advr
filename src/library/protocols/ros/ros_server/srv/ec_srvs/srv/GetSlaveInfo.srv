@@ -1,3 +1,0 @@
----
-ec_msgs/SlaveCmdInfo  cmd_info
-ec_msgs/SlaveInfo[] slaves_info

@@ -1,9 +1,0 @@
-string[] slave_name
-string c28_file
-string c28_password
-string m3_file
-string m3_password
----
-ec_msgs/SlaveCmdInfo[]  slaves_info
-ec_msgs/CmdStatus cmd_status
-

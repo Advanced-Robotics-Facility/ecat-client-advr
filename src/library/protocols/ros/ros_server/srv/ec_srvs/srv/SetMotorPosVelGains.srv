@@ -1,7 +1,0 @@
-string motor_name
-float32[3] gains
-string data_object_type
----
-ec_msgs/SlaveCmdInfo[]  slaves_info
-ec_msgs/CmdStatus cmd_status
-
