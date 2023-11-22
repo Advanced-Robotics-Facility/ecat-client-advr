@@ -134,23 +134,72 @@ void EcIDDP::th_loop( void * )
     
     
     // Receive motors, imu, ft, power board pdo information // 
+    for (auto const &[id,esc_iface] : _escs_iface )  {
+        try { 
+            ///////////////////////////////////////////////////////////////
+            // read
+            int nbytes;
+            do {
+                // read protobuf data
+                if ( (nbytes = esc_iface->read()) > 0 ) {
+                }
+            } while ( nbytes > 0);
+            //////////////////////////////////////////////////////////////
+        }
+        catch ( std::out_of_range ) {};   
+    }
 
     // Send motors references
     _mutex_motor_reference->lock();
 
     if(_motor_ref_flags!=MotorRefFlags::FLAG_NONE &&
-        !_motors_references.empty())
+       !_motors_references.empty())
     {
-        if(_motor_ref_flags==MotorRefFlags::FLAG_MULTI_REF )
-        {
-            // SEND IDDP 
-        }
-        else
-        {
-           // SEND IDDP
+        for ( const auto &[bId,ctrl_type,pos,vel,tor,g0,g1,g2,g3,g4,op,idx,aux] : _motors_references ) {
+        
+            auto _ctrl_type = static_cast<iit::advr::Gains_Type>(ctrl_type);
+            std::shared_ptr<motor_iface> moto = std::static_pointer_cast<motor_iface >(_escs_iface[bId]);
+            
+            moto->pos_ref= pos;
+            moto->vel_ref= vel;
+            moto->tor_ref= tor;
+            
+            if ( (_ctrl_type == iit::advr::Gains_Type_POSITION ||
+            _ctrl_type == iit::advr::Gains_Type_VELOCITY)) {
+                moto->kp_ref= g0;
+                moto->kd_ref= g2;
+                moto->tau_p_ref=0;
+                moto->tau_fc_ref=0;
+                moto->tau_d_ref=0;
+            }
+            else if ( _ctrl_type == iit::advr::Gains_Type_IMPEDANCE) {
+                moto->kp_ref= g0;
+                moto->kd_ref= g1;
+                moto->tau_p_ref=g2;
+                moto->tau_fc_ref=g3;
+                moto->tau_d_ref=g4;
+            } else {
+   
+            }
+            auto _op = static_cast<iit::advr::AuxPDO_Op>(op);
+  
+            switch (_op)
+            {
+                case iit::advr::AuxPDO_Op_SET:
+                    moto->aux_wr_idx=idx;
+                    moto->aux_wr=aux;
+                    break;
+                case iit::advr::AuxPDO_Op_GET:
+                    moto->aux_rd_idx_req=idx;
+                    break;
+                case iit::advr::AuxPDO_Op_NOP:
+                    break;
+            }
+            
+            //write 
+            moto->write();
         }
     }
-
     _mutex_motor_reference->unlock();
 }
 
@@ -206,11 +255,17 @@ MotorStatusMap EcIDDP::get_motors_status()
 {
     _mutex_motor_status->lock();
     
-    auto ret_motor_status_map= _motor_status_map;
+    for (auto const &[id,esc_iface] : _motor_status_map)  {
+        
+        std::shared_ptr<motor_iface> moto = std::static_pointer_cast<motor_iface >(_escs_iface[id]);
+        _motor_status_map[id] = std::make_tuple(moto->link_pos,moto->motor_pos,moto->link_vel,moto->motor_vel,
+                                                moto->torque,moto->motor_temperature,moto->board_temperature,
+                                                moto->fault,0,moto->aux_rd_idx_ack,moto->aux_rd,0);
+    }
     
     _mutex_motor_status->unlock();
     
-    return ret_motor_status_map;
+    return _motor_status_map;
 }
 
 FtStatusMap EcIDDP::get_ft6_status()
