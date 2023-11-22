@@ -48,6 +48,7 @@ private:
     bool _client_alive;
     bool _logging;
     std::shared_ptr<spdlog::logger> _consoleLog;
+    SSI _slave_info;
     
     // last received motor data
     MotorStatusMap _motor_status_map;

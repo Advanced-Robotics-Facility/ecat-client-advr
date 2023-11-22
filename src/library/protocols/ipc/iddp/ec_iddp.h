@@ -2,6 +2,9 @@
 #define EC_IDDP_H
 
 #include <thread_util.h>
+#include <pb_utils.h>
+#include "esc_factory.h"
+
 #include "ec_logger.h"
 #include "ec_cmd.h"
 
@@ -47,6 +50,8 @@ private:
     EcLogger::Ptr _ec_logger;
     bool _client_alive;
     bool _logging;
+    SSI _slave_info;
+    std::map<int, SH_PIFACE>  _escs_iface;
     
     // last received motor data
     MotorStatusMap _motor_status_map;

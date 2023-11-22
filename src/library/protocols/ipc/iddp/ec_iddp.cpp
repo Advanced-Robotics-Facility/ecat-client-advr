@@ -42,6 +42,22 @@ void EcIDDP::th_init ( void * )
     start_time = iit::ecat::get_time_ns();
     tNow, tPre = start_time;
     loop_cnt = 0;
+    
+    std::string robot_name = "NoNe";
+    for ( auto &[id, esc_type, pos] : _slave_info ) {
+        try { 
+            // iface_factory will populate escs_iface map
+            try { 
+                _escs_iface[id] = iface_factory(id,esc_type,pos,robot_name); 
+                
+            }catch ( const EscPipeIfaceError &e) {
+                DPRINTF("%s\n", e.what());
+            }
+    
+        }catch(std::out_of_range) {
+            DPRINTF("NOT mapped Esc id 0x%04X pos %d\n", id, pos );
+        }
+    }
 }
 
 void EcIDDP::set_loop_time(uint32_t period_ms)
@@ -72,8 +88,12 @@ void EcIDDP::start_client(uint32_t period_ms,bool logging)
         start_logging();
     }
     
-    create(true); // real time thread
-    _client_alive=true;
+    retrieve_slaves_info(_slave_info);
+    
+    if(!_slave_info.empty()){
+        create(true); // real time thread
+        _client_alive=true;
+    }
     
 }
 

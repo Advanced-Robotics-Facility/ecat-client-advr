@@ -1,6 +1,10 @@
 project(ec_library)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+#compile ec_library
+add_subdirectory(protocols/ipc/esc/)
+
+
 ## load in pkg-config support
 find_package(PkgConfig)
 ## use pkg-config to get hints for 0mq locations
@@ -35,6 +39,7 @@ target_include_directories(ec_library
     logger/
     protocols/common/
     protocols/common/zmq/
+    protocols/ipc/esc/
     PRIVATE
     ${EXTERNAL}/spdlog/include
     ${ZeroMQ_INCLUDE_DIR} 
@@ -54,6 +59,7 @@ target_link_libraries(ec_library
     ecat_master::ecat_core${LIB_TYPE}
     ecat_master::ecat_master_pb
     ecat_master::msgpck_proto
+    esc_pipes_library
     magic_enum::magic_enum
     matlogger2::matlogger2
     ${ZeroMQ_LIBRARY}

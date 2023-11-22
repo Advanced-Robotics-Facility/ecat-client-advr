@@ -77,8 +77,12 @@ void EcTCP::start_client(uint32_t period_ms,bool logging)
         start_logging();
     }
     
-    create(false); // non-real time thread
-    _client_alive=true;
+    retrieve_slaves_info(_slave_info);
+    
+    if(!_slave_info.empty()){
+        create(false); // non-real time thread
+        _client_alive=true;
+    }
     
 }
 
