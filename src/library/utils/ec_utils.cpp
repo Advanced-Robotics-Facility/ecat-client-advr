@@ -194,19 +194,25 @@ EcIface::Ptr EcUtils::make_ec_iface()
     }
     else if(_ec_cfg.protocol == "tcp")
     {
-       auto ec_udp_ptr = std::make_shared<EcTCP>(_ec_cfg.host_name,_ec_cfg.host_port);
-       ec_iface_ptr = ec_udp_ptr;
+       auto ec_tcp_ptr = std::make_shared<EcTCP>(_ec_cfg.host_name,_ec_cfg.host_port);
+       ec_iface_ptr = ec_tcp_ptr;
        
     }
     else if(_ec_cfg.protocol == "iddp")
     {
-       auto ec_udp_ptr = std::make_shared<EcIDDP>(_ec_cfg.host_name,_ec_cfg.host_port);
-       ec_iface_ptr = ec_udp_ptr;
+       auto ec_iddp_ptr = std::make_shared<EcIDDP>(_ec_cfg.host_name,_ec_cfg.host_port);
+       ec_iface_ptr = ec_iddp_ptr;
+       
+    }
+    else if(_ec_cfg.protocol == "zipc")
+    {
+       auto ec_zipc_ptr = std::make_shared<EcZipc>(_ec_cfg.host_name,_ec_cfg.host_port);
+       ec_iface_ptr = ec_zipc_ptr;
        
     }
     else
     {
-        throw std::runtime_error("EtherCAT client protocol not recognized, protocols allowed are tcp, udp, ros2 and iddp");
+        throw std::runtime_error("EtherCAT client protocol not recognized, protocols allowed are tcp, udp, ros2, iddp, zipc");
     }
     
     if(ec_iface_ptr != nullptr)

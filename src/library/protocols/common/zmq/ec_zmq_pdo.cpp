@@ -1,4 +1,4 @@
-#include "ec_client_pdo.h"
+#include "ec_zmq_pdo.h"
 #include <iostream>
 
 using namespace zmq;
@@ -6,7 +6,7 @@ using namespace iit::advr;
 using namespace std;
 
 
-EC_Client_PDO::EC_Client_PDO(string zmq_uri) :
+EcZmqPdo::EcZmqPdo(string zmq_uri) :
 _zmq_uri(zmq_uri)
 {   
     #if ZMQ_VERSION_MAJOR == 2
@@ -28,13 +28,13 @@ _zmq_uri(zmq_uri)
 
 };
 
-std::string EC_Client_PDO::get_zmq_uri()
+std::string EcZmqPdo::get_zmq_pdo_uri()
 {
     return _zmq_uri;
 }
 
 
-bool EC_Client_PDO::zmq_cmd_recv_pdo(std::string& msg,iit::advr::Ec_slave_pdo& ecat_pdo)
+bool EcZmqPdo::zmq_recv_pdo(std::string& msg,iit::advr::Ec_slave_pdo& ecat_pdo)
 {
     zmq::multipart_t multipart;
     //int nmsg = 0;

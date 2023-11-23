@@ -51,8 +51,8 @@ private:
     bool _client_alive;
     bool _logging;
     SSI _slave_info;
-    std::map<int, SH_PIFACE>  _escs_iface;
-    
+    std::shared_ptr<EscFactory> _escs_factory;
+
     // last received motor data
     MotorStatusMap _motor_status_map;
     // last received ft data

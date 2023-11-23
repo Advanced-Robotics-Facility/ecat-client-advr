@@ -6,6 +6,7 @@
 #include "ec_udp.h"
 #include "ec_tcp.h"
 #include "ec_iddp.h"
+#include "ec_zipc.h"
 
 class EcUtils
 {

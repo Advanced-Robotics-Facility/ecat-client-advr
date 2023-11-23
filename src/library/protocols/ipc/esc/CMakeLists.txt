@@ -20,15 +20,16 @@ find_library(ZeroMQ_LIBRARY
 
 # compile ecat library test
 add_library(esc_pipes_library STATIC
+            esc_factory.cpp
             esc_iface.cpp
             motor/motor_iface.cpp
             imu/imu_iface.cpp
             ft/ft_iface.cpp
             pow/pow_iface.cpp)
-        
+            
 target_include_directories(esc_pipes_library
     PUBLIC
-     ${PROJECT_SOURCE_DIR}/include/
+     ${CMAKE_SOURCE_DIR}/src/library/include/
     motor/
     imu/
     ft/

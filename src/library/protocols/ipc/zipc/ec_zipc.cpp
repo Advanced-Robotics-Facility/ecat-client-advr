@@ -1,11 +1,11 @@
 #include <cassert>
 #include <tuple>
 
-#include "ec_tcp.h"
+#include "ec_zipc.h"
 
 
-EcTCP::EcTCP(std::string host_address,uint32_t host_port):
-  EcCmd("tcp",host_address,host_port)
+EcZipc::EcZipc(std::string host_address,uint32_t host_port):
+  EcCmd("ipc",host_address,host_port)
 {
     if(host_address=="localhost")
     {
@@ -38,14 +38,14 @@ EcTCP::EcTCP(std::string host_address,uint32_t host_port):
     }
 }
 
-EcTCP::~EcTCP()
+EcZipc::~EcZipc()
 {
 
 }
 
 //******************************* INIT *****************************************************//
 
-void EcTCP::th_init ( void * )
+void EcZipc::th_init ( void * )
 {
     start_time = iit::ecat::get_time_ns();
     tNow, tPre = start_time;
@@ -55,7 +55,7 @@ void EcTCP::th_init ( void * )
     
             std::string host_port_cmd = std::to_string(_host_port+id);
             // zmq setup
-            std::string zmq_uri = "tcp://" + _host_address + ":"+host_port_cmd;
+            std::string zmq_uri = "ipc://" + _host_address + ":"+host_port_cmd;
             EcZmqPdo::Ptr zmq_pdo = std::make_shared<EcZmqPdo>(zmq_uri);
             
             switch ( esc_type  )
@@ -91,14 +91,14 @@ void EcTCP::th_init ( void * )
     }
 }
 
-void EcTCP::set_loop_time(uint32_t period_ms)
+void EcZipc::set_loop_time(uint32_t period_ms)
 {
    stop_client();
    
    start_client(period_ms,_logging);
 }
 
-void EcTCP::start_client(uint32_t period_ms,bool logging)
+void EcZipc::start_client(uint32_t period_ms,bool logging)
 {
     // periodic
     struct timespec ts;
@@ -128,30 +128,30 @@ void EcTCP::start_client(uint32_t period_ms,bool logging)
     
 }
 
-void EcTCP::stop_client()
+void EcZipc::stop_client()
 {
     stop();
     
     stop_logging();
 }
 
-bool EcTCP::is_client_alive()
+bool EcZipc::is_client_alive()
 {
     return _client_alive;
 }
 
-void EcTCP::start_logging()
+void EcZipc::start_logging()
 {
     stop_logging();
     _ec_logger->start_mat_logger();
 }
 
-void EcTCP::stop_logging()
+void EcZipc::stop_logging()
 {
     _ec_logger->stop_mat_logger();
 }
 
-void EcTCP::read_motors(MotorStatusMap &motor_status_map)
+void EcZipc::read_motors(MotorStatusMap &motor_status_map)
 {
     for ( auto &[id, moto_pdo] : _moto_pdo_map ) {
         iit::advr::Ec_slave_pdo pb_rx_pdos;
@@ -180,7 +180,7 @@ void EcTCP::read_motors(MotorStatusMap &motor_status_map)
         }
     }
 }
-void EcTCP::read_fts(FtStatusMap &ft_status_map)
+void EcZipc::read_fts(FtStatusMap &ft_status_map)
 {
     for ( auto &[id, ft_pdo] : _ft_pdo_map ) {
         iit::advr::Ec_slave_pdo pb_rx_pdos;
@@ -207,7 +207,7 @@ void EcTCP::read_fts(FtStatusMap &ft_status_map)
         }
     }
 }
-void EcTCP::read_imus(ImuStatusMap &imu_status_map)
+void EcZipc::read_imus(ImuStatusMap &imu_status_map)
 {
     for ( auto &[id, imu_pdo] : _imu_pdo_map ) {
         iit::advr::Ec_slave_pdo pb_rx_pdos;
@@ -239,7 +239,7 @@ void EcTCP::read_imus(ImuStatusMap &imu_status_map)
     }
 }
 
-void EcTCP::read_pows(PwrStatusMap &pow_status_map)
+void EcZipc::read_pows(PwrStatusMap &pow_status_map)
 {
     for ( auto &[id, pow_pdo] : _pow_pdo_map ) {
         iit::advr::Ec_slave_pdo pb_rx_pdos;
@@ -270,7 +270,7 @@ void EcTCP::read_pows(PwrStatusMap &pow_status_map)
 
 //******************************* Periodic Activity *****************************************************//
 
-void EcTCP::th_loop( void * )
+void EcZipc::th_loop( void * )
 {
     
     tNow = iit::ecat::get_time_ns();
@@ -312,7 +312,7 @@ void EcTCP::th_loop( void * )
     _mutex_motor_reference->unlock();
 }
 
-void EcTCP::periodicActivity()
+void EcZipc::periodicActivity()
 {
     
         
@@ -321,7 +321,7 @@ void EcTCP::periodicActivity()
 
 
 
-void EcTCP::set_motors_references(const MotorRefFlags motor_ref_flags,const std::vector<MR> motors_references)
+void EcZipc::set_motors_references(const MotorRefFlags motor_ref_flags,const std::vector<MR> motors_references)
 {
     _mutex_motor_reference->lock();
 
@@ -360,7 +360,7 @@ void EcTCP::set_motors_references(const MotorRefFlags motor_ref_flags,const std:
     _mutex_motor_reference->unlock();
 }
 
-MotorStatusMap EcTCP::get_motors_status()
+MotorStatusMap EcZipc::get_motors_status()
 {
     _mutex_motor_status->lock();
     
@@ -371,7 +371,7 @@ MotorStatusMap EcTCP::get_motors_status()
     return ret_motor_status_map;
 }
 
-FtStatusMap EcTCP::get_ft6_status()
+FtStatusMap EcZipc::get_ft6_status()
 {
     _mutex_ft6_status->lock();
     
@@ -382,7 +382,7 @@ FtStatusMap EcTCP::get_ft6_status()
     return ret_ft_status_map; 
 }
 
-PwrStatusMap EcTCP::get_pow_status()
+PwrStatusMap EcZipc::get_pow_status()
 {
     _mutex_pow_status->lock();
     
@@ -394,7 +394,7 @@ PwrStatusMap EcTCP::get_pow_status()
 }
 
 
-ImuStatusMap EcTCP::get_imu_status()
+ImuStatusMap EcZipc::get_imu_status()
 {
     _mutex_imu_status->lock();
     
@@ -404,7 +404,7 @@ ImuStatusMap EcTCP::get_imu_status()
     
     return _imu_status_map; 
 }
-bool EcTCP::pdo_aux_cmd_sts(const PAC & pac)
+bool EcZipc::pdo_aux_cmd_sts(const PAC & pac)
 {
     return false;
 }

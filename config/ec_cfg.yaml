@@ -1,6 +1,6 @@
 network:
-  protocol: tcp #iddp #udp
-  hostname: localhost #10.240.23.30 #localhost #192.168.99.10 #192.168.9.99 #10.240.22.49
+  protocol: tcp #zipc #iddp #udp
+  hostname: localhost #/tmp/ecat_master #10.240.23.30 #localhost #192.168.99.10 #192.168.9.99 #10.240.22.49
   port: 5000 #54321(UDP)
   timeout: 1000
 

@@ -22,6 +22,8 @@ void EcLogger::start_mat_logger()
     _ft6_status_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
     _pow_status_logger = XBot::MatLogger2::MakeLogger("/tmp/pow_status_logger", opt);
     _pow_status_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
+    _imu_status_logger = XBot::MatLogger2::MakeLogger("/tmp/imu_status_logger", opt);
+    _imu_status_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
 }
 void EcLogger::stop_mat_logger()
 {
@@ -29,6 +31,7 @@ void EcLogger::stop_mat_logger()
     _motors_status_logger.reset();
     _ft6_status_logger.reset();
     _pow_status_logger.reset();
+    _imu_status_logger.reset();
 }
 
 void EcLogger::add_motors_ref(std::vector<MR> motors_ref,XBot::MatLogger2::Ptr logger)
@@ -230,5 +233,64 @@ void EcLogger::resize_ft6_sts(size_t size)
         _torque_x_eigen.resize(size);
         _torque_y_eigen.resize(size);
         _torque_z_eigen.resize(size);
+    }
+}
+
+
+void EcLogger::log_imu_sts(ImuStatusMap imu_sts_map)
+{
+    if(_imu_status_logger != nullptr)
+    {
+        if(!imu_sts_map.empty())
+        {
+            resize_imu_sts(imu_sts_map.size());
+            int i=0;
+            for ( const auto &[esc_id, imu_sts] : imu_sts_map) 
+            {
+                _x_rate_eigen(i)=imu_sts[0];
+                _y_rate_eigen(i)=imu_sts[1];
+                _z_rate_eigen(i)=imu_sts[2];
+                
+                _x_acc_eigen(i)=imu_sts[3];
+                _y_acc_eigen(i)=imu_sts[4];
+                _z_acc_eigen(i)=imu_sts[5];
+                
+                _x_quat_eigen(i)=imu_sts[6];
+                _y_quat_eigen(i)=imu_sts[7];
+                _z_quat_eigen(i)=imu_sts[8];
+                _w_quat_eigen(i)=imu_sts[9];
+                i++;
+            }
+
+            _imu_status_logger->add("x_rate", _x_rate_eigen);
+            _imu_status_logger->add("y_rate", _y_rate_eigen);
+            _imu_status_logger->add("z_rate", _z_rate_eigen);
+            _imu_status_logger->add("x_acc", _x_acc_eigen);
+            _imu_status_logger->add("y_acc", _y_acc_eigen);
+            _imu_status_logger->add("z_acc", _z_acc_eigen);
+            _imu_status_logger->add("x_quat", _x_quat_eigen);
+            _imu_status_logger->add("y_quat", _y_quat_eigen);
+            _imu_status_logger->add("z_quat", _z_quat_eigen);
+            _imu_status_logger->add("w_quat", _w_quat_eigen);
+        }
+    }
+}
+
+void EcLogger::resize_imu_sts(size_t size)
+{
+    if(_x_rate_eigen.size() != size)
+    {
+        _x_rate_eigen.resize(size);
+        _y_rate_eigen.resize(size);
+        _z_rate_eigen.resize(size);
+
+        _x_acc_eigen.resize(size);
+        _y_acc_eigen.resize(size);
+        _z_acc_eigen.resize(size);
+        
+        _x_quat_eigen.resize(size);
+        _y_quat_eigen.resize(size);
+        _z_quat_eigen.resize(size);
+        _w_quat_eigen.resize(size);
     }
 }

@@ -75,6 +75,9 @@ public:
         wr_pp_name(rhs.wr_pp_name) {};
     */
 
+    virtual ~esc_pipe_iface () {
+    }
+    
     virtual void init(void);
 
     iit::advr::Ec_slave_pdo* pb_rx() { return &pb_rx_pdos; }

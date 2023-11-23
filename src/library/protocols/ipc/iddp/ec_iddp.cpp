@@ -5,14 +5,8 @@
 
 
 EcIDDP::EcIDDP(std::string host_address,uint32_t host_port):
-  EcCmd(host_address,host_port)
-{
-    if(host_address=="localhost")
-    {
-        host_address.clear();
-        host_address="127.0.0.1";
-    }
-    
+  EcCmd("tcp",host_address,host_port)
+{    
     _ec_logger = std::make_shared<EcLogger>();
     _logging=false;
     
@@ -32,7 +26,7 @@ EcIDDP::EcIDDP(std::string host_address,uint32_t host_port):
 
 EcIDDP::~EcIDDP()
 {
-
+    iit::ecat::print_stat ( s_loop );
 }
 
 //******************************* INIT *****************************************************//
@@ -44,20 +38,7 @@ void EcIDDP::th_init ( void * )
     loop_cnt = 0;
     
     std::string robot_name = "NoNe";
-    for ( auto &[id, esc_type, pos] : _slave_info ) {
-        try { 
-            // iface_factory will populate escs_iface map
-            try { 
-                _escs_iface[id] = iface_factory(id,esc_type,pos,robot_name); 
-                
-            }catch ( const EscPipeIfaceError &e) {
-                DPRINTF("%s\n", e.what());
-            }
-    
-        }catch(std::out_of_range) {
-            DPRINTF("NOT mapped Esc id 0x%04X pos %d\n", id, pos );
-        }
-    }
+    _escs_factory= std::make_shared<EscFactory>(_slave_info,robot_name);
 }
 
 void EcIDDP::set_loop_time(uint32_t period_ms)
@@ -132,73 +113,35 @@ void EcIDDP::th_loop( void * )
     
     loop_cnt++;
     
-    
     // Receive motors, imu, ft, power board pdo information // 
-    for (auto const &[id,esc_iface] : _escs_iface )  {
-        try { 
-            ///////////////////////////////////////////////////////////////
-            // read
-            int nbytes;
-            do {
-                // read protobuf data
-                if ( (nbytes = esc_iface->read()) > 0 ) {
-                }
-            } while ( nbytes > 0);
-            //////////////////////////////////////////////////////////////
-        }
-        catch ( std::out_of_range ) {};   
-    }
-
+    _mutex_motor_status->lock();
+    _escs_factory->read_motors(_motor_status_map);
+    _ec_logger->log_motors_sts(_motor_status_map);
+    _mutex_motor_status->unlock();
+    
+    _mutex_ft6_status->lock();
+    _escs_factory->read_fts(_ft_status_map);
+    _ec_logger->log_ft6_sts(_ft_status_map);
+    _mutex_ft6_status->unlock();
+    
+    _mutex_imu_status->lock();
+    _escs_factory->read_imus(_imu_status_map);
+    _ec_logger->log_imu_sts(_imu_status_map);
+    _mutex_imu_status->unlock();
+    
+    _mutex_pow_status->lock();
+    _escs_factory->read_pows(_pow_status_map);
+    _ec_logger->log_pow_sts(_pow_status_map);
+    _mutex_pow_status->unlock();
+    
     // Send motors references
     _mutex_motor_reference->lock();
 
     if(_motor_ref_flags!=MotorRefFlags::FLAG_NONE &&
        !_motors_references.empty())
     {
-        for ( const auto &[bId,ctrl_type,pos,vel,tor,g0,g1,g2,g3,g4,op,idx,aux] : _motors_references ) {
-        
-            auto _ctrl_type = static_cast<iit::advr::Gains_Type>(ctrl_type);
-            std::shared_ptr<motor_iface> moto = std::static_pointer_cast<motor_iface >(_escs_iface[bId]);
-            
-            moto->pos_ref= pos;
-            moto->vel_ref= vel;
-            moto->tor_ref= tor;
-            
-            if ( (_ctrl_type == iit::advr::Gains_Type_POSITION ||
-            _ctrl_type == iit::advr::Gains_Type_VELOCITY)) {
-                moto->kp_ref= g0;
-                moto->kd_ref= g2;
-                moto->tau_p_ref=0;
-                moto->tau_fc_ref=0;
-                moto->tau_d_ref=0;
-            }
-            else if ( _ctrl_type == iit::advr::Gains_Type_IMPEDANCE) {
-                moto->kp_ref= g0;
-                moto->kd_ref= g1;
-                moto->tau_p_ref=g2;
-                moto->tau_fc_ref=g3;
-                moto->tau_d_ref=g4;
-            } else {
-   
-            }
-            auto _op = static_cast<iit::advr::AuxPDO_Op>(op);
-  
-            switch (_op)
-            {
-                case iit::advr::AuxPDO_Op_SET:
-                    moto->aux_wr_idx=idx;
-                    moto->aux_wr=aux;
-                    break;
-                case iit::advr::AuxPDO_Op_GET:
-                    moto->aux_rd_idx_req=idx;
-                    break;
-                case iit::advr::AuxPDO_Op_NOP:
-                    break;
-            }
-            
-            //write 
-            moto->write();
-        }
+        _escs_factory->feed_motors(_motors_references);
+        _ec_logger->log_motors_ref(_motors_references);
     }
     _mutex_motor_reference->unlock();
 }
@@ -232,20 +175,20 @@ void EcIDDP::set_motors_references(const MotorRefFlags motor_ref_flags,const std
            }
            else
            {
-                //_consoleLog->error("Motors references vector is empty!, please fill the vector");
+               DPRINTF("Motors references vector is empty!, please fill the vector\n");
            }
        }
        else
        {
            if(motor_ref_flags!=MotorRefFlags::FLAG_NONE)
            {
-                //_consoleLog->error("Wrong motors references flag!");
+               DPRINTF("Wrong motors references flag!\n");
            }
        }
     }
     else
     {
-        //_consoleLog->error("UDP client not alive, please stop the main process");
+        DPRINTF("client not alive, please stop the main process\n");
     }
 
     _mutex_motor_reference->unlock();
@@ -255,17 +198,11 @@ MotorStatusMap EcIDDP::get_motors_status()
 {
     _mutex_motor_status->lock();
     
-    for (auto const &[id,esc_iface] : _motor_status_map)  {
-        
-        std::shared_ptr<motor_iface> moto = std::static_pointer_cast<motor_iface >(_escs_iface[id]);
-        _motor_status_map[id] = std::make_tuple(moto->link_pos,moto->motor_pos,moto->link_vel,moto->motor_vel,
-                                                moto->torque,moto->motor_temperature,moto->board_temperature,
-                                                moto->fault,0,moto->aux_rd_idx_ack,moto->aux_rd,0);
-    }
-    
+    auto ret_motor_status_map= _motor_status_map;
+
     _mutex_motor_status->unlock();
     
-    return _motor_status_map;
+    return ret_motor_status_map;
 }
 
 FtStatusMap EcIDDP::get_ft6_status()
@@ -299,7 +236,7 @@ ImuStatusMap EcIDDP::get_imu_status()
     
     _mutex_imu_status->unlock();
     
-    return _imu_status_map; 
+    return ret_imu_status_map; 
 }
 bool EcIDDP::pdo_aux_cmd_sts(const PAC & pac)
 {

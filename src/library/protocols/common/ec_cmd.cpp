@@ -4,7 +4,7 @@
 #include "ec_cmd.h"
 #include <yaml-cpp/yaml.h>
 
-EcCmd::EcCmd(std::string host_address,uint32_t host_port)
+EcCmd::EcCmd(std::string protocol,std::string host_address,uint32_t host_port)
 {
 
     if(host_address=="localhost")
@@ -16,7 +16,7 @@ EcCmd::EcCmd(std::string host_address,uint32_t host_port)
     std::string host_port_cmd = std::to_string(host_port+555);
     
     // zmq setup
-    std::string zmq_uri = "tcp://" + host_address + ":"+host_port_cmd;
+    std::string zmq_uri = protocol+"://" + host_address + ":"+host_port_cmd;
     int timeout_ms = 1000;  // 1 secs
     
     _ec_zmq_cmd = std::make_shared<EcZmqCmd>(zmq_uri,timeout_ms);
@@ -28,7 +28,7 @@ EcCmd::EcCmd(std::string host_address,uint32_t host_port)
         createLogger("console","client");
         _consoleLog=spdlog::get("console");
     }
-    
+    _consoleLog->info("ZMQ_URI: {}",zmq_uri);
 }
 
 EcCmd::~EcCmd()

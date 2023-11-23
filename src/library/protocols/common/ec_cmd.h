@@ -9,7 +9,7 @@ class EcCmd : public EcIface
 {
 public:
 
-    EcCmd(std::string host_address,uint32_t host_port);
+    EcCmd(std::string protocol,std::string host_address,uint32_t host_port);
     ~EcCmd();
 
     virtual void start_client(uint32_t period_ms,bool logging) = 0;

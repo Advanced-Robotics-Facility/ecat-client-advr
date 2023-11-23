@@ -1,5 +1,5 @@
-#ifndef EC_TCP_H
-#define EC_TCP_H
+#ifndef EC_ZIPC_H
+#define EC_ZIPC_H
 
 #include <thread_util.h>
 #include "ec_logger.h"
@@ -8,12 +8,12 @@
 
 #include <mutex>
 
-class EcTCP : public EcCmd,Thread_hook
+class EcZipc : public EcCmd,Thread_hook
 {
 public:
 
-    EcTCP(std::string host_address,uint32_t host_port);
-    ~EcTCP();
+    EcZipc(std::string host_address,uint32_t host_port);
+    ~EcZipc();
 
     void start_client(uint32_t period_ms,bool logging) final;
     void stop_client() final ;
@@ -82,4 +82,4 @@ private:
     void read_pows(PwrStatusMap &pow_status_map);
 };
 
-#endif // EC_TCP_H
+#endif
