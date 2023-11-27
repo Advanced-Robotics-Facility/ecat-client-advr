@@ -354,7 +354,7 @@ void EcZipc::set_motors_references(const MotorRefFlags motor_ref_flags,const std
     }
     else
     {
-        _consoleLog->error("TCP client not alive, please stop the main process");
+        _consoleLog->error("Client not alive, please stop the main process");
     }
 
     _mutex_motor_reference->unlock();
