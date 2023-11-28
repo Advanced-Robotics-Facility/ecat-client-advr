@@ -253,7 +253,6 @@ bool EcCmd::pdo_aux_cmd(const PAC & pac)
 
 void EcCmd::feed_motors(std::vector<MR> motors_references)
 {
-
     if(!_client_alive){
         _consoleLog->error("Client not alive, please stop the main process!");
         return;
