@@ -262,6 +262,9 @@ void EcCmd::feed_motors(std::vector<MR> motors_references)
         if(!motors_references.empty()){
             std::string msg="";
             _ec_zmq_cmd->Motors_PDO_cmd(motors_references,msg);
+            if(_ec_zmq_cmd->get_fault().get_type() == EC_ZMQ_CMD_STATUS::TIMEOUT){
+                _client_alive=false;
+            }
         }
         else{
             _consoleLog->error("Got empty motors references structure");
