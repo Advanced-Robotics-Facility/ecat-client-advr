@@ -15,6 +15,7 @@ _zmq_uri(zmq_uri),_timeout(timeout)
 
    _publisher->setsockopt(ZMQ_LINGER, 0);
    _publisher->setsockopt(ZMQ_RCVTIMEO, _timeout);
+   _publisher->setsockopt(ZMQ_CONNECT_TIMEOUT, 1);
    _publisher->connect(_zmq_uri);
 
 };
@@ -609,7 +610,7 @@ void EcZmqCmd::PDOs_aux_cmd(std::vector<aux_cmd_message_t> aux_cmds,
      msg=_fd_msg;
 }
 
-void EcZmqCmd::Motors_PDO_cmd(iit::advr::Motors_PDO_cmd_Moto_PDO_cmd ref,
+void EcZmqCmd::Motors_PDO_cmd(motors_ref_t refs,
                               std::string &msg)
 {
     // CLEAR ALL ZMQ STRUCTURES
@@ -627,31 +628,54 @@ void EcZmqCmd::Motors_PDO_cmd(iit::advr::Motors_PDO_cmd_Moto_PDO_cmd ref,
      /***** set protocol buffer command */////
     _pb_cmd.set_type(CmdType::MOTOR_PDO_CMD);
     
-
-    Motors_PDO_cmd_Moto_PDO_cmd *motor_pdo_cmd = _pb_cmd.mutable_motors_pdo_cmd()->add_motors_pdo();
-    motor_pdo_cmd->set_motor_id(ref.motor_id());
-    motor_pdo_cmd->set_pos_ref(ref.pos_ref());
-    motor_pdo_cmd->set_vel_ref(ref.vel_ref());
-    motor_pdo_cmd->set_tor_ref(ref.tor_ref());
     
-    auto new_gains = motor_pdo_cmd->mutable_gains();
-    auto gains= ref.gains();
+    for ( const auto &[bId,ctrl_type,pos,vel,tor,g0,g1,g2,g3,g4,op,idx,aux] : refs ) {
 
-    new_gains->set_type(gains.type());
-    new_gains->set_pos_kp(gains.pos_kp());
-    new_gains->set_pos_kd(gains.pos_kd());
-    new_gains->set_tor_kp(gains.tor_kp());
-    new_gains->set_tor_ki(gains.tor_ki());
-    new_gains->set_tor_kd(gains.tor_kd());
-
+        Motors_PDO_cmd_Moto_PDO_cmd *motor_pdo_cmd = _pb_cmd.mutable_motors_pdo_cmd()->add_motors_pdo();
+        
+        motor_pdo_cmd->set_motor_id(bId);
+        motor_pdo_cmd->set_pos_ref(pos);
+        motor_pdo_cmd->set_vel_ref(vel);
+        motor_pdo_cmd->set_tor_ref(tor);
+        
+        if ( ! iit::advr::Gains_Type_IsValid(ctrl_type) ) {
+            _fault.set_type(EC_ZMQ_CMD_STATUS::WRONG_CMD_TYPE);
+            _fault.set_info("Bad command: Wrong control type detected");
+            _fault.set_recovery_info("Retry command");
+            return;
+        }
+            
+        auto _ctrl_type = static_cast<iit::advr::Gains_Type>(ctrl_type);
+        motor_pdo_cmd->mutable_gains()->set_type(_ctrl_type);
+        
+        if ( (_ctrl_type == iit::advr::Gains_Type_POSITION ||
+            _ctrl_type == iit::advr::Gains_Type_VELOCITY)) {
+            motor_pdo_cmd->mutable_gains()->set_pos_kp(g0);
+            motor_pdo_cmd->mutable_gains()->set_pos_kd(g2);
+            motor_pdo_cmd->mutable_gains()->set_tor_kp(0.0);
+            motor_pdo_cmd->mutable_gains()->set_tor_ki(0.0);
+            motor_pdo_cmd->mutable_gains()->set_tor_kd(0.0);
+        } else if ( _ctrl_type == iit::advr::Gains_Type_IMPEDANCE) {
+            motor_pdo_cmd->mutable_gains()->set_pos_kp(g0);
+            motor_pdo_cmd->mutable_gains()->set_pos_kd(g1);
+            motor_pdo_cmd->mutable_gains()->set_tor_kp(g2);
+            motor_pdo_cmd->mutable_gains()->set_tor_ki(g3);
+            motor_pdo_cmd->mutable_gains()->set_tor_kd(g4);
+        } else {
+            _fault.set_type(EC_ZMQ_CMD_STATUS::WRONG_CMD_TYPE);
+            _fault.set_info("Bad command: Control type not handled");
+            _fault.set_recovery_info("Retry command");
+            return;
+        }
+        
+        
+        auto op_msg = static_cast<iit::advr::AuxPDO_Op>(op);
+        motor_pdo_cmd->mutable_aux_pdo()->set_op(op_msg);
+        motor_pdo_cmd->mutable_aux_pdo()->set_idx(idx);
+        motor_pdo_cmd->mutable_aux_pdo()->set_value(aux);
+    }
     
-    auto aux   = motor_pdo_cmd->mutable_aux_pdo();
-    auto aux_read = ref.aux_pdo();
-    
-    aux->set_idx(aux_read.idx());
-    aux->set_op(aux_read.op());
-    aux->set_value(aux_read.value());
-
+ 
      /***** Protocol buffer Serialization */////
     _pb_cmd.SerializeToString(&_pb_msg_serialized);
     /***** ZMQ MECHANISM */////

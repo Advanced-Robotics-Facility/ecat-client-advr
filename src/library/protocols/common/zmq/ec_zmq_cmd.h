@@ -162,6 +162,13 @@ public:
         
     };
     
+    using m_ref_t = std::tuple<int32_t, int32_t,                     // bId, ctrl_type
+                               float, float, float,                  // pos_ref, vel_ref, tor_ref
+                               float, float, float, float, float,    // gains
+                               uint32_t, uint32_t, float>;           // op, idx, aux
+
+    using motors_ref_t = std::vector<m_ref_t>;
+    
     
     /**
     * @brief Constructor of EcZmqCmd Class.
@@ -309,7 +316,7 @@ public:
     * @param aux_cmds ref: references.
     * @param msg p_msg: return feedback message from ZMQ communication.
     */
-    void Motors_PDO_cmd(iit::advr::Motors_PDO_cmd_Moto_PDO_cmd ref,
+    void Motors_PDO_cmd(motors_ref_t refs,
                         std::string &msg);
     
     

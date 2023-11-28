@@ -17,7 +17,7 @@ EcCmd::EcCmd(std::string protocol,std::string host_address,uint32_t host_port)
     
     // zmq setup
     std::string zmq_uri = protocol+"://" + host_address + ":"+host_port_cmd;
-    int timeout_ms = 1000;  // 1 secs
+    int timeout_ms = 500;  // 0.5 secs
     
     _ec_zmq_cmd = std::make_shared<EcZmqCmd>(zmq_uri,timeout_ms);
     _client_alive=true;
@@ -253,53 +253,19 @@ bool EcCmd::pdo_aux_cmd(const PAC & pac)
 
 void EcCmd::feed_motors(std::vector<MR> motors_references)
 {
-    for ( const auto &[bId,ctrl_type,pos,vel,tor,g0,g1,g2,g3,g4,op,idx,aux] : motors_references ) {
-        if(!_client_alive){
-            _consoleLog->error("Client not alive, please stop the main process!");
-            return;
+
+    if(!_client_alive){
+        _consoleLog->error("Client not alive, please stop the main process!");
+        return;
+    }
+    else{
+        if(!motors_references.empty()){
+            std::string msg="";
+            _ec_zmq_cmd->Motors_PDO_cmd(motors_references,msg);
         }
-        
-        std::string msg="";
-        iit::advr::Motors_PDO_cmd_Moto_PDO_cmd motor_pdo_cmd;
-        
-        motor_pdo_cmd.set_motor_id(bId);
-        motor_pdo_cmd.set_pos_ref(pos);
-        motor_pdo_cmd.set_vel_ref(vel);
-        motor_pdo_cmd.set_tor_ref(tor);
-        
-        if ( ! iit::advr::Gains_Type_IsValid(ctrl_type) ) {
-            _consoleLog->error("Wrong control type");
-            return;
+        else{
+            _consoleLog->error("Got empty motors references structure");
         }
-            
-        auto _ctrl_type = static_cast<iit::advr::Gains_Type>(ctrl_type);
-        motor_pdo_cmd.mutable_gains()->set_type(_ctrl_type);
-        
-        if ( (_ctrl_type == iit::advr::Gains_Type_POSITION ||
-            _ctrl_type == iit::advr::Gains_Type_VELOCITY)) {
-            motor_pdo_cmd.mutable_gains()->set_pos_kp(g0);
-            motor_pdo_cmd.mutable_gains()->set_pos_kd(g2);
-            motor_pdo_cmd.mutable_gains()->set_tor_kp(0.0);
-            motor_pdo_cmd.mutable_gains()->set_tor_ki(0.0);
-            motor_pdo_cmd.mutable_gains()->set_tor_kd(0.0);
-        } else if ( _ctrl_type == iit::advr::Gains_Type_IMPEDANCE) {
-            motor_pdo_cmd.mutable_gains()->set_pos_kp(g0);
-            motor_pdo_cmd.mutable_gains()->set_pos_kd(g1);
-            motor_pdo_cmd.mutable_gains()->set_tor_kp(g2);
-            motor_pdo_cmd.mutable_gains()->set_tor_ki(g3);
-            motor_pdo_cmd.mutable_gains()->set_tor_kd(g4);
-        } else {
-            _consoleLog->error("Control type not handled");
-            return;
-        }
-        
-        
-        auto op_msg = static_cast<iit::advr::AuxPDO_Op>(op);
-        motor_pdo_cmd.mutable_aux_pdo()->set_op(op_msg);
-        motor_pdo_cmd.mutable_aux_pdo()->set_idx(idx);
-        motor_pdo_cmd.mutable_aux_pdo()->set_value(aux);
-        
-        _ec_zmq_cmd->Motors_PDO_cmd(motor_pdo_cmd,msg);
     }
 }
 
