@@ -321,6 +321,11 @@ public:
     
     
     /**
+    * @brief This method is responsible to initialize ZMQ communication
+    */
+    void zmq_cmd_init();
+    
+    /**
     * @brief This method is responsible to wait the reply of ZMQ EtherCAT Server, 
     * finding communication errors and and filling the EcZmqFault class. 
     * 
@@ -329,6 +334,11 @@ public:
     */
     void zmq_cmd_recv(std::string& msg,
                       iit::advr::CmdType cmd_sent);
+    
+    /**
+    * @brief This method is responsible to send the ZMQ commad to EtherCAT Server
+    */
+    void zmq_cmd_send();
     
     /**
     * @brief Return ZMQ URI for the ZMQ communication. 

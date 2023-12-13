@@ -8,17 +8,13 @@ using namespace std;
 EcZmqCmd::EcZmqCmd(string zmq_uri,int timeout) :
 _zmq_uri(zmq_uri),_timeout(timeout)
 {   
-
     _context = std::make_shared<context_t>(1);
-    
-    _publisher = std::make_shared<socket_t>(*_context, ZMQ_REQ);
-
-   _publisher->setsockopt(ZMQ_LINGER, 0);
-   _publisher->setsockopt(ZMQ_RCVTIMEO, _timeout);
-   _publisher->setsockopt(ZMQ_CONNECT_TIMEOUT, 1);
-   _publisher->connect(_zmq_uri);
-
 };
+
+EcZmqFault EcZmqCmd::get_fault()
+{
+    return _fault;
+}
 
 std::string EcZmqCmd::get_zmq_uri()
 {
@@ -36,7 +32,6 @@ void EcZmqCmd::set_zmq_timeout(int timeout)
     _publisher->setsockopt(ZMQ_RCVTIMEO, _timeout);
     
 }
-
 
 void EcZmqCmd::clear_zmq_client_message()
 {
@@ -61,18 +56,113 @@ void EcZmqCmd::clear_zmq_client_message()
     
 }
 
-EcZmqFault EcZmqCmd::get_fault()
+void EcZmqCmd::zmq_cmd_init()
 {
- return _fault;
-};
+    clear_zmq_client_message();
+    
+    if(_context == nullptr)
+    {
+        _context = std::make_shared<context_t>(1);
+    }
+    
+    if(_publisher != nullptr)
+    {
+        if(_publisher->connected())
+        {
+            _publisher->close();
+        }
 
+        _publisher.reset();
+    }
+    
+    _publisher = std::make_shared<socket_t>(*_context, ZMQ_REQ);
+
+   _publisher->setsockopt(ZMQ_LINGER, 0);
+   _publisher->setsockopt(ZMQ_RCVTIMEO, _timeout);
+   _publisher->setsockopt(ZMQ_CONNECT_TIMEOUT, 1);
+   _publisher->connect(_zmq_uri);
+    
+}
+
+
+void EcZmqCmd::zmq_cmd_send()
+{
+    try{
+     /***** Protocol buffer Serialization */////
+    _pb_cmd.SerializeToString(&_pb_msg_serialized);
+    /***** ZMQ MECHANISM */////
+    _multipart.push(message_t(_pb_msg_serialized.c_str(), _pb_msg_serialized.length()));
+    _multipart.push(message_t(_m_cmd.c_str(), _m_cmd.length()));
+    _multipart.send((*_publisher),ZMQ_NOBLOCK);
+    } catch(exception e){
+        
+    }
+}
+
+void EcZmqCmd::zmq_cmd_recv(string& msg,CmdType cmd_sent)
+{
+    message_t update;
+
+    try{
+        if(_publisher->recv(&update))
+        {
+            _pb_reply.ParseFromArray(update.data(),update.size());
+
+            msg=_pb_reply.msg();
+            
+            if(_pb_reply.type()==Cmd_reply::ACK)
+            {
+                if(_pb_reply.cmd_type()==cmd_sent)
+                {
+                    if(_pb_reply.msg()!="")
+                    {
+                        _fault.set_type(EC_ZMQ_CMD_STATUS::OK);
+                        _fault.set_info("No fault: Good communication");
+                        _fault.set_recovery_info("None");
+                        return;
+                    }
+                    else
+                    {
+                        _fault.set_type(EC_ZMQ_CMD_STATUS::WRONG_FB_MSG);
+                        _fault.set_info("Bad communication: Wrong message");
+                        _fault.set_recovery_info("Retry command");
+                    }
+                    
+                }
+                else
+                {
+                    _fault.set_type(EC_ZMQ_CMD_STATUS::WRONG_CMD_TYPE);
+                    _fault.set_info("Bad communication: Received a wrong command type");
+                    _fault.set_recovery_info("Retry command");
+                }
+            }
+            else
+            {
+                _fault.set_type(EC_ZMQ_CMD_STATUS::NACK);
+                _fault.set_info("NACK: Bad request");
+                _fault.set_recovery_info("Retry to configure the request");
+            }
+        }
+        else
+        {
+            _fault.set_type(EC_ZMQ_CMD_STATUS::TIMEOUT);
+            _fault.set_info("Timeout reached, etherCAT master server might not be alive");
+            _fault.set_recovery_info("Restart the master or verify its status");
+        }
+        
+        _publisher->close();
+    }
+    catch(exception e){
+        
+    }
+}
 
 void EcZmqCmd::Ecat_Master_cmd(Ecat_Master_cmd_Type type,
                                     std::map<std::string ,std::string> args,
                                     std::string &msg)
 {
-    // CLEAR ALL ZMQ STRUCTURES
-    clear_zmq_client_message();
+    // INIT ZMQ Command
+    zmq_cmd_init();
 
     /***** Clear feedback message*/////
     msg="";
@@ -104,12 +194,8 @@ void EcZmqCmd::Ecat_Master_cmd(Ecat_Master_cmd_Type type,
         }
     }
      
-     /***** Protocol buffer Serialization */////
-    _pb_cmd.SerializeToString(&_pb_msg_serialized);
-    /***** ZMQ MECHANISM */////
-    _multipart.push(message_t(_pb_msg_serialized.c_str(), _pb_msg_serialized.length()));
-    _multipart.push(message_t(_m_cmd.c_str(), _m_cmd.length()));
-    _multipart.send((*_publisher),ZMQ_NOBLOCK);
+    /***** ZMQ Send and protocol buffer Serialization */////
+    zmq_cmd_send();
 
     /***** ZMQ Received and protocol buffer De-Serialization */////
      zmq_cmd_recv(_fd_msg,CmdType::ECAT_MASTER_CMD);
@@ -124,10 +210,11 @@ void EcZmqCmd::FOE_Master(std::string filename,
                     long int board_id,
                     std::string &msg)
 {
-    _publisher->setsockopt(ZMQ_RCVTIMEO, 5*60000); // 5 minutes
     
-    // CLEAR ALL ZMQ STRUCTURES
-    clear_zmq_client_message();
+    // INIT ZMQ Command
+    zmq_cmd_init();
+    
+    _publisher->setsockopt(ZMQ_RCVTIMEO, 5*60000); // 5 minutes
 
     /***** Clear feedback message*/////
     msg="";
@@ -166,12 +253,8 @@ void EcZmqCmd::FOE_Master(std::string filename,
         _pb_cmd.mutable_foe_master()->set_allocated_mcu_type(&mcu_type); // OPTIONAL VALUE
     }
     
-    /***** Protocol buffer Serialization */////
-    _pb_cmd.SerializeToString(&_pb_msg_serialized);
-    /***** ZMQ MECHANISM */////
-    _multipart.push(message_t(_pb_msg_serialized.c_str(), _pb_msg_serialized.length()));
-    _multipart.push(message_t(_m_cmd.c_str(), _m_cmd.length()));
-    _multipart.send((*_publisher),ZMQ_NOBLOCK);
+    /***** ZMQ Send and protocol buffer Serialization */////
+    zmq_cmd_send();
     
     /***** ZMQ Received and protocol buffer De-Serialization */////
     zmq_cmd_recv(_fd_msg,CmdType::FOE_MASTER);
@@ -184,8 +267,8 @@ void EcZmqCmd::Slave_SDO_info(Slave_SDO_info_Type type,
                                    long int board_id,
                                    std::string &msg)
 {
-    // CLEAR ALL ZMQ STRUCTURES
-    clear_zmq_client_message();
+    // INIT ZMQ Command
+    zmq_cmd_init();
 
     /***** Clear feedback message*/////
     msg="";
@@ -202,17 +285,13 @@ void EcZmqCmd::Slave_SDO_info(Slave_SDO_info_Type type,
     _pb_cmd.mutable_slave_sdo_info()->set_board_id(board_id); // REQUIRED VALUE
     
     
-     /***** Protocol buffer Serialization */////
-    _pb_cmd.SerializeToString(&_pb_msg_serialized);
-    /***** ZMQ MECHANISM */////
-    _multipart.push(message_t(_pb_msg_serialized.c_str(), _pb_msg_serialized.length()));
-    _multipart.push(message_t(_m_cmd.c_str(), _m_cmd.length()));
-    _multipart.send((*_publisher),ZMQ_NOBLOCK);
+    /***** ZMQ Send and protocol buffer Serialization */////
+    zmq_cmd_send();
 
     /***** ZMQ Received and protocol buffer De-Serialization */////
-     zmq_cmd_recv(_fd_msg,CmdType::SLAVE_SDO_INFO);
+    zmq_cmd_recv(_fd_msg,CmdType::SLAVE_SDO_INFO);
      
-     msg=_fd_msg;
+    msg=_fd_msg;
 }
 
 void EcZmqCmd::Slave_SDO_cmd(long int board_id,
@@ -220,8 +299,8 @@ void EcZmqCmd::Slave_SDO_cmd(long int board_id,
                                   std::map<std::string ,std::string> wr_sdo,
                                   std::string &msg)
 {
-    // CLEAR ALL ZMQ STRUCTURES
-    clear_zmq_client_message();
+    // INIT ZMQ Command
+    zmq_cmd_init();
 
     /***** Clear feedback message*/////
     msg="";
@@ -274,13 +353,10 @@ void EcZmqCmd::Slave_SDO_cmd(long int board_id,
        }
     }
     
-     /***** Protocol buffer Serialization */////
-    _pb_cmd.SerializeToString(&_pb_msg_serialized);
-    /***** ZMQ MECHANISM */////
-    _multipart.push(message_t(_pb_msg_serialized.c_str(), _pb_msg_serialized.length()));
-    _multipart.push(message_t(_m_cmd.c_str(), _m_cmd.length()));
-    _multipart.send((*_publisher),ZMQ_NOBLOCK);
+    /***** ZMQ Send and protocol buffer Serialization */////
+    zmq_cmd_send();
     
+    /***** ZMQ Received and protocol buffer De-Serialization */////
     zmq_cmd_recv(_fd_msg,CmdType::SLAVE_SDO_CMD);
     
     msg=_fd_msg;
@@ -291,8 +367,8 @@ void EcZmqCmd::Flash_cmd(Flash_cmd_Type type,
                               long int board_id,
                               std::string &msg)
 {
-    // CLEAR ALL ZMQ STRUCTURES
-    clear_zmq_client_message();
+    // INIT ZMQ Command
+    zmq_cmd_init();
 
     /***** Clear feedback message*/////
     msg="";
@@ -315,11 +391,14 @@ void EcZmqCmd::Flash_cmd(Flash_cmd_Type type,
     _multipart.push(message_t(_pb_msg_serialized.c_str(), _pb_msg_serialized.length()));
     _multipart.push(message_t(_m_cmd.c_str(), _m_cmd.length()));
     _multipart.send((*_publisher),ZMQ_NOBLOCK);
-
+    
+    /***** ZMQ Send and protocol buffer Serialization */////
+    zmq_cmd_send();
+    
     /***** ZMQ Received and protocol buffer De-Serialization */////
-     zmq_cmd_recv(_fd_msg,CmdType::FLASH_CMD);
+    zmq_cmd_recv(_fd_msg,CmdType::FLASH_CMD);
      
-     msg=_fd_msg;
+    msg=_fd_msg;
 }
 
 void EcZmqCmd::Ctrl_cmd(Ctrl_cmd_Type type,
@@ -328,8 +407,8 @@ void EcZmqCmd::Ctrl_cmd(Ctrl_cmd_Type type,
                              std::vector<float> gains,
                              std::string &msg)
 {
-    // CLEAR ALL ZMQ STRUCTURES
-    clear_zmq_client_message();
+    // INIT ZMQ Command
+    zmq_cmd_init();
 
     /***** Clear feedback message*/////
     msg="";
@@ -393,18 +472,13 @@ void EcZmqCmd::Ctrl_cmd(Ctrl_cmd_Type type,
         _pb_cmd.mutable_ctrl_cmd()->set_allocated_gains(gains_send);
     }
     
-     /***** Protocol buffer Serialization */////
-    _pb_cmd.SerializeToString(&_pb_msg_serialized);
-    /***** ZMQ MECHANISM */////
-    _multipart.push(message_t(_pb_msg_serialized.c_str(), _pb_msg_serialized.length()));
-    _multipart.push(message_t(_m_cmd.c_str(), _m_cmd.length()));
-    _multipart.send((*_publisher),ZMQ_NOBLOCK);
-
-    /***** ZMQ Received and protocol buffer De-Serialization */////
-     zmq_cmd_recv(_fd_msg,CmdType::CTRL_CMD);
-     
-     msg=_fd_msg;
+    /***** ZMQ Send and protocol buffer Serialization */////
+    zmq_cmd_send();
     
+    /***** ZMQ Received and protocol buffer De-Serialization */////
+    zmq_cmd_recv(_fd_msg,CmdType::CTRL_CMD);
+     
+    msg=_fd_msg;
     
 }
 
@@ -418,8 +492,8 @@ void EcZmqCmd::Trajectory_Cmd(Trajectory_cmd_Type type,
                                    std::string &msg)
 {
     
-    // CLEAR ALL ZMQ STRUCTURES
-    clear_zmq_client_message();
+    // INIT ZMQ Command
+    zmq_cmd_init();
 
     /***** Clear feedback message*/////
     msg="";
@@ -497,17 +571,13 @@ void EcZmqCmd::Trajectory_Cmd(Trajectory_cmd_Type type,
         }
     }
     
-      /***** Protocol buffer Serialization */////
-    _pb_cmd.SerializeToString(&_pb_msg_serialized);
-    /***** ZMQ MECHANISM */////
-    _multipart.push(message_t(_pb_msg_serialized.c_str(), _pb_msg_serialized.length()));
-    _multipart.push(message_t(_m_cmd.c_str(), _m_cmd.length()));
-    _multipart.send((*_publisher),ZMQ_NOBLOCK);
-
+    /***** ZMQ Send and protocol buffer Serialization */////
+    zmq_cmd_send();
+    
     /***** ZMQ Received and protocol buffer De-Serialization */////
-     zmq_cmd_recv(_fd_msg,CmdType::TRJ_CMD);
+    zmq_cmd_recv(_fd_msg,CmdType::TRJ_CMD);
      
-     msg=_fd_msg;
+    msg=_fd_msg;
      
 }
 
@@ -515,8 +585,8 @@ void EcZmqCmd::Trj_queue_cmd(Trj_queue_cmd_Type type,
                                   std::vector<std::string> trj_names,
                                   std::string &msg)
 {   
-    // CLEAR ALL ZMQ STRUCTURES
-    clear_zmq_client_message();
+    // INIT ZMQ Command
+    zmq_cmd_init();
 
     /***** Clear feedback message*/////
     msg="";
@@ -547,25 +617,21 @@ void EcZmqCmd::Trj_queue_cmd(Trj_queue_cmd_Type type,
         return;
     }
     
-       /***** Protocol buffer Serialization */////
-    _pb_cmd.SerializeToString(&_pb_msg_serialized);
-    /***** ZMQ MECHANISM */////
-    _multipart.push(message_t(_pb_msg_serialized.c_str(), _pb_msg_serialized.length()));
-    _multipart.push(message_t(_m_cmd.c_str(), _m_cmd.length()));
-    _multipart.send((*_publisher),ZMQ_NOBLOCK);
-
+    /***** ZMQ Send and protocol buffer Serialization */////
+    zmq_cmd_send();
+    
     /***** ZMQ Received and protocol buffer De-Serialization */////
-     zmq_cmd_recv(_fd_msg,CmdType::TRJ_QUEUE_CMD);
+    zmq_cmd_recv(_fd_msg,CmdType::TRJ_QUEUE_CMD);
      
-     msg=_fd_msg;
+    msg=_fd_msg;
 
 }
 
 void EcZmqCmd::PDOs_aux_cmd(std::vector<aux_cmd_message_t> aux_cmds,
                                  std::string &msg)
 {
-    // CLEAR ALL ZMQ STRUCTURES
-    clear_zmq_client_message();
+    // INIT ZMQ Command
+    zmq_cmd_init();
     
     if(aux_cmds.empty())
     {
@@ -597,24 +663,21 @@ void EcZmqCmd::PDOs_aux_cmd(std::vector<aux_cmd_message_t> aux_cmds,
         aux_cmd_send->set_board_id(aux_cmd.board_id); //REQUIRED VALUE 
         aux_cmd_send->set_type(aux_cmd.type); //REQUIRED VALUE 
     }
-     /***** Protocol buffer Serialization */////
-    _pb_cmd.SerializeToString(&_pb_msg_serialized);
-    /***** ZMQ MECHANISM */////
-    _multipart.push(message_t(_pb_msg_serialized.c_str(), _pb_msg_serialized.length()));
-    _multipart.push(message_t(_m_cmd.c_str(), _m_cmd.length()));
-    _multipart.send((*_publisher),ZMQ_NOBLOCK);
-
+    
+    /***** ZMQ Send and protocol buffer Serialization */////
+    zmq_cmd_send();
+    
     /***** ZMQ Received and protocol buffer De-Serialization */////
-     zmq_cmd_recv(_fd_msg,CmdType::PDO_AUX_CMD);
+    zmq_cmd_recv(_fd_msg,CmdType::PDO_AUX_CMD);
      
-     msg=_fd_msg;
+    msg=_fd_msg;
 }
 
 void EcZmqCmd::Motors_PDO_cmd(motors_ref_t refs,
                               std::string &msg)
 {
-    // CLEAR ALL ZMQ STRUCTURES
-    clear_zmq_client_message();
+    // INIT ZMQ Command
+    zmq_cmd_init();
     
     /***** Clear feedback message*/////
     msg="";
@@ -676,72 +739,16 @@ void EcZmqCmd::Motors_PDO_cmd(motors_ref_t refs,
     }
     
  
-     /***** Protocol buffer Serialization */////
-    _pb_cmd.SerializeToString(&_pb_msg_serialized);
-    /***** ZMQ MECHANISM */////
-    _multipart.push(message_t(_pb_msg_serialized.c_str(), _pb_msg_serialized.length()));
-    _multipart.push(message_t(_m_cmd.c_str(), _m_cmd.length()));
-    _multipart.send((*_publisher),ZMQ_NOBLOCK);
-
+    /***** ZMQ Send and protocol buffer Serialization */////
+    zmq_cmd_send();
+    
     /***** ZMQ Received and protocol buffer De-Serialization */////
     zmq_cmd_recv(_fd_msg,CmdType::MOTOR_PDO_CMD);
      
-     msg=_fd_msg;
-    
+    msg=_fd_msg;
 }
 
-void EcZmqCmd::zmq_cmd_recv(string& msg,CmdType cmd_sent)
-{
-    message_t update;
 
-    if(_publisher->recv(&update))
-    {
-        _pb_reply.ParseFromArray(update.data(),update.size());
-
-        msg=_pb_reply.msg();
-        
-        if(_pb_reply.type()==Cmd_reply::ACK)
-        {
-            if(_pb_reply.cmd_type()==cmd_sent)
-            {
-                if(_pb_reply.msg()!="")
-                {
-                    _fault.set_type(EC_ZMQ_CMD_STATUS::OK);
-                    _fault.set_info("No fault: Good communication");
-                    _fault.set_recovery_info("None");
-                    return;
-                }
-                else
-                {
-                    _fault.set_type(EC_ZMQ_CMD_STATUS::WRONG_FB_MSG);
-                    _fault.set_info("Bad communication: Wrong message");
-                    _fault.set_recovery_info("Retry command");
-                }
-                
-            }
-            else
-            {
-                _fault.set_type(EC_ZMQ_CMD_STATUS::WRONG_CMD_TYPE);
-                _fault.set_info("Bad communication: Received a wrong command type");
-                _fault.set_recovery_info("Retry command");
-            }
-        }
-        else
-        {
-            _fault.set_type(EC_ZMQ_CMD_STATUS::NACK);
-            _fault.set_info("NACK: Bad request");
-            _fault.set_recovery_info("Retry to configure the request");
-        }
-    }
-    else
-    {
-        _fault.set_type(EC_ZMQ_CMD_STATUS::TIMEOUT);
-        _fault.set_info("Timeout reached, etherCAT master server might not be alive");
-        _fault.set_recovery_info("Restart the master or verify its status");
-        _publisher->close();
-    }
-    
-}
 
 EcZmqCmd::~EcZmqCmd()
 {
