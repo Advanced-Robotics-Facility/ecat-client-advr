@@ -67,6 +67,13 @@ bool EcCmd::cmd_error_status(EcZmqFault fault, std::string op, std::string &msg)
 bool EcCmd::retrieve_slaves_info(SSI &slave_info)
 {
     int attemps_cnt = 0; 
+    
+    if(!_slave_info.empty())
+    {
+        slave_info=_slave_info;
+        return true;
+    }
+    
     while(_client_alive && attemps_cnt < _max_cmd_attemps){
         std::string slave_descr_info,msg="";
         

@@ -379,8 +379,15 @@ void EcUDP::get_slaves_info()
 
 bool EcUDP::retrieve_slaves_info(SSI &slave_info)
 {
+
     int attemps_cnt = 0;
     bool ret_cmd_status=false;
+    
+    if(!_slave_info.empty())
+    {
+        slave_info=_slave_info;
+        return true;
+    }
 
     _slave_info.clear();
     while(slave_info.empty() && attemps_cnt < _max_cmd_attemps)
