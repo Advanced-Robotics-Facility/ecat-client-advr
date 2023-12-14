@@ -40,7 +40,11 @@ EcTCP::EcTCP(std::string host_address,uint32_t host_port):
 
 EcTCP::~EcTCP()
 {
+    iit::ecat::print_stat ( s_loop );
 
+    stop();
+    
+    join();
 }
 
 //******************************* INIT *****************************************************//
@@ -121,22 +125,27 @@ void EcTCP::start_client(uint32_t period_ms,bool logging)
     
     retrieve_slaves_info(_slave_info);
     
-    if(!_slave_info.empty()){
+    //if(!_slave_info.empty()){
         create(false); // non-real time thread
         _client_alive=true;
-    }
+    //}
     
 }
 
 void EcTCP::stop_client()
 {
+    stop_logging();
+    
     stop();
     
-    stop_logging();
+    join();
+    
+    _client_alive=false;
 }
 
 bool EcTCP::is_client_alive()
 {
+    _client_alive = client_sts();
     return _client_alive;
 }
 
@@ -272,12 +281,18 @@ void EcTCP::read_pows(PwrStatusMap &pow_status_map)
 
 void EcTCP::th_loop( void * )
 {
-    
+ 
     tNow = iit::ecat::get_time_ns();
     s_loop ( tNow - tPre );
     tPre = tNow;
     
     loop_cnt++;
+    
+    if(!client_sts())
+    {
+        stop_client();
+        return;
+    }
     
     // Receive motors, imu, ft, power board pdo information // 
     _mutex_motor_status->lock();

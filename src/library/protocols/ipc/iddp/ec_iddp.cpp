@@ -27,6 +27,10 @@ EcIDDP::EcIDDP(std::string host_address,uint32_t host_port):
 EcIDDP::~EcIDDP()
 {
     iit::ecat::print_stat ( s_loop );
+    
+    stop();
+    
+    join();
 }
 
 //******************************* INIT *****************************************************//
@@ -80,13 +84,18 @@ void EcIDDP::start_client(uint32_t period_ms,bool logging)
 
 void EcIDDP::stop_client()
 {
+    stop_logging();
+    
     stop();
     
-    stop_logging();
+    join();
+    
+    _client_alive=false;
 }
 
 bool EcIDDP::is_client_alive()
 {
+    _client_alive = client_sts();
     return _client_alive;
 }
 
@@ -112,6 +121,12 @@ void EcIDDP::th_loop( void * )
     tPre = tNow;
     
     loop_cnt++;
+    
+    if(!client_sts())
+    {
+        stop_client();
+        return;
+    }
     
     // Receive motors, imu, ft, power board pdo information // 
     _mutex_motor_status->lock();

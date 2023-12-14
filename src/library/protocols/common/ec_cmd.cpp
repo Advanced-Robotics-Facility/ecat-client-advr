@@ -36,6 +36,11 @@ EcCmd::~EcCmd()
 
 }
 
+bool EcCmd::client_sts()
+{
+    return _client_alive;
+}
+
 bool EcCmd::cmd_error_status(EcZmqFault fault, std::string op, std::string &msg)
 {
     bool cmd_error=false;
@@ -67,11 +72,11 @@ bool EcCmd::retrieve_slaves_info(SSI &slave_info)
         
         std::map<std::string,std::string> args;
         
-        _ec_zmq_cmd->Ecat_Master_cmd(iit::advr::Ecat_Master_cmd_Type::Ecat_Master_cmd_Type_GET_SLAVES_DESCR,
-                                    args,
-                                    slave_descr_info);
+        auto fault=_ec_zmq_cmd->Ecat_Master_cmd(iit::advr::Ecat_Master_cmd_Type::Ecat_Master_cmd_Type_GET_SLAVES_DESCR,
+                                                args,
+                                                slave_descr_info);
         
-        if(!cmd_error_status(_ec_zmq_cmd->get_fault(), "retrieve_slaves_info",msg)){
+        if(!cmd_error_status(fault, "retrieve_slaves_info",msg)){
 
             _slave_info.clear();
             
@@ -113,12 +118,12 @@ bool EcCmd::retrieve_rr_sdo(uint32_t esc_id,
     int attemps_cnt = 0; 
     while(_client_alive && attemps_cnt < _max_cmd_attemps){
         std::string msg,rd_sdo_msg;
-        _ec_zmq_cmd->Slave_SDO_cmd(esc_id, 
-                                   rd_sdo,
-                                   {},  // ignored
-                                   rd_sdo_msg);
+        auto fault=_ec_zmq_cmd->Slave_SDO_cmd(esc_id, 
+                                              rd_sdo,
+                                              {},  // ignored
+                                              rd_sdo_msg);
         
-        if(!cmd_error_status(_ec_zmq_cmd->get_fault(), "retrieve_rr_sdo",msg)){
+        if(!cmd_error_status(fault, "retrieve_rr_sdo",msg)){
             auto rd_sdo_read = YAML::Load(rd_sdo_msg);
             rr_sdo = rd_sdo_read.as<std::map<std::string, float>>();
             
@@ -145,12 +150,12 @@ bool EcCmd::set_wr_sdo(uint32_t esc_id,
     int attemps_cnt = 0; 
     while(_client_alive && attemps_cnt < _max_cmd_attemps){
         std::string msg,wd_sdo_msg;
-        _ec_zmq_cmd->Slave_SDO_cmd(esc_id, 
-                                   {},  // ignored
-                                   wr_sdo_map,
-                                   wd_sdo_msg);
+        auto fault=_ec_zmq_cmd->Slave_SDO_cmd(esc_id, 
+                                              {},  // ignored
+                                              wr_sdo_map,
+                                              wd_sdo_msg);
         
-        if(!cmd_error_status(_ec_zmq_cmd->get_fault(), "retrieve_rr_sdo",msg)){
+        if(!cmd_error_status(fault, "retrieve_rr_sdo",msg)){
             return true;
         }
         else{
@@ -168,13 +173,18 @@ bool EcCmd::start_motors(const MST &motors_start)
     while(_client_alive && attemps_cnt < _max_cmd_attemps){
         bool motors_started=true;
         for (auto &[motor_id ,ctrl_type, gains] : motors_start) {
+            
+            if(!_client_alive){
+                return false;
+            }
+            
             std::string msg="";
-            _ec_zmq_cmd->Ctrl_cmd(iit::advr::Ctrl_cmd_Type::Ctrl_cmd_Type_CTRL_CMD_START,
-                                motor_id,
-                                ctrl_type,
-                                gains,
-                                msg);   
-            if(cmd_error_status(_ec_zmq_cmd->get_fault(), "start_motors",msg)){
+            auto fault=_ec_zmq_cmd->Ctrl_cmd(iit::advr::Ctrl_cmd_Type::Ctrl_cmd_Type_CTRL_CMD_START,
+                                            motor_id,
+                                            ctrl_type,
+                                            gains,
+                                            msg);   
+            if(cmd_error_status(fault, "start_motors",msg)){
                 motors_started &= false; 
             }
         }
@@ -198,13 +208,18 @@ bool EcCmd::stop_motors()
     while(_client_alive && attemps_cnt < _max_cmd_attemps){
         bool motors_stopped=true;
         for ( auto &[esc_id, type, pos] : _slave_info ) {
+            
+            if(!_client_alive){
+                return false;
+            }
+            
             std::string msg="";
-            _ec_zmq_cmd->Ctrl_cmd(iit::advr::Ctrl_cmd_Type::Ctrl_cmd_Type_CTRL_CMD_STOP,
-                                esc_id,
-                                0.0,  // ignored
-                                {},  // ignored
-                                msg);
-            if(cmd_error_status(_ec_zmq_cmd->get_fault(), "stop_motors",msg))
+            auto fault=_ec_zmq_cmd->Ctrl_cmd(iit::advr::Ctrl_cmd_Type::Ctrl_cmd_Type_CTRL_CMD_STOP,
+                                             esc_id,
+                                             0.0,  // ignored
+                                             {},  // ignored
+                                             msg);
+            if(cmd_error_status(fault, "stop_motors",msg))
             {
                 motors_stopped &= false; 
             }
@@ -238,9 +253,9 @@ bool EcCmd::pdo_aux_cmd(const PAC & pac)
         std::string msg="";
         
         // send command
-        _ec_zmq_cmd->PDOs_aux_cmd(aux_cmds,msg);
+        auto fault=_ec_zmq_cmd->PDOs_aux_cmd(aux_cmds,msg);
         
-        if(!cmd_error_status(_ec_zmq_cmd->get_fault(), "pdo_aux_cmd",msg)){
+        if(!cmd_error_status(fault, "pdo_aux_cmd",msg)){
             return true; 
         }
         else{
@@ -260,8 +275,8 @@ void EcCmd::feed_motors(std::vector<MR> motors_references)
     else{
         if(!motors_references.empty()){
             std::string msg="";
-            _ec_zmq_cmd->Motors_PDO_cmd(motors_references,msg);
-            if(_ec_zmq_cmd->get_fault().get_type() == EC_ZMQ_CMD_STATUS::TIMEOUT){
+            auto fault=_ec_zmq_cmd->Motors_PDO_cmd(motors_references,msg);
+            if(fault.get_type() == EC_ZMQ_CMD_STATUS::TIMEOUT){
                 _client_alive=false;
             }
         }

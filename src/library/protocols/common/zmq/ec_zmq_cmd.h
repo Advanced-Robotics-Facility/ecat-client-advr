@@ -20,6 +20,25 @@ enum EC_ZMQ_CMD_STATUS : int {
     
 };
 
+inline const char* get_cmd_type(iit::advr::CmdType type)
+{
+    switch (type)
+    {
+        case iit::advr::CmdType::TRJ_CMD: return "TRJ_CMD";
+        case iit::advr::CmdType::CTRL_CMD: return "CTRL_CMD";
+        case iit::advr::CmdType::FLASH_CMD: return "FLASH_CMD";
+        case iit::advr::CmdType::ECAT_MASTER_CMD: return "ECAT_MASTER_CMD";
+        case iit::advr::CmdType::FOE_MASTER: return "FOE_MASTER";
+        case iit::advr::CmdType::TRJ_QUEUE_CMD: return "TRJ_QUEUE_CMD";
+        case iit::advr::CmdType::SLAVE_SDO_CMD: return "SLAVE_SDO_CMD";
+        case iit::advr::CmdType::SLAVE_SDO_INFO: return "SLAVE_SDO_INFO";
+        case iit::advr::CmdType::MOTOR_PDO_CMD: return "MOTOR_PDO_CMD";
+        case iit::advr::CmdType::PDO_AUX_CMD: return "PDO_AUX_CMD";
+        default: return("UNKNOWN COMMAND");
+    }
+}
+
+
 class EcZmqFault
 {
 public:
@@ -127,6 +146,44 @@ private:
     std::string _zmq_cmd;
 };
 
+class EcZmq
+{
+public: 
+    EcZmq(std::string zmq_uri,int timeout);
+    ~EcZmq(){};
+    
+    /**
+    * @brief set timeout of ZMQ communication.
+    * 
+    * @param timeout p_timeout:...
+    */
+    void set_new_timeout(int timeout);
+    
+    /**
+    * @brief This method is responsible to wait the reply of ZMQ EtherCAT Server, 
+    * finding communication errors and and filling the EcZmqFault class. 
+    * 
+    * @param msg p_msg: return feedback message from ZMQ communication.
+    * @param cmd_sent p_cmd_sent: Checking of the command reply with the command sent. 
+    */
+    void zmq_cmd_recv(std::string& msg,
+                      iit::advr::CmdType cmd_sent,
+                      EcZmqFault &fault);
+    
+    /**
+    * @brief This method is responsible to send the ZMQ commad to EtherCAT Server
+    */
+    void zmq_cmd_send(std::string m_cmd,
+                      iit::advr::Repl_cmd  pb_cmd);
+    
+private:
+    
+    std::shared_ptr<zmq::context_t> _context;
+    std::shared_ptr<zmq::socket_t>  _publisher;
+    
+};
+
+
 class EcZmqCmd
 {
 public:
@@ -193,10 +250,11 @@ public:
     * @param type Ecat_Master_cmd_Type: START_MASTER, STOP_MASTER, GET_SLAVES_DESCR.
     * @param args std::map of string :  for istance start the master with some parameters... ({‘app_mode’:’run_mode’,’use_ecat_pos_as_id’:’false’}). 
     * @param msg  string msg: return feedback message from ZMQ communication.
+    * @return fault
     */
-    void Ecat_Master_cmd(iit::advr::Ecat_Master_cmd_Type type,
-                         std::map<std::string,std::string> args,
-                         std::string &msg);
+    EcZmqFault Ecat_Master_cmd(iit::advr::Ecat_Master_cmd_Type type,
+                               std::map<std::string,std::string> args,
+                               std::string &msg);
     
    
     /**
@@ -208,13 +266,14 @@ public:
     * @param slave_pos p_slave_pos: Slave position on the EtherCAT Network.
     * @param board_id p_board_id: Board Id of the slave.
     * @param msg p_msg: return feedback message from ZMQ communication.
+    * @return fault
     */
-    void FOE_Master(std::string filename,
-                    unsigned long int password,
-                    std::string mcu_type,
-                    long int slave_pos,
-                    long int board_id,
-                    std::string &msg);
+    EcZmqFault FOE_Master(std::string filename,
+                          unsigned long int password,
+                          std::string mcu_type,
+                          long int slave_pos,
+                          long int board_id,
+                          std::string &msg);
     
     /**
     * @brief Slave SDO Information is a command to get the SDO datas of a specific slave.
@@ -222,10 +281,11 @@ public:
     * @param type p_type: It's possible to get the SDO information with the NAME or OBJECT DICTIONARY.
     * @param board_id p_board_id: Board Id of the slave.
     * @param msg p_msg: return feedback message from ZMQ communication.
+    * @return fault
     */
-    void Slave_SDO_info(iit::advr::Slave_SDO_info_Type type,
-                        long int board_id,
-                        std::string &msg);
+    EcZmqFault Slave_SDO_info(iit::advr::Slave_SDO_info_Type type,
+                              long int board_id,
+                              std::string &msg);
     
     /**
     * @brief The slave SDO command is typical used to read the values of SDO of specific slave 
@@ -237,11 +297,12 @@ public:
     * @param wr_sdo p_wr_sdo: write sdo map to write, using the mechanism of Key-Value (map of SDO type-value),
     *                         the values of the SDO specified in this structure. 
     * @param msg p_msg: return feedback message from ZMQ communication.
+    * @return fault
     */
-    void Slave_SDO_cmd(long int board_id,
-                       std::vector<std::string> rd_sdo,
-                       std::map<std::string ,std::string> wr_sdo,
-                       std::string &msg);
+    EcZmqFault Slave_SDO_cmd(long int board_id,
+                            std::vector<std::string> rd_sdo,
+                            std::map<std::string ,std::string> wr_sdo,
+                            std::string &msg);
     
     /**
     * @brief Flash command for save, load and load default sdo of the FLASH
@@ -249,10 +310,11 @@ public:
     * @param type p_type: Save, Load and Load default SDO parameters of the flash. 
     * @param board_id p_board_id: Board Id of the slave.
     * @param msg p_msg: return feedback message from ZMQ communication.
+    * @return fault
     */
-    void Flash_cmd(iit::advr::Flash_cmd_Type type,
-                   long int board_id,
-                   std::string &msg);
+    EcZmqFault Flash_cmd(iit::advr::Flash_cmd_Type type,
+                        long int board_id,
+                        std::string &msg);
     
     
     /**
@@ -263,12 +325,13 @@ public:
     * @param value p_value: value to send (rad, rad/s, Nm or ON/OFF or nothing).
     * @param gains p_gains: Optional value to set the gains of the slave.
     * @param msg p_msg: return feedback message from ZMQ communication.
+    * @return fault
     */
-    void Ctrl_cmd(iit::advr::Ctrl_cmd_Type type,
-                  long int board_id,
-                  float value,
-                  std::vector<float> gains,
-                  std::string &msg);
+    EcZmqFault Ctrl_cmd(iit::advr::Ctrl_cmd_Type type,
+                        long int board_id,
+                        float value,
+                        std::vector<float> gains,
+                        std::string &msg);
     
     
     /**
@@ -281,14 +344,15 @@ public:
     * @param period_par p_period_par: Structure of periodic trajectory, in this case, a sine wave with frequency, amplitude, theta (offset), and time,
     * @param smooth_par p_smooth_par: Structure of smooth trajectory having like x the time and y the position in radians.
     * @param msg p_msg: return feedback message from ZMQ communication.
+    * @return fault
     */
-    void Trajectory_Cmd(iit::advr::Trajectory_cmd_Type type,
-                        std::string name,
-                        long int board_id,
-                        homing_par_t homing_par,
-                        period_par_t period_par,
-                        smooth_par_t smooth_par,
-                        std::string &msg);
+    EcZmqFault Trajectory_Cmd(iit::advr::Trajectory_cmd_Type type,
+                             std::string name,
+                             long int board_id,
+                             homing_par_t homing_par,
+                             period_par_t period_par,
+                             smooth_par_t smooth_par,
+                             std::string &msg);
     
     /**
     * @brief Command to start or clear a trajectoy using its name.
@@ -296,49 +360,32 @@ public:
     * @param type p_type: Push (start) or clear the trajectory.
     * @param trj_names p_trj_names: Name of Trajectory.
     * @param msg p_msg: return feedback message from ZMQ communication.
+    * @return fault
     */
-    void Trj_queue_cmd(iit::advr::Trj_queue_cmd_Type type,
-                        std::vector<std::string> trj_names,
-                        std::string &msg);
+    EcZmqFault Trj_queue_cmd(iit::advr::Trj_queue_cmd_Type type,
+                             std::vector<std::string> trj_names,
+                             std::string &msg);
     
         /**
     * @brief Command to release or engage motors brake
     * 
     * @param aux_cmds aux_cmds: vector of aux cmd setting slave id and release or engage brakes.
     * @param msg p_msg: return feedback message from ZMQ communication.
+    * @return fault
     */
-    void PDOs_aux_cmd(std::vector<aux_cmd_message_t> aux_cmds,
-                      std::string &msg);
+    EcZmqFault PDOs_aux_cmd(std::vector<aux_cmd_message_t> aux_cmds,
+                            std::string &msg);
     
     /**
     * @brief Command to send references 
     * 
     * @param aux_cmds ref: references.
     * @param msg p_msg: return feedback message from ZMQ communication.
+    * @return fault
     */
-    void Motors_PDO_cmd(motors_ref_t refs,
-                        std::string &msg);
+    EcZmqFault Motors_PDO_cmd(motors_ref_t refs,
+                              std::string &msg);
     
-    
-    /**
-    * @brief This method is responsible to initialize ZMQ communication
-    */
-    void zmq_cmd_init();
-    
-    /**
-    * @brief This method is responsible to wait the reply of ZMQ EtherCAT Server, 
-    * finding communication errors and and filling the EcZmqFault class. 
-    * 
-    * @param msg p_msg: return feedback message from ZMQ communication.
-    * @param cmd_sent p_cmd_sent: Checking of the command reply with the command sent. 
-    */
-    void zmq_cmd_recv(std::string& msg,
-                      iit::advr::CmdType cmd_sent);
-    
-    /**
-    * @brief This method is responsible to send the ZMQ commad to EtherCAT Server
-    */
-    void zmq_cmd_send();
     
     /**
     * @brief Return ZMQ URI for the ZMQ communication. 
@@ -360,38 +407,11 @@ public:
     * @param timeout p_timeout:...
     */
     void set_zmq_timeout(int timeout);
-    
-    /**
-    * @brief Clear all structures of ZMQ communication 
-    * (protocol buffer command and reply,
-    *  zmq multipart message, 
-    *  protocol buffer serialized,
-    *  feedback message and the Fault object).
-    * 
-    */
-    void clear_zmq_client_message();
-    
-    /**
-    * @brief Return fault object of ZMQ communication.
-    * 
-    * @return EcZmqFault
-    */
-    EcZmqFault get_fault();
 
 private:
     
-    zmq::multipart_t _multipart;
-    
-    iit::advr::Repl_cmd  _pb_cmd;
-    iit::advr::Cmd_reply _pb_reply;
-    
-    std::string _zmq_uri,_m_cmd,_pb_msg_serialized,_fd_msg;
+    std::string _zmq_uri;
     int _timeout;
-    
-    std::shared_ptr<zmq::context_t> _context;
-    std::shared_ptr<zmq::socket_t>  _publisher;
-    EcZmqFault _fault;
-  
 };
 
 #endif

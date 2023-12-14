@@ -77,6 +77,8 @@ EcUDP::EcUDP(std::string host_address,uint32_t host_port) :
 
 EcUDP::~EcUDP()
 {
+    stop_client();
+    
     if(_ec_udp_thread != nullptr)
     {
         if ( _ec_udp_thread->joinable() ) 
@@ -756,11 +758,16 @@ void EcUDP::start_client(uint32_t period_ms,bool logging)
 
 void EcUDP::stop_client()
 {
-    stop();
-    
-    stop_logging();
-    
-    disconnect();
+    if(_client_alive)
+    {
+        stop_logging();
+        
+        stop();
+        
+        disconnect();
+        
+        _client_alive =false;
+    }
 }
 
 bool EcUDP::is_client_alive()
@@ -799,7 +806,6 @@ void EcUDP::periodicActivity()
         if(client_alive_elapsed_ms >= _server_alive_check_ms)
         {
              // Stop to receive motors, imu, ft, power board pdo information // 
-            _client_alive =false;
             // reset motors references
             _motor_ref_flags = MotorRefFlags::FLAG_NONE;
             _motors_references.clear();

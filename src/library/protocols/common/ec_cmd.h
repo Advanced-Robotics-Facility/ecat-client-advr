@@ -48,6 +48,8 @@ public:
                     
     void feed_motors(std::vector<MR> motors_references);
     
+    bool client_sts();
+    
 
 private:
     EcZmqCmd::Ptr  _ec_zmq_cmd;
