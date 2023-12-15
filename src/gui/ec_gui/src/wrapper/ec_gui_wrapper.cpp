@@ -29,16 +29,16 @@ EcGuiWrapper::EcGuiWrapper(QWidget *parent) :
     
     /*frequency */
 
-    _freq_combobox = parent->findChild<QComboBox *>("Freq");
-    _freq_combobox->setCurrentIndex(1); // set Default 2.5ms.
+    _period_combobox = parent->findChild<QComboBox *>("Period");
+    _period_combobox->setCurrentIndex(9); // set Default 4ms.
 
     // change FONT
     QFont font;
     font.setPointSize(font.pointSize() + 5);
-    _freq_combobox->setFont(font);
+    _period_combobox->setFont(font);
 
     /* connection of frequency function */
-    connect(_freq_combobox, SIGNAL(currentIndexChanged(int)),this,
+    connect(_period_combobox, SIGNAL(currentIndexChanged(int)),this,
         SLOT(OnFreqChanged())
     );
 
@@ -132,9 +132,6 @@ void EcGuiWrapper::restart_gui_wrapper(ec_wrapper_info_t ec_wrapper_info)
     
     _ec_wrapper_info = ec_wrapper_info;
     
-    if(_ec_wrapper_info.client)
-        _ec_wrapper_info.client->set_loop_time(_time_ms);
-
     _ec_gui_slider->create_sliders(_ec_wrapper_info.joint_info_map);
     
     _ec_gui_cmd->restart_ec_gui_cmd(_ec_wrapper_info.client);
@@ -169,8 +166,7 @@ bool EcGuiWrapper::check_client_setup()
 
 void EcGuiWrapper::setFreq()
 {
-    double freq=_freq_combobox->currentText().toDouble();
-    double time_s= 1/freq;
+    double freq=(_period_combobox->currentText().toDouble())/1000;
     
     _hysteresis_battery_level=  _HYST_THRESHOLD * freq; 
     
@@ -179,7 +175,7 @@ void EcGuiWrapper::setFreq()
         _hysteresis_battery_level= 2; // twice of communication time (i.e 5s-->10s or 10s-->20s)
     }
 
-    _time_ms=(int) 1000*time_s;
+    _time_ms=_period_combobox->currentText().toInt();
 }
 
 int EcGuiWrapper::get_period_ms()
@@ -228,7 +224,7 @@ void EcGuiWrapper::onSendStopBtnReleased()
     if((_send_stop_btn->text()=="Send")&&(_send_ref))
     {
         _send_timer->start(_time_ms);
-        _freq_combobox->setEnabled(false);
+        _period_combobox->setEnabled(false);
         _send_stop_btn->setText("Stop");
         _first_send=true;
 
@@ -238,7 +234,7 @@ void EcGuiWrapper::onSendStopBtnReleased()
     else
     {
         _send_timer->stop();
-        _freq_combobox->setEnabled(true);        
+        _period_combobox->setEnabled(true);        
         _ec_gui_slider->disable_sliders();
 
         if(_send_stop_btn->text()=="Send")

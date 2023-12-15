@@ -55,7 +55,7 @@ EcGuiNet::EcGuiNet(QWidget *parent) :
     /*protocl */
 
     _protocol_combobox = parent->findChild<QComboBox *>("Protocol");
-    _protocol_combobox->setCurrentIndex(1); // set Default UDP.
+    _protocol_combobox->setCurrentIndex(0);
     _server_protocol = _protocol_combobox->currentText();
     
     /* connection of frequency function */
@@ -303,15 +303,18 @@ bool EcGuiNet::start_network()
     }
     
     /******************************START SEVER ************************************************/
-    bin_file_name = "'udp_server'";
-    kill_process(_server_process,bin_file_name,_server_stdout);
-    
-    bin_file_path.clear();
-    bin_file_path = find_process(_server_process,bin_file_name,_server_stdout);
-
-    if(!bin_file_path.isEmpty())
+    if(_server_protocol=="udp")
     {
-        start_process(_server_process,bin_file_path,"");
+        bin_file_name = "'udp_server'";
+        kill_process(_server_process,bin_file_name,_server_stdout);
+        
+        bin_file_path.clear();
+        bin_file_path = find_process(_server_process,bin_file_name,_server_stdout);
+
+        if(!bin_file_path.isEmpty())
+        {
+            start_process(_server_process,bin_file_path,"");
+        }
     }
     
     return true;
@@ -319,10 +322,14 @@ bool EcGuiNet::start_network()
 
 void EcGuiNet::stop_network()
 {
+    QString bin_file_name;
     /******************************STOP Server ************************************************/
-    QString bin_file_name = "'udp_server'";
-    _server_process->close();
-    kill_process(_server_process,bin_file_name,_server_stdout);
+    if(_server_protocol=="udp")
+    {
+        bin_file_name = "'udp_server'";
+        _server_process->close();
+        kill_process(_server_process,bin_file_name,_server_stdout);
+    }
     
     /******************************STOP EtherCAT Master ************************************************/
     _ec_master_process->close();
@@ -333,14 +340,19 @@ void EcGuiNet::stop_network()
 bool EcGuiNet::check_network()
 {
     bool ret= false;
-    if(!create_ssh_cmd(_server_process))
-    {
-        return ret;
+    if(_server_protocol=="udp"){
+        if(!create_ssh_cmd(_server_process))
+        {
+            return ret;
+        }
+        
+        QString pid=find_running_process(_server_process,"'udp_server'",_server_stdout);
+        if(pid!="")
+        {
+            ret=true;
+        }
     }
-    
-    QString pid=find_running_process(_server_process,"'udp_server'",_server_stdout);
-    if(pid!="")
-    {
+    else{
         ret=true;
     }
     
@@ -360,6 +372,9 @@ EcGuiNet::ec_net_info_t EcGuiNet::get_net_setup()
 
 EcGuiNet::~EcGuiNet()
 {
-    _server_process->kill();
+    if(_server_protocol=="udp"){
+        _server_process->kill();
+    }
+    
     _ec_master_process->kill();
 }

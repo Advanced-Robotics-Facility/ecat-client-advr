@@ -74,7 +74,7 @@ private:
   bool _send_ref;
   bool _first_send;
 
-  QComboBox * _freq_combobox;
+  QComboBox * _period_combobox;
   QPushButton *_send_stop_btn;
 
   QLCDNumber *_battery_level;

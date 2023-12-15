@@ -79,34 +79,39 @@ EcGuiStart::EcGuiStart(QWidget *parent) :
 
 void EcGuiStart::create_ec_iface()
 {
-    if(_ec_wrapper_info.client)
-    {
-        if(_ec_wrapper_info.client->is_client_alive())
-        {
-            _ec_wrapper_info.client->stop_client();
+    if(_ec_gui_net->check_network()){
+        if(_ec_wrapper_info.client){
+            if(_ec_wrapper_info.client->is_client_alive()){
+                _ec_wrapper_info.client->stop_client();
+            }
+        }
+    
+        auto ec_net_info = _ec_gui_net->get_net_setup();
+        
+        EcUtils::EC_CONFIG ec_cfg;
+        
+        ec_cfg.protocol=ec_net_info.protocol;
+        ec_cfg.host_name=ec_net_info.host_name;
+        ec_cfg.host_port=ec_net_info.host_port;
+        ec_cfg.period_ms = _ec_gui_wrapper->get_period_ms();
+        ec_cfg.logging = false;
+        
+        EcUtils::Ptr ec_utils = std::make_shared<EcUtils>(ec_cfg);
+        
+        _ec_wrapper_info.client.reset();
+        try{
+            _ec_wrapper_info.client = ec_utils->make_ec_iface();
+        }
+        catch ( std::exception &e ){
+            QMessageBox msgBox;
+            msgBox.critical(this,msgBox.windowTitle(),tr(e.what()));
         }
     }
-    
-    auto ec_net_info = _ec_gui_net->get_net_setup();
-    
-    EcUtils::EC_CONFIG ec_cfg;
-    
-    ec_cfg.protocol=ec_net_info.protocol;
-    ec_cfg.host_name=ec_net_info.host_name;
-    ec_cfg.host_port=ec_net_info.host_port;
-    ec_cfg.period_ms = _ec_gui_wrapper->get_period_ms();
-    ec_cfg.logging = false;
-    
-    EcUtils::Ptr ec_utils = std::make_shared<EcUtils>(ec_cfg);
-    
-    _ec_wrapper_info.client.reset();
-    try{
-        _ec_wrapper_info.client = ec_utils->make_ec_iface();
-    }
-    catch ( std::exception &e )
+    else
     {
         QMessageBox msgBox;
-        msgBox.critical(this,msgBox.windowTitle(),tr(e.what()));
+        msgBox.critical(this,msgBox.windowTitle(),tr("Cannot find the server in running mode, please start it and retry!"));
+        return;
     }
 }
 
@@ -387,20 +392,6 @@ void EcGuiStart::scan_device()
 
 void EcGuiStart::onScanDeviceReleased()
 {
-    if(!_ec_wrapper_info.client)
-    {
-        if(_ec_gui_net->check_network())
-        {
-            create_ec_iface();
-        }
-        else
-        {
-            QMessageBox msgBox;
-            msgBox.critical(this,msgBox.windowTitle(),tr("Cannot find the server in running mode, please start it and retry!"));
-            return;
-        }
-    }
-    
     if(!_ec_wrapper_info.device_info.empty())
     {
         QMessageBox::StandardButton reply;
@@ -413,6 +404,7 @@ void EcGuiStart::onScanDeviceReleased()
             if(!_ec_gui_wrapper->get_wrapper_send_sts())
             {
                 clear_device();
+                create_ec_iface();
                 scan_device();
             }
             else
@@ -429,6 +421,7 @@ void EcGuiStart::onScanDeviceReleased()
     }
     else
     {
+        create_ec_iface();
         scan_device();
     }
     
