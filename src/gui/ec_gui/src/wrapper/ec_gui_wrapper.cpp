@@ -39,7 +39,7 @@ EcGuiWrapper::EcGuiWrapper(QWidget *parent) :
 
     /* connection of frequency function */
     connect(_period_combobox, SIGNAL(currentIndexChanged(int)),this,
-        SLOT(OnFreqChanged())
+        SLOT(OnPeriodChanged())
     );
 
     _battery_level = parent->findChild<QLCDNumber *>("BatteryLevel");
@@ -101,7 +101,7 @@ EcGuiWrapper::EcGuiWrapper(QWidget *parent) :
         this, SLOT(receive()));
 
 
-    setFreq();
+    setPeriod();
 }
 
 void EcGuiWrapper::DwTopLevelChanged(bool isFloating)
@@ -164,7 +164,7 @@ bool EcGuiWrapper::check_client_setup()
     return ret;
 }
 
-void EcGuiWrapper::setFreq()
+void EcGuiWrapper::setPeriod()
 {
     double freq=(_period_combobox->currentText().toDouble())/1000;
     
@@ -183,11 +183,11 @@ int EcGuiWrapper::get_period_ms()
     return _time_ms;
 }
 
-void EcGuiWrapper::OnFreqChanged()
+void EcGuiWrapper::OnPeriodChanged()
 {
-    setFreq();
+    setPeriod();
     
-    if(!check_client_setup())
+    if(_ec_wrapper_info.client == nullptr)
     {
         return;
     }
