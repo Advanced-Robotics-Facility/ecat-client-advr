@@ -3,6 +3,7 @@
 
 #include "ec_cmd.h"
 #include <yaml-cpp/yaml.h>
+#include <chrono>
 
 EcCmd::EcCmd(std::string protocol,std::string host_address,uint32_t host_port)
 {
@@ -275,6 +276,7 @@ bool EcCmd::pdo_aux_cmd(const PAC & pac)
 
 void EcCmd::feed_motors(std::vector<MR> motors_references)
 {
+//     auto start_cmd= std::chrono::steady_clock::now();
     if(!_client_alive){
         _consoleLog->error("Client not alive, please stop the main process!");
         return;
@@ -284,6 +286,7 @@ void EcCmd::feed_motors(std::vector<MR> motors_references)
             std::string msg="";
             auto fault=_ec_zmq_cmd->Motors_PDO_cmd(motors_references,msg);
             if(fault.get_type() == EC_ZMQ_CMD_STATUS::TIMEOUT){
+                _consoleLog->error("Client not alive, please stop the main process!");
                 _client_alive=false;
             }
         }
@@ -291,6 +294,10 @@ void EcCmd::feed_motors(std::vector<MR> motors_references)
             _consoleLog->error("Got empty motors references structure");
         }
     }
+//     auto end_cmd= std::chrono::steady_clock::now();
+//     auto time_elapsed_ms= std::chrono::duration_cast<std::chrono::microseconds>(end_cmd-start_cmd);
+//     _consoleLog->info("commad executed: {}",time_elapsed_ms.count());
+    
 }
 
 //******************************* COMMANDS *****************************************************//

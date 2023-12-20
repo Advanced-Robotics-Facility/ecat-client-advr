@@ -146,43 +146,6 @@ private:
     std::string _zmq_cmd;
 };
 
-class EcZmq
-{
-public: 
-    EcZmq(std::string zmq_uri,int timeout);
-    ~EcZmq(){};
-    
-    /**
-    * @brief set timeout of ZMQ communication.
-    * 
-    * @param timeout p_timeout:...
-    */
-    void set_new_timeout(int timeout);
-    
-    /**
-    * @brief This method is responsible to wait the reply of ZMQ EtherCAT Server, 
-    * finding communication errors and and filling the EcZmqFault class. 
-    * 
-    * @param msg p_msg: return feedback message from ZMQ communication.
-    * @param cmd_sent p_cmd_sent: Checking of the command reply with the command sent. 
-    */
-    void zmq_cmd_recv(std::string& msg,
-                      iit::advr::CmdType cmd_sent,
-                      EcZmqFault &fault);
-    
-    /**
-    * @brief This method is responsible to send the ZMQ commad to EtherCAT Server
-    */
-    void zmq_cmd_send(std::string m_cmd,
-                      iit::advr::Repl_cmd  pb_cmd);
-    
-private:
-    
-    std::shared_ptr<zmq::context_t> _context;
-    std::shared_ptr<zmq::socket_t>  _publisher;
-    
-};
-
 
 class EcZmqCmd
 {
@@ -241,6 +204,32 @@ public:
     * 
     */
     ~EcZmqCmd();
+    
+        /**
+    * @brief set timeout of ZMQ communication.
+    * 
+    * @param timeout p_timeout:...
+    */
+    void set_new_timeout(int timeout);
+    
+    /**
+    * @brief This method is responsible to wait the reply of ZMQ EtherCAT Server, 
+    * finding communication errors and and filling the EcZmqFault class. 
+    * 
+    * @param msg p_msg: return feedback message from ZMQ communication.
+    * @param cmd_sent p_cmd_sent: Checking of the command reply with the command sent. 
+    */
+    void zmq_cmd_recv(std::string& msg,
+                      iit::advr::CmdType cmd_sent,
+                      EcZmqFault &fault);
+    
+    void zmq_cmd_recv_no_block(EcZmqFault &fault);
+    
+    /**
+    * @brief This method is responsible to send the ZMQ commad to EtherCAT Server
+    */
+    void zmq_cmd_send(std::string m_cmd,
+                      iit::advr::Repl_cmd  pb_cmd);
     
     
     /**
@@ -412,6 +401,8 @@ private:
     
     std::string _zmq_uri;
     int _timeout;
+    std::shared_ptr<zmq::context_t> _context;
+    std::shared_ptr<zmq::socket_t>  _publisher;
 };
 
 #endif
