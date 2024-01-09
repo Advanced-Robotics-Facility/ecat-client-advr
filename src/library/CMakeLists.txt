@@ -2,7 +2,7 @@ project(ec_library)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 #compile ec_library
-add_subdirectory(protocols/ipc/esc/)
+add_subdirectory(protocols/ipc/iddp/esc/)
 
 
 ## load in pkg-config support
@@ -41,17 +41,11 @@ target_include_directories(ec_library
     logger/
     protocols/common/
     protocols/common/zmq/
-    protocols/ipc/esc/
+    protocols/ipc/iddp/esc/
     PRIVATE
     ${EXTERNAL}/spdlog/include
     ${ZeroMQ_INCLUDE_DIR} 
 )
-
-if ( Xenomai_FOUND )
-    set(LIB_TYPE _rt)
-else ()
-    set(LIB_TYPE _nrt)
-endif()
 
 target_link_libraries(ec_library
     PUBLIC

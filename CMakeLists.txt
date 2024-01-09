@@ -8,7 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # avoid installing catkin-related files
 set(CATKIN_BUILD_BINARY_PACKAGE TRUE)
-
+set(ENABLE_XENO OFF CACHE BOOL "Enable real-time features")
 option(COMPILE_EXAMPLE "Enable to compile examples" ON)
 option(COMPILE_GUI "Enable to compile the GUI" ON)
 option(COMPILE_MATLAB "Enable to compile the matlab" ON)
@@ -24,6 +24,22 @@ execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive --
 WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 
 set(EXTERNAL "${PROJECT_SOURCE_DIR}/external")
+
+if ( ${ENABLE_XENO} )
+    option(CMAKE_USE_XENOMAI "Use Xenomai libraries" ON)
+    find_package(Xenomai REQUIRED)
+    if(TARGET Xenomai::cobalt)
+        set(USE_COBALT True)
+    endif()
+else ()
+    option(CMAKE_USE_XENOMAI "Use Xenomai libraries" OFF)
+endif()
+
+if ( Xenomai_FOUND )
+    set(LIB_TYPE _rt)
+else ()
+    set(LIB_TYPE _nrt)
+endif()
 
 find_package(magic_enum)
 if(NOT ${magic_enum_FOUND})

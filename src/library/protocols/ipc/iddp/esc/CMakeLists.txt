@@ -37,12 +37,6 @@ target_include_directories(esc_pipes_library
     ${ZeroMQ_INCLUDE_DIR} 
 )
 
-if ( Xenomai_FOUND )
-    set(LIB_TYPE _rt)
-else ()
-    set(LIB_TYPE _nrt)
-endif()
-
 target_link_libraries(esc_pipes_library
     PUBLIC
     ecat_master::ecat_core${LIB_TYPE}

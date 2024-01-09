@@ -322,6 +322,7 @@ void EcTCP::th_loop( void * )
         !_motors_references.empty())
     {
         feed_motors(_motors_references);
+        _ec_logger->log_motors_ref(_motors_references);
     }
 
     _mutex_motor_reference->unlock();
