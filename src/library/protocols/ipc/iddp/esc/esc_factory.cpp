@@ -99,46 +99,51 @@ void EscFactory::feed_motors(const std::vector<MR> motors_references)
 {
     for ( const auto &[bId,ctrl_type,pos,vel,tor,g0,g1,g2,g3,g4,op,idx,aux] : motors_references ) {
         auto _ctrl_type = static_cast<iit::advr::Gains_Type>(ctrl_type);
-        auto moto = _motors_iface_map[bId];
-        
-        moto->pos_ref= pos;
-        moto->vel_ref= vel;
-        moto->tor_ref= tor;
-        
-        if ( (_ctrl_type == iit::advr::Gains_Type_POSITION ||
-        _ctrl_type == iit::advr::Gains_Type_VELOCITY)) {
-            moto->kp_ref= g0;
-            moto->kd_ref= g2;
-            moto->tau_p_ref=0;
-            moto->tau_fc_ref=0;
-            moto->tau_d_ref=0;
-        }
-        else if ( _ctrl_type == iit::advr::Gains_Type_IMPEDANCE) {
-            moto->kp_ref= g0;
-            moto->kd_ref= g1;
-            moto->tau_p_ref=g2;
-            moto->tau_fc_ref=g3;
-            moto->tau_d_ref=g4;
-        } else {
+        if(_motors_iface_map.count(bId) > 0){
+            auto moto = _motors_iface_map[bId];
+            
+            moto->pos_ref= pos;
+            moto->vel_ref= vel;
+            moto->tor_ref= tor;
+            
+            if ( (_ctrl_type == iit::advr::Gains_Type_POSITION ||
+            _ctrl_type == iit::advr::Gains_Type_VELOCITY)) {
+                moto->kp_ref= g0;
+                moto->kd_ref= g2;
+                moto->tau_p_ref=0;
+                moto->tau_fc_ref=0;
+                moto->tau_d_ref=0;
+            }
+            else if ( _ctrl_type == iit::advr::Gains_Type_IMPEDANCE) {
+                moto->kp_ref= g0;
+                moto->kd_ref= g1;
+                moto->tau_p_ref=g2;
+                moto->tau_fc_ref=g3;
+                moto->tau_d_ref=g4;
+            } else {
 
-        }
-        auto _op = static_cast<iit::advr::AuxPDO_Op>(op);
+            }
+            auto _op = static_cast<iit::advr::AuxPDO_Op>(op);
 
-        switch (_op)
-        {
-            case iit::advr::AuxPDO_Op_SET:
-                moto->aux_wr_idx=idx;
-                moto->aux_wr=aux;
-                break;
-            case iit::advr::AuxPDO_Op_GET:
-                moto->aux_rd_idx_req=idx;
-                break;
-            case iit::advr::AuxPDO_Op_NOP:
-                break;
+            switch (_op)
+            {
+                case iit::advr::AuxPDO_Op_SET:
+                    moto->aux_wr_idx=idx;
+                    moto->aux_wr=aux;
+                    break;
+                case iit::advr::AuxPDO_Op_GET:
+                    moto->aux_rd_idx_req=idx;
+                    break;
+                case iit::advr::AuxPDO_Op_NOP:
+                    break;
+            }
+            
+            //write 
+            moto->write();
         }
-        
-        //write 
-        moto->write();
+        else{
+            DPRINTF("Cannot send reference to id 0x%04X \n", bId);
+        }
     }
 }
 
