@@ -39,7 +39,7 @@ public:
     // rx_pdo values
     float   motor_pos, motor_vel, link_pos, link_vel, torque;
     float   motor_temperature, board_temperature;
-    uint32_t aux_rd_idx_ack, fault;
+    uint32_t aux_rd_idx_ack, fault,rtt,cmd_aux_sts;
     float aux_rd;
     float read_pos_ref, read_vel_ref, read_torque_ref;  // ack from master
 

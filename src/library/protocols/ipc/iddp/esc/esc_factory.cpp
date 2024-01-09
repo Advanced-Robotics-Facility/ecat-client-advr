@@ -88,7 +88,7 @@ void EscFactory::read_motors(MotorStatusMap &motor_status_map)
             
             motor_status_map[id] = std::make_tuple(moto->link_pos,moto->motor_pos,moto->link_vel,moto->motor_vel,
                                                    moto->torque,moto->motor_temperature,moto->board_temperature,
-                                                   moto->fault,0,moto->aux_rd_idx_ack,moto->aux_rd,0);
+                                                   moto->fault,moto->rtt,moto->aux_rd_idx_ack,moto->aux_rd,moto->cmd_aux_sts);
             
         }
         catch ( std::out_of_range ) {};   

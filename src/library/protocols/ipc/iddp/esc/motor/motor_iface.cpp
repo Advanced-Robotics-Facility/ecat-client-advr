@@ -33,10 +33,12 @@ void motor_iface::get_from_pb(void)
     aux_rd              = pb_rx_pdos.mutable_motor_xt_rx_pdo()->aux();
 
     fault               = pb_rx_pdos.mutable_motor_xt_rx_pdo()->fault();
+    rtt                 = pb_rx_pdos.mutable_motor_xt_rx_pdo()->rtt();
 
     read_pos_ref        = pb_rx_pdos.mutable_motor_xt_rx_pdo()->pos_ref();
     read_vel_ref        = pb_rx_pdos.mutable_motor_xt_rx_pdo()->vel_ref();
     read_torque_ref     = pb_rx_pdos.mutable_motor_xt_rx_pdo()->tor_ref();
+    cmd_aux_sts         = pb_rx_pdos.mutable_motor_xt_rx_pdo()->cmd_aux_sts();
         
 }
 
