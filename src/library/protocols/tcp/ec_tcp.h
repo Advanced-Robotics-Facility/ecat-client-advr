@@ -4,7 +4,7 @@
 #include <thread_util.h>
 #include "ec_logger.h"
 #include "ec_cmd.h"
-#include "ec_zmq_pdo.h"
+#include "ec_pdo.h"
 
 #include <mutex>
 
@@ -52,11 +52,7 @@ private:
     bool _logging;
     std::shared_ptr<spdlog::logger> _consoleLog;
     SSI _slave_info;
-    
-    std::map<int,EcZmqPdo::Ptr> _moto_pdo_map;
-    std::map<int,EcZmqPdo::Ptr> _ft_pdo_map;
-    std::map<int,EcZmqPdo::Ptr> _pow_pdo_map;
-    std::map<int,EcZmqPdo::Ptr> _imu_pdo_map;
+    std::shared_ptr<EcPdo> _ec_pdo;
     
     // last received motor data
     MotorStatusMap _motor_status_map;
@@ -75,11 +71,6 @@ private:
     std::shared_ptr<std::mutex> _mutex_ft6_status;
     std::shared_ptr<std::mutex> _mutex_pow_status;
     std::shared_ptr<std::mutex> _mutex_imu_status;
-
-    void read_motors(MotorStatusMap &motor_status_map);
-    void read_fts(FtStatusMap &ft_status_map);
-    void read_imus(ImuStatusMap &imu_status_map);
-    void read_pows(PwrStatusMap &pow_status_map);
 };
 
 #endif // EC_TCP_H

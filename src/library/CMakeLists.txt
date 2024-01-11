@@ -24,13 +24,14 @@ find_library(ZeroMQ_LIBRARY
 
 # compile ecat library test
 add_library(ec_library STATIC
+            ${PROJECT_SOURCE_DIR}/protocols/udp/ec_udp.cpp
             ${PROJECT_SOURCE_DIR}/protocols/common/zmq/ec_zmq_cmd.cpp
             ${PROJECT_SOURCE_DIR}/protocols/common/zmq/ec_zmq_pdo.cpp
             ${PROJECT_SOURCE_DIR}/protocols/common/ec_cmd.cpp
+            ${PROJECT_SOURCE_DIR}/protocols/common/ec_pdo.cpp
             ${PROJECT_SOURCE_DIR}/protocols/tcp/ec_tcp.cpp
-            ${PROJECT_SOURCE_DIR}/protocols/udp/ec_udp.cpp
-            ${PROJECT_SOURCE_DIR}/protocols/ipc/iddp/ec_iddp.cpp
             ${PROJECT_SOURCE_DIR}/protocols/ipc/zipc/ec_zipc.cpp
+            ${PROJECT_SOURCE_DIR}/protocols/ipc/iddp/ec_iddp.cpp
             ${PROJECT_SOURCE_DIR}/utils/ec_utils.cpp
             ${PROJECT_SOURCE_DIR}/logger/ec_logger.cpp)
 

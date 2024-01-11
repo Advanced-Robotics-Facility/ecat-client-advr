@@ -15,6 +15,8 @@ EcZipc::EcZipc(std::string host_address,uint32_t host_port):
     _host_address=host_address;
     _host_port=host_port;
     
+    _ec_pdo= std::make_shared<EcPdo>("ipc",host_address,host_port);
+    
     _ec_logger = std::make_shared<EcLogger>();
     _logging=false;
     
@@ -56,44 +58,7 @@ void EcZipc::th_init ( void * )
     tNow, tPre = start_time;
     loop_cnt = 0;
     
-    for ( auto &[id, esc_type, pos] : _slave_info ) {
-    
-            std::string host_port_cmd = std::to_string(_host_port+id);
-            // zmq setup
-            std::string zmq_uri = "ipc://" + _host_address + ":"+host_port_cmd;
-            EcZmqPdo::Ptr zmq_pdo = std::make_shared<EcZmqPdo>(zmq_uri);
-            
-            switch ( esc_type  )
-            {
-                    case CENT_AC:
-                    case LO_PWR_DC_MC :
-                        {
-                            _moto_pdo_map[id]=zmq_pdo;
-                        }
-                        break;
-                    case FT6 :
-                        {
-                            _ft_pdo_map[id]=zmq_pdo;
-                        }
-                        break;
-                        
-                    case IMU_ANY :
-                        {
-                             _imu_pdo_map[id]=zmq_pdo;
-                        }
-                        break;
-                        
-                    case POW_F28M36_BOARD :
-                        {
-                            _pow_pdo_map[id]=zmq_pdo;
-                        }
-                        break;
-                    
-                    default:
-                        _consoleLog->error("Esc type NOT handled");
-                        break;
-            }               
-    }
+    _ec_pdo->esc_factory(_slave_info);
 }
 
 void EcZipc::set_loop_time(uint32_t period_ms)
@@ -162,122 +127,6 @@ void EcZipc::stop_logging()
     _ec_logger->stop_mat_logger();
 }
 
-void EcZipc::read_motors(MotorStatusMap &motor_status_map)
-{
-    for ( auto &[id, moto_pdo] : _moto_pdo_map ) {
-        iit::advr::Ec_slave_pdo pb_rx_pdos;
-        std::string msg="";
-        if(moto_pdo->zmq_recv_pdo(msg,pb_rx_pdos))
-        {
-            if(msg!="")
-            {
-                motor_status_map[id] = std::make_tuple(pb_rx_pdos.mutable_motor_xt_rx_pdo()->link_pos(),
-                                                       pb_rx_pdos.mutable_motor_xt_rx_pdo()->motor_pos(),
-                                                       pb_rx_pdos.mutable_motor_xt_rx_pdo()->link_vel(),
-                                                       pb_rx_pdos.mutable_motor_xt_rx_pdo()->motor_vel(),
-                                                       pb_rx_pdos.mutable_motor_xt_rx_pdo()->torque(),
-                                                       pb_rx_pdos.mutable_motor_xt_rx_pdo()->motor_temp(),
-                                                       pb_rx_pdos.mutable_motor_xt_rx_pdo()->board_temp(),
-                                                       pb_rx_pdos.mutable_motor_xt_rx_pdo()->fault(),
-                                                       pb_rx_pdos.mutable_motor_xt_rx_pdo()->rtt(),
-                                                       pb_rx_pdos.mutable_motor_xt_rx_pdo()->op_idx_ack(),
-                                                       pb_rx_pdos.mutable_motor_xt_rx_pdo()->aux(),
-                                                       pb_rx_pdos.mutable_motor_xt_rx_pdo()->cmd_aux_sts());
-            }
-        }
-        else
-        {
-            _consoleLog->error("Error on Force/Torque reading on device: {}",id);
-        }
-    }
-}
-void EcZipc::read_fts(FtStatusMap &ft_status_map)
-{
-    for ( auto &[id, ft_pdo] : _ft_pdo_map ) {
-        iit::advr::Ec_slave_pdo pb_rx_pdos;
-        std::string msg="";
-        if(ft_pdo->zmq_recv_pdo(msg,pb_rx_pdos))
-        {
-            if(msg!="")
-            {
-                std::vector<float> ft_v;
-                ft_v.push_back(pb_rx_pdos.mutable_ft6_rx_pdo()->force_x());
-                ft_v.push_back(pb_rx_pdos.mutable_ft6_rx_pdo()->force_z());
-                ft_v.push_back(pb_rx_pdos.mutable_ft6_rx_pdo()->force_y());
-                
-                ft_v.push_back(pb_rx_pdos.mutable_ft6_rx_pdo()->torque_x());
-                ft_v.push_back(pb_rx_pdos.mutable_ft6_rx_pdo()->torque_y());
-                ft_v.push_back(pb_rx_pdos.mutable_ft6_rx_pdo()->torque_z());
-                
-                ft_status_map[id]=ft_v;
-            }
-        }
-        else
-        {
-            _consoleLog->error("Error on Force/Torque reading on device: {}",id);
-        }
-    }
-}
-void EcZipc::read_imus(ImuStatusMap &imu_status_map)
-{
-    for ( auto &[id, imu_pdo] : _imu_pdo_map ) {
-        iit::advr::Ec_slave_pdo pb_rx_pdos;
-        std::string msg="";
-        if(imu_pdo->zmq_recv_pdo(msg,pb_rx_pdos))
-        {
-            if(msg!="")
-            {
-                std::vector<float> imu_v;
-                imu_v.push_back(pb_rx_pdos.mutable_imuvn_rx_pdo()->x_rate());
-                imu_v.push_back(pb_rx_pdos.mutable_imuvn_rx_pdo()->y_rate());
-                imu_v.push_back(pb_rx_pdos.mutable_imuvn_rx_pdo()->z_rate());
-                
-                imu_v.push_back(pb_rx_pdos.mutable_imuvn_rx_pdo()->x_acc());
-                imu_v.push_back(pb_rx_pdos.mutable_imuvn_rx_pdo()->y_acc());
-                imu_v.push_back(pb_rx_pdos.mutable_imuvn_rx_pdo()->z_acc());
-                
-                imu_v.push_back(pb_rx_pdos.mutable_imuvn_rx_pdo()->x_quat());
-                imu_v.push_back(pb_rx_pdos.mutable_imuvn_rx_pdo()->y_quat());
-                imu_v.push_back(pb_rx_pdos.mutable_imuvn_rx_pdo()->z_quat());
-                imu_v.push_back(pb_rx_pdos.mutable_imuvn_rx_pdo()->w_quat());
-                imu_status_map[id]=imu_v;
-            }
-        }
-        else
-        {
-            _consoleLog->error("Error on IMU reading on device: {}",id);
-        }
-    }
-}
-
-void EcZipc::read_pows(PwrStatusMap &pow_status_map)
-{
-    for ( auto &[id, pow_pdo] : _pow_pdo_map ) {
-        iit::advr::Ec_slave_pdo pb_rx_pdos;
-        std::string msg="";
-        if(pow_pdo->zmq_recv_pdo(msg,pb_rx_pdos))
-        {
-            if(msg!="")
-            {
-                std::vector<float> pow_v;
-                pow_v.push_back(pb_rx_pdos.mutable_powf28m36_rx_pdo()->v_batt());
-                pow_v.push_back(pb_rx_pdos.mutable_powf28m36_rx_pdo()->v_load());
-                pow_v.push_back(pb_rx_pdos.mutable_powf28m36_rx_pdo()->i_load());
-                
-                pow_v.push_back(pb_rx_pdos.mutable_powf28m36_rx_pdo()->temp_batt());
-                pow_v.push_back(pb_rx_pdos.mutable_powf28m36_rx_pdo()->temp_heatsink());
-                pow_v.push_back(pb_rx_pdos.mutable_powf28m36_rx_pdo()->temp_pcb());
-                
-                pow_status_map[id]=pow_v;
-            }
-        }
-        else
-        {
-            _consoleLog->error("Error on Power Board reading on device: {}",id);
-        }
-    }
-}
-
 
 //******************************* Periodic Activity *****************************************************//
 
@@ -298,22 +147,22 @@ void EcZipc::th_loop( void * )
     
     // Receive motors, imu, ft, power board pdo information // 
     _mutex_motor_status->lock();
-    read_motors(_motor_status_map);
+    _ec_pdo->read_motors(_motor_status_map);
     _ec_logger->log_motors_sts(_motor_status_map);
     _mutex_motor_status->unlock();
     
     _mutex_ft6_status->lock();
-    read_fts(_ft_status_map);
+    _ec_pdo->read_fts(_ft_status_map);
     _ec_logger->log_ft6_sts(_ft_status_map);
     _mutex_ft6_status->unlock();
     
     _mutex_imu_status->lock();
-    read_imus(_imu_status_map);
+    _ec_pdo->read_imus(_imu_status_map);
     _ec_logger->log_imu_sts(_imu_status_map);
     _mutex_imu_status->unlock();
     
     _mutex_pow_status->lock();
-    read_pows(_pow_status_map);
+    _ec_pdo->read_pows(_pow_status_map);
     _ec_logger->log_pow_sts(_pow_status_map);
     _mutex_pow_status->unlock();
 
