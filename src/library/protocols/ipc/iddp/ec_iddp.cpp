@@ -83,10 +83,10 @@ void EcIDDP::start_client(uint32_t period_ms,bool logging)
     
     retrieve_slaves_info(_slave_info);
     
-    if(!_slave_info.empty()){
+//     if(!_slave_info.empty()){
         create(true); // real time thread
         _client_alive=true;
-    }
+//     }
     
 }
 
