@@ -65,12 +65,12 @@ private:
     MotorRefFlags _motor_ref_flags;
     std::vector<MR> _motors_references;
     
-    std::shared_ptr<std::mutex> _mutex_motor_status;
-    std::shared_ptr<std::mutex> _mutex_motor_reference;
-    std::shared_ptr<std::mutex> _mutex_ft6_status;
-    std::shared_ptr<std::mutex> _mutex_pow_status;
-    std::shared_ptr<std::mutex> _mutex_imu_status;
-
+    pthread_mutex_t _mutex_motor_status;
+    pthread_mutex_t _mutex_motor_reference;
+    pthread_mutex_t _mutex_ft6_status;
+    pthread_mutex_t _mutex_pow_status;
+    pthread_mutex_t _mutex_imu_status;
+    
 };
 
 #endif // EC_IDDP_H
