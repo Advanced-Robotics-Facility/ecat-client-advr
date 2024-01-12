@@ -1,0 +1,117 @@
+#############################
+# ARM 1 
+#############################
+arm_1_joint_1:
+  brake_present: true
+  control_mode: 0x3B
+  gains: [200.0,0.0,10.0,0.0,0.0]
+
+
+arm_1_joint_2:
+  brake_present: true
+  control_mode: 0x3B
+  gains: [200.0,0.0,10.0,0.0,0.0]
+
+    
+arm_1_joint_3:
+  brake_present: true
+  control_mode: 0x3B
+  gains: [200.0,0.0,10.0,0.0,0.0]
+  
+
+arm_1_joint_4:
+  brake_present: true
+  control_mode: 0x3B
+  gains: [200.0,0.0,10.0,0.0,0.0]
+
+
+arm_1_joint_5:
+  brake_present: true
+  control_mode: 0x3B
+  gains: [200.0,0.0,10.0,0.0,0.0]
+
+
+arm_1_joint_6:
+  brake_present: true
+  control_mode: 0x3B
+  gains: [200.0,0.0,10.0,0.0,0.0]
+
+#############################
+# ARM 2 
+#############################
+arm_2_joint_1:
+  brake_present: true
+  control_mode: 0x3B
+  gains: [200.0,0.0,10.0,0.0,0.0]
+
+
+arm_2_joint_2:
+  brake_present: true
+  control_mode: 0x3B
+  gains: [200.0,0.0,10.0,0.0,0.0]
+
+    
+arm_2_joint_3:
+  brake_present: true
+  control_mode: 0x3B
+  gains: [200.0,0.0,10.0,0.0,0.0]
+  
+
+arm_2_joint_4:
+  brake_present: true
+  control_mode: 0x3B
+  gains: [200.0,0.0,10.0,0.0,0.0]
+
+
+arm_2_joint_5:
+  brake_present: true
+  control_mode: 0x3B
+  gains: [200.0,0.0,10.0,0.0,0.0]
+
+
+arm_2_joint_6:
+  brake_present: true
+  control_mode: 0x3B
+  gains: [200.0,0.0,10.0,0.0,0.0]
+
+
+
+#############################
+# ARM 3 
+#############################
+arm_3_joint_1:
+  brake_present: true
+  control_mode: 0x3B
+  gains: [200.0,0.0,10.0,0.0,0.0]
+
+
+arm_3_joint_2:
+  brake_present: true
+  control_mode: 0x3B
+  gains: [200.0,0.0,10.0,0.0,0.0]
+
+    
+arm_3_joint_3:
+  brake_present: true
+  control_mode: 0x3B
+  gains: [200.0,0.0,10.0,0.0,0.0]
+  
+
+arm_3_joint_4:
+  brake_present: true
+  control_mode: 0x3B
+  gains: [200.0,0.0,10.0,0.0,0.0]
+
+
+arm_3_joint_5:
+  brake_present: true
+  control_mode: 0x3B
+  gains: [200.0,0.0,10.0,0.0,0.0]
+
+
+arm_3_joint_6:
+  brake_present: true
+  control_mode: 0x3B
+  gains: [200.0,0.0,10.0,0.0,0.0]
+
+

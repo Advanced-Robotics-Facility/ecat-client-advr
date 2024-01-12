@@ -2,7 +2,7 @@ network:
   #protocol: zipc #tcp #iddp #udp
   #hostname: /tmp/ecat_master #10.240.23.30 #localhost #192.168.99.10 #192.168.9.99 #10.240.22.49
   
-  protocol: iddp #tcp #iddp #udp
+  protocol: tcp #tcp #iddp #udp
   hostname: localhost #10.240.23.30 #localhost #192.168.99.10 #192.168.9.99 #10.240.22.49
   port: 5000 #54321(UDP)
   timeout: 1000
@@ -11,6 +11,8 @@ period_ms: 1
 logging: false
 
 control:
+  joint_config_path: /home/user/xbot2_ws/src/external/ecat-client-advr/config/joint_config/mirror/mirror_pos3b.yaml 
+  joint_map_path: &joint_map_path '/home/user/xbot2_ws/src/external/ecat-client-advr/config/joint_map/mirror/mirror_joint_map.yaml' 
 ################position################
   #control_mode: position
   #position gains
@@ -40,9 +42,9 @@ control:
   pow_id: [201]
   
 XBotInterface:
-  urdf_path: ${PWD}/urdf/mirror.urdf
-  srdf_path: ${PWD}/srdf/mirror.srdf
-  joint_map_path: ${PWD}/joint_map/mirror_joint_map.yaml
+  urdf_path: ${PWD}/urdf/mirror/mirror.urdf
+  srdf_path: ${PWD}/srdf/mirror/mirror.srdf
+  joint_map_path: *joint_map_path
 ModelInterface:
   model_type: "RBDL"
   is_model_floating_base: "true"

@@ -12,8 +12,18 @@ private:
     uint64_t            loop_cnt;
     
     EcUtils::EC_CONFIG _ec_client_cfg;
-    std::vector<int> _slave_id_vector;
     EcIface::Ptr _client;
+    
+    MST _motors_start = {};
+    PAC _brake_cmds = {};
+    SSI _slave_info;
+    std::vector<int> _slave_id_vector;
+    
+    const int _max_pdo_aux_cmd_attemps=3;
+    int _pdo_aux_cmd_attemps=0; 
+
+    bool _send_ref=false;
+    bool _stop_motors=false;
     
 public:
 

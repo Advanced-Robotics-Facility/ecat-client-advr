@@ -34,23 +34,18 @@ void EcRtTrajectory::th_init ( void * )
 {
     // *************** AUTODETECTION *************** //
 
-    std::vector<int> slave_id_vector=_ec_client_cfg.motor_id;
+    _slave_id_vector=_ec_client_cfg.motor_id;
     
-    MST motors_start = {};
-    PAC brake_cmds = {};
-    PAC led_cmds = {};
-    
-    SSI slave_info;
 
-    if(_client->retrieve_slaves_info(slave_info))
+    if(_client->retrieve_slaves_info(_slave_info))
     {   
-        if(!slave_info.empty())
+        if(!_slave_info.empty())
         {
-            std::cout << "AUTODETECTION" << std::endl;
-            for(int motor_id_index=0;motor_id_index<slave_id_vector.size();motor_id_index++)
+            DPRINTF ("AUTODETECTION\n");
+            for(int motor_id_index=0;motor_id_index<_slave_id_vector.size();motor_id_index++)
             {
                 bool motor_found=false;
-                for ( auto &[id, type, pos] : slave_info ) {
+                for ( auto &[id, type, pos] : _slave_info ) {
                     if((type==CENT_AC) || (type==LO_PWR_DC_MC))//HP or LP motor
                     {
                         if(id == _ec_client_cfg.motor_id[motor_id_index])
@@ -70,55 +65,43 @@ void EcRtTrajectory::th_init ( void * )
         }
     }
     
-    for(int i=0; i< slave_id_vector.size();i++)
+    for(int i=0; i< _slave_id_vector.size();i++)
     {
-        int id = slave_id_vector[i];
-        motors_start.push_back(std::make_tuple(id,_ec_client_cfg.control_mode_type,_ec_client_cfg.gains));
+        int id = _slave_id_vector[i];
+        _motors_start.push_back(std::make_tuple(id,_ec_client_cfg.control_mode_type,_ec_client_cfg.gains));
         
         // queue release brake commands for all motors 
-        brake_cmds.push_back(std::make_tuple(id,to_underlying(PdoAuxCmdType::BRAKE_RELEASE)));
-        
-        for(int k=0 ; k < _ec_client_cfg.slave_id_led.size();k++)  // led on only for the last slaves on the chain
-        {
-            if(id == _ec_client_cfg.slave_id_led[k])
-            {
-                led_cmds.push_back(std::make_tuple(id,to_underlying(PdoAuxCmdType::LED_ON)));
-            }
-        }
+        _brake_cmds.push_back(std::make_tuple(id,to_underlying(PdoAuxCmdType::BRAKE_RELEASE)));
     }
         
     // *************** AUTODETECTION *************** //
 
-    bool send_ref=false;
-    bool stop_motors=false;
     bool motor_started=false;
-    const int max_pdo_aux_cmd_attemps=3; // 3 times to release/engage or LED ON/OFF command
-    int pdo_aux_cmd_attemps=0; // 3 times to release/engage or LED ON/OFF command
 
-    if(!motors_start.empty())
+    if(!_motors_start.empty())
     {
         // ************************* START Motors ***********************************//
-        std::cout << "START ALL MOTORS" << std::endl;
-        motor_started=_client->start_motors(motors_start);
+        DPRINTF ("START ALL MOTORS\n");
+        motor_started=_client->start_motors(_motors_start);
 
         if(motor_started)
         {
             // ************************* RELEASE BRAKES ***********************************//
-            while(pdo_aux_cmd_attemps<max_pdo_aux_cmd_attemps)
+            while(_pdo_aux_cmd_attemps<_max_pdo_aux_cmd_attemps)
             {
-                pdo_aux_cmd_attemps++;
-                if(!_client->pdo_aux_cmd(brake_cmds))
+                _pdo_aux_cmd_attemps++;
+                if(!_client->pdo_aux_cmd(_brake_cmds))
                 {
-                    std::cout << "Cannot perform the release brake command of the motors" << std::endl;
-                    pdo_aux_cmd_attemps=max_pdo_aux_cmd_attemps;
+                    DPRINTF ("Cannot perform the release brake command of the motors\n");
+                    _pdo_aux_cmd_attemps=_max_pdo_aux_cmd_attemps;
                 }
                 else
                 {
                     std::this_thread::sleep_for(1000ms); //wait 1s to check if the brakes are released
-                    if(_client->pdo_aux_cmd_sts(brake_cmds))
+                    if(_client->pdo_aux_cmd_sts(_brake_cmds))
                     {
-                        send_ref=true;
-                        pdo_aux_cmd_attemps=max_pdo_aux_cmd_attemps;
+                        _send_ref=true;
+                        _pdo_aux_cmd_attemps=_max_pdo_aux_cmd_attemps;
                     }
                 }
             }
@@ -126,42 +109,30 @@ void EcRtTrajectory::th_init ( void * )
         }
         else
         {
-            std::cout << "Motors not started" << std::endl;
+            DPRINTF ("Motors not started\n");
         }
             
         // ************************* START Motors ***********************************//
-
-        // ************************* SWITCH ON LEDs ***********************************//
-        pdo_aux_cmd_attemps=0;
-        while(pdo_aux_cmd_attemps<max_pdo_aux_cmd_attemps)
-        {
-            pdo_aux_cmd_attemps++;
-            if(!_client->pdo_aux_cmd(led_cmds))
-            {
-                std::cout << "Cannot perform the led on command of the motors"<< std::endl;
-                pdo_aux_cmd_attemps=max_pdo_aux_cmd_attemps;
-            }
-            else
-            {
-                std::this_thread::sleep_for(100ms);
-                if(_client->pdo_aux_cmd_sts(led_cmds))
-                {
-                    std::cout << "Switched ON the LEDs " << std::endl;
-                    pdo_aux_cmd_attemps=max_pdo_aux_cmd_attemps;
-                }
-            }
-        }
-        // ************************* SWITCH ON LEDs ***********************************//
     }
     else
     {
-        std::cout << "NO MOTORS STARTED" << std::endl;
+        DPRINTF ("NO MOTORS STARTED\n");
     }
+    
+#ifdef TEST_EXAMPLES
+        if(!_slave_id_vector.empty())
+        {
+            _send_ref=true;
+        }
+#endif
 }
 
 void EcRtTrajectory::th_loop ( void * )
 {
-
+    if(_send_ref)
+    {
+        
+    }
 }
 
     
