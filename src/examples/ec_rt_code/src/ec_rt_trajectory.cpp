@@ -68,10 +68,12 @@ void EcRtTrajectory::th_init ( void * )
     for(int i=0; i< _slave_id_vector.size();i++)
     {
         int id = _slave_id_vector[i];
-        _motors_start.push_back(std::make_tuple(id,_ec_client_cfg.control_mode_type,_ec_client_cfg.gains));
+        _motors_start.push_back(std::make_tuple(id,_ec_client_cfg.motor_config_map[id].control_mode_type,_ec_client_cfg.motor_config_map[id].gains));
         
-        // queue release brake commands for all motors 
-        _brake_cmds.push_back(std::make_tuple(id,to_underlying(PdoAuxCmdType::BRAKE_RELEASE)));
+        if(_ec_client_cfg.motor_config_map[id].brake_present){
+            // queue release brake commands for all motors 
+            _brake_cmds.push_back(std::make_tuple(id,to_underlying(PdoAuxCmdType::BRAKE_RELEASE)));
+        }
     }
         
     // *************** AUTODETECTION *************** //
@@ -86,26 +88,31 @@ void EcRtTrajectory::th_init ( void * )
 
         if(motor_started)
         {
-            // ************************* RELEASE BRAKES ***********************************//
-            while(_pdo_aux_cmd_attemps<_max_pdo_aux_cmd_attemps)
-            {
-                _pdo_aux_cmd_attemps++;
-                if(!_client->pdo_aux_cmd(_brake_cmds))
+            if(!_brake_cmds.empty()){
+                // ************************* RELEASE BRAKES ***********************************//
+                while(_pdo_aux_cmd_attemps<_max_pdo_aux_cmd_attemps)
                 {
-                    DPRINTF ("Cannot perform the release brake command of the motors\n");
-                    _pdo_aux_cmd_attemps=_max_pdo_aux_cmd_attemps;
-                }
-                else
-                {
-                    std::this_thread::sleep_for(1000ms); //wait 1s to check if the brakes are released
-                    if(_client->pdo_aux_cmd_sts(_brake_cmds))
+                    _pdo_aux_cmd_attemps++;
+                    if(!_client->pdo_aux_cmd(_brake_cmds))
                     {
-                        _send_ref=true;
+                        DPRINTF ("Cannot perform the release brake command of the motors\n");
                         _pdo_aux_cmd_attemps=_max_pdo_aux_cmd_attemps;
                     }
+                    else
+                    {
+                        std::this_thread::sleep_for(1000ms); //wait 1s to check if the brakes are released
+                        if(_client->pdo_aux_cmd_sts(_brake_cmds))
+                        {
+                            _send_ref=true;
+                            _pdo_aux_cmd_attemps=_max_pdo_aux_cmd_attemps;
+                        }
+                    }
                 }
+                // ************************* RELEASE BRAKES ***********************************//
             }
-            // ************************* RELEASE BRAKES ***********************************//
+            else{
+                _send_ref=true;
+            }
         }
         else
         {

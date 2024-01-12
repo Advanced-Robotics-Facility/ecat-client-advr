@@ -48,116 +48,109 @@ int main()
     
     EcUtils::Ptr ec_client_utils;
     EcUtils::EC_CONFIG ec_client_cfg;
+    std::string ec_cfg_file;
 
-    // Find the ec client configuration environment variable for setting.
-    char* ec_client_cfg_path;
-    ec_client_cfg_path = getenv ("EC_CLIENT_CFG");
-
-    if (ec_client_cfg_path==NULL)
-    {
-        std::cout << "EC Client configuration is not found"
-                     ", please setup it using the environment variable with name: EC_CLIENT_CFG " << std::endl;
+    try{
+        ec_client_utils=std::make_shared<EcUtils>();
+        ec_client_cfg = ec_client_utils->get_ec_cfg();
+        ec_cfg_file=ec_client_utils->get_ec_cfg_file();
+    }catch(std::exception &ex){
+        std::cout << "Error on ec client config file" << std::endl;
+        std::cout << ex.what() << std::endl;
+    return 1;
     }
-    else
-    {
-        try{
-            auto ec_client_cfg_file = YAML::LoadFile(ec_client_cfg_path);
-            ec_client_utils=std::make_shared<EcUtils>(ec_client_cfg_file);
-            ec_client_cfg = ec_client_utils->get_ec_cfg();
-        }catch(std::exception &ex){
-            std::cout << "Error on ec client config file" << std::endl;
-            std::cout << ex.what() << std::endl;
-        return 1;
-        }
-        
-         std::vector<int> slave_id_vector=ec_client_cfg.motor_id;
+    
+        std::vector<int> slave_id_vector=ec_client_cfg.motor_id;
 
 
-        // *************** START CLIENT  *************** //
-        EcIface::Ptr client=ec_client_utils->make_ec_iface();
-        
-        auto period_ms_time=milliseconds(ec_client_cfg.period_ms);
-        
-        STM_sts="Connected";
-        
-        
-        // *************** START CLIENT  *************** //
-                    
-        
-        // *************** AUTODETECTION *************** //
-        
-        MST motors_start = {};
-        PAC brake_cmds = {};
-        PAC led_cmds = {};
-        
-        SSI slave_info;
-        
-        
-        int control_mode_type=0xD4;
-        std::vector<float> imp_gains={1000.0,10.0,1.0,0.7,0.007};
+    // *************** START CLIENT  *************** //
+    EcIface::Ptr client=ec_client_utils->make_ec_iface();
+    
+    auto period_ms_time=milliseconds(ec_client_cfg.period_ms);
+    
+    STM_sts="Connected";
+    
+    
+    // *************** START CLIENT  *************** //
+                
+    
+    // *************** AUTODETECTION *************** //
+    
+    MST motors_start = {};
+    PAC brake_cmds = {};
+    PAC led_cmds = {};
+    
+    SSI slave_info;
+    
+    
+    int control_mode_type=0xD4;
+    std::vector<float> imp_gains={1000.0,10.0,1.0,0.7,0.007};
 
-        if(client->retrieve_slaves_info(slave_info))
-        {   
-            if(!slave_info.empty())
+    if(client->retrieve_slaves_info(slave_info))
+    {   
+        if(!slave_info.empty())
+        {
+            std::cout << "AUTODETECTION" << std::endl;
+            for(int motor_id_index=0;motor_id_index<slave_id_vector.size();motor_id_index++)
             {
-                std::cout << "AUTODETECTION" << std::endl;
-                for(int motor_id_index=0;motor_id_index<slave_id_vector.size();motor_id_index++)
-                {
-                    bool motor_found=false;
-                    for ( auto &[id, type, pos] : slave_info ) {
-                        if((type==CENT_AC) || (type==LO_PWR_DC_MC))//HP or LP motor
+                bool motor_found=false;
+                for ( auto &[id, type, pos] : slave_info ) {
+                    if((type==CENT_AC) || (type==LO_PWR_DC_MC))//HP or LP motor
+                    {
+                        if(id == ec_client_cfg.motor_id[motor_id_index])
                         {
-                            if(id == ec_client_cfg.motor_id[motor_id_index])
-                            {
-                                motor_found=true;
-                                break;
-                            }
+                            motor_found=true;
+                            break;
                         }
                     }
-                
-                    if(!motor_found)
-                    {
-                        throw std::runtime_error("ID: " + std::to_string(ec_client_cfg.motor_id[motor_id_index]) + "not found");
-                    }
                 }
-
-                STM_sts="Autodetection";
-            }
-        }
-        
-        for(int i=0; i< slave_id_vector.size();i++)
-        {
-            int id = slave_id_vector[i];
-            motors_start.push_back(std::make_tuple(id,control_mode_type,imp_gains));
             
+                if(!motor_found)
+                {
+                    throw std::runtime_error("ID: " + std::to_string(ec_client_cfg.motor_id[motor_id_index]) + "not found");
+                }
+            }
+
+            STM_sts="Autodetection";
+        }
+    }
+    
+    for(int i=0; i< slave_id_vector.size();i++)
+    {
+        int id = slave_id_vector[i];
+        motors_start.push_back(std::make_tuple(id,ec_client_cfg.motor_config_map[id].control_mode_type,ec_client_cfg.motor_config_map[id].gains));
+        
+        if(ec_client_cfg.motor_config_map[id].brake_present){
             // queue release brake commands for all motors 
             brake_cmds.push_back(std::make_tuple(id,to_underlying(PdoAuxCmdType::BRAKE_RELEASE)));
-            
-            for(int k=0 ; k < ec_client_cfg.slave_id_led.size();k++)  // led on only for the last slaves on the chain
+        }
+        
+        for(int k=0 ; k < ec_client_cfg.slave_id_led.size();k++)  // led on only for the last slaves on the chain
+        {
+            if(id == ec_client_cfg.slave_id_led[k])
             {
-                if(id == ec_client_cfg.slave_id_led[k])
-                {
-                    led_cmds.push_back(std::make_tuple(id,to_underlying(PdoAuxCmdType::LED_ON)));
-                }
+                led_cmds.push_back(std::make_tuple(id,to_underlying(PdoAuxCmdType::LED_ON)));
             }
         }
-            
-        // *************** AUTODETECTION *************** //
+    }
+        
+    // *************** AUTODETECTION *************** //
 
-        bool stop_motors=false;
-        bool motor_started=false;
-        const int max_pdo_aux_cmd_attemps=3; // 3 times to release/engage or LED ON/OFF command
-        int pdo_aux_cmd_attemps=0; // 3 times to release/engage or LED ON/OFF command
+    bool stop_motors=false;
+    bool motor_started=false;
+    const int max_pdo_aux_cmd_attemps=3; // 3 times to release/engage or LED ON/OFF command
+    int pdo_aux_cmd_attemps=0; // 3 times to release/engage or LED ON/OFF command
 
-        if(!motors_start.empty())
+    if(!motors_start.empty())
+    {
+        // ************************* START Motors ***********************************//
+        std::cout << "START ALL MOTORS" << std::endl;
+        motor_started=client->start_motors(motors_start);
+
+        if(motor_started)
         {
-            // ************************* START Motors ***********************************//
-            std::cout << "START ALL MOTORS" << std::endl;
-            motor_started=client->start_motors(motors_start);
-
-            if(motor_started)
-            {
-                STM_sts="Motor_Started";
+            STM_sts="Motor_Started";
+            if(!brake_cmds.empty()){
                 // ************************* RELEASE BRAKES ***********************************//
                 while(pdo_aux_cmd_attemps<max_pdo_aux_cmd_attemps)
                 {
@@ -179,15 +172,19 @@ int main()
                 }
                 // ************************* RELEASE BRAKES ***********************************//
             }
-            else
-            {
-                std::cout << "Motors not started" << std::endl;
+            else{
+                STM_sts="Motor_Ctrl_SetGains";
             }
-                
-            // ************************* START Motors ***********************************//
+        }
+        else
+        {
+            std::cout << "Motors not started" << std::endl;
+        }
+            
+        // ************************* START Motors ***********************************//
 
-            // ************************* SWITCH ON LEDs ***********************************//
-
+        // ************************* SWITCH ON LEDs ***********************************//
+        if(!led_cmds.empty()){
             pdo_aux_cmd_attemps=0;
             while(pdo_aux_cmd_attemps<max_pdo_aux_cmd_attemps)
             {
@@ -207,171 +204,172 @@ int main()
                     }
                 }
             }
-            // ************************* SWITCH ON LEDs ***********************************//
         }
-        else
-        {
-            std::cout << "NO MOTORS STARTED" << std::endl;
-        }
+        // ************************* SWITCH ON LEDs ***********************************//
+    }
+    else
+    {
+        std::cout << "NO MOTORS STARTED" << std::endl;
+    }
 
 #ifdef TEST_EXAMPLES
-        if(!slave_id_vector.empty())
+    if(!slave_id_vector.empty())
+    {
+        if(STM_sts=="Connected")
         {
-            if(STM_sts=="Connected")
+            STM_sts="Motor_Ctrl_SetGains";
+        }
+    }
+#endif
+            
+    if(STM_sts=="Motor_Ctrl_SetGains" || 
+        STM_sts=="Motor_Ctrl")
+    {
+        // MODEL INTEFACE SETUP
+        XBot::ConfigOptions config=XBot::ConfigOptions::FromConfigFile(ec_cfg_file); 
+        
+        XBot::ModelInterface::Ptr model= XBot::ModelInterface::getModel(config);
+        
+        auto start_time= steady_clock::now();
+        auto time=start_time;
+        
+        auto time_to_engage_brakes = milliseconds(1000); // Default 1s
+        
+        bool run=true;
+        bool first_Rx=false;
+        
+        bool motors_vel_check=false;
+        bool led_off_req=false;
+        
+        XBot::JointIdMap q,qdot,q_ref,tau_ref,q_ref_test;
+        Eigen::VectorXd tau_g; 
+        
+        auto set_gain_time_ms=milliseconds(3000);
+        std::vector<float> imp_zero_gains={0.0,0.0,imp_gains[2],imp_gains[3],imp_gains[4]};
+        std::vector<float> gain_start=imp_gains;
+        std::vector<float> gain_trj=imp_zero_gains;
+        std::vector<float> gain_ref=gain_start;
+        
+        std::vector<MR> motors_ref;
+        while (run)
+        {
+            bool client_alive = client->is_client_alive();
+            
+            if(!client_alive)
             {
-                STM_sts="Motor_Ctrl_SetGains";
+                break;
             }
-        }
-#endif
-                
-        if(STM_sts=="Motor_Ctrl_SetGains" || 
-           STM_sts=="Motor_Ctrl")
-        {
-            // MODEL INTEFACE SETUP
-            XBot::ConfigOptions config=XBot::ConfigOptions::FromConfigFile(ec_client_cfg_path); 
             
-            XBot::ModelInterface::Ptr model= XBot::ModelInterface::getModel(config);
+            auto time_elapsed_ms= duration_cast<milliseconds>(time-start_time);
             
-            auto start_time= steady_clock::now();
-            auto time=start_time;
+            // Rx "SENSE"
             
-            auto time_to_engage_brakes = milliseconds(1000); // Default 1s
-            
-            bool run=true;
-            bool first_Rx=false;
-            
-            bool motors_vel_check=false;
-            bool led_off_req=false;
-            
-            XBot::JointIdMap q,qdot,q_ref,tau_ref,q_ref_test;
-            Eigen::VectorXd tau_g; 
-            
-            auto set_gain_time_ms=milliseconds(3000);
-            std::vector<float> imp_zero_gains={0.0,0.0,imp_gains[2],imp_gains[3],imp_gains[4]};
-            std::vector<float> gain_start=imp_gains;
-            std::vector<float> gain_trj=imp_zero_gains;
-            std::vector<float> gain_ref=gain_start;
-            
-            std::vector<MR> motors_ref;
-            while (run)
+            //******************* Power Board Telemetry ********
+            auto pow_status_map= client->get_pow_status();
+            float v_batt,v_load,i_load,temp_pcb,temp_heatsink,temp_batt;
+            if(!pow_status_map.empty())
             {
-                bool client_alive = client->is_client_alive();
-                
-                if(!client_alive)
-                {
-                    break;
+                for ( const auto &[esc_id, pow_status] : pow_status_map){
+                    v_batt =        pow_status[0];
+                    v_load =        pow_status[1];
+                    i_load =        pow_status[2];
+                    temp_pcb =      pow_status[3];
+                    temp_heatsink=  pow_status[4];
+                    temp_batt=      pow_status[5];
                 }
-                
-                auto time_elapsed_ms= duration_cast<milliseconds>(time-start_time);
-                
-                // Rx "SENSE"
-                
-                //******************* Power Board Telemetry ********
-                auto pow_status_map= client->get_pow_status();
-                float v_batt,v_load,i_load,temp_pcb,temp_heatsink,temp_batt;
-                if(!pow_status_map.empty())
-                {
-                    for ( const auto &[esc_id, pow_status] : pow_status_map){
-                        v_batt =        pow_status[0];
-                        v_load =        pow_status[1];
-                        i_load =        pow_status[2];
-                        temp_pcb =      pow_status[3];
-                        temp_heatsink=  pow_status[4];
-                        temp_batt=      pow_status[5];
-                    }
-                }
-                //******************* Power Board Telemetry ********
-                
-                //******************* Motor Telemetry **************
-                auto motors_status_map= client->get_motors_status();
-                if(!motors_status_map.empty())
-                {
-                    for ( const auto &[esc_id, motor_status] : motors_status_map){
-                        try{
-                            float  link_pos,motor_pos,link_vel,motor_vel,torque,aux;
-                            float  motor_temp, board_temp;
-                            uint32_t fault,rtt,op_idx_ack;
-                            uint32_t cmd_aux_sts,brake_sts,led_sts;
-                            std::tie(link_pos,motor_pos,link_vel,motor_vel,torque,motor_temp,board_temp,fault,rtt,op_idx_ack,aux,cmd_aux_sts) = motor_status;
-                            
-                            // PRINT OUT Brakes and LED get_motors_status @ NOTE To be tested.         
-                            brake_sts = cmd_aux_sts & 3; //00 unknown
-                                                        //01 release brake 
-                                                        //10 enganged brake  
-                                                        //11 error
-                            led_sts= (cmd_aux_sts & 4)/4; // 1 or 0 LED  ON/OFF
-                            
-                            
-                            //Closed Loop SENSE for motor position and velocity
-                            q[esc_id]=motor_pos;
-                            qdot[esc_id] = motor_vel;
-                            q_ref[esc_id]=q[esc_id];
-                            
-                            if(!first_Rx)
-                            {
-                                q_ref_test[esc_id]=motor_pos;
-                            }
-                            
-                        } catch (std::out_of_range oor) {}
-                    }
-                    //******************* Motor Telemetry **************
-                    if(q_ref_test.size() == model->getJointNum()-6)
-                    {
-                        //Open Loop SENSE
-                        first_Rx=true;
-                    }
-                    else
-                    {
-                        throw std::runtime_error("fatal error: different size of initial position from joint of the model");
-                    }
-                }
-                    
-#ifdef TEST_EXAMPLES
-                if(!first_Rx)
-                {
-                    first_Rx=true;
-                    for(int i=0; i<slave_id_vector.size();i++)
-                    {
-                        int id=slave_id_vector[i];
-                        q[id]=0.0;
-                        qdot[id] = 0.0;
-                        q_ref[i]=0.0;
-                    }
-                }
-#endif
-                if(STM_sts=="Motor_Ctrl" || 
-                   STM_sts=="Motor_Ctrl_SetGains")
-                {
-                    motors_ref.clear();      
-                    
-                    if(STM_sts=="Motor_Ctrl_SetGains")
-                    {
-                        // define a simplistic linear trajectory
-                        auto tau= std::chrono::duration<double> (time_elapsed_ms) / std::chrono::duration<double> (set_gain_time_ms);
-
-                        // quintic poly 6t^5 - 15t^4 + 10t^3
-                        auto alpha = ((6*tau - 15)*tau + 10)*tau*tau*tau;
+            }
+            //******************* Power Board Telemetry ********
+            
+            //******************* Motor Telemetry **************
+            auto motors_status_map= client->get_motors_status();
+            if(!motors_status_map.empty())
+            {
+                for ( const auto &[esc_id, motor_status] : motors_status_map){
+                    try{
+                        float  link_pos,motor_pos,link_vel,motor_vel,torque,aux;
+                        float  motor_temp, board_temp;
+                        uint32_t fault,rtt,op_idx_ack;
+                        uint32_t cmd_aux_sts,brake_sts,led_sts;
+                        std::tie(link_pos,motor_pos,link_vel,motor_vel,torque,motor_temp,board_temp,fault,rtt,op_idx_ack,aux,cmd_aux_sts) = motor_status;
                         
-                        // interpolate
-                        for(int i=0; i<gain_trj.size();i++)
+                        // PRINT OUT Brakes and LED get_motors_status @ NOTE To be tested.         
+                        brake_sts = cmd_aux_sts & 3; //00 unknown
+                                                    //01 release brake 
+                                                    //10 enganged brake  
+                                                    //11 error
+                        led_sts= (cmd_aux_sts & 4)/4; // 1 or 0 LED  ON/OFF
+                        
+                        
+                        //Closed Loop SENSE for motor position and velocity
+                        q[esc_id]=motor_pos;
+                        qdot[esc_id] = motor_vel;
+                        q_ref[esc_id]=q[esc_id];
+                        
+                        if(!first_Rx)
                         {
-                            gain_ref[i] = gain_start[i] + alpha * (gain_trj[i] - gain_start[i]);
+                            q_ref_test[esc_id]=motor_pos;
                         }
-                    }
+                        
+                    } catch (std::out_of_range oor) {}
+                }
+                //******************* Motor Telemetry **************
+                if(q_ref_test.size() == model->getJointNum()-6)
+                {
+                    //Open Loop SENSE
+                    first_Rx=true;
+                }
+                else
+                {
+                    throw std::runtime_error("fatal error: different size of initial position from joint of the model");
+                }
+            }
+                
+#ifdef TEST_EXAMPLES
+            if(!first_Rx)
+            {
+                first_Rx=true;
+                for(int i=0; i<slave_id_vector.size();i++)
+                {
+                    int id=slave_id_vector[i];
+                    q[id]=0.0;
+                    qdot[id] = 0.0;
+                    q_ref[i]=0.0;
+                }
+            }
+#endif
+            if(STM_sts=="Motor_Ctrl" || 
+                STM_sts=="Motor_Ctrl_SetGains")
+            {
+                motors_ref.clear();      
+                
+                if(STM_sts=="Motor_Ctrl_SetGains")
+                {
+                    // define a simplistic linear trajectory
+                    auto tau= std::chrono::duration<double> (time_elapsed_ms) / std::chrono::duration<double> (set_gain_time_ms);
 
-                    if(!q.empty())
+                    // quintic poly 6t^5 - 15t^4 + 10t^3
+                    auto alpha = ((6*tau - 15)*tau + 10)*tau*tau*tau;
+                    
+                    // interpolate
+                    for(int i=0; i<gain_trj.size();i++)
                     {
-                        model->setJointPosition(q);
-                        model->update();
-                        
-                        model->computeGravityCompensation(tau_g);
-                        model->eigenToMap(tau_g,tau_ref);
-                        
-                        
-                        for ( const auto &[esc_id, tor_ref] : tau_ref){
-                            if(esc_id > 0)
-                            {
-                                double pos_ref = q_ref[esc_id];
+                        gain_ref[i] = gain_start[i] + alpha * (gain_trj[i] - gain_start[i]);
+                    }
+                }
+
+                if(!q.empty())
+                {
+                    model->setJointPosition(q);
+                    model->update();
+                    
+                    model->computeGravityCompensation(tau_g);
+                    model->eigenToMap(tau_g,tau_ref);
+                    
+                    
+                    for ( const auto &[esc_id, tor_ref] : tau_ref){
+                        if(esc_id > 0)
+                        {
+                            double pos_ref = q_ref[esc_id];
 //                                 std::cout << "ESC_ID: " << esc_id
 //                                           << " POS_REF: " << pos_ref 
 //                                           << " TOR_REF: " << tor_ref 
@@ -382,80 +380,80 @@ int main()
 //                                                            <<  gain_ref[4] <<  " "
 //                                           << std::endl;
 
-                                motors_ref.push_back(std::make_tuple(esc_id, //bId
-                                                                    control_mode_type, //ctrl_type
-                                                                    pos_ref, //pos_ref
-                                                                    0.0, //vel_ref
-                                                                    tor_ref, //tor_ref
-                                                                    gain_ref[0], //gain_1
-                                                                    gain_ref[1], //gain_2
-                                                                    gain_ref[2], //gain_3
-                                                                    gain_ref[3], //gain_4
-                                                                    gain_ref[4], //gain_5
-                                                                    1, // op  means NO_OP
-                                                                    0, // idx
-                                                                    0  // aux
-                                                                    ));
-                            }
+                            motors_ref.push_back(std::make_tuple(esc_id, //bId
+                                                                control_mode_type, //ctrl_type
+                                                                pos_ref, //pos_ref
+                                                                0.0, //vel_ref
+                                                                tor_ref, //tor_ref
+                                                                gain_ref[0], //gain_1
+                                                                gain_ref[1], //gain_2
+                                                                gain_ref[2], //gain_3
+                                                                gain_ref[3], //gain_4
+                                                                gain_ref[4], //gain_5
+                                                                1, // op  means NO_OP
+                                                                0, // idx
+                                                                0  // aux
+                                                                ));
                         }
                     }
                 }
-                    
-                // ************************* SEND ALWAYS REFERENCES***********************************//
+            }
                 
-                // Tx "MOVE" 
-                if(!motors_ref.empty())
+            // ************************* SEND ALWAYS REFERENCES***********************************//
+            
+            // Tx "MOVE" 
+            if(!motors_ref.empty())
+            {
+                client->set_motors_references(MotorRefFlags::FLAG_MULTI_REF, motors_ref);
+            }
+            else
+            {
+                throw std::runtime_error("fatal error: motors references structure empty!");
+            }
+            // ************************* SEND ALWAYS REFERENCES***********************************//
+
+            if(STM_sts=="Engage_Motor_Brake")
+            {
+                // ************************* Engage Brake***********************************//
+                if(time_elapsed_ms>=time_to_engage_brakes)  
                 {
-                    client->set_motors_references(MotorRefFlags::FLAG_MULTI_REF, motors_ref);
-                }
-                else
-                {
-                    throw std::runtime_error("fatal error: motors references structure empty!");
-                }
-                // ************************* SEND ALWAYS REFERENCES***********************************//
-    
-                if(STM_sts=="Engage_Motor_Brake")
-                {
-                    // ************************* Engage Brake***********************************//
-                    if(time_elapsed_ms>=time_to_engage_brakes)  
+                    led_off_req=true;
+                    if(motors_vel_check)
                     {
-                        led_off_req=true;
-                        if(motors_vel_check)
+                        if(client->pdo_aux_cmd_sts(brake_cmds))
                         {
-                            if(client->pdo_aux_cmd_sts(brake_cmds))
-                            {
-                                std::cout << "Brakes engaged for all motors" << std::endl;
-                                stop_motors=true;
-                            }
-                            else
-                            {
-                                pdo_aux_cmd_attemps++;
-                                if(pdo_aux_cmd_attemps<max_pdo_aux_cmd_attemps)
-                                {
-                                    led_off_req=false;
-                                    motors_vel_check=false;
-                                    start_time=time+period_ms_time;
-                                }
-                            }
+                            std::cout << "Brakes engaged for all motors" << std::endl;
+                            stop_motors=true;
                         }
                         else
                         {
-                            std::cout << "Not all Motors velocity satisfied the velocity requirement"   << std::endl;  
-                        }
-                        
-                        if(!stop_motors) // all motors velocity check not satisfied for time_to_engage_brakes or brake status different from request
-                        {
-                            std::cout << "Cannot engage the brake for all motors, no stopping action on the motors will be performed" << std::endl;  
+                            pdo_aux_cmd_attemps++;
+                            if(pdo_aux_cmd_attemps<max_pdo_aux_cmd_attemps)
+                            {
+                                led_off_req=false;
+                                motors_vel_check=false;
+                                start_time=time+period_ms_time;
+                            }
                         }
                     }
                     else
                     {
-                        if(!motors_vel_check)
-                        {
-                            brake_cmds.clear();
-                            motors_vel_check=true;
-                            for ( const auto &[esc_id, motor_velocity] : qdot){
-                                
+                        std::cout << "Not all Motors velocity satisfied the velocity requirement"   << std::endl;  
+                    }
+                    
+                    if(!stop_motors) // all motors velocity check not satisfied for time_to_engage_brakes or brake status different from request
+                    {
+                        std::cout << "Cannot engage the brake for all motors, no stopping action on the motors will be performed" << std::endl;  
+                    }
+                }
+                else
+                {
+                    if(!motors_vel_check)
+                    {
+                        brake_cmds.clear();
+                        motors_vel_check=true;
+                        for ( const auto &[esc_id, motor_velocity] : qdot){
+                            if(ec_client_cfg.motor_config_map[esc_id].brake_present){
                                 if(abs(motor_velocity) <= 7.0) // changed from 0.02 rad/s to 7rad/s same value of the slaves
                                 {
                                     motors_vel_check &= true;
@@ -467,28 +465,35 @@ int main()
                                     std::cout << "Velocity check not satisfied for motor id: " << esc_id << std::endl;
                                 }
                             }
-                            
-                            if(motors_vel_check)
-                            {
+                        }
+                        
+                        if(motors_vel_check)
+                        {
+                            if(!brake_cmds.empty()){
                                 start_time=time+period_ms_time;
                                 if(!client->pdo_aux_cmd(brake_cmds))
                                 { 
                                     run=false;
                                 }
                             }
+                            else{
+                                led_off_req=true;
+                                stop_motors=true;
+                            }
                         }
                     }
-                    // ************************* Engage Brake***********************************//
                 }
-                    
-                    
-                    // ************************* SWITCH OFF LEDs OFF  ***********************************//
-                if(STM_sts=="LED_OFF")
+                // ************************* Engage Brake***********************************//
+            }
+                
+                
+                // ************************* SWITCH OFF LEDs OFF  ***********************************//
+            if(STM_sts=="LED_OFF")
+            {
+                if(time_elapsed_ms>=100ms) 
                 {
-                    if(time_elapsed_ms>=100ms) 
-                    {
-                        run=false;
-                        
+                    run=false;
+                    if(!led_cmds.empty()){
                         if(client->pdo_aux_cmd_sts(led_cmds))
                         {
                             std::cout << "Switched OFF the LEDs"<< std::endl;
@@ -512,101 +517,101 @@ int main()
                             }
                         }
                     }
-                    
-                    if(!run && stop_motors)
-                    {
-                        STM_sts ="Motor_Stopping";
-                    }
-                    // ************************* SWITCH OFF LEDs  ***********************************//
                 }
                 
-                // delay until time to iterate again
-                time += period_ms_time;
-               
-                if(STM_sts=="Motor_Ctrl_SetGains")
+                if(!run && stop_motors)
                 {
-                    if(time_elapsed_ms>=set_gain_time_ms)
-                    {
-                        if(!brake_engagement_req)
-                        {
-                            STM_sts="Motor_Ctrl";
-                        }
-                        else
-                        {
-                            STM_sts="Engage_Motor_Brake";
-                            pdo_aux_cmd_attemps=0;
-                        }
-                        start_time=time;
-                    }
+                    STM_sts ="Motor_Stopping";
                 }
-                else if(STM_sts=="Motor_Ctrl")
+                // ************************* SWITCH OFF LEDs  ***********************************//
+            }
+            
+            // delay until time to iterate again
+            time += period_ms_time;
+            
+            if(STM_sts=="Motor_Ctrl_SetGains")
+            {
+                if(time_elapsed_ms>=set_gain_time_ms)
                 {
-                    if(restore_gains)
+                    if(!brake_engagement_req)
                     {
-                        STM_sts="Motor_Ctrl_SetGains";
-                        brake_engagement_req=true;
-                        gain_start=gain_ref;
-                        gain_trj=imp_gains;
-                        start_time=time;
+                        STM_sts="Motor_Ctrl";
                     }
-                }
-                else if(STM_sts=="Engage_Motor_Brake")
-                {
-                    if (led_off_req)
+                    else
                     {
-                        STM_sts="LED_OFF";
-                        start_time=time;
-                            
-                        // SETUP LED OFF
-                        led_cmds.clear();
-                        for(int i=0; i<slave_id_vector.size();i++)
+                        STM_sts="Engage_Motor_Brake";
+                        pdo_aux_cmd_attemps=0;
+                    }
+                    start_time=time;
+                }
+            }
+            else if(STM_sts=="Motor_Ctrl")
+            {
+                if(restore_gains)
+                {
+                    STM_sts="Motor_Ctrl_SetGains";
+                    brake_engagement_req=true;
+                    gain_start=gain_ref;
+                    gain_trj=imp_gains;
+                    start_time=time;
+                }
+            }
+            else if(STM_sts=="Engage_Motor_Brake")
+            {
+                if (led_off_req)
+                {
+                    STM_sts="LED_OFF";
+                    start_time=time;
+                        
+                    // SETUP LED OFF
+                    led_cmds.clear();
+                    for(int i=0; i<slave_id_vector.size();i++)
+                    {
+                        auto id=slave_id_vector[i];
+                        for(int k=0 ; k < ec_client_cfg.slave_id_led.size();k++)  // led off only for the last slaves on the chain
                         {
-                            auto id=slave_id_vector[i];
-                            for(int k=0 ; k < ec_client_cfg.slave_id_led.size();k++)  // led off only for the last slaves on the chain
+                            if(id == ec_client_cfg.slave_id_led[k])
                             {
-                                if(id == ec_client_cfg.slave_id_led[k])
-                                {
-                                    led_cmds.push_back(std::make_tuple(id,to_underlying(PdoAuxCmdType::LED_OFF)));
-                                }
+                                led_cmds.push_back(std::make_tuple(id,to_underlying(PdoAuxCmdType::LED_OFF)));
                             }
                         }
-                        
-                        // send first leds off command
-                        pdo_aux_cmd_attemps=0;
-                        if(!client->pdo_aux_cmd(led_cmds))
-                        {
-                            std::cout << "Cannot perform the led off command of the all motors" << std::endl;
-                            run=false;
-                        }
+                    }
+                    
+                    // send first leds off command
+                    pdo_aux_cmd_attemps=0;
+                    if(!client->pdo_aux_cmd(led_cmds))
+                    {
+                        std::cout << "Cannot perform the led off command of the all motors" << std::endl;
+                        run=false;
                     }
                 }
-                
-                std::this_thread::sleep_until(time);  
             }
-                
+            
+            std::this_thread::sleep_until(time);  
         }
+            
+    }
 
 
-        // ************************* STOP Motors ***********************************//
-        if(STM_sts =="Motor_Stopping")
+    // ************************* STOP Motors ***********************************//
+    if(STM_sts =="Motor_Stopping")
+    {
+        if(!client->stop_motors())
         {
-            if(!client->stop_motors())
-            {
-                std::cout << "Not all motors are stopped" << std::endl;
-            }
-            else
-            {
-                std::cout << "All Motors stopped" << std::endl;
-            }
-            STM_sts = "Exit";
+            std::cout << "Not all motors are stopped" << std::endl;
         }
-        // ************************* STOP Motors ***********************************//
-        
-        // STOP CLIENT
-        if(client->is_client_alive())
+        else
         {
-            client->stop_client();
+            std::cout << "All Motors stopped" << std::endl;
         }
+        STM_sts = "Exit";
+    }
+    // ************************* STOP Motors ***********************************//
+    
+    // STOP CLIENT
+    if(client->is_client_alive())
+    {
+        client->stop_client();
     }
     return 0;
 }

@@ -9,7 +9,6 @@ class EcBlockUtils
     
 public:
     
-    static char* retrieve_cfg_path();
     static EcUtils::Ptr retrieve_cfg();
     static bool retrieve_ec_iface(std::string &error_info,bool start_robot_req=false);
     static void stop_ec_iface();

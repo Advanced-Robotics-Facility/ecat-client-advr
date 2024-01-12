@@ -13,8 +13,16 @@ _ec_cfg(ec_cfg)
     
 }
 
-EcUtils::EcUtils(const YAML::Node & ec_cfg)
+EcUtils::EcUtils()
 {   
+    _ec_client_cfg_file= getenv ("EC_CLIENT_CFG");
+    
+    if (_ec_client_cfg_file.c_str()==NULL)
+    {
+        throw std::runtime_error("EC Client configuration not found, setup the environment variable: EC_CLIENT_CFG ");
+    }
+    
+    auto ec_cfg=YAML::LoadFile(_ec_client_cfg_file);
     
     // Read the EC Client configuration.
     
@@ -76,39 +84,6 @@ EcUtils::EcUtils(const YAML::Node & ec_cfg)
         else
         {
             throw std::runtime_error("Wrong joint map file!");
-        }
-        
-        
-        if(!ec_cfg["control"]["control_mode"])
-            _control_mode="position";
-        else
-            _control_mode=ec_cfg["control"]["control_mode"].as<std::string>();
-        
-        if(_control_mode=="position")
-        {
-            _ec_cfg.control_mode_type=0x3B;
-        }
-        else if(_control_mode=="velocity")
-        {
-            _ec_cfg.control_mode_type=0x71;
-        }
-        else if(_control_mode=="impedance")
-        {
-            _ec_cfg.control_mode_type=0xD4;
-        }
-        else
-        {
-            throw std::runtime_error("Control mode not recognized, only the position, velocity or impedance mode is valid ");
-        }
-        
-        if(!ec_cfg["control"]["gains"])
-            _ec_cfg.gains.clear();
-        else
-            _ec_cfg.gains=ec_cfg["control"]["gains"].as<std::vector<float>>();
-        
-        if(_ec_cfg.gains.size()!=5)
-        {
-            throw std::runtime_error("Error invalid dimension of impedance gains. It has to be equal to five! ");
         }
         
         if(ec_cfg["control"]["homing_position"])
@@ -263,6 +238,11 @@ EcUtils::EC_CONFIG EcUtils::get_ec_cfg()
 {
     return _ec_cfg;
 };
+
+std::string EcUtils::get_ec_cfg_file()
+{
+    return _ec_client_cfg_file;
+}
 
 EcIface::Ptr EcUtils::make_ec_iface()
 {

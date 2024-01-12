@@ -53,72 +53,57 @@ int main ( int argc, char * argv[] ) try {
     main_common (&argc, (char*const**)&argv, test_sighandler);
 #endif
     
-    
-    
     EcUtils::Ptr ec_client_utils;
     EcUtils::EC_CONFIG ec_client_cfg;
 
-    // Find the ec client configuration environment variable for setting.
-    char* ec_client_cfg_path;
-    ec_client_cfg_path = getenv ("EC_CLIENT_CFG");
-
-    if (ec_client_cfg_path==NULL)
-    {
-        std::cout << "EC Client configuration is not found"
-                     ", please setup it using the environment variable with name: EC_CLIENT_CFG " << std::endl;
+    try{
+        ec_client_utils=std::make_shared<EcUtils>();
+        ec_client_cfg = ec_client_utils->get_ec_cfg();
+    }catch(std::exception &ex){
+        std::cout << "Error on ec client config file" << std::endl;
+        std::cout << ex.what() << std::endl;
+    return 1;
     }
-    else
-    {
-        try{
-            auto ec_client_cfg_file = YAML::LoadFile(ec_client_cfg_path);
-            ec_client_utils=std::make_shared<EcUtils>(ec_client_cfg_file);
-            ec_client_cfg = ec_client_utils->get_ec_cfg();
-        }catch(std::exception &ex){
-            std::cout << "Error on ec client config file" << std::endl;
-            std::cout << ex.what() << std::endl;
-        return 1;
-        }
-        
+    
 
-        // *************** START CLIENT  *************** //
-        EcIface::Ptr client=ec_client_utils->make_ec_iface();
+    // *************** START CLIENT  *************** //
+    EcIface::Ptr client=ec_client_utils->make_ec_iface();
+    
+    threads["EcRtTrajectory"] = new EcRtTrajectory(ec_client_cfg.period_ms,
+                                                    ec_client_cfg,
+                                                    client);
         
-        threads["EcRtTrajectory"] = new EcRtTrajectory(ec_client_cfg.period_ms,
-                                                       ec_client_cfg,
-                                                       client);
-            
-        threads["EcRtTrajectory"]->create(true);
+    threads["EcRtTrajectory"]->create(true);
 
-            
-        #ifdef SIG_TEST
-            #ifdef __COBALT__
-                // here I want to catch CTRL-C 
-                //wait_ret=__real_sigtimedwait(&set,&info,&ts);
-                __real_sigwait(&set, &sig);
-            #else
-                //timespec
-                //wait_ret=sigtimedwait(&set,&info,&ts);
-                sigwait(&set, &sig);  
-            #endif
+        
+    #ifdef SIG_TEST
+        #ifdef __COBALT__
+            // here I want to catch CTRL-C 
+            //wait_ret=__real_sigtimedwait(&set,&info,&ts);
+            __real_sigwait(&set, &sig);
         #else
-            while ( loop_guard ) {
-                sleep(1);
-            }
+            //timespec
+            //wait_ret=sigtimedwait(&set,&info,&ts);
+            sigwait(&set, &sig);  
         #endif
-        
-        threads["EcRtTrajectory"]->stop();
-        
-        for ( auto const &t : threads) {
-            //t.second->stop();
-            t.second->join();
-            delete t.second;
+    #else
+        while ( loop_guard ) {
+            sleep(1);
         }
-        
-        // STOP CLIENT
-        if(client->is_client_alive())
-        {
-            client->stop_client();
-        }
+    #endif
+    
+    threads["EcRtTrajectory"]->stop();
+    
+    for ( auto const &t : threads) {
+        //t.second->stop();
+        t.second->join();
+        delete t.second;
+    }
+    
+    // STOP CLIENT
+    if(client->is_client_alive())
+    {
+        client->stop_client();
     }
     
     std::cout << "Exit main" << std::endl;

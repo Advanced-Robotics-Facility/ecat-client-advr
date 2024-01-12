@@ -9,26 +9,11 @@ bool EcBlockUtils::_robot_started;
 using namespace std::chrono;
 
 
-char* EcBlockUtils::retrieve_cfg_path()
-{
-    char* ec_client_cfg_path;
-    ec_client_cfg_path = getenv ("EC_CLIENT_CFG");
-    
-    if (ec_client_cfg_path==NULL)
-    {
-        throw std::runtime_error("EC Client configuration not found, setup the environment variable: EC_CLIENT_CFG ");
-    }
-    
-    return ec_client_cfg_path;
-}
-
 EcUtils::Ptr EcBlockUtils::retrieve_cfg()
 {
     EcUtils::Ptr ec_client_utils;
      try{
-        auto ec_client_cfg_path = retrieve_cfg_path(); 
-        auto ec_client_cfg_file = YAML::LoadFile(ec_client_cfg_path);
-        ec_client_utils=std::make_shared<EcUtils>(ec_client_cfg_file);
+        ec_client_utils=std::make_shared<EcUtils>();
     }catch(std::exception &ex){
         throw std::runtime_error(ex.what());
     }
@@ -203,8 +188,8 @@ void EcBlockUtils::retrieve_motor_info(std::vector<int> &joint_id,
         auto home_map= ec_client_utils->get_ec_cfg().homing_position;
         auto trj_map = ec_client_utils->get_ec_cfg().trajectory;
         
-        ctrl_mode= ec_client_utils->get_ec_cfg().control_mode_type;
-        gains= ec_client_utils->get_ec_cfg().gains;
+//         ctrl_mode= ec_client_utils->get_ec_cfg().control_mode_type;
+//         gains= ec_client_utils->get_ec_cfg().gains;
 
         for ( int i=0;i<motor_id_v.size();i++) {
             int motor_id = motor_id_v[i];
