@@ -13,7 +13,7 @@
 
 
 using MotorStatusMap = std::map<int, std::tuple<float, float, float, float,   // pos_{link,motor}, vel_{link,motor}
-                                                float,                        // tor_ref
+                                                float,                        // torque
                                                 float,float,                  // {motor,board}
                                                 uint32_t, uint32_t,           // fault, rtt, op_idx_ack                  
                                                 uint32_t, float, uint32_t>>;  // aux // cmd_aux_sts
