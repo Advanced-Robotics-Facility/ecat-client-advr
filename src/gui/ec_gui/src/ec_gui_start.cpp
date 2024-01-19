@@ -1,5 +1,5 @@
 ﻿#include "ec_gui_start.h"
-#include "ec_utils.h"
+#include "utils/ec_utils.h"
 
 #include <iostream>
 #include <csignal>

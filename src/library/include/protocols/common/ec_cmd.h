@@ -2,7 +2,7 @@
 #define EC_CMD_H
 
 #include "ec_iface.h"
-#include "ec_zmq_cmd.h"
+#include "protocols/common/zmq/ec_zmq_cmd.h"
 #include "cmn_utils.h"
 
 class EcCmd : public EcIface

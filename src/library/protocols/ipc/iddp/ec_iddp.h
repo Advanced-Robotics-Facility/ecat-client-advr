@@ -5,8 +5,8 @@
 #include <pb_utils.h>
 #include "esc_factory.h"
 
-#include "ec_logger.h"
-#include "ec_cmd.h"
+#include "logger/ec_logger.h"
+#include "protocols/common/ec_cmd.h"
 
 #include <mutex>
 

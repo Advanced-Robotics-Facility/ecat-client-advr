@@ -1,19 +1,19 @@
-#ifndef EC_TCP_H
-#define EC_TCP_H
+#ifndef EC_ZIPC_H
+#define EC_ZIPC_H
 
 #include <thread_util.h>
-#include "ec_logger.h"
-#include "ec_cmd.h"
-#include "ec_pdo.h"
+#include "logger/ec_logger.h"
+#include "protocols/common/ec_cmd.h"
+#include "protocols/common/ec_pdo.h"
 
 #include <mutex>
 
-class EcTCP : public EcCmd,Thread_hook
+class EcZipc : public EcCmd,Thread_hook
 {
 public:
 
-    EcTCP(std::string host_address,uint32_t host_port);
-    ~EcTCP();
+    EcZipc(std::string host_address,uint32_t host_port);
+    ~EcZipc();
 
     void start_client(uint32_t period_ms,bool logging) final;
     void stop_client() final ;
@@ -53,7 +53,7 @@ private:
     std::shared_ptr<spdlog::logger> _consoleLog;
     SSI _slave_info;
     std::shared_ptr<EcPdo> _ec_pdo;
-    
+
     // last received motor data
     MotorStatusMap _motor_status_map;
     // last received ft data
@@ -73,4 +73,4 @@ private:
     std::shared_ptr<std::mutex> _mutex_imu_status;
 };
 
-#endif // EC_TCP_H
+#endif

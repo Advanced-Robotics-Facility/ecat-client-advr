@@ -5,7 +5,7 @@
 #include <chrono>
 #include <boost/asio.hpp>
 
-#include "ec_logger.h"
+#include "logger/ec_logger.h"
 #include "ec_iface.h"
 #include "cmn_utils.h"
 #include "task.h"

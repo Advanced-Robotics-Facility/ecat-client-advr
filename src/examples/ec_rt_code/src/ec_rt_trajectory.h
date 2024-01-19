@@ -1,7 +1,7 @@
 #ifndef __EC_RT_TRAJECTORY__
 #define __EC_RT_TRAJECTORY__
 
-#include "ec_utils.h"
+#include "utils/ec_utils.h"
 
 class EcRtTrajectory : public Thread_hook {
 

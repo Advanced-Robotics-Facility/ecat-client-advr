@@ -4,7 +4,7 @@
 #include <QtUiTools>
 #include <QWidget>
 
-#include "ec_utils.h"
+#include "utils/ec_utils.h"
 
 class EcGuiSdo : public QWidget
 {

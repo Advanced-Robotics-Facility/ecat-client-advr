@@ -58,11 +58,8 @@ find_package(ecat_master REQUIRED COMPONENTS ecat_udp ecat_core)
 
 # set includes
 include_directories(
-    ${PROJECT_SOURCE_DIR}/src/utils
-    ${PROJECT_SOURCE_DIR}/src/library/protocols/tcp/
-    ${PROJECT_SOURCE_DIR}/src/library/protocols/udp/
+    ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/src/library/protocols/ipc/iddp/
-    ${PROJECT_SOURCE_DIR}/src/library/protocols/ipc/zipc/
     ${EIGEN3_INCLUDE_DIR}
     )
     

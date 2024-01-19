@@ -2,7 +2,7 @@
 #define EC_BLOCK_UTILS_H
 
 #include <map>
-#include "ec_utils.h"
+#include "utils/ec_utils.h"
 
 class EcBlockUtils
 {

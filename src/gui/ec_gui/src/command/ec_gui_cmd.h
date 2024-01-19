@@ -4,7 +4,7 @@
 #include <QtUiTools>
 #include <QWidget>
 
-#include "ec_utils.h"
+#include "utils/ec_utils.h"
 #include "ec_gui_slider.h"
 
 class EcGuiCmd : public QWidget

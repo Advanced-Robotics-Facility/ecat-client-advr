@@ -6,7 +6,7 @@
 
 #include <atomic>
 
-#include "ec_utils.h"
+#include "utils/ec_utils.h"
 
 #include <XBotInterface/ModelInterface.h>
 #include <XBotInterface/ConfigOptions.h>

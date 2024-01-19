@@ -1,7 +1,7 @@
 #include <cassert>
 #include <tuple>
 
-#include "ec_zipc.h"
+#include "protocols/ipc/zipc/ec_zipc.h"
 
 
 EcZipc::EcZipc(std::string host_address,uint32_t host_port):

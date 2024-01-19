@@ -6,7 +6,7 @@
 #include "ec_gui_start.h"
 #include <QApplication>
 
-#include "ec_utils.h"
+#include "utils/ec_utils.h"
 
 int main(int argc, char *argv[])
 {

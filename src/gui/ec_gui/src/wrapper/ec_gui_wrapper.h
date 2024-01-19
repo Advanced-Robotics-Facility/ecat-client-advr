@@ -5,7 +5,7 @@
 #include <QWidget>
 #include <QLineEdit>
 #include "cmn_utils.h"
-#include "ec_utils.h"
+#include "utils/ec_utils.h"
 
 #include "ec_gui_slider.h"
 #include "ec_gui_pdo.h"

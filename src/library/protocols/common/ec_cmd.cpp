@@ -1,7 +1,7 @@
 #include <cassert>
 #include <tuple>
 
-#include "ec_cmd.h"
+#include "protocols/common/ec_cmd.h"
 #include <yaml-cpp/yaml.h>
 #include <chrono>
 

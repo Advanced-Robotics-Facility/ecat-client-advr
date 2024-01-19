@@ -38,10 +38,6 @@ add_library(ec_library STATIC
 target_include_directories(ec_library
     PUBLIC
     include/
-    utils/
-    logger/
-    protocols/common/
-    protocols/common/zmq/
     protocols/ipc/iddp/esc/
     PRIVATE
     ${EXTERNAL}/spdlog/include

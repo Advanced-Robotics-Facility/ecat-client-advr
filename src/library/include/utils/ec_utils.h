@@ -3,10 +3,10 @@
 
 #include <yaml-cpp/yaml.h>
 #include <thread>
-#include "ec_udp.h"
-#include "ec_tcp.h"
+#include "protocols/udp/ec_udp.h"
+#include "protocols/tcp/ec_tcp.h"
 #include "ec_iddp.h"
-#include "ec_zipc.h"
+#include "protocols/ipc/zipc/ec_zipc.h"
 
 class EcUtils
 {

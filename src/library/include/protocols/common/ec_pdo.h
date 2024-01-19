@@ -2,7 +2,7 @@
 #define __EC_PDO__
 
 #include "ec_types.h"
-#include "ec_zmq_pdo.h"
+#include "protocols/common/zmq/ec_zmq_pdo.h"
 
 class EcPdo
 {
