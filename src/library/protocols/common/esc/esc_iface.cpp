@@ -1,5 +1,5 @@
 #include <esc_info.h>
-#include "esc_iface.h"
+#include "protocols/common/esc/esc_iface.h"
 
 esc_pipe_iface::esc_pipe_iface( int32_t id, uint32_t type, const std::string robot_name) :
     id(id), type(type)

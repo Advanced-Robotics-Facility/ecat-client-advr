@@ -1,4 +1,4 @@
-#include "esc_factory.h"
+#include "protocols/common/esc/esc_factory.h"
 
 EscFactory::EscFactory(SSI slave_descr,std::string robot_name)
 {

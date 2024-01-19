@@ -2,11 +2,11 @@
 #define __ESC_FACTORY__
 
 #include "ec_types.h"
-#include "esc_iface.h"
-#include "motor/motor_iface.h"
-#include "imu/imu_iface.h"
-#include "ft/ft_iface.h"
-#include "pow/pow_iface.h"
+#include "protocols/common/esc/esc_iface.h"
+#include "protocols/common/esc/motor/motor_iface.h"
+#include "protocols/common/esc/imu/imu_iface.h"
+#include "protocols/common/esc/ft/ft_iface.h"
+#include "protocols/common/esc/pow/pow_iface.h"
 
 
 class EscFactory

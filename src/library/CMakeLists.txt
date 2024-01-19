@@ -2,8 +2,7 @@ project(ec_library)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 #compile ec_library
-add_subdirectory(protocols/ipc/iddp/esc/)
-
+add_subdirectory(protocols/common)
 
 ## load in pkg-config support
 find_package(PkgConfig)
@@ -23,28 +22,23 @@ find_library(ZeroMQ_LIBRARY
         )
 
 # compile ecat library test
-add_library(ec_library STATIC
+add_library(${PROJECT_NAME} STATIC
             ${PROJECT_SOURCE_DIR}/protocols/udp/ec_udp.cpp
-            ${PROJECT_SOURCE_DIR}/protocols/common/zmq/ec_zmq_cmd.cpp
-            ${PROJECT_SOURCE_DIR}/protocols/common/zmq/ec_zmq_pdo.cpp
-            ${PROJECT_SOURCE_DIR}/protocols/common/ec_cmd.cpp
-            ${PROJECT_SOURCE_DIR}/protocols/common/ec_pdo.cpp
             ${PROJECT_SOURCE_DIR}/protocols/tcp/ec_tcp.cpp
             ${PROJECT_SOURCE_DIR}/protocols/ipc/zipc/ec_zipc.cpp
             ${PROJECT_SOURCE_DIR}/protocols/ipc/iddp/ec_iddp.cpp
             ${PROJECT_SOURCE_DIR}/utils/ec_utils.cpp
             ${PROJECT_SOURCE_DIR}/logger/ec_logger.cpp)
 
-target_include_directories(ec_library
+target_include_directories(${PROJECT_NAME}
     PUBLIC
     include/
-    protocols/ipc/iddp/esc/
     PRIVATE
     ${EXTERNAL}/spdlog/include
     ${ZeroMQ_INCLUDE_DIR} 
 )
 
-target_link_libraries(ec_library
+target_link_libraries(${PROJECT_NAME}
     PUBLIC
     ${YAML_CPP_LIBRARIES}
     ${Boost_SYSTEM_LIBRARY}
@@ -52,12 +46,12 @@ target_link_libraries(ec_library
     ecat_master::ecat_core${LIB_TYPE}
     ecat_master::ecat_master_pb
     ecat_master::msgpck_proto
-    esc_pipes_library
+    ec_common_library
     magic_enum::magic_enum
     matlogger2::matlogger2
     ${ZeroMQ_LIBRARY}
     )
 
 
-install(TARGETS ec_library
+install(TARGETS ${PROJECT_NAME}
     DESTINATION lib)

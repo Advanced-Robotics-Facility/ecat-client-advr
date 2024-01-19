@@ -1,13 +1,34 @@
-#include "pow_iface.h"
+#ifndef __POW_IFACE__
+#define __POW_IFACE__
 
+#include <pb_utils.h>
+#include "../esc_iface.h"
 
-powf28m36_iface::powf28m36_iface(std::string robot_name,
+class powf28m36_iface: public esc_pipe_iface
+{
+
+public:
+
+    powf28m36_iface(std::string robot_name,
+                    int id);
+
+    void get_from_pb(void);
+    void set_to_pb(void);
+
+    // rx_pdo values
+    float v_batt, v_load, i_load;
+    float temp_batt, temp_heatsink, temp_pcb;
+    float fault, status;
+
+};
+
+inline powf28m36_iface::powf28m36_iface(std::string robot_name,
                                  int id) :
     esc_pipe_iface(id,"PowBoard",robot_name)
 {
 }
 
-void powf28m36_iface::get_from_pb(void) 
+inline void powf28m36_iface::get_from_pb(void) 
 {
     v_batt              = pb_rx_pdos.mutable_powf28m36_rx_pdo()->v_batt();
     v_load              = pb_rx_pdos.mutable_powf28m36_rx_pdo()->v_load();
@@ -20,7 +41,7 @@ void powf28m36_iface::get_from_pb(void)
     fault               = pb_rx_pdos.mutable_powf28m36_rx_pdo()->fault();
 }
 
-void powf28m36_iface::set_to_pb(void) 
+inline void powf28m36_iface::set_to_pb(void) 
 {
     set_pbHeader(pb_tx_pdos.mutable_header(), name, 0);
     // Type
@@ -29,3 +50,5 @@ void powf28m36_iface::set_to_pb(void)
 
 
 
+
+#endif

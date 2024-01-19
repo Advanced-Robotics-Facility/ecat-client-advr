@@ -1,7 +1,7 @@
 #include <cassert>
 #include <tuple>
 
-#include "ec_iddp.h"
+#include "protocols/ipc/iddp/ec_iddp.h"
 
 
 EcIDDP::EcIDDP(std::string host_address,uint32_t host_port):

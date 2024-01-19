@@ -5,7 +5,7 @@
 #include <thread>
 #include "protocols/udp/ec_udp.h"
 #include "protocols/tcp/ec_tcp.h"
-#include "ec_iddp.h"
+#include "protocols/ipc/iddp/ec_iddp.h"
 #include "protocols/ipc/zipc/ec_zipc.h"
 
 class EcUtils

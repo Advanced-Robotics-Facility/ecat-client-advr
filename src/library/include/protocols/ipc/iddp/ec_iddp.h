@@ -3,8 +3,7 @@
 
 #include <thread_util.h>
 #include <pb_utils.h>
-#include "esc_factory.h"
-
+#include "protocols/common/esc/esc_factory.h"
 #include "logger/ec_logger.h"
 #include "protocols/common/ec_cmd.h"
 

@@ -1,4 +1,4 @@
-project(esc_pipes_library)
+project(ec_common_library)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 ## load in pkg-config support
@@ -17,33 +17,31 @@ find_library(ZeroMQ_LIBRARY
         NAMES zmq
         PATHS ${PC_ZeroMQ_LIBRARY_DIRS}
         )
-
+            message("ciaooooooooooooooooooooo! " ${PROJECT_NAME})
 # compile ecat library test
-add_library(esc_pipes_library STATIC
-            esc_factory.cpp
-            esc_iface.cpp
-            motor/motor_iface.cpp
-            imu/imu_iface.cpp
-            ft/ft_iface.cpp
-            pow/pow_iface.cpp)
+add_library(${PROJECT_NAME} STATIC
+            zmq/ec_zmq_cmd.cpp
+            zmq/ec_zmq_pdo.cpp
+            ec_cmd.cpp
+            ec_pdo.cpp
+            esc/esc_factory.cpp
+            esc/esc_iface.cpp)
             
-target_include_directories(esc_pipes_library
+
+target_include_directories(${PROJECT_NAME}
     PUBLIC
      ${CMAKE_SOURCE_DIR}/src/library/include/
-    motor/
-    imu/
-    ft/
-    pow/
     ${ZeroMQ_INCLUDE_DIR} 
 )
 
-target_link_libraries(esc_pipes_library
+target_link_libraries(${PROJECT_NAME}
     PUBLIC
     ecat_master::ecat_core${LIB_TYPE}
     ecat_master::ecat_master_pb
+    ecat_master::msgpck_proto
     ${ZeroMQ_LIBRARY}
     )
 
 
-install(TARGETS esc_pipes_library
+install(TARGETS ${PROJECT_NAME}
     DESTINATION lib)

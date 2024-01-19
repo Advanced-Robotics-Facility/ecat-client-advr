@@ -1,12 +1,41 @@
-#include "ft_iface.h"
+#ifndef __FT_IFACE__
+#define __FT_IFACE__
 
-ft6_iface::ft6_iface(std::string robot_name,
+#include <pb_utils.h>
+#include "../esc_iface.h"
+
+class ft6_iface: public esc_pipe_iface {
+
+public:
+
+    ft6_iface(std::string robot_name,
+              int id);
+
+    void get_from_pb(void);
+
+    void set_to_pb(void);
+
+    // rx_pdo values
+
+    float force_x, force_y, force_z;
+    
+    float torque_x, torque_y, torque_z;
+    
+    float aux;
+    
+    uint32_t op_idx_ack, fault;
+
+};
+
+inline ft6_iface::ft6_iface(std::string robot_name,
                      int id) :
-    esc_pipe_iface(id,"Ft",robot_name)
+        esc_pipe_iface(id,"Ft",robot_name)
 {
+
 }
 
-void ft6_iface::get_from_pb(void) 
+
+inline void ft6_iface::get_from_pb(void) 
 {
     force_x          = pb_rx_pdos.mutable_ft6_rx_pdo()->force_x();
     force_y          = pb_rx_pdos.mutable_ft6_rx_pdo()->force_y();
@@ -21,11 +50,11 @@ void ft6_iface::get_from_pb(void)
     fault            = pb_rx_pdos.mutable_ft6_rx_pdo()->fault();
 }
 
-void ft6_iface::set_to_pb(void) 
+inline void ft6_iface::set_to_pb(void) 
 {
     set_pbHeader(pb_tx_pdos.mutable_header(), name, 0);
 
 }
 
 
-
+#endif

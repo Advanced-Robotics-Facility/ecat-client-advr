@@ -1,12 +1,37 @@
-#include "imu_iface.h"
+#ifndef __IMU_IFACE__
+#define __IMU_IFACE__
 
-imu_iface::imu_iface(std::string robot_name,
+#include <pb_utils.h>
+#include "../esc_iface.h"
+
+class imu_iface : public esc_pipe_iface
+{
+
+public:
+
+    imu_iface(std::string robot_name,
+              int id);
+
+    void get_from_pb(void);
+
+    void set_to_pb(void);
+
+    // rx_pdo values
+    float x_rate, y_rate, z_rate;
+    float x_acc, y_acc, z_acc;
+    float x_quat, y_quat, z_quat, w_quat;
+    uint32_t imu_ts, temperature, digital_in, fault;
+
+
+};
+
+inline imu_iface::imu_iface(std::string robot_name,
                      int id) :
     esc_pipe_iface(id,"Imu",robot_name)
 {
 }
 
-void imu_iface::get_from_pb(void) 
+inline void imu_iface::get_from_pb(void) 
 {
     x_rate          = pb_rx_pdos.mutable_imuvn_rx_pdo()->x_rate();
     y_rate          = pb_rx_pdos.mutable_imuvn_rx_pdo()->y_rate();
@@ -27,7 +52,7 @@ void imu_iface::get_from_pb(void)
     fault           = pb_rx_pdos.mutable_imuvn_rx_pdo()->fault();
 }
 
-void imu_iface::set_to_pb(void) 
+inline void imu_iface::set_to_pb(void) 
 {
     set_pbHeader(pb_tx_pdos.mutable_header(), name, 0);
     pb_tx_pdos.set_type(iit::advr::Ec_slave_pdo::TX_IMU_VN);
@@ -35,3 +60,5 @@ void imu_iface::set_to_pb(void)
 
 
 
+
+#endif
