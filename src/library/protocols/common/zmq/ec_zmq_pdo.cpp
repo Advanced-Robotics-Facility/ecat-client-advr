@@ -34,34 +34,46 @@ std::string EcZmqPdo::get_zmq_pdo_uri()
 }
 
 
-bool EcZmqPdo::zmq_recv_pdo(std::string& msg,iit::advr::Ec_slave_pdo& ecat_pdo)
+int EcZmqPdo::read()
 {
     zmq::multipart_t multipart;
+    std::string msg="";
     //int nmsg = 0;
     try{
         while(multipart.recv(*_subscriber,ZMQ_DONTWAIT))
         {
             //nmsg++;
-
             msg="";
             if(!multipart.empty())
             {
                 msg = multipart.popstr();
                 auto zmqmsg=multipart.pop();
                 auto msg_size=zmqmsg.size();
-                ecat_pdo.Clear();
-                ecat_pdo.ParseFromArray(zmqmsg.data(),msg_size);
+                pb_rx_pdos.Clear();
+                pb_rx_pdos.ParseFromArray(zmqmsg.data(),msg_size);
             } 
         }
     }
     catch(std::exception& e)
     {
         std::cout << e.what() << std::endl;
-        return false;
+        return 0;
+    }
+    
+    if(msg==""){
+        pb_rx_pdos.Clear();
+    }
+    else{
+        //get_from_pb();
     }
 
     //if(nmsg>100)
     //    std::cout << "recv " << nmsg << " from zmq" << std::endl;
 
-    return true;
+    return 0;
+}
+
+int EcZmqPdo::write()
+{
+    return 0;
 }

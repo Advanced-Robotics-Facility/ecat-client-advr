@@ -65,7 +65,7 @@ void EcPdo::read_motors(MotorStatusMap &motor_status_map)
     for ( auto &[id, moto_pdo] : _moto_pdo_map ) {
         iit::advr::Ec_slave_pdo pb_rx_pdos;
         std::string msg="";
-        if(moto_pdo->zmq_recv_pdo(msg,pb_rx_pdos))
+        if(moto_pdo->read())
         {
             if(msg!="")
             {
@@ -94,7 +94,7 @@ void EcPdo::read_fts(FtStatusMap &ft_status_map)
     for ( auto &[id, ft_pdo] : _ft_pdo_map ) {
         iit::advr::Ec_slave_pdo pb_rx_pdos;
         std::string msg="";
-        if(ft_pdo->zmq_recv_pdo(msg,pb_rx_pdos))
+        if(ft_pdo->read())
         {
             if(msg!="")
             {
@@ -121,7 +121,7 @@ void EcPdo::read_imus(ImuStatusMap &imu_status_map)
     for ( auto &[id, imu_pdo] : _imu_pdo_map ) {
         iit::advr::Ec_slave_pdo pb_rx_pdos;
         std::string msg="";
-        if(imu_pdo->zmq_recv_pdo(msg,pb_rx_pdos))
+        if(imu_pdo->read())
         {
             if(msg!="")
             {
@@ -153,7 +153,7 @@ void EcPdo::read_pows(PwrStatusMap &pow_status_map)
     for ( auto &[id, pow_pdo] : _pow_pdo_map ) {
         iit::advr::Ec_slave_pdo pb_rx_pdos;
         std::string msg="";
-        if(pow_pdo->zmq_recv_pdo(msg,pb_rx_pdos))
+        if(pow_pdo->read())
         {
             if(msg!="")
             {

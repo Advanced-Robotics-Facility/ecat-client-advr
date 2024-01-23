@@ -49,18 +49,25 @@ inline motor_iface::motor_iface( const std::string robot_name, int32_t id, uint3
     esc_pipe_iface(id, type, robot_name)
 {
     pos_ref = vel_ref = tor_ref = 0.0;
+    
+    init();
+    write_connect();
 }
 
 inline motor_iface::motor_iface( const std::string robot_name, int32_t id) :
     esc_pipe_iface(id, "Motor", robot_name)
 {
     pos_ref = vel_ref = tor_ref = 0.0;
+    init();
+    write_connect();
 }
 
 inline motor_iface::motor_iface( int32_t id, uint32_t type, std::string rd_pp_name, std::string wr_pp_name) :
     esc_pipe_iface(id, type, rd_pp_name, wr_pp_name)
 {
     pos_ref = vel_ref = tor_ref = 0.0;
+    init();
+    write_connect();
 }
 
 inline void motor_iface::get_from_pb(void) 

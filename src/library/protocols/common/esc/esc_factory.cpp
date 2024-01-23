@@ -12,8 +12,6 @@ EscFactory::EscFactory(SSI slave_descr,std::string robot_name)
                     case LO_PWR_DC_MC :
                         {
                             auto moto = std::make_shared<motor_iface>(robot_name, id, esc_type);
-                            moto->init();
-                            moto->write_connect();
                             _motors_iface_map[id] = moto;
                             _escs_iface_map[id] = std::static_pointer_cast<esc_pipe_iface >(moto);
                         }
@@ -21,8 +19,6 @@ EscFactory::EscFactory(SSI slave_descr,std::string robot_name)
                     case FT6 :
                         {
                             auto ft = std::make_shared<ft6_iface>(robot_name, id);
-                            ft->init();
-                            ft->write_connect();
                             _fts_iface_map[id] = ft;
                             _escs_iface_map[id] = std::static_pointer_cast<esc_pipe_iface >(ft);
                         }
@@ -31,8 +27,6 @@ EscFactory::EscFactory(SSI slave_descr,std::string robot_name)
                     case IMU_ANY :
                         {
                             auto imu = std::make_shared<imu_iface>(robot_name, id);
-                            imu->init();
-                            imu->write_connect();
                             _imus_iface_map[id] = imu;
                             _escs_iface_map[id] = std::static_pointer_cast<esc_pipe_iface >(imu);
                         }
@@ -41,8 +35,6 @@ EscFactory::EscFactory(SSI slave_descr,std::string robot_name)
                     case POW_F28M36_BOARD :
                         {
                             auto pow = std::make_shared<powf28m36_iface>(robot_name, id);
-                            pow->init();
-                            pow->write_connect();
                             _pows_iface_map[id] = pow;
                             _escs_iface_map[id] = std::static_pointer_cast<esc_pipe_iface >(pow);
                         }
@@ -159,21 +151,7 @@ void EscFactory::read_fts(FtStatusMap &ft_status_map)
                 nbytes = ft->read();
             } while ( nbytes > 0);
             //////////////////////////////////////////////////////////////
-            
-            std::vector<float> ft_v;
-            
-            ft_v.push_back(ft->force_x);
-            ft_v.push_back(ft->force_y);
-            ft_v.push_back(ft->force_z);
-            
-            ft_v.push_back(ft->torque_x);
-            ft_v.push_back(ft->torque_y);
-            ft_v.push_back(ft->torque_z);
-
-            
-            ft_status_map[id]= ft_v;
-
-            
+            ft_status_map[id]= ft->ft_v; 
         }
         catch ( std::out_of_range ) {};   
     }
@@ -191,24 +169,7 @@ void EscFactory::read_pows(PwrStatusMap &pow_status_map)
                 nbytes = pow->read();
             } while ( nbytes > 0);
             //////////////////////////////////////////////////////////////
-            
-            std::vector<float> pow_v;
-
-            pow_v.push_back(pow->v_batt);
-            pow_v.push_back(pow->v_load);
-            pow_v.push_back(pow->i_load);
-            
-            pow_v.push_back(pow->temp_batt);
-            pow_v.push_back(pow->temp_heatsink);
-            pow_v.push_back(pow->temp_pcb);
-            
-//             pow_v.push_back(pow->fault);
-//             pow_v.push_back(pow->status);
-
-            
-            pow_status_map[id]= pow_v;
-
-            
+            pow_status_map[id]= pow->pow_v;
         }
         catch ( std::out_of_range ) {};   
     }
@@ -226,26 +187,7 @@ void EscFactory::read_imus(ImuStatusMap &imu_status_map)
                 nbytes = imu->read();
             } while ( nbytes > 0);
             //////////////////////////////////////////////////////////////
-            
-            std::vector<float> imu_v;
-
-            imu_v.push_back(imu->x_rate);
-            imu_v.push_back(imu->y_rate);
-            imu_v.push_back(imu->z_rate);
-            
-            imu_v.push_back(imu->x_acc);
-            imu_v.push_back(imu->y_acc);
-            imu_v.push_back(imu->z_acc);
-            
-            imu_v.push_back(imu->x_quat);
-            imu_v.push_back(imu->y_quat);
-            imu_v.push_back(imu->z_quat);
-            imu_v.push_back(imu->w_quat);
-
-            
-            imu_status_map[id]= imu_v;
-
-            
+            imu_status_map[id]= imu->imu_v;
         }
         catch ( std::out_of_range ) {};   
     }

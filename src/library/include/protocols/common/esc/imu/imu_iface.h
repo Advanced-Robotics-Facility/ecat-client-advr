@@ -21,6 +21,7 @@ public:
     float x_acc, y_acc, z_acc;
     float x_quat, y_quat, z_quat, w_quat;
     uint32_t imu_ts, temperature, digital_in, fault;
+    std::vector<float> imu_v;
 
 
 };
@@ -29,6 +30,8 @@ inline imu_iface::imu_iface(std::string robot_name,
                      int id) :
     esc_pipe_iface(id,"Imu",robot_name)
 {
+    init();
+    write_connect();
 }
 
 inline void imu_iface::get_from_pb(void) 

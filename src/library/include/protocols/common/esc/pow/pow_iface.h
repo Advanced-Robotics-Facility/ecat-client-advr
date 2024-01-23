@@ -19,6 +19,7 @@ public:
     float v_batt, v_load, i_load;
     float temp_batt, temp_heatsink, temp_pcb;
     float fault, status;
+    std::vector<float> pow_v;
 
 };
 
@@ -26,6 +27,8 @@ inline powf28m36_iface::powf28m36_iface(std::string robot_name,
                                  int id) :
     esc_pipe_iface(id,"PowBoard",robot_name)
 {
+    init();
+    write_connect();
 }
 
 inline void powf28m36_iface::get_from_pb(void) 
