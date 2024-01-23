@@ -17,7 +17,7 @@ find_library(ZeroMQ_LIBRARY
         NAMES zmq
         PATHS ${PC_ZeroMQ_LIBRARY_DIRS}
         )
-            message("ciaooooooooooooooooooooo! " ${PROJECT_NAME})
+        
 # compile ecat library test
 add_library(${PROJECT_NAME} STATIC
             zmq/ec_zmq_cmd.cpp
