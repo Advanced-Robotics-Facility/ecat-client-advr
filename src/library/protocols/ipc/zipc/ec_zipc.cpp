@@ -147,22 +147,22 @@ void EcZipc::th_loop( void * )
     
     // Receive motors, imu, ft, power board pdo information // 
     _mutex_motor_status->lock();
-    _ec_pdo->read_motors(_motor_status_map);
+    _ec_pdo->read_motor_pdo(_motor_status_map);
     _ec_logger->log_motors_sts(_motor_status_map);
     _mutex_motor_status->unlock();
     
     _mutex_ft6_status->lock();
-    _ec_pdo->read_fts(_ft_status_map);
+    _ec_pdo->read_ft_pdo(_ft_status_map);
     _ec_logger->log_ft6_sts(_ft_status_map);
     _mutex_ft6_status->unlock();
     
     _mutex_imu_status->lock();
-    _ec_pdo->read_imus(_imu_status_map);
+    _ec_pdo->read_imu_pdo(_imu_status_map);
     _ec_logger->log_imu_sts(_imu_status_map);
     _mutex_imu_status->unlock();
     
     _mutex_pow_status->lock();
-    _ec_pdo->read_pows(_pow_status_map);
+    _ec_pdo->read_pow_pdo(_pow_status_map);
     _ec_logger->log_pow_sts(_pow_status_map);
     _mutex_pow_status->unlock();
 

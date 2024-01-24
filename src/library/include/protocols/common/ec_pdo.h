@@ -11,10 +11,11 @@ class EcPdo
         ~EcPdo();
         
         void esc_factory(SSI slave_descr);
-        void read_motors(MotorStatusMap &motor_status_map);
-        void read_fts(FtStatusMap &ft_status_map);
-        void read_imus(ImuStatusMap &imu_status_map);
-        void read_pows(PwrStatusMap &pow_status_map);
+        void read_motor_pdo(MotorStatusMap &motor_status_map);
+        void write_motor_pdo(const std::vector<MR> motors_references);
+        void read_ft_pdo(FtStatusMap &ft_status_map);
+        void read_imu_pdo(ImuStatusMap &imu_status_map);
+        void read_pow_pdo(PwrStatusMap &pow_status_map);
         
     private:
         std::map<int,EcZmqPdo::Ptr> _moto_pdo_map;

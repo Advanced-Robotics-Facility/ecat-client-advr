@@ -60,7 +60,7 @@ void EcPdo::esc_factory(SSI slave_descr)
     }
 } 
 
-void EcPdo::read_motors(MotorStatusMap &motor_status_map)
+void EcPdo::read_motor_pdo(MotorStatusMap &motor_status_map)
 {
     for ( auto &[id, moto_pdo] : _moto_pdo_map ) {
         iit::advr::Ec_slave_pdo pb_rx_pdos;
@@ -89,7 +89,13 @@ void EcPdo::read_motors(MotorStatusMap &motor_status_map)
         }
     }
 }
-void EcPdo::read_fts(FtStatusMap &ft_status_map)
+
+void EcPdo::write_motor_pdo(const std::vector<MR> motors_references)
+{
+    
+}
+
+void EcPdo::read_ft_pdo(FtStatusMap &ft_status_map)
 {
     for ( auto &[id, ft_pdo] : _ft_pdo_map ) {
         iit::advr::Ec_slave_pdo pb_rx_pdos;
@@ -116,7 +122,7 @@ void EcPdo::read_fts(FtStatusMap &ft_status_map)
         }
     }
 }
-void EcPdo::read_imus(ImuStatusMap &imu_status_map)
+void EcPdo::read_imu_pdo(ImuStatusMap &imu_status_map)
 {
     for ( auto &[id, imu_pdo] : _imu_pdo_map ) {
         iit::advr::Ec_slave_pdo pb_rx_pdos;
@@ -148,7 +154,7 @@ void EcPdo::read_imus(ImuStatusMap &imu_status_map)
     }
 }
 
-void EcPdo::read_pows(PwrStatusMap &pow_status_map)
+void EcPdo::read_pow_pdo(PwrStatusMap &pow_status_map)
 {
     for ( auto &[id, pow_pdo] : _pow_pdo_map ) {
         iit::advr::Ec_slave_pdo pb_rx_pdos;
