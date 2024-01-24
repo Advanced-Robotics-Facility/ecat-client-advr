@@ -2,9 +2,9 @@
 #define __POW_IFACE__
 
 #include <pb_utils.h>
-#include "../esc_iface.h"
+#include "protocols/common/pipe/ec_pipe_pdo.h"
 
-class powf28m36_iface: public esc_pipe_iface
+class powf28m36_iface: public EcPipePdo
 {
 
 public:
@@ -25,7 +25,7 @@ public:
 
 inline powf28m36_iface::powf28m36_iface(std::string robot_name,
                                  int id) :
-    esc_pipe_iface(id,"PowBoard",robot_name)
+    EcPipePdo(id,"PowBoard",robot_name)
 {
     init();
     write_connect();

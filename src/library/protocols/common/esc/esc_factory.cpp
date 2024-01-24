@@ -13,14 +13,14 @@ EscFactory::EscFactory(SSI slave_descr,std::string robot_name)
                         {
                             auto moto = std::make_shared<motor_iface>(robot_name, id, esc_type);
                             _motors_iface_map[id] = moto;
-                            _escs_iface_map[id] = std::static_pointer_cast<esc_pipe_iface >(moto);
+                            _escs_iface_map[id] = std::static_pointer_cast<EcPipePdo >(moto);
                         }
                         break;
                     case FT6 :
                         {
                             auto ft = std::make_shared<ft6_iface>(robot_name, id);
                             _fts_iface_map[id] = ft;
-                            _escs_iface_map[id] = std::static_pointer_cast<esc_pipe_iface >(ft);
+                            _escs_iface_map[id] = std::static_pointer_cast<EcPipePdo >(ft);
                         }
                         break;
                         
@@ -28,7 +28,7 @@ EscFactory::EscFactory(SSI slave_descr,std::string robot_name)
                         {
                             auto imu = std::make_shared<imu_iface>(robot_name, id);
                             _imus_iface_map[id] = imu;
-                            _escs_iface_map[id] = std::static_pointer_cast<esc_pipe_iface >(imu);
+                            _escs_iface_map[id] = std::static_pointer_cast<EcPipePdo >(imu);
                         }
                         break;
                         
@@ -36,15 +36,15 @@ EscFactory::EscFactory(SSI slave_descr,std::string robot_name)
                         {
                             auto pow = std::make_shared<powf28m36_iface>(robot_name, id);
                             _pows_iface_map[id] = pow;
-                            _escs_iface_map[id] = std::static_pointer_cast<esc_pipe_iface >(pow);
+                            _escs_iface_map[id] = std::static_pointer_cast<EcPipePdo >(pow);
                         }
                         break;
                     
                     default:
-                        throw(EscPipeIfaceError(EscPipeIfaceErrorNum::INVALID_TYPE, "Esc type NOT handled"));
+                        throw(EcPipePdoError(EcPipePdoErrorNum::INVALID_TYPE, "Esc type NOT handled"));
                         break;
                 }   
-            }catch ( const EscPipeIfaceError &e) {
+            }catch ( const EcPipePdoError &e) {
                 DPRINTF("%s\n", e.what());
             }
     

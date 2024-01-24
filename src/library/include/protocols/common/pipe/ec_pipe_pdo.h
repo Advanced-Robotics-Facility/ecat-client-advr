@@ -1,19 +1,18 @@
-#ifndef __ESC_PIPE_IFACE__
-#define __ESC_PIPE_IFACE__
+#ifndef __EC_PIPE_PDO__
+#define __EC_PIPE_PDO__
 
 #include <memory>
 
 #include <pb_utils.h>
 
-class esc_pipe_iface;
-class motor_iface;
+class EcPipePdo;
 using SH_IDP = std::shared_ptr<IDDP_pipe>;
 
 
 ////////////////////////////////////////////////////
 //
 ////////////////////////////////////////////////////
-enum class EscPipeIfaceErrorNum
+enum class EcPipePdoErrorNum
 {
     NO_ERROR = 0,        // 
     CONNECT_FAIL,
@@ -21,10 +20,10 @@ enum class EscPipeIfaceErrorNum
     INVALID_TYPE,
     RUNTIME_ERROR,          
 };
-class EscPipeIfaceError : public std::runtime_error {
-using errno_t = std::underlying_type<EscPipeIfaceErrorNum>::type;  
+class EcPipePdoError : public std::runtime_error {
+using errno_t = std::underlying_type<EcPipePdoErrorNum>::type;  
 public:
-    EscPipeIfaceError (EscPipeIfaceErrorNum err_no, const std::string & what_arg) :
+    EcPipePdoError (EcPipePdoErrorNum err_no, const std::string & what_arg) :
         std::runtime_error(make_what(what_arg,static_cast<errno_t>(err_no))),
         error_num(static_cast<errno_t>(err_no))
     {}
@@ -34,7 +33,7 @@ public:
 private:
     std::string make_what(std::string what_arg, int err_no) {
         std::ostringstream msg;
-        msg << "EscPipeIfaceError " << err_no << " : " << what_arg;
+        msg << "EcPipePdoError " << err_no << " : " << what_arg;
         return msg.str();
     }
     int error_num;
@@ -43,7 +42,7 @@ private:
 ////////////////////////////////////////////////////
 //
 ////////////////////////////////////////////////////
-class esc_pipe_iface {
+class EcPipePdo {
 
 protected:
 
@@ -61,21 +60,21 @@ protected:
 
 public:
 
-    esc_pipe_iface( int32_t id, uint32_t type, const std::string);
+    EcPipePdo( int32_t id, uint32_t type, const std::string);
     
-    esc_pipe_iface( int32_t id, const std::string esc_name, const std::string);
+    EcPipePdo( int32_t id, const std::string esc_name, const std::string);
 
-    esc_pipe_iface( int32_t id, uint32_t type,
+    EcPipePdo( int32_t id, uint32_t type,
                     std::string rd_pp_name,
                     std::string wr_pp_name );
     /*                
-    esc_pipe_iface( const esc_pipe_iface& rhs ):
+    EcPipePdo( const EcPipePdo& rhs ):
         name(rhs.name),id(rhs.id),
         rd_pp_name(rhs.rd_pp_name),
         wr_pp_name(rhs.wr_pp_name) {};
     */
 
-    virtual ~esc_pipe_iface () {
+    virtual ~EcPipePdo () {
     }
     
     virtual void init(void);

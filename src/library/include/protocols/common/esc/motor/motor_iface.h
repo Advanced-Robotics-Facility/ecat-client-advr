@@ -2,14 +2,13 @@
 #define __MOTOR_IFACE__
 
 #include <pb_utils.h>
-#include "../esc_iface.h"
-
+#include "protocols/common/pipe/ec_pipe_pdo.h"
 
 /**
  * @brief The motor_iface class implements the generic
  * esc_iface to handle an esc of type motor
  */
-class motor_iface: public esc_pipe_iface {
+class motor_iface: public EcPipePdo {
 
 public:
 
@@ -46,7 +45,7 @@ public:
 
 
 inline motor_iface::motor_iface( const std::string robot_name, int32_t id, uint32_t type) :
-    esc_pipe_iface(id, type, robot_name)
+    EcPipePdo(id, type, robot_name)
 {
     pos_ref = vel_ref = tor_ref = 0.0;
     
@@ -55,7 +54,7 @@ inline motor_iface::motor_iface( const std::string robot_name, int32_t id, uint3
 }
 
 inline motor_iface::motor_iface( const std::string robot_name, int32_t id) :
-    esc_pipe_iface(id, "Motor", robot_name)
+    EcPipePdo(id, "Motor", robot_name)
 {
     pos_ref = vel_ref = tor_ref = 0.0;
     init();
@@ -63,7 +62,7 @@ inline motor_iface::motor_iface( const std::string robot_name, int32_t id) :
 }
 
 inline motor_iface::motor_iface( int32_t id, uint32_t type, std::string rd_pp_name, std::string wr_pp_name) :
-    esc_pipe_iface(id, type, rd_pp_name, wr_pp_name)
+    EcPipePdo(id, type, rd_pp_name, wr_pp_name)
 {
     pos_ref = vel_ref = tor_ref = 0.0;
     init();

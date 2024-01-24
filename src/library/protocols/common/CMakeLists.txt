@@ -22,10 +22,10 @@ find_library(ZeroMQ_LIBRARY
 add_library(${PROJECT_NAME} STATIC
             zmq/ec_zmq_cmd.cpp
             zmq/ec_zmq_pdo.cpp
+            pipe/ec_pipe_pdo.cpp
             ec_cmd.cpp
             ec_pdo.cpp
-            esc/esc_factory.cpp
-            esc/esc_iface.cpp)
+            esc/esc_factory.cpp)
             
 
 target_include_directories(${PROJECT_NAME}

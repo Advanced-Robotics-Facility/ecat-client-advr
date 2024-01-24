@@ -2,9 +2,9 @@
 #define __FT_IFACE__
 
 #include <pb_utils.h>
-#include "../esc_iface.h"
+#include "protocols/common/pipe/ec_pipe_pdo.h"
 
-class ft6_iface: public esc_pipe_iface {
+class ft6_iface: public EcPipePdo {
 
 public:
 
@@ -33,7 +33,7 @@ public:
 
 inline ft6_iface::ft6_iface(std::string robot_name,
                      int id) :
-        esc_pipe_iface(id,"Ft",robot_name)
+        EcPipePdo(id,"Ft",robot_name)
 {
     init();
     write_connect();

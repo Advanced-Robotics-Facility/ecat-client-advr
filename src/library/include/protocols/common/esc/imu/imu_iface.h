@@ -2,9 +2,9 @@
 #define __IMU_IFACE__
 
 #include <pb_utils.h>
-#include "../esc_iface.h"
+#include "protocols/common/pipe/ec_pipe_pdo.h"
 
-class imu_iface : public esc_pipe_iface
+class imu_iface : public EcPipePdo
 {
 
 public:
@@ -28,7 +28,7 @@ public:
 
 inline imu_iface::imu_iface(std::string robot_name,
                      int id) :
-    esc_pipe_iface(id,"Imu",robot_name)
+    EcPipePdo(id,"Imu",robot_name)
 {
     init();
     write_connect();
