@@ -12,6 +12,9 @@ EcIDDP::EcIDDP(std::string host_address,uint32_t host_port):
     
     _motor_ref_flags=MotorRefFlags::FLAG_NONE;
     _motors_references.clear();
+    
+    std::string robot_name = "NoNe";
+    _ec_pdo= std::make_shared<EcPdo<EcPipePdo>>(robot_name);
 }
 
 EcIDDP::~EcIDDP()
@@ -40,8 +43,7 @@ void EcIDDP::th_init ( void * )
     tNow, tPre = start_time;
     loop_cnt = 0;
     
-    std::string robot_name = "NoNe";
-    _escs_factory= std::make_shared<EscFactory>(_slave_info,robot_name);
+    _ec_pdo->esc_factory(_slave_info);
     
     pthread_mutex_init(&_mutex_motor_status, NULL);
     pthread_mutex_init(&_mutex_motor_reference, NULL);
@@ -138,23 +140,23 @@ void EcIDDP::th_loop( void * )
     
     // Receive motors, imu, ft, power board pdo information // 
     pthread_mutex_lock(&_mutex_motor_status);
-    _escs_factory->read_motors(_motor_status_map);
+    _ec_pdo->read_motor_pdo(_motor_status_map);
     _ec_logger->log_motors_sts(_motor_status_map);
     pthread_mutex_unlock(&_mutex_motor_status);
     
     pthread_mutex_lock(&_mutex_ft6_status);
-    _escs_factory->read_fts(_ft_status_map);
+    _ec_pdo->read_ft_pdo(_ft_status_map);
     _ec_logger->log_ft6_sts(_ft_status_map);
     pthread_mutex_unlock(&_mutex_ft6_status);
     
     pthread_mutex_lock(&_mutex_imu_status);
-    _escs_factory->read_imus(_imu_status_map);
+    _ec_pdo->read_imu_pdo(_imu_status_map);
     _ec_logger->log_imu_sts(_imu_status_map);
     pthread_mutex_unlock(&_mutex_imu_status);
 
     
     pthread_mutex_lock(&_mutex_pow_status);
-    _escs_factory->read_pows(_pow_status_map);
+    _ec_pdo->read_pow_pdo(_pow_status_map);
     _ec_logger->log_pow_sts(_pow_status_map);
     pthread_mutex_unlock(&_mutex_pow_status);
     
@@ -164,7 +166,7 @@ void EcIDDP::th_loop( void * )
     if(_motor_ref_flags!=MotorRefFlags::FLAG_NONE &&
        !_motors_references.empty())
     {
-        _escs_factory->feed_motors(_motors_references);
+        _ec_pdo->write_motor_pdo(_motors_references);
         _ec_logger->log_motors_ref(_motors_references);
     }
     

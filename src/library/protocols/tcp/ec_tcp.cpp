@@ -15,7 +15,7 @@ EcTCP::EcTCP(std::string host_address,uint32_t host_port):
     _host_address=host_address;
     _host_port=host_port;
     
-    _ec_pdo= std::make_shared<EcPdo>("tcp",host_address,host_port);
+    _ec_pdo= std::make_shared<EcPdo<EcZmqPdo>>("tcp",host_address,host_port);
     
     _ec_logger = std::make_shared<EcLogger>();
     _logging=false;

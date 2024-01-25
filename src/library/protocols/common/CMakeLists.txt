@@ -24,8 +24,7 @@ add_library(${PROJECT_NAME} STATIC
             zmq/ec_zmq_pdo.cpp
             pipe/ec_pipe_pdo.cpp
             ec_cmd.cpp
-            ec_pdo.cpp
-            esc/esc_factory.cpp)
+            ec_pdo.cpp)
             
 
 target_include_directories(${PROJECT_NAME}

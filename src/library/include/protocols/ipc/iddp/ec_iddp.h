@@ -3,10 +3,9 @@
 
 #include <thread_util.h>
 #include <pb_utils.h>
-#include "protocols/common/esc/esc_factory.h"
 #include "logger/ec_logger.h"
 #include "protocols/common/ec_cmd.h"
-
+#include "protocols/common/ec_pdo.h"
 #include <mutex>
 
 class EcIDDP : public EcCmd,Thread_hook
@@ -50,7 +49,7 @@ private:
     bool _client_alive;
     bool _logging;
     SSI _slave_info;
-    std::shared_ptr<EscFactory> _escs_factory;
+    std::shared_ptr<EcPdo<EcPipePdo>> _ec_pdo;
 
     // last received motor data
     MotorStatusMap _motor_status_map;

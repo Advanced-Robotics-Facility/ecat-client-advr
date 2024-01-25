@@ -3,20 +3,12 @@
 
 #include <pb_utils.h>
 #include "protocols/common/pipe/ec_pipe_pdo.h"
+#include "protocols/common/zmq/ec_zmq_pdo.h"
 
-class ft6_iface: public EcPipePdo {
 
-public:
-
-    ft6_iface(std::string robot_name,
-              int id);
-
-    void get_from_pb(void);
-
-    void set_to_pb(void);
-
+typedef struct FT_PDO_t{
     std::vector<std::string>ft_pb_name = {"force_x", "force_y", "force_z","torque_x", "torque_y", "torque_z"};
-    std::vector<float> ft_v;
+    std::vector<float> ft_v={0,0,0,0,0,0};
     
     // rx_pdo values
     
@@ -28,38 +20,68 @@ public:
     float aux;
     
     uint32_t op_idx_ack, fault;
+    
+}FT_PDO;
+
+template <class T>
+class FtPdo: public T{
+
+public:
+
+    FtPdo(const std::string,int id);
+    ~FtPdo();
+    
+    void get_from_pb();
+
+    void set_to_pb();
+    
+    FT_PDO _ft_pdo;
 
 };
 
-inline ft6_iface::ft6_iface(std::string robot_name,
-                     int id) :
-        EcPipePdo(id,"Ft",robot_name)
+template < class T >
+inline FtPdo<T>::FtPdo(std::string value,int id):
+                     T(id,"Ft",value)
 {
-    init();
-    write_connect();
-}
+    T::init();
+    T::write_connect();
+};
 
-
-inline void ft6_iface::get_from_pb(void) 
+template < class T >
+inline FtPdo<T>::~FtPdo()
 {
-    force_x          = pb_rx_pdos.mutable_ft6_rx_pdo()->force_x();
-    force_y          = pb_rx_pdos.mutable_ft6_rx_pdo()->force_y();
-    force_z          = pb_rx_pdos.mutable_ft6_rx_pdo()->force_z();
+    T::write_quit();
+};
+
+template < class T >
+inline void FtPdo<T>::get_from_pb() 
+{
+    _ft_pdo.force_x          = T::pb_rx_pdos.mutable_ft6_rx_pdo()->force_x();
+    _ft_pdo.ft_v[0]          = _ft_pdo.force_x;
+    _ft_pdo.force_y          = T::pb_rx_pdos.mutable_ft6_rx_pdo()->force_y();
+    _ft_pdo.ft_v[1]          = _ft_pdo.force_y;
+    _ft_pdo.force_z          = T::pb_rx_pdos.mutable_ft6_rx_pdo()->force_z();
+    _ft_pdo.ft_v[2]          = _ft_pdo.force_z;
     
-    torque_x         = pb_rx_pdos.mutable_ft6_rx_pdo()->torque_x();
-    torque_y         = pb_rx_pdos.mutable_ft6_rx_pdo()->torque_y();
-    torque_z         = pb_rx_pdos.mutable_ft6_rx_pdo()->torque_z(); 
+    _ft_pdo.torque_x         = T::pb_rx_pdos.mutable_ft6_rx_pdo()->torque_x();
+    _ft_pdo.ft_v[3]          = _ft_pdo.torque_x;
+    _ft_pdo.torque_y         = T::pb_rx_pdos.mutable_ft6_rx_pdo()->torque_y();
+    _ft_pdo.ft_v[4]          = _ft_pdo.torque_y;
+    _ft_pdo.torque_z         = T::pb_rx_pdos.mutable_ft6_rx_pdo()->torque_z(); 
+    _ft_pdo.ft_v[5]          = _ft_pdo.torque_z;
     
-    aux              = pb_rx_pdos.mutable_ft6_rx_pdo()->aux();
-    op_idx_ack       = pb_rx_pdos.mutable_ft6_rx_pdo()->op_idx_ack();
-    fault            = pb_rx_pdos.mutable_ft6_rx_pdo()->fault();
+    _ft_pdo.aux              = T::pb_rx_pdos.mutable_ft6_rx_pdo()->aux();
+    _ft_pdo.op_idx_ack       = T::pb_rx_pdos.mutable_ft6_rx_pdo()->op_idx_ack();
+    _ft_pdo.fault            = T::pb_rx_pdos.mutable_ft6_rx_pdo()->fault();
 }
 
-inline void ft6_iface::set_to_pb(void) 
+template < class T >
+inline void FtPdo<T>::set_to_pb() 
 {
-    set_pbHeader(pb_tx_pdos.mutable_header(), name, 0);
-
 }
+
+template class FtPdo<EcPipePdo>;
+template class FtPdo<EcZmqPdo>;
 
 
 #endif

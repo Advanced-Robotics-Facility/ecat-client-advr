@@ -52,8 +52,9 @@ private:
     bool _logging;
     std::shared_ptr<spdlog::logger> _consoleLog;
     SSI _slave_info;
-    std::shared_ptr<EcPdo> _ec_pdo;
     
+    std::shared_ptr<EcPdo<EcZmqPdo>> _ec_pdo;
+
     // last received motor data
     MotorStatusMap _motor_status_map;
     // last received ft data

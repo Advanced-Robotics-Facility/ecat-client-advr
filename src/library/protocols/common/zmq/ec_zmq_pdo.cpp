@@ -6,9 +6,35 @@ using namespace iit::advr;
 using namespace std;
 
 
-EcZmqPdo::EcZmqPdo(string zmq_uri) :
+EcZmqPdo::EcZmqPdo( int32_t id, uint32_t type, const std::string zmq_uri):
+_id(id),
+_type(type),
 _zmq_uri(zmq_uri)
 {   
+  
+}
+    
+EcZmqPdo::EcZmqPdo( int32_t id, const std::string esc_name, const std::string zmq_uri):
+_id(id),
+_esc_name(esc_name),
+_zmq_uri(zmq_uri)
+{   
+
+}
+
+EcZmqPdo::EcZmqPdo(const std::string zmq_uri):
+_zmq_uri(zmq_uri)
+{   
+
+}
+
+std::string EcZmqPdo::get_zmq_pdo_uri()
+{
+    return _zmq_uri;
+}
+
+void EcZmqPdo::init(void)
+{
     #if ZMQ_VERSION_MAJOR == 2
     uint64_t opt_hwm = 1;
     #else
@@ -23,16 +49,18 @@ _zmq_uri(zmq_uri)
    _subscriber->setsockopt(ZMQ_SUBSCRIBE, key.c_str(),key.length()); 
    //_subscriber->setsockopt(ZMQ_RCVHWM, &opt_hwm, sizeof ( opt_hwm ) );
    //_subscriber->setsockopt(ZMQ_RCVBUF, 2*1024);
-
-   _subscriber->connect(_zmq_uri);
-
-};
-
-std::string EcZmqPdo::get_zmq_pdo_uri()
-{
-    return _zmq_uri;
 }
 
+int EcZmqPdo::write_connect(void)
+{
+    _subscriber->connect(_zmq_uri);
+    return 0;
+}
+
+int EcZmqPdo::write_quit(void)
+{
+    return 0;
+}
 
 int EcZmqPdo::read()
 {

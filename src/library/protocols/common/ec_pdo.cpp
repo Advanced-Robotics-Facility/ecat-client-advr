@@ -1,7 +1,8 @@
 #include "protocols/common/ec_pdo.h"
 
 
-EcPdo::EcPdo(std::string protocol, std::string host_address, uint32_t host_port):
+template < class T >
+EcPdo<T>::EcPdo(std::string protocol, std::string host_address, uint32_t host_port):
 _protocol(protocol),
 _host_address(host_address),
 _host_port(host_port)
@@ -13,171 +14,197 @@ _host_port(host_port)
     }
     
 }
+template < class T >
+EcPdo<T>::EcPdo(std::string robot_name):
+_robot_name(robot_name)
+{
+     _ec_pdo_start=_robot_name;
+     _protocol="";
+}
 
-EcPdo::~EcPdo()
+template < class T >
+EcPdo<T>::~EcPdo()
 {
 
 }
 
-void EcPdo::esc_factory(SSI slave_descr)
+template < class T >
+void EcPdo<T>::esc_factory(SSI slave_descr)
 {
     for ( auto &[id, esc_type, pos] : slave_descr ) {
-    
+        
+        if(_protocol!=""){
             std::string host_port_cmd = std::to_string(_host_port+id);
             // zmq setup
             std::string zmq_uri = _protocol+"://" + _host_address + ":"+host_port_cmd;
-            EcZmqPdo::Ptr zmq_pdo = std::make_shared<EcZmqPdo>(zmq_uri);
-            
-            switch ( esc_type  )
-            {
-                    case CENT_AC:
-                    case LO_PWR_DC_MC :
-                        {
-                            _moto_pdo_map[id]=zmq_pdo;
-                        }
-                        break;
-                    case FT6 :
-                        {
-                            _ft_pdo_map[id]=zmq_pdo;
-                        }
-                        break;
+            _ec_pdo_start=zmq_uri;
+        }
+        
+        switch ( esc_type  )
+        {
+                case CENT_AC:
+                case LO_PWR_DC_MC :
+                    {
                         
-                    case IMU_ANY :
-                        {
-                             _imu_pdo_map[id]=zmq_pdo;
-                        }
-                        break;
-                        
-                    case POW_F28M36_BOARD :
-                        {
-                            _pow_pdo_map[id]=zmq_pdo;
-                        }
-                        break;
+                        auto moto_pdo = std::make_shared<MotorPdo<T>>(_ec_pdo_start, id, esc_type);
+                        _moto_pdo_map[id]=moto_pdo;
+                    }
+                    break;
+                case FT6 :
+                    {
+                        auto ft_pdo = std::make_shared<FtPdo<T>>(_ec_pdo_start, id);
+                        _ft_pdo_map[id]=ft_pdo;
+                    }
+                    break;
                     
-                    default:
-                        break;
-            }               
+                case IMU_ANY :
+                    {
+                        auto imu_pdo = std::make_shared<ImuPdo<T>>(_ec_pdo_start, id);
+                        _imu_pdo_map[id]=imu_pdo;
+                    }
+                    break;
+                    
+                case POW_F28M36_BOARD :
+                    {
+                        auto pow_pdo = std::make_shared<PowPdo<T>>(_ec_pdo_start, id);
+                        _pow_pdo_map[id]=pow_pdo;
+                    }
+                    break;
+                
+                default:
+                    break;
+        }               
     }
 } 
 
-void EcPdo::read_motor_pdo(MotorStatusMap &motor_status_map)
+template < class T >
+void EcPdo<T>::read_motor_pdo(MotorStatusMap &motor_status_map)
 {
-    for ( auto &[id, moto_pdo] : _moto_pdo_map ) {
-        iit::advr::Ec_slave_pdo pb_rx_pdos;
-        std::string msg="";
-        if(moto_pdo->read())
-        {
-            if(msg!="")
-            {
-                motor_status_map[id] = std::make_tuple(pb_rx_pdos.mutable_motor_xt_rx_pdo()->link_pos(),
-                                                       pb_rx_pdos.mutable_motor_xt_rx_pdo()->motor_pos(),
-                                                       pb_rx_pdos.mutable_motor_xt_rx_pdo()->link_vel(),
-                                                       pb_rx_pdos.mutable_motor_xt_rx_pdo()->motor_vel(),
-                                                       pb_rx_pdos.mutable_motor_xt_rx_pdo()->torque(),
-                                                       pb_rx_pdos.mutable_motor_xt_rx_pdo()->motor_temp(),
-                                                       pb_rx_pdos.mutable_motor_xt_rx_pdo()->board_temp(),
-                                                       pb_rx_pdos.mutable_motor_xt_rx_pdo()->fault(),
-                                                       pb_rx_pdos.mutable_motor_xt_rx_pdo()->rtt(),
-                                                       pb_rx_pdos.mutable_motor_xt_rx_pdo()->op_idx_ack(),
-                                                       pb_rx_pdos.mutable_motor_xt_rx_pdo()->aux(),
-                                                       pb_rx_pdos.mutable_motor_xt_rx_pdo()->cmd_aux_sts());
-            }
+    for (auto const &[id,motor_pdo] : _moto_pdo_map )  {
+        try { 
+            ///////////////////////////////////////////////////////////////
+            // read
+            int nbytes;
+            do {
+                // read protobuf data
+                nbytes = motor_pdo->read();
+            } while ( nbytes > 0);
+            //////////////////////////////////////////////////////////////
+            
+            motor_status_map[id] = motor_pdo->_motor_pdo.mt_t;
         }
-        else
-        {
-            std::cout << "Error on motor reading on device: " << id << std::endl;
+        catch ( std::out_of_range ) {};   
+    }
+}
+
+template < class T >
+void EcPdo<T>::write_motor_pdo(const std::vector<MR> motors_references)
+{
+    for ( const auto &[bId,ctrl_type,pos,vel,tor,g0,g1,g2,g3,g4,op,idx,aux] : motors_references ) {
+        auto _ctrl_type = static_cast<iit::advr::Gains_Type>(ctrl_type);
+        if(_moto_pdo_map.count(bId) > 0){
+            auto motor_pdo = _moto_pdo_map[bId];
+            
+            motor_pdo->_motor_pdo.pos_ref= pos;
+            motor_pdo->_motor_pdo.vel_ref= vel;
+            motor_pdo->_motor_pdo.tor_ref= tor;
+            
+            if ( (_ctrl_type == iit::advr::Gains_Type_POSITION ||
+            _ctrl_type == iit::advr::Gains_Type_VELOCITY)) {
+                motor_pdo->_motor_pdo.kp_ref= g0;
+                motor_pdo->_motor_pdo.kd_ref= g2;
+                motor_pdo->_motor_pdo.tau_p_ref=0;
+                motor_pdo->_motor_pdo.tau_fc_ref=0;
+                motor_pdo->_motor_pdo.tau_d_ref=0;
+            }
+            else if ( _ctrl_type == iit::advr::Gains_Type_IMPEDANCE) {
+                motor_pdo->_motor_pdo.kp_ref= g0;
+                motor_pdo->_motor_pdo.kd_ref= g1;
+                motor_pdo->_motor_pdo.tau_p_ref=g2;
+                motor_pdo->_motor_pdo.tau_fc_ref=g3;
+                motor_pdo->_motor_pdo.tau_d_ref=g4;
+            } else {
+
+            }
+            auto _op = static_cast<iit::advr::AuxPDO_Op>(op);
+
+            switch (_op)
+            {
+                case iit::advr::AuxPDO_Op_SET:
+                    motor_pdo->_motor_pdo.aux_wr_idx=idx;
+                    motor_pdo->_motor_pdo.aux_wr=aux;
+                    break;
+                case iit::advr::AuxPDO_Op_GET:
+                    motor_pdo->_motor_pdo.aux_rd_idx_req=idx;
+                    break;
+                case iit::advr::AuxPDO_Op_NOP:
+                    break;
+            }
+            
+            //write 
+            motor_pdo->write();
+        }
+        else{
+            DPRINTF("Cannot send reference to id 0x%04X \n", bId);
         }
     }
 }
 
-void EcPdo::write_motor_pdo(const std::vector<MR> motors_references)
+template < class T >
+void EcPdo<T>::read_ft_pdo(FtStatusMap &ft_status_map)
 {
-    
-}
-
-void EcPdo::read_ft_pdo(FtStatusMap &ft_status_map)
-{
-    for ( auto &[id, ft_pdo] : _ft_pdo_map ) {
-        iit::advr::Ec_slave_pdo pb_rx_pdos;
-        std::string msg="";
-        if(ft_pdo->read())
-        {
-            if(msg!="")
-            {
-                std::vector<float> ft_v;
-                ft_v.push_back(pb_rx_pdos.mutable_ft6_rx_pdo()->force_x());
-                ft_v.push_back(pb_rx_pdos.mutable_ft6_rx_pdo()->force_z());
-                ft_v.push_back(pb_rx_pdos.mutable_ft6_rx_pdo()->force_y());
-                
-                ft_v.push_back(pb_rx_pdos.mutable_ft6_rx_pdo()->torque_x());
-                ft_v.push_back(pb_rx_pdos.mutable_ft6_rx_pdo()->torque_y());
-                ft_v.push_back(pb_rx_pdos.mutable_ft6_rx_pdo()->torque_z());
-                
-                ft_status_map[id]=ft_v;
-            }
+    for (auto const &[id,ft_pdo] : _ft_pdo_map )  {
+        try { 
+            ///////////////////////////////////////////////////////////////
+            // read
+            int nbytes;
+            do {
+                // read protobuf data
+                nbytes = ft_pdo->read();
+            } while ( nbytes > 0);
+            //////////////////////////////////////////////////////////////
+            ft_status_map[id]= ft_pdo->_ft_pdo.ft_v; 
         }
-        else
-        {
-            std::cout << "Error on Force/Torque reading on device: "<< id << std::endl;
-        }
+        catch ( std::out_of_range ) {};   
     }
 }
-void EcPdo::read_imu_pdo(ImuStatusMap &imu_status_map)
+template < class T >
+void EcPdo<T>::read_imu_pdo(ImuStatusMap &imu_status_map)
 {
-    for ( auto &[id, imu_pdo] : _imu_pdo_map ) {
-        iit::advr::Ec_slave_pdo pb_rx_pdos;
-        std::string msg="";
-        if(imu_pdo->read())
-        {
-            if(msg!="")
-            {
-                std::vector<float> imu_v;
-                imu_v.push_back(pb_rx_pdos.mutable_imuvn_rx_pdo()->x_rate());
-                imu_v.push_back(pb_rx_pdos.mutable_imuvn_rx_pdo()->y_rate());
-                imu_v.push_back(pb_rx_pdos.mutable_imuvn_rx_pdo()->z_rate());
-                
-                imu_v.push_back(pb_rx_pdos.mutable_imuvn_rx_pdo()->x_acc());
-                imu_v.push_back(pb_rx_pdos.mutable_imuvn_rx_pdo()->y_acc());
-                imu_v.push_back(pb_rx_pdos.mutable_imuvn_rx_pdo()->z_acc());
-                
-                imu_v.push_back(pb_rx_pdos.mutable_imuvn_rx_pdo()->x_quat());
-                imu_v.push_back(pb_rx_pdos.mutable_imuvn_rx_pdo()->y_quat());
-                imu_v.push_back(pb_rx_pdos.mutable_imuvn_rx_pdo()->z_quat());
-                imu_v.push_back(pb_rx_pdos.mutable_imuvn_rx_pdo()->w_quat());
-                imu_status_map[id]=imu_v;
-            }
+    for (auto const &[id,imu_pdo] : _imu_pdo_map )  {
+        try { 
+            ///////////////////////////////////////////////////////////////
+            // read
+            int nbytes;
+            do {
+                // read protobuf data
+                nbytes = imu_pdo->read();
+            } while ( nbytes > 0);
+            //////////////////////////////////////////////////////////////
+            imu_status_map[id]= imu_pdo->_imu_pdo.imu_v;
         }
-        else
-        {
-           std::cout << "Error on IMU reading on device: " << id << std::endl;
-        }
+        catch ( std::out_of_range ) {};   
     }
 }
 
-void EcPdo::read_pow_pdo(PwrStatusMap &pow_status_map)
+template < class T >
+void EcPdo<T>::read_pow_pdo(PwrStatusMap &pow_status_map)
 {
-    for ( auto &[id, pow_pdo] : _pow_pdo_map ) {
-        iit::advr::Ec_slave_pdo pb_rx_pdos;
-        std::string msg="";
-        if(pow_pdo->read())
-        {
-            if(msg!="")
-            {
-                std::vector<float> pow_v;
-                pow_v.push_back(pb_rx_pdos.mutable_powf28m36_rx_pdo()->v_batt());
-                pow_v.push_back(pb_rx_pdos.mutable_powf28m36_rx_pdo()->v_load());
-                pow_v.push_back(pb_rx_pdos.mutable_powf28m36_rx_pdo()->i_load());
-                
-                pow_v.push_back(pb_rx_pdos.mutable_powf28m36_rx_pdo()->temp_batt());
-                pow_v.push_back(pb_rx_pdos.mutable_powf28m36_rx_pdo()->temp_heatsink());
-                pow_v.push_back(pb_rx_pdos.mutable_powf28m36_rx_pdo()->temp_pcb());
-                
-                pow_status_map[id]=pow_v;
-            }
+    for (auto const &[id,pow_pdo] : _pow_pdo_map )  {
+        try { 
+            ///////////////////////////////////////////////////////////////
+            // read
+            int nbytes;
+            do {
+                // read protobuf data
+                nbytes = pow_pdo->read();
+            } while ( nbytes > 0);
+            //////////////////////////////////////////////////////////////
+            pow_status_map[id]= pow_pdo->_pow_pdo.pow_v;
         }
-        else
-        {
-            std::cout << "Error on power board reading on device: " << id << std::endl;
-        }
+        catch ( std::out_of_range ) {};   
     }
 }
+
+template class EcPdo<EcPipePdo>;
+template class EcPdo<EcZmqPdo>;
