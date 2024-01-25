@@ -2,10 +2,10 @@
 #define __EC_PDO__
 
 #include "ec_types.h"
-#include "protocols/common/esc/motor/motor_iface.h"
-#include "protocols/common/esc/imu/imu_iface.h"
-#include "protocols/common/esc/ft/ft_iface.h"
-#include "protocols/common/esc/pow/pow_iface.h"
+#include "protocols/common/pdo/motor/motor_pdo.h"
+#include "protocols/common/pdo/imu/imu_pdo.h"
+#include "protocols/common/pdo/ft/ft_pdo.h"
+#include "protocols/common/pdo/pow/pow_pdo.h"
 
 template <class T>
 class EcPdo

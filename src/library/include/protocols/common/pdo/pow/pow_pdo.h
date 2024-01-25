@@ -1,5 +1,5 @@
-#ifndef __POW_IFACE__
-#define __POW_IFACE__
+#ifndef __POW_PDO__
+#define __POW_PDO__
 
 #include <pb_utils.h>
 #include "protocols/common/pipe/ec_pipe_pdo.h"

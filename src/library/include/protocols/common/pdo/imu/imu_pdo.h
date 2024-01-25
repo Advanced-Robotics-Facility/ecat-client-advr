@@ -1,5 +1,5 @@
-#ifndef __IMU_IFACE__
-#define __IMU_IFACE__
+#ifndef __IMU_PDO__
+#define __IMU_PDO__
 
 #include <pb_utils.h>
 #include "protocols/common/pipe/ec_pipe_pdo.h"

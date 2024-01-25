@@ -1,5 +1,5 @@
-#ifndef __MOTOR_IFACE__
-#define __MOTOR_IFACE__
+#ifndef __MOTOR_PDO__
+#define __MOTOR_PDO__
 
 #include<tuple>
 #include <pb_utils.h>
