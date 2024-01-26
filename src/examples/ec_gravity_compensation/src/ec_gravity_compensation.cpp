@@ -60,7 +60,15 @@ int main()
     return 1;
     }
     
-        std::vector<int> slave_id_vector=ec_client_cfg.motor_id;
+    std::vector<int> slave_id_vector;
+    for ( auto &[id, pos] : ec_client_cfg.homing_position ) {
+        slave_id_vector.push_back(id);
+    }
+    
+    if(slave_id_vector.empty()){
+        std::cout << "Got an empty homing position map" << std::endl; 
+        return 0;
+    }
 
 
     // *************** START CLIENT  *************** //
@@ -333,7 +341,7 @@ int main()
                     int id=slave_id_vector[i];
                     q[id]=0.0;
                     qdot[id] = 0.0;
-                    q_ref[i]=0.0;
+                    q_ref[id]=0.0;
                 }
             }
 #endif

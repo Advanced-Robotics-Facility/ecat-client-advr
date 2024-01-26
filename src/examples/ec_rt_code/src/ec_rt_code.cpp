@@ -65,6 +65,10 @@ int main ( int argc, char * argv[] ) try {
     return 1;
     }
     
+    if(ec_client_cfg.homing_position.empty()){
+        std::cout << "Got an empty homing position map" << std::endl; 
+        return 0;
+    }
 
     // *************** START CLIENT  *************** //
     EcIface::Ptr client=ec_client_utils->make_ec_iface();

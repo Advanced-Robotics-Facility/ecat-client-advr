@@ -21,9 +21,21 @@ int main()
         std::cout << ex.what() << std::endl;
     return 1;
     }
-    
-    std::vector<int> slave_id_vector=ec_client_cfg.motor_id;
 
+    std::vector<int> slave_id_vector;
+    for ( auto &[id, pos] : ec_client_cfg.homing_position ) {
+        slave_id_vector.push_back(id);
+    }
+    
+    if(slave_id_vector.empty()){
+        std::cout << "Got an homing position map" << std::endl; 
+        return 0;
+    }
+    
+    if(ec_client_cfg.trajectory.empty()){
+        std::cout << "Got an empty general trajectory map" << std::endl; 
+        return 0;
+    }
 
     // *************** START CLIENT  *************** //
     EcIface::Ptr client=ec_client_utils->make_ec_iface();

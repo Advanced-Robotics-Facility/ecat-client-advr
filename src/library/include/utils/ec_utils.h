@@ -46,8 +46,8 @@ public:
     
     ~EcUtils();
     
-    std::map<int,MOTOR_CONFIG> get_motor_config_map(const YAML::Node & motor_cfg,
-                                                    const YAML::Node & joint_map);
+    std::map<int,MOTOR_CONFIG> get_motor_config_map(const YAML::Node & motor_config_node,
+                                                    const YAML::Node & id_map_node);
     EC_CONFIG get_ec_cfg();
     std::string get_ec_cfg_file();
     EcIface::Ptr make_ec_iface(); // EtherCAT Client Interface
@@ -55,7 +55,9 @@ private:
     
     std::string _control_mode;
     EC_CONFIG _ec_cfg;
-    std::string _ec_client_cfg_file;
+    std::string _ec_cfg_file;
+    
+    void compute_absolute_path(std::string &file_path);
 };
 
 #endif

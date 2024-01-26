@@ -50,7 +50,16 @@ int main()
     return 1;
     }
     
-        std::vector<int> slave_id_vector=ec_client_cfg.motor_id;
+        
+    std::vector<int> slave_id_vector;
+    for ( auto &[id, pos] : ec_client_cfg.homing_position ) {
+        slave_id_vector.push_back(id);
+    }
+    
+    if(slave_id_vector.empty()){
+        std::cout << "Got an empty homing position map" << std::endl; 
+        return 0;
+    }
     
     // *************** START CLIENT  *************** //
     EcIface::Ptr client=ec_client_utils->make_ec_iface();
@@ -226,7 +235,6 @@ int main()
         while (run)
         {
             bool client_alive = client->is_client_alive();
-            
             if(!client_alive)
             {
                 break;
@@ -302,14 +310,15 @@ int main()
                 first_Rx=true;
                 for(int i=0; i<slave_id_vector.size();i++)
                 {
-                    q_ref[i]=0.0;
+                    int id=slave_id_vector[i];
+                    q_ref[id]=0.0;
+                    qdot[id] = 0.0;
                 }
             }
 #endif
             if(STM_sts=="Motor_Ctrl")
             {
                 motors_ref.clear();      
-
                 for ( const auto &[esc_id, pos_ref] : q_ref){
                     motors_ref.push_back(std::make_tuple(esc_id, //bId
                                                     ec_client_cfg.motor_config_map[esc_id].control_mode_type, //ctrl_type
@@ -327,7 +336,6 @@ int main()
                                                 ));
                 }
             }
-                
             // ************************* SEND ALWAYS REFERENCES***********************************//
             
             // Tx "MOVE"  @NOTE: motors_ref done when the state machine switch between homing and trajectory after motor_ref will remain equal to old references 
