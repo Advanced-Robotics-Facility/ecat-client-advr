@@ -43,13 +43,9 @@ target_link_libraries(${PROJECT_NAME}
     ${YAML_CPP_LIBRARIES}
     ${Boost_SYSTEM_LIBRARY}
     pthread
-    ecat_master::ecat_core${LIB_TYPE}
-    ecat_master::ecat_master_pb
-    ecat_master::msgpck_proto
     ec_common_library
     magic_enum::magic_enum
     matlogger2::matlogger2
-    ${ZeroMQ_LIBRARY}
     )
 
 

@@ -145,7 +145,7 @@ void EcPdo<T>::write_motor_pdo(const std::vector<MR> motors_references)
             motor_pdo->write();
         }
         else{
-            DPRINTF("Cannot send reference to id 0x%04X \n", bId);
+            //DPRINTF("Cannot send reference to id 0x%04X \n", bId);
         }
     }
 }

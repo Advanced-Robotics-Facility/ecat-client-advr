@@ -2,12 +2,12 @@ network:
   #protocol: zipc #tcp #iddp #udp
   #hostname: /tmp/ecat_master #10.240.23.30 #localhost #192.168.99.10 #192.168.9.99 #10.240.22.49
   
-  protocol: tcp #tcp #iddp #udp
+  protocol: iddp #tcp #iddp #udp
   hostname: localhost #10.240.23.30 #localhost #192.168.99.10 #192.168.9.99 #10.240.22.49
   port: 5000 #54321(UDP)
   timeout: 1000
 
-period_ms: 1
+period_ms: 2
 logging: false
 
 control:

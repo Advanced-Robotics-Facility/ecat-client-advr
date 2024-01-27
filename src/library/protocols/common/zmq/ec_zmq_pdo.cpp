@@ -92,7 +92,7 @@ int EcZmqPdo::read()
         pb_rx_pdos.Clear();
     }
     else{
-        //get_from_pb();
+        get_from_pb();
     }
 
     //if(nmsg>100)
@@ -103,5 +103,7 @@ int EcZmqPdo::read()
 
 int EcZmqPdo::write()
 {
+    set_to_pb();
+    // publish to zmq socket
     return 0;
 }
