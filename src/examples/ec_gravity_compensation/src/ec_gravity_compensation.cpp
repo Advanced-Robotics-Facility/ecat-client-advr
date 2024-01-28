@@ -319,17 +319,7 @@ int main()
                     
                 } catch (std::out_of_range oor) {}
             }
-            //******************* Motor Telemetry **************
-            if(q_ref_test.size() == model->getJointNum()-6)
-            {
-                //Open Loop SENSE
-                first_Rx=true;
-            }
-            else
-            {
-                throw std::runtime_error("fatal error: different size of initial position from joint of the model");
-            }
-                
+
 #ifdef TEST_EXAMPLES
             if(!first_Rx)
             {
@@ -343,6 +333,17 @@ int main()
                 }
             }
 #endif
+            //******************* Motor Telemetry **************
+            if(q_ref_test.size() == model->getJointNum()-6)
+            {
+                //Open Loop SENSE
+                first_Rx=true;
+            }
+            else
+            {
+                throw std::runtime_error("fatal error: different size of initial position from joint of the model");
+            }
+                
             if(STM_sts=="Motor_Ctrl" || 
                 STM_sts=="Motor_Ctrl_SetGains")
             {

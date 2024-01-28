@@ -293,17 +293,7 @@ int main()
                     
                 } catch (std::out_of_range oor) {}
             }
-            //******************* Motor Telemetry **************
-            if(q_ref.size() == q_set_trj.size())
-            {
-                //Open Loop SENSE
-                first_Rx=true;
-            }
-            else
-            {
-                throw std::runtime_error("fatal error: different size of initial position and trajectory vectors");
-            }
-                
+            
 #ifdef TEST_EXAMPLES
             if(!first_Rx)
             {
@@ -316,6 +306,17 @@ int main()
                 }
             }
 #endif
+            //******************* Motor Telemetry **************
+            if(q_ref.size() == q_set_trj.size())
+            {
+                //Open Loop SENSE
+                first_Rx=true;
+            }
+            else
+            {
+                throw std::runtime_error("fatal error: different size of initial position and trajectory vectors");
+            }
+                
             if(STM_sts=="Motor_Ctrl")
             {
                 motors_ref.clear();      
