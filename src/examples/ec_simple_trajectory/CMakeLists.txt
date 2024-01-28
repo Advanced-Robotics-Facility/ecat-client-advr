@@ -7,10 +7,8 @@ add_executable(ec_simple_trajectory
                
 target_link_libraries(ec_simple_trajectory
     PUBLIC
-    ${YAML_CPP_LIBRARIES}
-    ${Boost_SYSTEM_LIBRARY}
-    pthread
     ec_library
+    ecat_master::tools_utils
     )
 
 install(TARGETS ec_simple_trajectory

@@ -10,10 +10,8 @@ target_link_libraries(ec_gravity_compensation
     PRIVATE 
     ${XBotInterface_LIBRARIES}
     PUBLIC
-    ${YAML_CPP_LIBRARIES}
-    ${Boost_SYSTEM_LIBRARY}
-    pthread
     ec_library
+    ecat_master::tools_utils
     )
     
 

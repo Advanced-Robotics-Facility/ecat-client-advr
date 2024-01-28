@@ -5,6 +5,8 @@
 #include <thread>
 
 #include "utils/ec_utils.h"
+#include <test_common.h>
+#include <utils.h>
 
 using namespace std::chrono;
 
@@ -17,8 +19,8 @@ int main()
         ec_client_utils=std::make_shared<EcUtils>();
         ec_client_cfg = ec_client_utils->get_ec_cfg();
     }catch(std::exception &ex){
-        std::cout << "Error on ec client config file" << std::endl;
-        std::cout << ex.what() << std::endl;
+        DPRINTF("Error on ec client config file\n");
+        DPRINTF("%s\n",ex.what());
     return 1;
     }
 
@@ -28,20 +30,17 @@ int main()
     }
     
     if(slave_id_vector.empty()){
-        std::cout << "Got an homing position map" << std::endl; 
+        DPRINTF("Got an homing position map\n");
         return 0;
     }
     
     if(ec_client_cfg.trajectory.empty()){
-        std::cout << "Got an empty general trajectory map" << std::endl; 
+        DPRINTF("Got an empty general trajectory map\n");
         return 0;
     }
 
     // *************** START CLIENT  *************** //
     EcIface::Ptr client=ec_client_utils->make_ec_iface();
-    
-    auto period_ms_time=milliseconds(ec_client_cfg.period_ms);
-    
     // *************** START CLIENT  *************** //
                 
     
@@ -57,7 +56,7 @@ int main()
     {   
         if(!slave_info.empty())
         {
-            std::cout << "AUTODETECTION" << std::endl;
+            DPRINTF("AUTODETECTION\n");
             for(int motor_id_index=0;motor_id_index<slave_id_vector.size();motor_id_index++)
             {
                 bool motor_found=false;
@@ -111,7 +110,7 @@ int main()
     if(!motors_start.empty())
     {
         // ************************* START Motors ***********************************//
-        std::cout << "START ALL MOTORS" << std::endl;
+        DPRINTF("START ALL MOTORS\n");
         motor_started=client->start_motors(motors_start);
 
         if(motor_started)
@@ -123,7 +122,7 @@ int main()
                     pdo_aux_cmd_attemps++;
                     if(!client->pdo_aux_cmd(brake_cmds))
                     {
-                        std::cout << "Cannot perform the release brake command of the motors" << std::endl;
+                        DPRINTF("Cannot perform the release brake command of the motors\n");
                         pdo_aux_cmd_attemps=max_pdo_aux_cmd_attemps;
                     }
                     else
@@ -145,7 +144,7 @@ int main()
         }
         else
         {
-            std::cout << "Motors not started" << std::endl;
+            DPRINTF("Motors not started\n");
         }
             
         // ************************* START Motors ***********************************//
@@ -158,7 +157,7 @@ int main()
                 pdo_aux_cmd_attemps++;
                 if(!client->pdo_aux_cmd(led_cmds))
                 {
-                    std::cout << "Cannot perform the led on command of the motors"<< std::endl;
+                    DPRINTF("Cannot perform the led on command of the motors\n");
                     pdo_aux_cmd_attemps=max_pdo_aux_cmd_attemps;
                 }
                 else
@@ -166,7 +165,7 @@ int main()
                     std::this_thread::sleep_for(100ms);
                     if(client->pdo_aux_cmd_sts(led_cmds))
                     {
-                        std::cout << "Switched ON the LEDs " << std::endl;
+                        DPRINTF("Switched ON the LEDs\n");
                         pdo_aux_cmd_attemps=max_pdo_aux_cmd_attemps;
                     }
                 }
@@ -176,7 +175,7 @@ int main()
     }
     else
     {
-        std::cout << "NO MOTORS STARTED" << std::endl;
+        DPRINTF("NO MOTORS STARTED\n");
     }
 
 #ifdef TEST_EXAMPLES
@@ -187,14 +186,18 @@ int main()
 #endif
             
     if(send_ref)
-    {
-        auto start_time= steady_clock::now();
-        auto time=start_time;
+    {                                               
+        struct timespec ts= { 0, ec_client_cfg.period_ms*1000000}; //sample time
         
-        auto hm_time_ms=milliseconds(1000*ec_client_cfg.homing_time_sec);
-        auto trj_time_ms=milliseconds(1000*ec_client_cfg.trajectory_time_sec);
+        uint64_t period_ns=ec_client_cfg.period_ms*1000000;
+        uint64_t start_time_ns = iit::ecat::get_time_ns();
+        uint64_t time_ns=start_time_ns;
         
-        auto time_to_engage_brakes = milliseconds(1000); // Default 1s
+        double time_elapsed_ms;
+        double hm_time_ms=ec_client_cfg.homing_time_sec*1000;
+        double trj_time_ms=ec_client_cfg.trajectory_time_sec*1000;
+        double set_trj_time_ms=hm_time_ms;
+        double time_to_engage_brakes_ms = 1000; // Default 1s
         
         bool run=true;
         bool first_Rx=false;
@@ -203,89 +206,75 @@ int main()
         std::map<int,double> q_set_trj=ec_client_cfg.homing_position;
         std::map<int,double> q_ref,q_start,qdot;
 
-        auto set_trj_time_ms=hm_time_ms;
+        
         int trajectory_counter=0;
         bool motors_vel_check=false;
         bool led_off_req=false;
         
+        // Power Board
+        PwrStatusMap pow_status_map;
+        float v_batt,v_load,i_load,temp_pcb,temp_heatsink,temp_batt;
+        
+        // Motor
+        float  link_pos,motor_pos,link_vel,motor_vel,torque,aux;
+        float  motor_temp, board_temp;
+        uint32_t fault,rtt,op_idx_ack;
+        uint32_t cmd_aux_sts,brake_sts,led_sts;
+        MotorStatusMap motors_status_map;
         std::vector<MR> motors_ref;
-    
-        while (run)
+        
+        if(ec_client_cfg.protocol=="iddp")
         {
-            bool client_alive = client->is_client_alive();
-            
-            if(!client_alive)
-            {
-                break;
-            }
-            
-            auto time_elapsed_ms= duration_cast<milliseconds>(time-start_time);
+            DPRINTF("Real-time process....\n");
+            assert(set_main_sched_policy(10) >= 0);
+        }
+    
+        while (run && client->is_client_alive())
+        {
+            time_elapsed_ms= (time_ns-start_time_ns)/1000000;
+            //DPRINTF("Time [%f]\n",time_elapsed_ms);
             
             // Rx "SENSE"
-            
             //******************* Power Board Telemetry ********
-            auto pow_status_map= client->get_pow_status();
-            float v_batt,v_load,i_load,temp_pcb,temp_heatsink,temp_batt;
-            if(!pow_status_map.empty())
-            {
-                for ( const auto &[esc_id, pow_status] : pow_status_map){
-                    v_batt =        pow_status[0];
-                    v_load =        pow_status[1];
-                    i_load =        pow_status[2];
-                    temp_pcb =      pow_status[3];
-                    temp_heatsink=  pow_status[4];
-                    temp_batt=      pow_status[5];
-                }
+            pow_status_map= client->get_pow_status();
+            for ( const auto &[esc_id, pow_status] : pow_status_map){
+                v_batt =        pow_status[0];
+                v_load =        pow_status[1];
+                i_load =        pow_status[2];
+                temp_pcb =      pow_status[3];
+                temp_heatsink=  pow_status[4];
+                temp_batt=      pow_status[5];
             }
+
             //******************* Power Board Telemetry ********
             
             //******************* Motor Telemetry **************
-            auto motors_status_map= client->get_motors_status();
-            if(!motors_status_map.empty())
-            {
-                for ( const auto &[esc_id, motor_status] : motors_status_map){
-                    try {
-                            if(q_set_trj.count(esc_id))
+            motors_status_map= client->get_motors_status();
+            for ( const auto &[esc_id, motor_status] : motors_status_map){
+                try {
+                        if(q_set_trj.count(esc_id))
+                        {
+                            std::tie(link_pos,motor_pos,link_vel,motor_vel,torque,motor_temp,board_temp,fault,rtt,op_idx_ack,aux,cmd_aux_sts) = motor_status;
+                            
+                            // PRINT OUT Brakes and LED get_motors_status @ NOTE To be tested.         
+                            brake_sts = cmd_aux_sts & 3; //00 unknown
+                                                        //01 release brake 
+                                                        //10 enganged brake  
+                                                        //11 error
+                            led_sts= (cmd_aux_sts & 4)/4; // 1 or 0 LED  ON/OFF
+                            
+                            //Closed Loop SENSE for motor velocity
+                            qdot[esc_id] = motor_vel;
+                            
+                            if(!first_Rx)
                             {
-                                float  link_pos,motor_pos,link_vel,motor_vel,torque,aux;
-                                float  motor_temp, board_temp;
-                                uint32_t fault,rtt,op_idx_ack;
-                                uint32_t cmd_aux_sts,brake_sts,led_sts;
-                                std::tie(link_pos,motor_pos,link_vel,motor_vel,torque,motor_temp,board_temp,fault,rtt,op_idx_ack,aux,cmd_aux_sts) = motor_status;
-                                
-                                // PRINT OUT Brakes and LED get_motors_status @ NOTE To be tested.         
-                                brake_sts = cmd_aux_sts & 3; //00 unknown
-                                                            //01 release brake 
-                                                            //10 enganged brake  
-                                                            //11 error
-                                led_sts= (cmd_aux_sts & 4)/4; // 1 or 0 LED  ON/OFF
-                                
-                                //std::cout << "ID: " << esc_id << "  Brake status : " << brake_sts << std::endl;
-                                //std::cout << "ID: " << esc_id << "  LED status : " << led_sts << std::endl;
-                                
-                                //Closed Loop SENSE for motor velocity
-                                qdot[esc_id] = motor_vel;
-                                
-                                if(!first_Rx)
-                                {
-                                    q_start[esc_id]=motor_pos; // get position at first time
-                                }
+                                q_start[esc_id]=motor_pos; // get actual motor position at first time
                             }
-                    } catch (std::out_of_range oor) {}
-                }
-                //******************* Motor Telemetry **************
-                
-                if(q_start.size() == q_set_trj.size())
-                {
-                    //Open Loop SENSE
-                    first_Rx=true;
-                }
-                else
-                {
-                    throw std::runtime_error("fatal error: different size of initial position and trajectory vectors");
-                }
+                        }
+                } catch (std::out_of_range oor) {}
             }
-                
+            //******************* Motor Telemetry **************
+
 #ifdef TEST_EXAMPLES
             if(!first_Rx)
             {
@@ -298,29 +287,33 @@ int main()
                 }
             }
 #endif
-            
+            if(q_start.size() == q_set_trj.size())
+            {
+                //Open Loop SENSE
+                first_Rx=true;
+            }
+            else
+            {
+                throw std::runtime_error("fatal error: different size of initial position and trajectory vectors");
+            }
+                
             if((STM_sts=="Homing")||
                 (STM_sts=="Trajectory"))
             {
                 motors_ref.clear();  //clear old trajectory
                 // define a simplistic linear trajectory
-                auto tau= std::chrono::duration<double> (time_elapsed_ms) / std::chrono::duration<double> (set_trj_time_ms);
-
+                double tau= time_elapsed_ms / set_trj_time_ms;
                 // quintic poly 6t^5 - 15t^4 + 10t^3
-                auto alpha = ((6*tau - 15)*tau + 10)*tau*tau*tau;
-                //std::cout << "Alpha: "<< alpha << std::endl;
+                double alpha = ((6*tau - 15)*tau + 10)*tau*tau*tau;
                 // interpolate
                 for(int i=0; i<q_set_trj.size();i++)
                 {
                     int id=slave_id_vector[i];
-                    //std::cout << id << std::endl;
                     if(q_set_trj.count(id)>0)
                     {
                         q_ref[id] = q_start[id] + alpha * (q_set_trj[id] - q_start[id]);
-                        //std::cout << q_ref[id] << " " ;
                     }
                 }
-                //std::cout << " " << std::endl;
                 for(int i=0; i<slave_id_vector.size();i++)
                 {
                     auto id=slave_id_vector[i];
@@ -355,9 +348,7 @@ int main()
             
             if(!motors_ref.empty())
             {
-                // Tx "MOVE"  @NOTE: motors_ref done when the state machine switch between homing and trajectory after motor_ref will remain equal to old references
                 client->set_motors_references(MotorRefFlags::FLAG_MULTI_REF, motors_ref);
-                //->feed_motors(std::make_tuple(motor_ref_flags, motors_ref));
             }
             else
             {
@@ -369,14 +360,14 @@ int main()
             if(STM_sts=="Engaged_Brake")
             {
                 // ************************* Engage Brake***********************************//
-                if(time_elapsed_ms>=time_to_engage_brakes)  
+                if(time_elapsed_ms>=time_to_engage_brakes_ms)  
                 {
                     led_off_req=true;
                     if(motors_vel_check)
                     {
                         if(client->pdo_aux_cmd_sts(brake_cmds))
                         {
-                            std::cout << "Brakes engaged for all motors" << std::endl;
+                            DPRINTF("Brakes engaged for all motors\n");
                             stop_motors=true;
                         }
                         else
@@ -386,18 +377,18 @@ int main()
                             {
                                 led_off_req=false;
                                 motors_vel_check=false;
-                                start_time=time+period_ms_time;
+                                start_time_ns=time_ns+period_ns;
                             }
                         }
                     }
                     else
                     {
-                        std::cout << "Not all Motors velocity satisfied the velocity requirement"   << std::endl;  
+                        DPRINTF("Not all Motors velocity satisfied the velocity requirement\n");  
                     }
                     
                     if(!stop_motors) // all motors velocity check not satisfied for time_to_engage_brakes or brake status different from request
                     {
-                        std::cout << "Cannot engage the brake for all motors, no stopping action on the motors will be performed" << std::endl;  
+                        DPRINTF("Cannot engage the brake for all motors, no stopping action on the motors will be performed\n");
                     }
                 }
                 else
@@ -416,7 +407,7 @@ int main()
                                 else
                                 {
                                     motors_vel_check &= false;
-                                    std::cout << "Velocity check not satisfied for motor id: " << esc_id << std::endl;
+                                    DPRINTF("Velocity check not satisfied for motor id: %d\n", esc_id);
                                 }
                             }
                         }
@@ -424,7 +415,7 @@ int main()
                         if(motors_vel_check)
                         {
                             if(!brake_cmds.empty()){
-                                start_time=time+period_ms_time;
+                                start_time_ns=time_ns+period_ns;
                                 if(!client->pdo_aux_cmd(brake_cmds))
                                 { 
                                     run=false;
@@ -444,13 +435,13 @@ int main()
                 // ************************* SWITCH OFF LEDs OFF  ***********************************//
             if(STM_sts=="LED_OFF")
             {
-                if(time_elapsed_ms>=100ms) 
+                if(time_elapsed_ms>=100) 
                 {
                     run=false;
                     if(!led_cmds.empty()){
                         if(client->pdo_aux_cmd_sts(led_cmds))
                         {
-                            std::cout << "Switched OFF the LEDs"<< std::endl;
+                            DPRINTF("Switched OFF the LEDs\n");
                         }
                         else
                         {
@@ -458,16 +449,16 @@ int main()
                             if(pdo_aux_cmd_attemps<max_pdo_aux_cmd_attemps)
                             {
                                 run=true;
-                                start_time=time+period_ms_time;
+                                start_time_ns=time_ns+period_ns;
                                 if(!client->pdo_aux_cmd(led_cmds))
                                 {
-                                    std::cout << "Cannot perform the led off command of the all motors" << std::endl;
+                                    DPRINTF("Cannot perform the led off command of the all motors\n");
                                     run=false;
                                 }
                             }
                             else
                             {
-                                std::cout << "Cannot swith off all leds" << std::endl; 
+                                DPRINTF("Cannot swith off all leds\n"); 
                             }
                         }
                     }
@@ -475,13 +466,13 @@ int main()
                 // ************************* SWITCH OFF LEDs  ***********************************//
             }
             
-            // delay until time to iterate again
-            time += period_ms_time;
+            // get period ns
+            time_ns = iit::ecat::get_time_ns();
                 
             if((time_elapsed_ms>=hm_time_ms)&&(STM_sts=="Homing"))
             {
                 STM_sts="Trajectory";
-                start_time=time;
+                start_time_ns=time_ns;
                 trajectory_counter=trajectory_counter+1;
                 set_trj_time_ms=trj_time_ms;
                 q_set_trj=ec_client_cfg.trajectory;
@@ -492,13 +483,13 @@ int main()
                 if(trajectory_counter==ec_client_cfg.repeat_trj)
                 {
                     STM_sts="Engaged_Brake";
-                    start_time=time;
+                    start_time_ns=time_ns;
                     pdo_aux_cmd_attemps=0;
                 }
                 else
                 {
                     STM_sts="Homing";
-                    start_time=time;
+                    start_time_ns=time_ns;
                     set_trj_time_ms=hm_time_ms;
                     q_set_trj=ec_client_cfg.homing_position;
                     q_start=q_ref;
@@ -507,7 +498,7 @@ int main()
             else if(led_off_req && STM_sts=="Engaged_Brake")
             {
                 STM_sts="LED_OFF";
-                start_time=time;
+                start_time_ns=time_ns;
                 
                 // SETUP LED OFF
                 led_cmds.clear();
@@ -527,12 +518,11 @@ int main()
                 pdo_aux_cmd_attemps=0;
                 if(!client->pdo_aux_cmd(led_cmds))
                 {
-                    std::cout << "Cannot perform the led off command of the all motors" << std::endl;
+                    DPRINTF("Cannot perform the led off command of the all motors\n");
                     run=false;
                 }
             }
-                
-            std::this_thread::sleep_until(time);             
+            clock_nanosleep(CLOCK_REALTIME, 0, &ts, NULL);
         }
             
     }
@@ -542,11 +532,11 @@ int main()
     {
         if(!client->stop_motors())
         {
-            std::cout << "Not all motors are stopped" << std::endl;
+            DPRINTF("Not all motors are stopped\n");
         }
         else
         {
-            std::cout << "All Motors stopped" << std::endl;
+            DPRINTF("All Motors stopped\n");
         }
             
     }

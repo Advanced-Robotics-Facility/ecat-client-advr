@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>pdo_widget.ui</file>
-    </qresource>
-</RCC>

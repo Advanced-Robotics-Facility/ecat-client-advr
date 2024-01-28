@@ -1,7 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>ec_gui_start.ui</file>
-        <file>img/logo.png</file>
-        <file>img/robot.png</file>
-    </qresource>
-</RCC>

@@ -10,6 +10,7 @@ target_link_libraries(ec_frequency_test
     ${Boost_SYSTEM_LIBRARY}
     pthread
     ec_library
+    ecat_master::tools_utils
     )
 
 
