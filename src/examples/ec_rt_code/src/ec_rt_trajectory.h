@@ -2,6 +2,7 @@
 #define __EC_RT_TRAJECTORY__
 
 #include "utils/ec_utils.h"
+#include <chrono>
 
 class EcRtTrajectory : public Thread_hook {
 
@@ -25,6 +26,20 @@ private:
     bool _send_ref=false;
     bool _stop_motors=false;
     
+    
+    std::chrono::steady_clock _start_time;
+    std::chrono::steady_clock _time;
+    
+    std::chrono::milliseconds _hm_time_ms;
+    std::chrono::milliseconds _trj_time_ms;
+    std::chrono::milliseconds _time_to_engage_brakes;
+    
+    bool _first_Rx=false;
+    
+    std::string _STM_sts;
+    std::map<int,double> _q_set_trj;
+    std::map<int,double> _q_ref,_q_start,_qdot;
+
 public:
 
     EcRtTrajectory(int period_ms,

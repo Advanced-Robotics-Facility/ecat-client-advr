@@ -27,7 +27,11 @@ _client(client)
 
 EcRtTrajectory::~EcRtTrajectory()
 { 
+    iit::ecat::print_stat ( s_loop );
 
+    stop();
+    
+    join();
 }
 
 void EcRtTrajectory::th_init ( void * )
@@ -132,13 +136,94 @@ void EcRtTrajectory::th_init ( void * )
             _send_ref=true;
         }
 #endif
+    
+    //_start_time= steady_clock::now();
+    //_time=start_time;
+
+    _hm_time_ms=milliseconds(1000*_ec_client_cfg.homing_time_sec);
+    _trj_time_ms=milliseconds(1000*_ec_client_cfg.trajectory_time_sec);
+    _time_to_engage_brakes= milliseconds(1000); // Default 1s
+    
+    _STM_sts="Homing";
+    _q_set_trj=_ec_client_cfg.homing_position;
 }
 
 void EcRtTrajectory::th_loop ( void * )
 {
     if(_send_ref)
     {
+        bool client_alive = _client->is_client_alive();
+            
+        if(!client_alive)
+        {
+           //stop();
+           return;
+        }
         
+        //auto time_elapsed_ms= duration_cast<milliseconds>(time-start_time);
+        
+        // Rx "SENSE"
+        
+        //******************* Power Board Telemetry ********
+        auto pow_status_map= _client->get_pow_status();
+        float v_batt,v_load,i_load,temp_pcb,temp_heatsink,temp_batt;
+        if(!pow_status_map.empty())
+        {
+            for ( const auto &[esc_id, pow_status] : pow_status_map){
+                v_batt =        pow_status[0];
+                v_load =        pow_status[1];
+                i_load =        pow_status[2];
+                temp_pcb =      pow_status[3];
+                temp_heatsink=  pow_status[4];
+                temp_batt=      pow_status[5];
+            }
+        }
+        //******************* Power Board Telemetry ********
+        
+        //******************* Motor Telemetry **************
+        auto motors_status_map= _client->get_motors_status();
+        if(!motors_status_map.empty())
+        {
+            for ( const auto &[esc_id, motor_status] : motors_status_map){
+                try {
+                        if(_q_set_trj.count(esc_id))
+                        {
+                            float  link_pos,motor_pos,link_vel,motor_vel,torque,aux;
+                            float  motor_temp, board_temp;
+                            uint32_t fault,rtt,op_idx_ack;
+                            uint32_t cmd_aux_sts,brake_sts,led_sts;
+                            std::tie(link_pos,motor_pos,link_vel,motor_vel,torque,motor_temp,board_temp,fault,rtt,op_idx_ack,aux,cmd_aux_sts) = motor_status;
+                            
+                            // PRINT OUT Brakes and LED get_motors_status @ NOTE To be tested.         
+                            brake_sts = cmd_aux_sts & 3; //00 unknown
+                                                        //01 release brake 
+                                                        //10 enganged brake  
+                                                        //11 error
+                            led_sts= (cmd_aux_sts & 4)/4; // 1 or 0 LED  ON/OFF
+                            
+                            //Closed Loop SENSE for motor velocity
+                            _qdot[esc_id] = motor_vel;
+                            
+                            if(!_first_Rx)
+                            {
+                                _q_start[esc_id]=motor_pos; // get position at first time
+                            }
+                        }
+                } catch (std::out_of_range oor) {}
+            }
+            //******************* Motor Telemetry **************
+            
+            if(_q_start.size() == _q_set_trj.size())
+            {
+                //Open Loop SENSE
+                _first_Rx=true;
+            }
+            else
+            {
+                DPRINTF("fatal error: different size of initial position and trajectory vectors");
+                
+            }
+        }
     }
 }
 
