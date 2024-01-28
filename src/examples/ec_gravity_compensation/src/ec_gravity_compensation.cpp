@@ -283,57 +283,51 @@ int main()
             // Rx "SENSE"
             //******************* Power Board Telemetry ********
             pow_status_map= client->get_pow_status();
-            if(!pow_status_map.empty())
-            {
-                for ( const auto &[esc_id, pow_status] : pow_status_map){
-                    v_batt =        pow_status[0];
-                    v_load =        pow_status[1];
-                    i_load =        pow_status[2];
-                    temp_pcb =      pow_status[3];
-                    temp_heatsink=  pow_status[4];
-                    temp_batt=      pow_status[5];
-                }
+            for ( const auto &[esc_id, pow_status] : pow_status_map){
+                v_batt =        pow_status[0];
+                v_load =        pow_status[1];
+                i_load =        pow_status[2];
+                temp_pcb =      pow_status[3];
+                temp_heatsink=  pow_status[4];
+                temp_batt=      pow_status[5];
             }
             //******************* Power Board Telemetry ********
             
             //******************* Motor Telemetry **************
             motors_status_map= client->get_motors_status();
-            if(!motors_status_map.empty())
+            for ( const auto &[esc_id, motor_status] : motors_status_map){
+                try{
+                    std::tie(link_pos,motor_pos,link_vel,motor_vel,torque,motor_temp,board_temp,fault,rtt,op_idx_ack,aux,cmd_aux_sts) = motor_status;
+                    
+                    // PRINT OUT Brakes and LED get_motors_status @ NOTE To be tested.         
+                    brake_sts = cmd_aux_sts & 3; //00 unknown
+                                                //01 release brake 
+                                                //10 enganged brake  
+                                                //11 error
+                    led_sts= (cmd_aux_sts & 4)/4; // 1 or 0 LED  ON/OFF
+                    
+                    
+                    //Closed Loop SENSE for motor position and velocity
+                    q[esc_id]=motor_pos;
+                    qdot[esc_id] = motor_vel;
+                    q_ref[esc_id]=q[esc_id];
+                    
+                    if(!first_Rx)
+                    {
+                        q_ref_test[esc_id]=motor_pos;
+                    }
+                    
+                } catch (std::out_of_range oor) {}
+            }
+            //******************* Motor Telemetry **************
+            if(q_ref_test.size() == model->getJointNum()-6)
             {
-                for ( const auto &[esc_id, motor_status] : motors_status_map){
-                    try{
-                        std::tie(link_pos,motor_pos,link_vel,motor_vel,torque,motor_temp,board_temp,fault,rtt,op_idx_ack,aux,cmd_aux_sts) = motor_status;
-                        
-                        // PRINT OUT Brakes and LED get_motors_status @ NOTE To be tested.         
-                        brake_sts = cmd_aux_sts & 3; //00 unknown
-                                                    //01 release brake 
-                                                    //10 enganged brake  
-                                                    //11 error
-                        led_sts= (cmd_aux_sts & 4)/4; // 1 or 0 LED  ON/OFF
-                        
-                        
-                        //Closed Loop SENSE for motor position and velocity
-                        q[esc_id]=motor_pos;
-                        qdot[esc_id] = motor_vel;
-                        q_ref[esc_id]=q[esc_id];
-                        
-                        if(!first_Rx)
-                        {
-                            q_ref_test[esc_id]=motor_pos;
-                        }
-                        
-                    } catch (std::out_of_range oor) {}
-                }
-                //******************* Motor Telemetry **************
-                if(q_ref_test.size() == model->getJointNum()-6)
-                {
-                    //Open Loop SENSE
-                    first_Rx=true;
-                }
-                else
-                {
-                    throw std::runtime_error("fatal error: different size of initial position from joint of the model");
-                }
+                //Open Loop SENSE
+                first_Rx=true;
+            }
+            else
+            {
+                throw std::runtime_error("fatal error: different size of initial position from joint of the model");
             }
                 
 #ifdef TEST_EXAMPLES

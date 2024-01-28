@@ -221,6 +221,8 @@ int main()
         uint32_t fault,rtt,op_idx_ack;
         uint32_t cmd_aux_sts,brake_sts,led_sts;
         MotorStatusMap motors_status_map;
+        
+        double tau=0,alpha=0;
         std::vector<MR> motors_ref;
         
         if(ec_client_cfg.protocol=="iddp")
@@ -302,9 +304,9 @@ int main()
             {
                 motors_ref.clear();  //clear old trajectory
                 // define a simplistic linear trajectory
-                double tau= time_elapsed_ms / set_trj_time_ms;
+                tau= time_elapsed_ms / set_trj_time_ms;
                 // quintic poly 6t^5 - 15t^4 + 10t^3
-                double alpha = ((6*tau - 15)*tau + 10)*tau*tau*tau;
+                alpha = ((6*tau - 15)*tau + 10)*tau*tau*tau;
                 // interpolate
                 for(int i=0; i<q_set_trj.size();i++)
                 {
@@ -477,6 +479,7 @@ int main()
                 set_trj_time_ms=trj_time_ms;
                 q_set_trj=ec_client_cfg.trajectory;
                 q_start=q_ref;
+                tau=alpha=0;
             }
             else if((time_elapsed_ms>=trj_time_ms)&&(STM_sts=="Trajectory"))
             {
@@ -493,6 +496,7 @@ int main()
                     set_trj_time_ms=hm_time_ms;
                     q_set_trj=ec_client_cfg.homing_position;
                     q_start=q_ref;
+                    tau=alpha=0;
                 }
             }  
             else if(led_off_req && STM_sts=="Engaged_Brake")
