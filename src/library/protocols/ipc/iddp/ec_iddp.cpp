@@ -6,13 +6,7 @@
 
 EcIDDP::EcIDDP(std::string host_address,uint32_t host_port):
   EcCmd("tcp",host_address,host_port)
-{    
-    _ec_logger = std::make_shared<EcLogger>();
-    _logging=false;
-    
-    _motor_ref_flags=MotorRefFlags::FLAG_NONE;
-    _motors_references.clear();
-    
+{        
     std::string robot_name = "NoNe";
     _ec_pdo= std::make_shared<EcPdo<EcPipePdo>>(robot_name);
 }
@@ -20,15 +14,6 @@ EcIDDP::EcIDDP(std::string host_address,uint32_t host_port):
 EcIDDP::~EcIDDP()
 {
     iit::ecat::print_stat ( s_loop );
-    
-    pthread_mutex_destroy(&_mutex_motor_status);
-    pthread_mutex_destroy(&_mutex_motor_reference);
-    
-    pthread_mutex_destroy(&_mutex_ft6_status);
-    
-    pthread_mutex_destroy(&_mutex_pow_status);
-    
-    pthread_mutex_destroy(&_mutex_imu_status);
     
     stop();
     
@@ -44,15 +29,6 @@ void EcIDDP::th_init ( void * )
     loop_cnt = 0;
     
     _ec_pdo->esc_factory(_slave_info);
-    
-    pthread_mutex_init(&_mutex_motor_status, NULL);
-    pthread_mutex_init(&_mutex_motor_reference, NULL);
-    
-    pthread_mutex_init(&_mutex_ft6_status, NULL);
-    
-    pthread_mutex_init(&_mutex_pow_status, NULL);
-    
-    pthread_mutex_init(&_mutex_imu_status, NULL);
 }
 
 void EcIDDP::set_loop_time(uint32_t period_ms)
@@ -103,23 +79,6 @@ void EcIDDP::stop_client()
     _client_alive=false;
 }
 
-bool EcIDDP::is_client_alive()
-{
-    _client_alive = client_sts();
-    return _client_alive;
-}
-
-void EcIDDP::start_logging()
-{
-    stop_logging();
-    _ec_logger->start_mat_logger();
-}
-
-void EcIDDP::stop_logging()
-{
-    _ec_logger->stop_mat_logger();
-}
-
 
 //******************************* Periodic Activity *****************************************************//
 
@@ -132,7 +91,9 @@ void EcIDDP::th_loop( void * )
     
     loop_cnt++;
     
-    if(!client_sts())
+    _client_alive=client_sts();
+    
+    if(!_client_alive)
     {
         stop_client();
         return;
@@ -172,99 +133,8 @@ void EcIDDP::th_loop( void * )
     
     pthread_mutex_unlock(&_mutex_motor_reference);
 }
-
-void EcIDDP::periodicActivity()
-{
-    
-        
-}
 //******************************* Periodic Activity *****************************************************//
 
-
-
-void EcIDDP::set_motors_references(const MotorRefFlags motor_ref_flags,const std::vector<MR> motors_references)
-{
-    pthread_mutex_lock(&_mutex_motor_reference);
-
-    _motor_ref_flags=MotorRefFlags::FLAG_NONE;
-    _motors_references.clear();
-
-    if(_client_alive)
-    {
-       if(motor_ref_flags==MotorRefFlags::FLAG_MULTI_REF ||
-          motor_ref_flags==MotorRefFlags::FLAG_LAST_REF)
-       {
-           if(!motors_references.empty())
-           {
-                _motor_ref_flags = motor_ref_flags;
-                _motors_references = motors_references;
-                _ec_logger->log_set_motors_ref(_motors_references);
-           }
-           else
-           {
-               DPRINTF("Motors references vector is empty!, please fill the vector\n");
-           }
-       }
-       else
-       {
-           if(motor_ref_flags!=MotorRefFlags::FLAG_NONE)
-           {
-               DPRINTF("Wrong motors references flag!\n");
-           }
-       }
-    }
-    else
-    {
-        DPRINTF("client not alive, please stop the main process\n");
-    }
-
-    pthread_mutex_unlock(&_mutex_motor_reference);
-}
-
-MotorStatusMap EcIDDP::get_motors_status()
-{
-    pthread_mutex_lock(&_mutex_motor_status);
-    
-    auto ret_motor_status_map= _motor_status_map;
-
-    pthread_mutex_unlock(&_mutex_motor_status);
-    
-    return ret_motor_status_map;
-}
-
-FtStatusMap EcIDDP::get_ft6_status()
-{
-    pthread_mutex_lock(&_mutex_ft6_status);
-    
-    auto ret_ft_status_map= _ft_status_map;
-    
-    pthread_mutex_unlock(&_mutex_ft6_status);
-    
-    return ret_ft_status_map; 
-}
-
-PwrStatusMap EcIDDP::get_pow_status()
-{
-    pthread_mutex_lock(&_mutex_pow_status);
-    
-    auto ret_pow_status_map= _pow_status_map;
-    
-     pthread_mutex_unlock(&_mutex_pow_status);
-    
-    return ret_pow_status_map; 
-}
-
-
-ImuStatusMap EcIDDP::get_imu_status()
-{
-    pthread_mutex_lock(&_mutex_imu_status);
-    
-    auto ret_imu_status_map= _imu_status_map;
-    
-    pthread_mutex_unlock(&_mutex_imu_status);
-    
-    return ret_imu_status_map; 
-}
 bool EcIDDP::pdo_aux_cmd_sts(const PAC & pac)
 {
     return false;

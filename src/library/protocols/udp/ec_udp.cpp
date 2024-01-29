@@ -36,19 +36,6 @@ EcUDP::EcUDP(std::string host_address,uint32_t host_port) :
     registerHandler(UdpPackMsg::MSG_MOTOR_STS,  &EcUDP::motor_status_handler);
     registerHandler(UdpPackMsg::MSG_FT6_STS,    &EcUDP::ft6_status_handler);
     registerHandler(UdpPackMsg::MSG_PWR_STS,    &EcUDP::pwr_status_handler);
-
-    
-    _mutex_motor_status= std::make_shared<std::mutex>();
-    _mutex_motor_reference= std::make_shared<std::mutex>();
-
-    _motor_ref_flags=MotorRefFlags::FLAG_NONE;
-    _motors_references.clear();
-
-    _mutex_ft6_status= std::make_shared<std::mutex>();
-    
-    _mutex_pow_status= std::make_shared<std::mutex>();
-    
-    _mutex_imu_status= std::make_shared<std::mutex>();
     
     _cv_repl_reply= std::make_shared<std::condition_variable>();
     
@@ -71,8 +58,6 @@ EcUDP::EcUDP(std::string host_address,uint32_t host_port) :
         createLogger("console","client");
         _consoleLog=spdlog::get("console");
     }
-    
-    _ec_logger = std::make_shared<EcLogger>();
 }
 
 EcUDP::~EcUDP()
@@ -206,7 +191,7 @@ void EcUDP::motor_status_handler(char *buf, size_t size)
     static uint32_t cnt;
     static MSS motors_status;
     
-    _mutex_motor_status->lock();
+    pthread_mutex_lock(&_mutex_motor_status);
     
     auto ret = proto.getEscStatus(buf,size,UdpPackMsg::MSG_MOTOR_STS, motors_status);
 
@@ -228,7 +213,7 @@ void EcUDP::motor_status_handler(char *buf, size_t size)
     
     _ec_logger->log_motors_sts(_motor_status_map);
     
-    _mutex_motor_status->unlock();
+    pthread_mutex_unlock(&_mutex_motor_status);
 
 }
 
@@ -237,7 +222,7 @@ void EcUDP::ft6_status_handler(char *buf, size_t size)
     static uint32_t cnt;
     static FTS fts_status;
     
-    _mutex_ft6_status->lock();
+   pthread_mutex_lock(&_mutex_ft6_status);
     
     auto ret = proto.getEscStatus(buf,size,UdpPackMsg::MSG_FT6_STS, fts_status);
 
@@ -254,7 +239,7 @@ void EcUDP::ft6_status_handler(char *buf, size_t size)
     
     _ec_logger->log_ft6_sts(_ft_status_map);
     
-    _mutex_ft6_status->unlock();
+    pthread_mutex_unlock(&_mutex_ft6_status);
 
 }
 
@@ -263,7 +248,7 @@ void EcUDP::pwr_status_handler(char *buf, size_t size)
     static uint32_t cnt;
     static PWS pow_status;
     
-    _mutex_pow_status->lock();
+    pthread_mutex_lock(&_mutex_pow_status);
     
     auto ret = proto.getEscStatus(buf,size,UdpPackMsg::MSG_PWR_STS, pow_status);
 
@@ -280,7 +265,7 @@ void EcUDP::pwr_status_handler(char *buf, size_t size)
     
     _ec_logger->log_pow_sts(_pow_status_map);
     
-    _mutex_pow_status->unlock();
+    pthread_mutex_unlock(&_mutex_pow_status);
 
 }
 //******************************* EVENT HANDLERS *****************************************************//
@@ -532,13 +517,13 @@ bool EcUDP::start_motors(const MST &motors_start)
         {
             if(_client_alive)
             {
-                _mutex_motor_reference->lock();
+                pthread_mutex_lock(&_mutex_motor_reference);
 
                 // clear motors references
                 _motor_ref_flags=MotorRefFlags::FLAG_NONE;
                 _motors_references.clear();
 
-                _mutex_motor_reference->unlock();
+                 pthread_mutex_unlock(&_mutex_motor_reference);
 
                 CBuffT<4096u> sendBuffer{};
                 auto sizet = proto.packReplRequestMotorsStart(sendBuffer, motors_start);
@@ -588,14 +573,14 @@ bool EcUDP::stop_motors()
             {
                 attemps_cnt = _max_cmd_attemps;
 
-                _mutex_motor_reference->lock();
+                pthread_mutex_lock(&_mutex_motor_reference);
                 _client_status=ClientStatus::MOTORS_STOPPED;
 
                 // clear motors references
                 _motor_ref_flags=MotorRefFlags::FLAG_NONE;
                 _motors_references.clear();
 
-                _mutex_motor_reference->unlock();
+                 pthread_mutex_unlock(&_mutex_motor_reference);
             }
             else
             {
@@ -777,21 +762,6 @@ void EcUDP::stop_client()
     }
 }
 
-bool EcUDP::is_client_alive()
-{
-    return _client_alive;
-}
-
-void EcUDP::start_logging()
-{
-    stop_logging();
-    _ec_logger->start_mat_logger();
-}
-
-void EcUDP::stop_logging()
-{
-    _ec_logger->stop_mat_logger();
-}
 
 
 //******************************* Periodic Activity *****************************************************//
@@ -829,7 +799,7 @@ void EcUDP::periodicActivity()
         // Receive motors, imu, ft, power board pdo information // 
 
         // Send motors references
-        _mutex_motor_reference->lock();
+        pthread_mutex_lock(&_mutex_motor_reference);
 
         if(_motor_ref_flags!=MotorRefFlags::FLAG_NONE &&
            !_motors_references.empty())
@@ -844,97 +814,11 @@ void EcUDP::periodicActivity()
             }
         }
 
-        _mutex_motor_reference->unlock();
+        pthread_mutex_unlock(&_mutex_motor_reference);
     }
         
 }
 //******************************* Periodic Activity *****************************************************//
-
-
-void EcUDP::set_motors_references(const MotorRefFlags motor_ref_flags,const std::vector<MR> motors_references)
-{
-    _mutex_motor_reference->lock();
-
-    _motor_ref_flags=MotorRefFlags::FLAG_NONE;
-    _motors_references.clear();
-
-    if(_client_alive)
-    {
-       if(motor_ref_flags==MotorRefFlags::FLAG_MULTI_REF ||
-          motor_ref_flags==MotorRefFlags::FLAG_LAST_REF)
-       {
-           if(!motors_references.empty())
-           {
-                _motor_ref_flags = motor_ref_flags;
-                _motors_references = motors_references;
-                _ec_logger->log_set_motors_ref(_motors_references);
-           }
-           else
-           {
-                _consoleLog->error("Motors references vector is empty!, please fill the vector");
-           }
-       }
-       else
-       {
-           if(motor_ref_flags!=MotorRefFlags::FLAG_NONE)
-           {
-                _consoleLog->error("Wrong motors references flag!");
-           }
-       }
-    }
-    else
-    {
-        _consoleLog->error("UDP client not alive, please stop the main process");
-    }
-
-    _mutex_motor_reference->unlock();
-}
-
-MotorStatusMap EcUDP::get_motors_status()
-{
-    _mutex_motor_status->lock();
-    
-    auto ret_motor_status_map= _motor_status_map;
-    
-    _mutex_motor_status->unlock();
-    
-    return ret_motor_status_map;
-}
-
-FtStatusMap EcUDP::get_ft6_status()
-{
-    _mutex_ft6_status->lock();
-    
-    auto ret_ft_status_map= _ft_status_map;
-    
-    _mutex_ft6_status->unlock();
-    
-    return ret_ft_status_map; 
-}
-
-PwrStatusMap EcUDP::get_pow_status()
-{
-    _mutex_pow_status->lock();
-    
-    auto ret_pow_status_map= _pow_status_map;
-    
-    _mutex_pow_status->unlock();
-    
-    return ret_pow_status_map; 
-}
-
-
-ImuStatusMap EcUDP::get_imu_status()
-{
-    _mutex_imu_status->lock();
-    
-    auto ret_imu_status_map= _imu_status_map;
-    
-    _mutex_imu_status->unlock();
-    
-    return _imu_status_map; 
-}
-
 
 void EcUDP::set_wait_reply_time(uint32_t wait_reply_time)
 {

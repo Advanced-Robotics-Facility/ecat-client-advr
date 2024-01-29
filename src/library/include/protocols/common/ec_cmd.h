@@ -14,22 +14,10 @@ public:
 
     virtual void start_client(uint32_t period_ms,bool logging) = 0;
     virtual void stop_client(void) = 0;
-    virtual bool is_client_alive(void) = 0;
     virtual void set_loop_time(uint32_t period_ms) = 0;
-    
-    // EtherCAT Client ADVR Facilty logger
-    virtual void start_logging(void) = 0;
-    virtual void stop_logging(void) = 0;
-    
-    // EtherCAT Client ADVR Facilty getters
-    virtual MotorStatusMap get_motors_status(void) = 0;
-    virtual FtStatusMap get_ft6_status(void) = 0;
-    virtual PwrStatusMap get_pow_status(void) = 0;
-    virtual ImuStatusMap get_imu_status(void) = 0;
+
     virtual bool pdo_aux_cmd_sts(const PAC & pac) = 0;
-    
-    // EtherCAT Client ADVR Facilty setters
-    virtual void set_motors_references(const MotorRefFlags, const std::vector<MR>) = 0;
+
     
     bool cmd_error_status(EcZmqFault fault, std::string op, std::string &msg);
     bool start_motors(const MST &) final;
@@ -53,9 +41,6 @@ public:
 
 private:
     EcZmqCmd::Ptr  _ec_zmq_cmd;
-    SSI _slave_info;
-    
-    bool _client_alive;
     const int _max_cmd_attemps=3;
     std::shared_ptr<spdlog::logger> _consoleLog;
     

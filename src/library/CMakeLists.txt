@@ -45,7 +45,6 @@ target_link_libraries(${PROJECT_NAME}
     pthread
     ec_common_library
     magic_enum::magic_enum
-    matlogger2::matlogger2
     )
 
 

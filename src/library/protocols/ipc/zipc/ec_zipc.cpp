@@ -17,21 +17,6 @@ EcZipc::EcZipc(std::string host_address,uint32_t host_port):
     
     _ec_pdo= std::make_shared<EcPdo<EcZmqPdo>>("tcp",host_address,host_port);
     
-    _ec_logger = std::make_shared<EcLogger>();
-    _logging=false;
-    
-     _mutex_motor_status= std::make_shared<std::mutex>();
-    _mutex_motor_reference= std::make_shared<std::mutex>();
-
-    _motor_ref_flags=MotorRefFlags::FLAG_NONE;
-    _motors_references.clear();
-
-    _mutex_ft6_status= std::make_shared<std::mutex>();
-    
-    _mutex_pow_status= std::make_shared<std::mutex>();
-    
-    _mutex_imu_status= std::make_shared<std::mutex>();
-    
     _consoleLog=spdlog::get("console");
     if(!_consoleLog)
     {
@@ -110,23 +95,6 @@ void EcZipc::stop_client()
     _client_alive=false;
 }
 
-bool EcZipc::is_client_alive()
-{
-    _client_alive = client_sts();
-    return _client_alive;
-}
-
-void EcZipc::start_logging()
-{
-    stop_logging();
-    _ec_logger->start_mat_logger();
-}
-
-void EcZipc::stop_logging()
-{
-    _ec_logger->stop_mat_logger();
-}
-
 
 //******************************* Periodic Activity *****************************************************//
 
@@ -139,35 +107,38 @@ void EcZipc::th_loop( void * )
     
     loop_cnt++;
     
-    if(!client_sts())
+    _client_alive=client_sts();
+    
+    if(!_client_alive)
     {
         stop_client();
         return;
     }
     
     // Receive motors, imu, ft, power board pdo information // 
-    _mutex_motor_status->lock();
+    pthread_mutex_lock(&_mutex_motor_status);
     _ec_pdo->read_motor_pdo(_motor_status_map);
     _ec_logger->log_motors_sts(_motor_status_map);
-    _mutex_motor_status->unlock();
+    pthread_mutex_unlock(&_mutex_motor_status);
     
-    _mutex_ft6_status->lock();
+    pthread_mutex_lock(&_mutex_ft6_status);
     _ec_pdo->read_ft_pdo(_ft_status_map);
     _ec_logger->log_ft6_sts(_ft_status_map);
-    _mutex_ft6_status->unlock();
+    pthread_mutex_unlock(&_mutex_ft6_status);
     
-    _mutex_imu_status->lock();
+    pthread_mutex_lock(&_mutex_imu_status);
     _ec_pdo->read_imu_pdo(_imu_status_map);
     _ec_logger->log_imu_sts(_imu_status_map);
-    _mutex_imu_status->unlock();
+    pthread_mutex_unlock(&_mutex_imu_status);
+
     
-    _mutex_pow_status->lock();
+    pthread_mutex_lock(&_mutex_pow_status);
     _ec_pdo->read_pow_pdo(_pow_status_map);
     _ec_logger->log_pow_sts(_pow_status_map);
-    _mutex_pow_status->unlock();
-
+    pthread_mutex_unlock(&_mutex_pow_status);
+    
     // Send motors references
-    _mutex_motor_reference->lock();
+    pthread_mutex_lock(&_mutex_motor_reference);
 
     if(_motor_ref_flags!=MotorRefFlags::FLAG_NONE &&
         !_motors_references.empty())
@@ -176,101 +147,13 @@ void EcZipc::th_loop( void * )
         _ec_logger->log_motors_ref(_motors_references);
     }
 
-    _mutex_motor_reference->unlock();
+    pthread_mutex_unlock(&_mutex_motor_reference);
 }
 
-void EcZipc::periodicActivity()
-{
-    
-        
-}
 //******************************* Periodic Activity *****************************************************//
 
 
 
-void EcZipc::set_motors_references(const MotorRefFlags motor_ref_flags,const std::vector<MR> motors_references)
-{
-    _mutex_motor_reference->lock();
-
-    _motor_ref_flags=MotorRefFlags::FLAG_NONE;
-    _motors_references.clear();
-
-    if(_client_alive)
-    {
-       if(motor_ref_flags==MotorRefFlags::FLAG_MULTI_REF ||
-          motor_ref_flags==MotorRefFlags::FLAG_LAST_REF)
-       {
-           if(!motors_references.empty())
-           {
-               _motor_ref_flags = motor_ref_flags;
-                _motors_references = motors_references;
-                _ec_logger->log_set_motors_ref(_motors_references);
-           }
-           else
-           {
-                _consoleLog->error("Motors references vector is empty!, please fill the vector");
-           }
-       }
-       else
-       {
-           if(motor_ref_flags!=MotorRefFlags::FLAG_NONE)
-           {
-                _consoleLog->error("Wrong motors references flag!");
-           }
-       }
-    }
-    else
-    {
-        _consoleLog->error("Client not alive, please stop the main process");
-    }
-
-    _mutex_motor_reference->unlock();
-}
-
-MotorStatusMap EcZipc::get_motors_status()
-{
-    _mutex_motor_status->lock();
-    
-    auto ret_motor_status_map= _motor_status_map;
-    
-    _mutex_motor_status->unlock();
-    
-    return ret_motor_status_map;
-}
-
-FtStatusMap EcZipc::get_ft6_status()
-{
-    _mutex_ft6_status->lock();
-    
-    auto ret_ft_status_map= _ft_status_map;
-    
-    _mutex_ft6_status->unlock();
-    
-    return ret_ft_status_map; 
-}
-
-PwrStatusMap EcZipc::get_pow_status()
-{
-    _mutex_pow_status->lock();
-    
-    auto ret_pow_status_map= _pow_status_map;
-    
-    _mutex_pow_status->unlock();
-    
-    return ret_pow_status_map; 
-}
-
-
-ImuStatusMap EcZipc::get_imu_status()
-{
-    _mutex_imu_status->lock();
-    
-    auto ret_imu_status_map= _imu_status_map;
-    
-    _mutex_imu_status->unlock();
-    
-    return _imu_status_map; 
-}
 bool EcZipc::pdo_aux_cmd_sts(const PAC & pac)
 {
     return false;

@@ -20,6 +20,7 @@ find_library(ZeroMQ_LIBRARY
         
 # compile ecat library test
 add_library(${PROJECT_NAME} STATIC
+            ../../ec_iface.cpp
             zmq/ec_zmq_cmd.cpp
             zmq/ec_zmq_pdo.cpp
             pipe/ec_pipe_pdo.cpp
@@ -39,6 +40,7 @@ target_link_libraries(${PROJECT_NAME}
     ecat_master::ecat_master_pb
     ecat_master::msgpck_proto
     ${ZeroMQ_LIBRARY}
+    matlogger2::matlogger2
     )
 
 
