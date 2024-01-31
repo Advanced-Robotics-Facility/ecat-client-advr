@@ -11,11 +11,18 @@ EcIface::EcIface()
     pthread_mutex_init(&_mutex_motor_status, NULL);
     pthread_mutex_init(&_mutex_motor_reference, NULL);
     
-    pthread_mutex_init(&_mutex_ft6_status, NULL);
+    pthread_mutex_init(&_mutex_ft_status, NULL);
     
     pthread_mutex_init(&_mutex_pow_status, NULL);
     
     pthread_mutex_init(&_mutex_imu_status, NULL);
+    
+    _consoleLog=spdlog::get("console");
+    if(!_consoleLog)
+    {
+        createLogger("console","client");
+        _consoleLog=spdlog::get("console");
+    }
 }
 
 EcIface::~EcIface()
@@ -23,7 +30,7 @@ EcIface::~EcIface()
     pthread_mutex_destroy(&_mutex_motor_status);
     pthread_mutex_destroy(&_mutex_motor_reference);
     
-    pthread_mutex_destroy(&_mutex_ft6_status);
+    pthread_mutex_destroy(&_mutex_ft_status);
     
     pthread_mutex_destroy(&_mutex_pow_status);
     
@@ -51,6 +58,7 @@ MotorStatusMap EcIface::get_motors_status()
     pthread_mutex_lock(&_mutex_motor_status);
     
     auto ret_motor_status_map= _motor_status_map;
+    _ec_logger->log_motors_sts(_motor_status_map);
 
     pthread_mutex_unlock(&_mutex_motor_status);
     
@@ -68,13 +76,14 @@ void EcIface::set_motors_references(const MotorRefFlags motor_ref_flags,const st
     pthread_mutex_unlock(&_mutex_motor_reference);
 }
 
-FtStatusMap EcIface::get_ft6_status()
+FtStatusMap EcIface::get_ft_status()
 {
-    pthread_mutex_lock(&_mutex_ft6_status);
+    pthread_mutex_lock(&_mutex_ft_status);
     
     auto ret_ft_status_map= _ft_status_map;
+    _ec_logger->log_ft_sts(_ft_status_map);
     
-    pthread_mutex_unlock(&_mutex_ft6_status);
+    pthread_mutex_unlock(&_mutex_ft_status);
     
     return ret_ft_status_map; 
 }
@@ -101,4 +110,58 @@ ImuStatusMap EcIface::get_imu_status()
     
     return ret_imu_status_map; 
 }
-    
+ 
+bool EcIface::pdo_aux_cmd_sts(const PAC & pac)
+{    
+    for( const auto &[esc_id,pdo_aux_cmd] : pac)
+    {
+        if(_motor_status_map.count(esc_id) > 0)
+        {
+            uint32_t cmd_aux_sts=std::get<11>(_motor_status_map[esc_id]);
+            
+
+            uint32_t brake_sts = cmd_aux_sts & 3; //00 unknown
+                                                    //01 release brake 
+                                                    //10 enganged brake
+                                                    //11 error
+                                                    
+            uint32_t led_sts= (cmd_aux_sts & 4)/4; // 1 or 0 LED  ON/OFF
+            
+            
+            switch(pdo_aux_cmd){
+                
+                case to_underlying_enum(PdoAuxCmdTypeEnum::BRAKE_RELEASE):{
+                    if(brake_sts!=1){ 
+                        //_consoleLog->error("esc_id: {}, brake status: {} ---> brake requested: {} ",esc_id, brake_sts, PdoAuxCmdTypeEnum::BRAKE_RELEASE);
+                        return false;
+                    }
+                }break;
+                case to_underlying_enum(PdoAuxCmdTypeEnum::BRAKE_ENGAGE):{
+                    if(brake_sts!=2){ 
+                        //_consoleLog->error("esc_id: {}, brake status: {} ---> brake requested: {} ",esc_id, brake_sts, PdoAuxCmdTypeEnum::BRAKE_ENGAGE);
+                        return false;
+                    }
+                }break;
+                case to_underlying_enum(PdoAuxCmdTypeEnum::LED_ON):{
+                    if(led_sts!=1){ 
+                        //_consoleLog->error("esc_id: {}, led status: {} ---> led requested: {} ",esc_id, led_sts, PdoAuxCmdTypeEnum::LED_ON);
+                        return false;
+                    }
+                }break;
+                case to_underlying_enum(PdoAuxCmdTypeEnum::LED_OFF):{
+                    if(led_sts!=0){ 
+                        //_consoleLog->error("esc_id: {}, led status: {} ---> led requested: {} ",esc_id, led_sts, PdoAuxCmdTypeEnum::LED_OFF);
+                        return false;
+                    }
+                }break;
+            }
+        }
+        else
+        {
+            //_consoleLog->error("esc_id: {}, doesn't exist, please restart the request", esc_id);
+            return false; // return false if the esc id it's not present into the motor status map.
+        }
+    }
+        
+    return true;
+} 

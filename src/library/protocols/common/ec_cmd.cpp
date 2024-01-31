@@ -21,25 +21,14 @@ EcCmd::EcCmd(std::string protocol,std::string host_address,uint32_t host_port)
     int timeout_ms = 500;  // 0.5 secs
     
     _ec_zmq_cmd = std::make_shared<EcZmqCmd>(zmq_uri,timeout_ms);
-    _client_alive=true;
     
-    _consoleLog=spdlog::get("console");
-    if(!_consoleLog)
-    {
-        createLogger("console","client");
-        _consoleLog=spdlog::get("console");
-    }
     _consoleLog->info("ZMQ_URI: {}",zmq_uri);
+
 }
 
 EcCmd::~EcCmd()
 {
 
-}
-
-bool EcCmd::client_sts()
-{
-    return _client_alive;
 }
 
 bool EcCmd::cmd_error_status(EcZmqFault fault, std::string op, std::string &msg)
@@ -274,7 +263,7 @@ bool EcCmd::pdo_aux_cmd(const PAC & pac)
     return false;
 }
 
-void EcCmd::feed_motors(std::vector<MR> motors_references)
+void EcCmd::feed_motors()
 {
 //     auto start_cmd= std::chrono::steady_clock::now();
     if(!_client_alive){
@@ -282,17 +271,23 @@ void EcCmd::feed_motors(std::vector<MR> motors_references)
         return;
     }
     else{
-        if(!motors_references.empty()){
-            std::string msg="";
-            auto fault=_ec_zmq_cmd->Motors_PDO_cmd(motors_references,msg);
-            if(fault.get_type() == EC_ZMQ_CMD_STATUS::TIMEOUT){
-                _consoleLog->error("Client not alive, please stop the main process!");
-                _client_alive=false;
+            
+        pthread_mutex_lock(&_mutex_motor_reference);
+        if(_motor_ref_flags!=MotorRefFlags::FLAG_NONE){
+            if(!_motors_references.empty()){
+                std::string msg="";
+                auto fault=_ec_zmq_cmd->Motors_PDO_cmd(_motors_references,msg);
+                if(fault.get_type() == EC_ZMQ_CMD_STATUS::TIMEOUT){
+                    _consoleLog->error("Client not alive, please stop the main process!");
+                    _client_alive=false;
+                }
+                _ec_logger->log_motors_ref(_motors_references);
+            }
+            else{
+                _consoleLog->error("Got empty motors references structure");
             }
         }
-        else{
-            _consoleLog->error("Got empty motors references structure");
-        }
+        pthread_mutex_unlock(&_mutex_motor_reference);
     }
 //     auto end_cmd= std::chrono::steady_clock::now();
 //     auto time_elapsed_ms= std::chrono::duration_cast<std::chrono::microseconds>(end_cmd-start_cmd);

@@ -45,19 +45,12 @@ EcUDP::EcUDP(std::string host_address,uint32_t host_port) :
     
     _wait_reply_time = 1000;  //1s
     
-    _client_alive = true;
+    _client_alive=true;
     _client_alive_time=steady_clock::now();
         
     _server_alive_check_ms=milliseconds(_wait_reply_time)+milliseconds(500); //1.5s
     _actual_server_status= ServerStatus::IDLE;
     _client_status=ClientStatus::IDLE;
-    
-    _consoleLog=spdlog::get("console");
-    if(!_consoleLog)
-    {
-        createLogger("console","client");
-        _consoleLog=spdlog::get("console");
-    }
 }
 
 EcUDP::~EcUDP()
@@ -222,7 +215,7 @@ void EcUDP::ft6_status_handler(char *buf, size_t size)
     static uint32_t cnt;
     static FTS fts_status;
     
-   pthread_mutex_lock(&_mutex_ft6_status);
+   pthread_mutex_lock(&_mutex_ft_status);
     
     auto ret = proto.getEscStatus(buf,size,UdpPackMsg::MSG_FT6_STS, fts_status);
 
@@ -237,9 +230,9 @@ void EcUDP::ft6_status_handler(char *buf, size_t size)
         }
     }
     
-    _ec_logger->log_ft6_sts(_ft_status_map);
+    _ec_logger->log_ft_sts(_ft_status_map);
     
-    pthread_mutex_unlock(&_mutex_ft6_status);
+    pthread_mutex_unlock(&_mutex_ft_status);
 
 }
 
@@ -614,65 +607,6 @@ bool EcUDP::pdo_aux_cmd(const PAC & pac)
     }
 
     return ret_cmd_status;
-}
-
-bool EcUDP::pdo_aux_cmd_sts(const PAC & pac)
-{
-    auto motor_status_map = get_motors_status();
-    
-    for( const auto &[esc_id,pdo_aux_cmd] : pac)
-    {
-        if(motor_status_map.count(esc_id) > 0)
-        {
-            auto motor_status = motor_status_map[esc_id];
-            
-            uint32_t cmd_aux_sts=std::get<11>(motor_status);
-            
-
-            uint32_t brake_sts = cmd_aux_sts & 3; //00 unknown
-                                                    //01 release brake 
-                                                    //10 enganged brake
-                                                    //11 error
-                                                    
-            uint32_t led_sts= (cmd_aux_sts & 4)/4; // 1 or 0 LED  ON/OFF
-            
-            
-            switch(pdo_aux_cmd){
-                
-                case to_underlying(PdoAuxCmdType::BRAKE_RELEASE):{
-                    if(brake_sts!=1){ 
-                        _consoleLog->error("esc_id: {}, brake status: {} ---> brake requested: {} ",esc_id, brake_sts, PdoAuxCmdType::BRAKE_RELEASE);
-                        return false;
-                    }
-                }break;
-                case to_underlying(PdoAuxCmdType::BRAKE_ENGAGE):{
-                    if(brake_sts!=2){ 
-                        _consoleLog->error("esc_id: {}, brake status: {} ---> brake requested: {} ",esc_id, brake_sts, PdoAuxCmdType::BRAKE_ENGAGE);
-                        return false;
-                    }
-                }break;
-                case to_underlying(PdoAuxCmdType::LED_ON):{
-                    if(led_sts!=1){ 
-                        _consoleLog->error("esc_id: {}, led status: {} ---> led requested: {} ",esc_id, led_sts, PdoAuxCmdType::LED_ON);
-                        return false;
-                    }
-                }break;
-                case to_underlying(PdoAuxCmdType::LED_OFF):{
-                    if(led_sts!=0){ 
-                        _consoleLog->error("esc_id: {}, led status: {} ---> led requested: {} ",esc_id, led_sts, PdoAuxCmdType::LED_OFF);
-                        return false;
-                    }
-                }break;
-            }
-        }
-        else
-        {
-            _consoleLog->error("esc_id: {}, doesn't exist, please restart the request", esc_id);
-            return false; // return false if the esc id it's not present into the motor status map.
-        }
-    }
-        
-    return true;
 }
 
 

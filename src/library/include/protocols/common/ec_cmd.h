@@ -3,7 +3,6 @@
 
 #include "ec_iface.h"
 #include "protocols/common/zmq/ec_zmq_cmd.h"
-#include "cmn_utils.h"
 
 class EcCmd : public EcIface
 {
@@ -16,9 +15,6 @@ public:
     virtual void stop_client(void) = 0;
     virtual void set_loop_time(uint32_t period_ms) = 0;
 
-    virtual bool pdo_aux_cmd_sts(const PAC & pac) = 0;
-
-    
     bool cmd_error_status(EcZmqFault fault, std::string op, std::string &msg);
     bool start_motors(const MST &) final;
     bool stop_motors() final;
@@ -34,16 +30,12 @@ public:
                     const RD_SDO &rd_sdo,
                     const WR_SDO &wr_sdo) final;
                     
-    void feed_motors(std::vector<MR> motors_references);
-    
-    bool client_sts();
-    
+    void feed_motors();    
 
 private:
     EcZmqCmd::Ptr  _ec_zmq_cmd;
     const int _max_cmd_attemps=3;
-    std::shared_ptr<spdlog::logger> _consoleLog;
-    
+    SSI _slave_info;
 };
 
 #endif // EC_CMD_H

@@ -7,7 +7,7 @@ network:
   port: 5000 #54321(UDP)
   timeout: 1000
 
-period_ms: 2
+period_ms: 1
 logging: false
 
 control:

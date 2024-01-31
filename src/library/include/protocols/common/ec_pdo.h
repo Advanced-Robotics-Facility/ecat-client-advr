@@ -7,22 +7,27 @@
 #include "protocols/common/pdo/ft/ft_pdo.h"
 #include "protocols/common/pdo/pow/pow_pdo.h"
 
+#include "protocols/common/ec_cmd.h"
+
 template <class T>
-class EcPdo
+class EcPdo: public EcCmd
 {
     public:
         EcPdo(std::string protocol,std::string host_address,uint32_t host_port);
-        EcPdo(std::string robot_name="None");
+        EcPdo(std::string robot_name="None",uint32_t host_port=5000);
         ~EcPdo();
         
         void esc_factory(SSI slave_descr);
-        void read_motor_pdo(MotorStatusMap &motor_status_map);
-        void write_motor_pdo(const std::vector<MR> motors_references);
-        void read_ft_pdo(FtStatusMap &ft_status_map);
-        void read_imu_pdo(ImuStatusMap &imu_status_map);
-        void read_pow_pdo(PwrStatusMap &pow_status_map);
+        void read_pdo();
+        void write_pdo();
         
     private:
+        
+        void read_motor_pdo();
+        void write_motor_pdo();
+        void read_ft_pdo();
+        void read_imu_pdo();
+        void read_pow_pdo();
         
         std::map<int, std::shared_ptr<MotorPdo<T>>> _moto_pdo_map;
         std::map<int, std::shared_ptr<FtPdo<T>>> _ft_pdo_map;

@@ -260,7 +260,7 @@ bool EcBlockUtils::ec_sense(MotorStatusMap &motors_status_map,
     }
     
     ft6_status_map.clear();
-    ft6_status_map = _client->get_ft6_status();
+    ft6_status_map = _client->get_ft_status();
 
     if(ft6_status_map.empty())
     {

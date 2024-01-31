@@ -7,6 +7,7 @@
 #include <map>
 #include "ec_types.h"
 #include "logger/ec_logger.h"
+#include "cmn_utils.h"
 
 class EcIface
 {
@@ -25,15 +26,13 @@ public:
     
     // EtherCAT Client ADVR Facilty getters
     MotorStatusMap get_motors_status(void);
-    FtStatusMap get_ft6_status(void);
+    FtStatusMap get_ft_status(void);
     PwrStatusMap get_pow_status(void);
     ImuStatusMap get_imu_status(void);
+    bool pdo_aux_cmd_sts(const PAC & pac);
     
     // EtherCAT Client ADVR Facilty setters
     void set_motors_references(const MotorRefFlags, const std::vector<MR>);
-    
-    
-    virtual bool pdo_aux_cmd_sts(const PAC & pac) = 0;
     
     // EtherCAT Client ADVR Facilty manager
     virtual void start_client(uint32_t period_ms,bool logging) = 0;
@@ -56,9 +55,10 @@ public:
                             const WR_SDO &wr_sdo) = 0;
 protected:
     EcLogger::Ptr _ec_logger;
+    std::shared_ptr<spdlog::logger> _consoleLog;
+    
     bool _client_alive;
     bool _logging;
-    SSI _slave_info;
 
     // last received motor data
     MotorStatusMap _motor_status_map;
@@ -74,7 +74,7 @@ protected:
     
     pthread_mutex_t _mutex_motor_status;
     pthread_mutex_t _mutex_motor_reference;
-    pthread_mutex_t _mutex_ft6_status;
+    pthread_mutex_t _mutex_ft_status;
     pthread_mutex_t _mutex_pow_status;
     pthread_mutex_t _mutex_imu_status;
 };

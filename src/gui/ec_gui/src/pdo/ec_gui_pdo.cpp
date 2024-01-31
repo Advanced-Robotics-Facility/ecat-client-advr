@@ -306,7 +306,7 @@ void EcGuiPdo::read_motor_status()
 
 void EcGuiPdo::read_ft6_status()
 {
-    auto ft6_status_map= _client->get_ft6_status();
+    auto ft6_status_map= _client->get_ft_status();
     if(ft6_status_map.empty())
     {
         ft6_status_map=_internal_ft6_status_map;

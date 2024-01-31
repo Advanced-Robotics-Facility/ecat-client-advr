@@ -22,13 +22,13 @@ public:
     void log_set_motors_ref(std::vector<MR> motors_ref);
     void log_motors_sts(MotorStatusMap motors_sts_map);
     void log_pow_sts(PwrStatusMap pow_sts_map);
-    void log_ft6_sts(FtStatusMap ft_sts_map);
+    void log_ft_sts(FtStatusMap ft_sts_map);
     void log_imu_sts(ImuStatusMap imu_sts_map);
     
     void resize_motors_ref(size_t size);
     void resize_motors_sts(size_t size);
     void resize_pow_sts(size_t size);
-    void resize_ft6_sts(size_t size);
+    void resize_ft_sts(size_t size);
     void resize_imu_sts(size_t size);
     
 private: 
@@ -36,7 +36,7 @@ private:
     XBot::MatLogger2::Ptr _motors_references_logger;
     XBot::MatLogger2::Ptr _set_motors_references_logger;
     XBot::MatLogger2::Ptr _motors_status_logger;
-    XBot::MatLogger2::Ptr _ft6_status_logger;
+    XBot::MatLogger2::Ptr _ft_status_logger;
     XBot::MatLogger2::Ptr _pow_status_logger;
     XBot::MatLogger2::Ptr _imu_status_logger;
     

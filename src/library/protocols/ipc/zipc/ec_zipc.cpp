@@ -5,24 +5,8 @@
 
 
 EcZipc::EcZipc(std::string host_address,uint32_t host_port):
-  EcCmd("ipc",host_address,host_port)
+  EcPdo<EcZmqPdo>("ipc",host_address,host_port)
 {
-    if(host_address=="localhost")
-    {
-        host_address.clear();
-        host_address="127.0.0.1";
-    }
-    _host_address=host_address;
-    _host_port=host_port;
-    
-    _ec_pdo= std::make_shared<EcPdo<EcZmqPdo>>("tcp",host_address,host_port);
-    
-    _consoleLog=spdlog::get("console");
-    if(!_consoleLog)
-    {
-        createLogger("console","client");
-        _consoleLog=spdlog::get("console");
-    }
 }
 
 EcZipc::~EcZipc()
@@ -32,7 +16,6 @@ EcZipc::~EcZipc()
     stop();
     
     join();
-    
 }
 
 //******************************* INIT *****************************************************//
@@ -40,10 +23,8 @@ EcZipc::~EcZipc()
 void EcZipc::th_init ( void * )
 {
     start_time = iit::ecat::get_time_ns();
-    tNow, tPre = start_time;
+    tNow = tPre = start_time;
     loop_cnt = 0;
-    
-    _ec_pdo->esc_factory(_slave_info);
 }
 
 void EcZipc::set_loop_time(uint32_t period_ms)
@@ -74,13 +55,14 @@ void EcZipc::start_client(uint32_t period_ms,bool logging)
         start_logging();
     }
     
-    _client_alive=true;
-    retrieve_slaves_info(_slave_info);
-    
+    SSI slave_info;
+//     if(retrieve_slaves_info(slave_info)){
     //if(!_slave_info.empty()){
+        esc_factory(slave_info);
         create(false); // non-real time thread
         _client_alive=true;
     //}
+//     }
     
 }
 
@@ -106,55 +88,18 @@ void EcZipc::th_loop( void * )
     tPre = tNow;
     
     loop_cnt++;
-    
-    _client_alive=client_sts();
-    
+
     if(!_client_alive)
     {
         stop_client();
         return;
     }
     
-    // Receive motors, imu, ft, power board pdo information // 
-    pthread_mutex_lock(&_mutex_motor_status);
-    _ec_pdo->read_motor_pdo(_motor_status_map);
-    _ec_logger->log_motors_sts(_motor_status_map);
-    pthread_mutex_unlock(&_mutex_motor_status);
-    
-    pthread_mutex_lock(&_mutex_ft6_status);
-    _ec_pdo->read_ft_pdo(_ft_status_map);
-    _ec_logger->log_ft6_sts(_ft_status_map);
-    pthread_mutex_unlock(&_mutex_ft6_status);
-    
-    pthread_mutex_lock(&_mutex_imu_status);
-    _ec_pdo->read_imu_pdo(_imu_status_map);
-    _ec_logger->log_imu_sts(_imu_status_map);
-    pthread_mutex_unlock(&_mutex_imu_status);
-
-    
-    pthread_mutex_lock(&_mutex_pow_status);
-    _ec_pdo->read_pow_pdo(_pow_status_map);
-    _ec_logger->log_pow_sts(_pow_status_map);
-    pthread_mutex_unlock(&_mutex_pow_status);
+    // Receive motors, imu, ft, power board and others pdo information
+    read_pdo();
     
     // Send motors references
-    pthread_mutex_lock(&_mutex_motor_reference);
-
-    if(_motor_ref_flags!=MotorRefFlags::FLAG_NONE &&
-        !_motors_references.empty())
-    {
-        feed_motors(_motors_references);
-        _ec_logger->log_motors_ref(_motors_references);
-    }
-
-    pthread_mutex_unlock(&_mutex_motor_reference);
+    feed_motors();
 }
 
 //******************************* Periodic Activity *****************************************************//
-
-
-
-bool EcZipc::pdo_aux_cmd_sts(const PAC & pac)
-{
-    return false;
-}

@@ -67,4 +67,20 @@ enum class ClientStatus : uint32_t
     
 };
 
+template <typename E>
+constexpr auto to_underlying_enum(E e) noexcept
+{
+    return static_cast<std::underlying_type_t<E>>(e);
+}
+
+
+enum class PdoAuxCmdTypeEnum : int32_t
+{
+    BRAKE_RELEASE   = 1,
+    BRAKE_ENGAGE,
+    LED_ON,
+    LED_OFF,
+};
+
+
 #endif // EC_TYPES_H

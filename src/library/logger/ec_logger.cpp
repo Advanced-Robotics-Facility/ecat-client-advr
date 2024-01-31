@@ -18,8 +18,8 @@ void EcLogger::start_mat_logger()
 
     _motors_status_logger = XBot::MatLogger2::MakeLogger("/tmp/motors_status_logger", opt);
     _motors_status_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
-    _ft6_status_logger = XBot::MatLogger2::MakeLogger("/tmp/ft6_status_logger", opt);
-    _ft6_status_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
+    _ft_status_logger = XBot::MatLogger2::MakeLogger("/tmp/ft6_status_logger", opt);
+    _ft_status_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
     _pow_status_logger = XBot::MatLogger2::MakeLogger("/tmp/pow_status_logger", opt);
     _pow_status_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
     _imu_status_logger = XBot::MatLogger2::MakeLogger("/tmp/imu_status_logger", opt);
@@ -29,7 +29,7 @@ void EcLogger::stop_mat_logger()
 {
     _motors_references_logger.reset();
     _motors_status_logger.reset();
-    _ft6_status_logger.reset();
+    _ft_status_logger.reset();
     _pow_status_logger.reset();
     _imu_status_logger.reset();
 }
@@ -193,15 +193,15 @@ void EcLogger::resize_pow_sts(size_t size)
 }
 
 
-void EcLogger::log_ft6_sts(FtStatusMap ft6_sts_map)
+void EcLogger::log_ft_sts(FtStatusMap ft_sts_map)
 {
-    if(_ft6_status_logger != nullptr)
+    if(_ft_status_logger != nullptr)
     {
-        if(!ft6_sts_map.empty())
+        if(!ft_sts_map.empty())
         {
-            resize_ft6_sts(ft6_sts_map.size());
+            resize_ft_sts(ft_sts_map.size());
             int i=0;
-            for ( const auto &[esc_id, ft6_sts] : ft6_sts_map) 
+            for ( const auto &[esc_id, ft6_sts] : ft_sts_map) 
             {
                 _force_x_eigen(i)=ft6_sts[0];
                 _force_y_eigen(i)=ft6_sts[1];
@@ -212,17 +212,17 @@ void EcLogger::log_ft6_sts(FtStatusMap ft6_sts_map)
                 i++;
             }
 
-            _ft6_status_logger->add("force_x", _force_x_eigen);
-            _ft6_status_logger->add("force_y", _force_y_eigen);
-            _ft6_status_logger->add("force_z", _force_z_eigen);
-            _ft6_status_logger->add("torque_x", _torque_x_eigen);
-            _ft6_status_logger->add("torque_y", _torque_y_eigen);
-            _ft6_status_logger->add("torque_z", _torque_z_eigen);
+            _ft_status_logger->add("force_x", _force_x_eigen);
+            _ft_status_logger->add("force_y", _force_y_eigen);
+            _ft_status_logger->add("force_z", _force_z_eigen);
+            _ft_status_logger->add("torque_x", _torque_x_eigen);
+            _ft_status_logger->add("torque_y", _torque_y_eigen);
+            _ft_status_logger->add("torque_z", _torque_z_eigen);
         }
     }
 }
 
-void EcLogger::resize_ft6_sts(size_t size)
+void EcLogger::resize_ft_sts(size_t size)
 {
     if(_force_x_eigen.size() != size)
     {

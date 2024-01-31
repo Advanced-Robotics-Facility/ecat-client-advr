@@ -6,12 +6,8 @@
 #include <boost/asio.hpp>
 
 #include "ec_iface.h"
-#include "cmn_utils.h"
 #include "task.h"
 #include "pck_msgs.h"
-
-#include <mutex>
-
 using boost::asio::ip::udp;
 
 /////////////////////////////////////////////////////
@@ -48,9 +44,6 @@ public:
     bool set_wr_sdo(uint32_t esc_id,
                     const RD_SDO &rd_sdo,
                     const WR_SDO &wr_sdo) final;
-    
-    
-    bool pdo_aux_cmd_sts(const PAC & pac) final;
 
 
 
@@ -94,12 +87,13 @@ private:
     ClientStatus _client_status;
 
 private:
-    std::shared_ptr<spdlog::logger> _consoleLog;
     std::string _reply_err_msg;
     ReplReqRep _repl_req_rep;
     ServerStatus _actual_server_status;
 
     std::shared_ptr<std::thread> _ec_udp_thread;
+    
+    SSI _slave_info;
 };
 
 #endif // EC_UDP_H
