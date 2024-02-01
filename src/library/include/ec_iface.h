@@ -25,10 +25,10 @@ public:
     void stop_logging(void);
     
     // EtherCAT Client ADVR Facilty getters
-    MotorStatusMap get_motors_status(void);
-    FtStatusMap get_ft_status(void);
-    PwrStatusMap get_pow_status(void);
-    ImuStatusMap get_imu_status(void);
+    void get_motors_status(MotorStatusMap &motor_status_map);
+    void get_ft_status(FtStatusMap &ft_status_map);
+    void get_pow_status(PwrStatusMap &pow_status_map);
+    void get_imu_status(ImuStatusMap &imu_status_map);
     bool pdo_aux_cmd_sts(const PAC & pac);
     
     // EtherCAT Client ADVR Facilty setters

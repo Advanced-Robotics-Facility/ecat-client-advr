@@ -246,7 +246,7 @@ bool EcBlockUtils::ec_sense(MotorStatusMap &motors_status_map,
     }
     
     motors_status_map.clear();
-    motors_status_map=_client->get_motors_status();
+    _client->get_motors_status(motors_status_map);
     
     if(motors_status_map.empty())
     {
@@ -260,7 +260,7 @@ bool EcBlockUtils::ec_sense(MotorStatusMap &motors_status_map,
     }
     
     ft6_status_map.clear();
-    ft6_status_map = _client->get_ft_status();
+    _client->get_ft_status(ft6_status_map);
 
     if(ft6_status_map.empty())
     {
@@ -278,7 +278,7 @@ bool EcBlockUtils::ec_sense(MotorStatusMap &motors_status_map,
     }
     
     imu_status_map.clear();
-    imu_status_map = _client->get_imu_status();
+    _client->get_imu_status(imu_status_map);
     
     if(imu_status_map.empty())
     {
@@ -296,7 +296,7 @@ bool EcBlockUtils::ec_sense(MotorStatusMap &motors_status_map,
     }
     
     pow_status_map.clear();
-    pow_status_map = _client->get_pow_status();
+    _client->get_pow_status(pow_status_map);
     
     if(pow_status_map.empty())
     {

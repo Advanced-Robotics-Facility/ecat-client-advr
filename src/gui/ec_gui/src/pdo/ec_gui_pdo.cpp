@@ -194,7 +194,8 @@ void EcGuiPdo::read()
 
 void EcGuiPdo::read_motor_status()
 {
-    auto motors_status_map= _client->get_motors_status();
+    MotorStatusMap motors_status_map;
+    _client->get_motors_status(motors_status_map);
     if(motors_status_map.empty())
     {
         motors_status_map=_internal_motor_status_map;
@@ -306,7 +307,8 @@ void EcGuiPdo::read_motor_status()
 
 void EcGuiPdo::read_ft6_status()
 {
-    auto ft6_status_map= _client->get_ft_status();
+    FtStatusMap ft6_status_map;
+    _client->get_ft_status(ft6_status_map);
     if(ft6_status_map.empty())
     {
         ft6_status_map=_internal_ft6_status_map;
@@ -333,7 +335,9 @@ void EcGuiPdo::read_ft6_status()
 
 inline void EcGuiPdo::read_pow_status()
 {
-    auto pow_status_map= _client->get_pow_status();
+    PwrStatusMap pow_status_map;
+    _client->get_pow_status(pow_status_map);
+    
     if(pow_status_map.empty())
     {
         pow_status_map=_internal_pow_status_map;
@@ -360,7 +364,9 @@ inline void EcGuiPdo::read_pow_status()
 
 void EcGuiPdo::read_imu_status()
 {
-    auto imu_status_map= _client->get_imu_status();
+    ImuStatusMap imu_status_map;
+    _client->get_imu_status(imu_status_map);
+    
     if(imu_status_map.empty())
     {
         imu_status_map=_internal_imu_status_map;

@@ -53,16 +53,14 @@ void EcIface::stop_logging()
     _ec_logger->stop_mat_logger();
 }
 
-MotorStatusMap EcIface::get_motors_status()
+void EcIface::get_motors_status(MotorStatusMap &motor_status_map)
 {
     pthread_mutex_lock(&_mutex_motor_status);
     
-    auto ret_motor_status_map= _motor_status_map;
+    motor_status_map= _motor_status_map;
     _ec_logger->log_motors_sts(_motor_status_map);
 
     pthread_mutex_unlock(&_mutex_motor_status);
-    
-    return ret_motor_status_map;
 }
 
 void EcIface::set_motors_references(const MotorRefFlags motor_ref_flags,const std::vector<MR> motors_references)
@@ -76,39 +74,36 @@ void EcIface::set_motors_references(const MotorRefFlags motor_ref_flags,const st
     pthread_mutex_unlock(&_mutex_motor_reference);
 }
 
-FtStatusMap EcIface::get_ft_status()
+void EcIface::get_ft_status(FtStatusMap &ft_status_map)
 {
     pthread_mutex_lock(&_mutex_ft_status);
     
-    auto ret_ft_status_map= _ft_status_map;
-    _ec_logger->log_ft_sts(_ft_status_map);
+    ft_status_map= _ft_status_map;
+    _ec_logger->log_ft_sts(ft_status_map);
     
     pthread_mutex_unlock(&_mutex_ft_status);
-    
-    return ret_ft_status_map; 
 }
 
-PwrStatusMap EcIface::get_pow_status()
+void EcIface::get_pow_status(PwrStatusMap &pow_status_map)
 {
     pthread_mutex_lock(&_mutex_pow_status);
-    
-    auto ret_pow_status_map= _pow_status_map;
-    
-     pthread_mutex_unlock(&_mutex_pow_status);
-    
-    return ret_pow_status_map; 
+
+    pow_status_map= _pow_status_map;
+    _ec_logger->log_pow_sts(pow_status_map);
+
+    pthread_mutex_unlock(&_mutex_pow_status);
+
 }
 
 
-ImuStatusMap EcIface::get_imu_status()
+void EcIface::get_imu_status(ImuStatusMap &imu_status_map)
 {
     pthread_mutex_lock(&_mutex_imu_status);
     
-    auto ret_imu_status_map= _imu_status_map;
+    imu_status_map= _imu_status_map;
+    _ec_logger->log_imu_sts(imu_status_map);
     
     pthread_mutex_unlock(&_mutex_imu_status);
-    
-    return ret_imu_status_map; 
 }
  
 bool EcIface::pdo_aux_cmd_sts(const PAC & pac)

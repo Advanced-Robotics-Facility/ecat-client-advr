@@ -268,6 +268,10 @@ int main()
         MotorStatusMap motors_status_map;
         std::vector<MR> motors_ref;
         
+        // pre-allocation for rt code
+        client->get_pow_status(pow_status_map);
+        client->get_motors_status(motors_status_map);
+        
         if(ec_client_cfg.protocol=="iddp")
         {
             DPRINTF("Real-time process....\n");
@@ -282,7 +286,7 @@ int main()
             
             // Rx "SENSE"
             //******************* Power Board Telemetry ********
-            pow_status_map= client->get_pow_status();
+            client->get_pow_status(pow_status_map);
             for ( const auto &[esc_id, pow_status] : pow_status_map){
                 v_batt =        pow_status[0];
                 v_load =        pow_status[1];
@@ -294,7 +298,7 @@ int main()
             //******************* Power Board Telemetry ********
             
             //******************* Motor Telemetry **************
-            motors_status_map= client->get_motors_status();
+            client->get_motors_status(motors_status_map);
             for ( const auto &[esc_id, motor_status] : motors_status_map){
                 try{
                     std::tie(link_pos,motor_pos,link_vel,motor_vel,torque,motor_temp,board_temp,fault,rtt,op_idx_ack,aux,cmd_aux_sts) = motor_status;

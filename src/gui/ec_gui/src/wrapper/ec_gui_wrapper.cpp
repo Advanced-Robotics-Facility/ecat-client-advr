@@ -354,7 +354,9 @@ void EcGuiWrapper::receive()
         /************************************* READ PDOs  ********************************************/
         
         /************************************* CHECK BATTERY LEVEL ********************************************/
-        auto pow_status_map= _ec_wrapper_info.client->get_pow_status();
+        PwrStatusMap pow_status_map;
+        _ec_wrapper_info.client->get_pow_status(pow_status_map);
+        
         if(!pow_status_map.empty())
         {
             for ( const auto &[esc_id, pow_status] : pow_status_map)
