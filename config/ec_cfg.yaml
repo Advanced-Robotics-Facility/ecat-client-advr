@@ -11,7 +11,7 @@ period_ms: 1
 logging: false
 
 control:
-  motor_config_path: ${PWD}/motor_config/mirror/mirror_pos3b.yaml 
+  motor_config_path: ${PWD}/motor_config/mirror/mirror_impd4.yaml 
   id_map_path: &id_map_path '${PWD}/id_map/mirror/mirror_id_map.yaml' 
 
   homing_position: {21: -0.75, 22: -1.0, 23: -1.0, 24: -0.75, 25: 1.0, 26: -0.75,
@@ -24,7 +24,6 @@ control:
   trajectory_time_sec: 3
   repeat_trj: 1
 
-  slave_id_led: [16,26,35]
   imu_id: [102,103]
   ft_id: [110,111]
   pow_id: [201]

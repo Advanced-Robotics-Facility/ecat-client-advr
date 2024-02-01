@@ -6,7 +6,6 @@ arm_1_joint_1:
   control_mode: 0xD4
   gains: [1000.0,10.0,1.0,0.7,0.007]
 
-
 arm_1_joint_2:
   brake_present: true
   control_mode: 0xD4
@@ -66,7 +65,7 @@ arm_2_joint_4:
 arm_2_joint_5:
   brake_present: true
   control_mode: 0xD4
-  gains: [1000.0,10.0,1.0,0.7,0.007]]
+  gains: [1000.0,10.0,1.0,0.7,0.007]
 
 
 arm_2_joint_6:
@@ -113,6 +112,4 @@ arm_3_joint_6:
   brake_present: true
   control_mode: 0xD4
   gains: [1000.0,10.0,1.0,0.7,0.007]
-
-
 

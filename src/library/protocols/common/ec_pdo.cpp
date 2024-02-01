@@ -177,7 +177,9 @@ void EcPdo<T>::write_motor_pdo()
                 //DPRINTF("Cannot send reference to id 0x%04X \n", bId);
             }
         }
-        _ec_logger->log_motors_ref(_motors_references);
+        if(!_motors_references.empty()){
+            _ec_logger->log_motors_ref(_motors_references);
+        }
     }
     
     pthread_mutex_unlock(&_mutex_motor_reference);
