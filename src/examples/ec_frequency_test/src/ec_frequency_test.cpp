@@ -6,7 +6,7 @@
 
 #include <atomic>
 
-#include "utils/ec_utils.h"
+#include "utils/ec_common_step.h"
 #include <test_common.h>
 
 using namespace std::chrono;
@@ -27,152 +27,50 @@ static void sig_handler(int sig)
         break;
     }
 }
-
-// IDLE-->Connected->Autodetection->Motor_Started->Motor_Ctrl->Engage_Motor_Brake->Motor_Stopping->Exit
                                                                     
 int main(int argc, char * const argv[])
 {    
-    EcUtils::Ptr ec_client_utils;
-    EcUtils::EC_CONFIG ec_client_cfg;
-
+    EcUtils::EC_CONFIG ec_cfg;
+    EcIface::Ptr client;
+    EcCommonStep ec_common_step;
+    
     try{
-        ec_client_utils=std::make_shared<EcUtils>();
-        ec_client_cfg = ec_client_utils->get_ec_cfg();
+        ec_common_step.create_ec(client,ec_cfg);
     }catch(std::exception &ex){
-        DPRINTF("Error on ec client config file\n");
         DPRINTF("%s\n",ex.what());
-    return 1;
+        return 1;
     }
     
-        
-    std::vector<int> slave_id_vector;
-    for ( auto &[id, pos] : ec_client_cfg.homing_position ) {
-        slave_id_vector.push_back(id);
+    std::vector<int> motor_id_vector;
+    for ( auto &[id, pos] : ec_cfg.homing_position ) {
+        motor_id_vector.push_back(id);
     }
     
-    if(slave_id_vector.empty()){
+    if(motor_id_vector.empty()){
         DPRINTF("Got an homing position map\n");
-        return 0;
-    }
-    std::string STM_sts="IDLE";
-    // *************** START CLIENT  *************** //
-    EcIface::Ptr client=ec_client_utils->make_ec_iface();
-    STM_sts="Connected";
-    // *************** START CLIENT  *************** //
-                
-    
-    // *************** AUTODETECTION *************** //
-    
-    MST motors_start = {};
-    PAC release_brake_cmds = {};
-    PAC engage_brake_cmds = {};
-    
-    SSI slave_info;
-    
-    if(client->retrieve_slaves_info(slave_info))
-    {   
-        if(!slave_info.empty())
-        {
-            DPRINTF("AUTODETECTION\n");
-            for(int motor_id_index=0;motor_id_index<slave_id_vector.size();motor_id_index++)
-            {
-                bool motor_found=false;
-                for ( auto &[id, type, pos] : slave_info ) {
-                    if((type==CENT_AC) || (type==LO_PWR_DC_MC))//HP or LP motor
-                    {
-                        if(id == ec_client_cfg.motor_id[motor_id_index])
-                        {
-                            motor_found=true;
-                            break;
-                        }
-                    }
-                }
-            
-                if(!motor_found)
-                {
-                    throw std::runtime_error("ID: " + std::to_string(ec_client_cfg.motor_id[motor_id_index]) + "not found");
-                }
-            }
-
-            STM_sts="Autodetection";
-        }
+        ec_common_step.stop_ec();
+        return 1;
     }
     
-    for(int i=0; i< slave_id_vector.size();i++)
-    {
-        int id = slave_id_vector[i];
-        motors_start.push_back(std::make_tuple(id,ec_client_cfg.motor_config_map[id].control_mode_type,ec_client_cfg.motor_config_map[id].gains));
-        
-        if(ec_client_cfg.motor_config_map[id].brake_present){
-            // queue release/engage brake commands for all motors 
-            release_brake_cmds.push_back(std::make_tuple(id,to_underlying(PdoAuxCmdType::BRAKE_RELEASE)));
-            engage_brake_cmds.push_back(std::make_tuple(id,to_underlying(PdoAuxCmdType::BRAKE_ENGAGE)));
-        }
-    }
-        
-    // *************** AUTODETECTION *************** //
-
-    bool stop_motors=false;
-    bool motor_started=false;
-    const int max_pdo_aux_cmd_attemps=3; // 3 times to release/engage or LED ON/OFF command
-    int pdo_aux_cmd_attemps=0; // 3 times to release/engage or LED ON/OFF command
-
-    if(!motors_start.empty())
-    {
-        // ************************* START Motors ***********************************//
-        DPRINTF("START ALL MOTORS\n");
-        motor_started=client->start_motors(motors_start);
-
-        if(motor_started)
-        {
-            if(!release_brake_cmds.empty()){
-                STM_sts="Motor_Started";
-                // ************************* RELEASE BRAKES ***********************************//
-                while(pdo_aux_cmd_attemps<max_pdo_aux_cmd_attemps)
-                {
-                    pdo_aux_cmd_attemps++;
-                    if(!client->pdo_aux_cmd(release_brake_cmds))
-                    {
-                        DPRINTF("Cannot perform the release brake command of the motors\n");
-                        pdo_aux_cmd_attemps=max_pdo_aux_cmd_attemps;
-                    }
-                    else
-                    {
-                        std::this_thread::sleep_for(1000ms); //wait 1s to check if the brakes are released
-                        if(client->pdo_aux_cmd_sts(release_brake_cmds))
-                        {
-                            pdo_aux_cmd_attemps=max_pdo_aux_cmd_attemps;
-                            STM_sts="Motor_Ctrl";
-                        }
-                    }
-                }
-            }
-            else{
-                STM_sts="Motor_Ctrl";
-            }
-            // ************************* RELEASE BRAKES ***********************************//
-        }
-        else
-        {
-            DPRINTF("Motors not started\n");
-        }
-        // ************************* START Motors ***********************************//
-    }
-    else
-    {
-        DPRINTF("NO MOTORS STARTED\n");
+    bool motor_ctrl=false;
+    try{
+        ec_common_step.autodetection(motor_id_vector);
+        motor_ctrl=ec_common_step.start_ec_motors();
+    }catch(std::exception &ex){
+        DPRINTF("%s\n",ex.what());
+        return 1;
     }
 
 #ifdef TEST_EXAMPLES
-        if(STM_sts=="Connected")
-        {   
-            STM_sts="Motor_Ctrl";
-        }
+    if(!motor_id_vector.empty())
+    {
+        motor_ctrl=true;
+    }
 #endif
             
-    if(STM_sts=="Motor_Ctrl")
+    if(motor_ctrl)
     {
-        struct timespec ts= { 0, ec_client_cfg.period_ms*1000000}; //sample time
+        struct timespec ts= { 0, ec_cfg.period_ms*1000000}; //sample time
         
         uint64_t start_time_ns = iit::ecat::get_time_ns();
         uint64_t time_ns=start_time_ns;
@@ -182,7 +80,7 @@ int main(int argc, char * const argv[])
     
         bool first_Rx=false;
         
-        std::map<int,double> q_set_trj=ec_client_cfg.homing_position;
+        std::map<int,double> q_set_trj=ec_cfg.homing_position;
         std::map<int,double> q_ref,qdot;
         
         // Power Board
@@ -210,8 +108,8 @@ int main(int argc, char * const argv[])
         
 #ifdef TEST_EXAMPLES
         if(!first_Rx){
-            for(int i=0; i<slave_id_vector.size();i++){
-                int id=slave_id_vector[i];
+            for(int i=0; i<motor_id_vector.size();i++){
+                int id=motor_id_vector[i];
                 q_ref[id]= 0.0;
                 qdot[id]=  0.0;
             }
@@ -228,15 +126,15 @@ int main(int argc, char * const argv[])
         
         for ( const auto &[esc_id, pos_ref] : q_ref){
            motors_ref.push_back(std::make_tuple(esc_id, //bId
-                                                ec_client_cfg.motor_config_map[esc_id].control_mode_type, //ctrl_type
+                                                ec_cfg.motor_config_map[esc_id].control_mode_type, //ctrl_type
                                                 pos_ref, //pos_ref
                                                 0.0, //vel_ref
                                                 0.0, //tor_ref
-                                                ec_client_cfg.motor_config_map[esc_id].gains[0], //gain_1
-                                                ec_client_cfg.motor_config_map[esc_id].gains[1], //gain_2
-                                                ec_client_cfg.motor_config_map[esc_id].gains[2], //gain_3
-                                                ec_client_cfg.motor_config_map[esc_id].gains[3], //gain_4
-                                                ec_client_cfg.motor_config_map[esc_id].gains[4], //gain_5
+                                                ec_cfg.motor_config_map[esc_id].gains[0], //gain_1
+                                                ec_cfg.motor_config_map[esc_id].gains[1], //gain_2
+                                                ec_cfg.motor_config_map[esc_id].gains[2], //gain_3
+                                                ec_cfg.motor_config_map[esc_id].gains[3], //gain_4
+                                                ec_cfg.motor_config_map[esc_id].gains[4], //gain_5
                                                 1, // op means NO_OP
                                                 0, // idx
                                                 0  // aux
@@ -252,7 +150,7 @@ int main(int argc, char * const argv[])
         }
         // memory allocation
     
-        if(ec_client_cfg.protocol=="iddp"){
+        if(ec_cfg.protocol=="iddp"){
             DPRINTF("Real-time process....\n");
             // add SIGALRM
             signal ( SIGALRM, sig_handler );
@@ -347,53 +245,8 @@ int main(int argc, char * const argv[])
             
     }
     
-    // ************************* ENGAGE BRAKES ***********************************//
-    if(!engage_brake_cmds.empty()){
-        pdo_aux_cmd_attemps=0;
-        while(pdo_aux_cmd_attemps<max_pdo_aux_cmd_attemps)
-        {
-            pdo_aux_cmd_attemps++;
-            if(!client->pdo_aux_cmd(engage_brake_cmds))
-            {
-                DPRINTF("Cannot perform the engage brake command of the motors\n");
-                pdo_aux_cmd_attemps=max_pdo_aux_cmd_attemps;
-            }
-            else
-            {
-                std::this_thread::sleep_for(1000ms); //wait 1s to check if the brakes are released
-                if(client->pdo_aux_cmd_sts(engage_brake_cmds))
-                {
-                    pdo_aux_cmd_attemps=max_pdo_aux_cmd_attemps;
-                    STM_sts="Motor_Stopping";
-                }
-            }
-        }
-    }
-    else{
-        STM_sts="Motor_Stopping";
-    }
-    // ************************* ENGAGE BRAKES ***********************************//
-
-
-    // ************************* STOP Motors ***********************************//
-    if(STM_sts =="Motor_Stopping")
-    {
-        if(!client->stop_motors())
-        {
-            DPRINTF("Not all motors are stopped\n");
-        }
-        else
-        {
-            DPRINTF("All Motors stopped\n");
-        }
-        STM_sts = "Exit";
-    }
-    // ************************* STOP Motors ***********************************//
+    ec_common_step.stop_ec_motors();
+    ec_common_step.stop_ec();
     
-    // STOP CLIENT
-    if(client->is_client_alive())
-    {
-        client->stop_client();
-    }
     return 0;
 }

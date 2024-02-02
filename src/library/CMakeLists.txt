@@ -28,6 +28,7 @@ add_library(${PROJECT_NAME} STATIC
             ${PROJECT_SOURCE_DIR}/protocols/ipc/zipc/ec_zipc.cpp
             ${PROJECT_SOURCE_DIR}/protocols/ipc/iddp/ec_iddp.cpp
             ${PROJECT_SOURCE_DIR}/utils/ec_utils.cpp
+            ${PROJECT_SOURCE_DIR}/utils/ec_common_step.cpp
             ${PROJECT_SOURCE_DIR}/logger/ec_logger.cpp)
 
 target_include_directories(${PROJECT_NAME}
