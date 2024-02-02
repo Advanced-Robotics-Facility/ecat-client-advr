@@ -13,9 +13,13 @@ EcZipc::~EcZipc()
 {
     iit::ecat::print_stat ( s_loop );
     
+    stop_logging();
+    
     stop();
     
-    join();
+    if(_create_thread){
+        join();
+    }
 }
 
 //******************************* INIT *****************************************************//
@@ -47,19 +51,27 @@ void EcZipc::start_client(uint32_t period_ms,bool logging)
     stacksize = 0; // not set stak size !!!! YOU COULD BECAME CRAZY !!!!!!!!!!!!
     
     _logging=logging;
-    if(_logging)
-    {
-        start_logging();
-    }
     
     SSI slave_info;
-//     if(retrieve_slaves_info(slave_info)){
-    //if(!_slave_info.empty()){
+    retrieve_slaves_info(slave_info);
+    _create_thread=false;
+    if(!slave_info.empty()){
+        _create_thread=true;
+    }
+    else{
+#ifdef TEST_LIBRARY 
+        _create_thread=true;
+#endif        
+    }
+    
+    if(_create_thread){
         esc_factory(slave_info);
         create(false); // non-real time thread
         _client_alive=true;
-    //}
-//     }
+        if(_logging){
+            start_logging();
+        }
+    }
     
 }
 
@@ -72,6 +84,7 @@ void EcZipc::stop_client()
     join();
     
     _client_alive=false;
+    _create_thread=false;
 }
 
 

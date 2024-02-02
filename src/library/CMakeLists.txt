@@ -20,6 +20,12 @@ find_library(ZeroMQ_LIBRARY
         NAMES zmq
         PATHS ${PC_ZeroMQ_LIBRARY_DIRS}
         )
+        
+OPTION(TEST_LIBRARY "Testing Library" OFF)
+IF(TEST_LIBRARY)
+    ADD_DEFINITIONS(-DTEST_LIBRARY)
+ENDIF(TEST_LIBRARY)
+
 
 # compile ecat library test
 add_library(${PROJECT_NAME} STATIC

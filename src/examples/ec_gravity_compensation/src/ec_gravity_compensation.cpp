@@ -84,6 +84,12 @@ int main(int argc, char * const argv[])
         
         XBot::ModelInterface::Ptr model= XBot::ModelInterface::getModel(config);
         
+        if(model==nullptr){
+            DPRINTF("fatal error: Got an empty model\n");
+            ec_common_step.stop_ec();
+            return 1;
+        }
+        
         struct timespec ts= { 0, ec_cfg.period_ms*1000000}; //sample time
         
         uint64_t start_time_ns = iit::ecat::get_time_ns();

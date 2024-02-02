@@ -23,6 +23,7 @@ private:
     iit::ecat::stat_t   s_loop;
     uint64_t            start_time, tNow, tPre;
     uint64_t            loop_cnt;
+    bool _create_thread;
     
 };
 
