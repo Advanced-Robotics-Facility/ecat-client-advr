@@ -94,7 +94,7 @@ int main(int argc, char * const argv[])
         bool first_Rx=false;
 
         
-        XBot::JointIdMap q,qdot,q_ref,tau_ref,q_ref_test;
+        XBot::JointIdMap q,qdot,q_ref,tau_ref;
         Eigen::VectorXd tau_g; 
         
         
@@ -152,7 +152,7 @@ int main(int argc, char * const argv[])
         }
 #endif
 
-        if(q_ref_test.size() == model->getJointNum()-6){
+        if(q.size() == model->getJointNum()-6){
             //Open Loop SENSE
             first_Rx=true;
         }
@@ -234,11 +234,6 @@ int main(int argc, char * const argv[])
                     q[esc_id]=motor_pos;
                     qdot[esc_id] = motor_vel;
                     q_ref[esc_id]=q[esc_id];
-                    
-                    if(!first_Rx)
-                    {
-                        q_ref_test[esc_id]=motor_pos;
-                    }
                     
                 } catch (std::out_of_range oor) {}
             }
