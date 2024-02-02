@@ -45,7 +45,11 @@ void EcIDDP::start_client(uint32_t period_ms,bool logging)
 #ifdef __COBALT__
     schedpolicy = SCHED_FIFO;
 #else
-    schedpolicy = SCHED_OTHER;
+//     #ifdef __PREEMPT_RT_
+//         schedpolicy = SCHED_FIFO;
+//     #else
+        schedpolicy = SCHED_OTHER;
+//     #endif
 #endif
     priority = sched_get_priority_max ( schedpolicy ) / 2;
     stacksize = 0; // not set stak size !!!! YOU COULD BECAME CRAZY !!!!!!!!!!!!
