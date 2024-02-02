@@ -42,11 +42,8 @@ void EcTCP::start_client(uint32_t period_ms,bool logging)
     iit::ecat::us2ts(&ts, 1000*period_ms);
     // period.period is a timeval ... tv_usec 
     period.period = { ts.tv_sec, ts.tv_nsec / 1000 };
-#ifdef __COBALT__
-    schedpolicy = SCHED_FIFO;
-#else
+
     schedpolicy = SCHED_OTHER;
-#endif
     priority = sched_get_priority_max ( schedpolicy ) / 2;
     stacksize = 0; // not set stak size !!!! YOU COULD BECAME CRAZY !!!!!!!!!!!!
     
