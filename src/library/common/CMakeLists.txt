@@ -18,6 +18,7 @@ find_library(ZeroMQ_LIBRARY
         PATHS ${PC_ZeroMQ_LIBRARY_DIRS}
         )
         
+
 # compile ecat library test
 add_library(${PROJECT_NAME} STATIC
             ../../ec_iface.cpp
@@ -28,21 +29,5 @@ add_library(${PROJECT_NAME} STATIC
             ec_pdo.cpp)
             
 
-target_include_directories(${PROJECT_NAME}
-    PUBLIC
-     ${CMAKE_SOURCE_DIR}/src/library/include/
-    ${ZeroMQ_INCLUDE_DIR} 
-)
-
-target_link_libraries(${PROJECT_NAME}
-    PUBLIC
-    ecat_master::ecat_core${LIB_TYPE}
-    ecat_master::ecat_master_pb
-    ecat_master::msgpck_proto
-    ${ZeroMQ_LIBRARY}
-    matlogger2::matlogger2
-    )
 
 
-install(TARGETS ${PROJECT_NAME}
-    DESTINATION lib)

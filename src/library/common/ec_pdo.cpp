@@ -1,4 +1,4 @@
-#include "protocols/common/ec_pdo.h"
+#include "common/ec_pdo.h"
 
 
 template < class T >

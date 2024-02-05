@@ -4,10 +4,10 @@
 #include "ec_iface.h"
 #include "ec_types.h"
 
-#include "protocols/common/pdo/motor/motor_pdo.h"
-#include "protocols/common/pdo/imu/imu_pdo.h"
-#include "protocols/common/pdo/ft/ft_pdo.h"
-#include "protocols/common/pdo/pow/pow_pdo.h"
+#include "common/pdo/motor/motor_pdo.h"
+#include "common/pdo/imu/imu_pdo.h"
+#include "common/pdo/ft/ft_pdo.h"
+#include "common/pdo/pow/pow_pdo.h"
 
 template <class T>
 class EcPdo: public virtual EcIface

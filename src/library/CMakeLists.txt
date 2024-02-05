@@ -1,9 +1,6 @@
 project(ec_library)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-#compile ec_library
-add_subdirectory(protocols/common)
-
 ## load in pkg-config support
 find_package(PkgConfig)
 ## use pkg-config to get hints for 0mq locations
@@ -26,23 +23,46 @@ IF(TEST_LIBRARY)
     ADD_DEFINITIONS(-DTEST_LIBRARY)
 ENDIF(TEST_LIBRARY)
 
+# compile ecat common library
+add_library(ec_common_library STATIC
+            common/zmq/ec_zmq_cmd.cpp
+            common/zmq/ec_zmq_pdo.cpp
+            common/pipe/ec_pipe_pdo.cpp
+            common/ec_cmd.cpp
+            common/ec_pdo.cpp
+            logger/ec_logger.cpp
+            ec_iface.cpp)
+            
+target_include_directories(ec_common_library
+    PUBLIC
+    ${CMAKE_SOURCE_DIR}/src/library/include/
+    ${ZeroMQ_INCLUDE_DIR}
+    ${EXTERNAL}/spdlog/include 
+)
+
+target_link_libraries(ec_common_library
+    PUBLIC
+    ecat_master::ecat_core${LIB_TYPE}
+    ecat_master::ecat_master_pb
+    ecat_master::msgpck_proto
+    ${ZeroMQ_LIBRARY}
+    matlogger2::matlogger2
+    magic_enum::magic_enum
+    )
+
 
 # compile ecat library test
 add_library(${PROJECT_NAME} STATIC
-            ${PROJECT_SOURCE_DIR}/protocols/udp/ec_udp.cpp
-            ${PROJECT_SOURCE_DIR}/protocols/tcp/ec_tcp.cpp
-            ${PROJECT_SOURCE_DIR}/protocols/ipc/zipc/ec_zipc.cpp
-            ${PROJECT_SOURCE_DIR}/protocols/ipc/iddp/ec_iddp.cpp
-            ${PROJECT_SOURCE_DIR}/utils/ec_utils.cpp
-            ${PROJECT_SOURCE_DIR}/utils/ec_common_step.cpp
-            ${PROJECT_SOURCE_DIR}/logger/ec_logger.cpp)
+            protocols/udp/ec_udp.cpp
+            protocols/tcp/ec_tcp.cpp
+            protocols/ipc/zipc/ec_zipc.cpp
+            protocols/ipc/iddp/ec_iddp.cpp
+            utils/ec_utils.cpp
+            utils/ec_common_step.cpp)
 
 target_include_directories(${PROJECT_NAME}
     PUBLIC
     include/
-    PRIVATE
-    ${EXTERNAL}/spdlog/include
-    ${ZeroMQ_INCLUDE_DIR} 
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -51,9 +71,11 @@ target_link_libraries(${PROJECT_NAME}
     ${Boost_SYSTEM_LIBRARY}
     pthread
     ec_common_library
-    magic_enum::magic_enum
     )
 
+
+install(TARGETS ec_common_library
+    DESTINATION lib)
 
 install(TARGETS ${PROJECT_NAME}
     DESTINATION lib)

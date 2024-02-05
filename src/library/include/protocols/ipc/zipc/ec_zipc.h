@@ -2,8 +2,8 @@
 #define EC_ZIPC_H
 
 #include <thread_util.h>
-#include "protocols/common/ec_cmd.h"
-#include "protocols/common/ec_pdo.h"
+#include "common/ec_cmd.h"
+#include "common/ec_pdo.h"
 
 class EcZipc : public EcCmd,EcPdo<EcZmqPdo>,Thread_hook
 {

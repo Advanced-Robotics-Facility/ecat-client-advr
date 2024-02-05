@@ -1,4 +1,4 @@
-#include "protocols/common/zmq/ec_zmq_cmd.h"
+#include "common/zmq/ec_zmq_cmd.h"
 #include <iostream>
 
 using namespace zmq;

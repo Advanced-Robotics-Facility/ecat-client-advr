@@ -1,5 +1,5 @@
 #include <esc_info.h>
-#include "protocols/common/pipe/ec_pipe_pdo.h"
+#include "common/pipe/ec_pipe_pdo.h"
 
 EcPipePdo::EcPipePdo( int32_t id, uint32_t type, const std::string robot_name) :
     id(id), type(type)

@@ -2,8 +2,8 @@
 #define __POW_PDO__
 
 #include <pb_utils.h>
-#include "protocols/common/pipe/ec_pipe_pdo.h"
-#include "protocols/common/zmq/ec_zmq_pdo.h"
+#include "common/pipe/ec_pipe_pdo.h"
+#include "common/zmq/ec_zmq_pdo.h"
 
 typedef struct POW_PDO_t{
     
