@@ -12,4 +12,5 @@ target_link_libraries(ec_simple_trajectory
     )
 
 install(TARGETS ec_simple_trajectory
-    DESTINATION bin)
+        DESTINATION bin
+        COMPONENT applications)

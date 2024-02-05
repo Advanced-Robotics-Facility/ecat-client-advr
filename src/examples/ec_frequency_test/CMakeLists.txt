@@ -13,6 +13,6 @@ target_link_libraries(ec_frequency_test
     ecat_master::tools_utils
     )
 
-
 install(TARGETS ec_frequency_test
-    DESTINATION bin)
+        DESTINATION bin
+        COMPONENT applications)

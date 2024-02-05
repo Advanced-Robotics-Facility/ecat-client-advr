@@ -32,12 +32,12 @@ add_library(ec_common_library STATIC
             common/ec_pdo.cpp
             logger/ec_logger.cpp
             ec_iface.cpp)
-            
+ 
 target_include_directories(ec_common_library
     PUBLIC
-    ${CMAKE_SOURCE_DIR}/src/library/include/
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${EXTERNAL}/spdlog/include>
     ${ZeroMQ_INCLUDE_DIR}
-    ${EXTERNAL}/spdlog/include 
 )
 
 target_link_libraries(ec_common_library
@@ -60,10 +60,9 @@ add_library(${PROJECT_NAME} STATIC
             utils/ec_utils.cpp
             utils/ec_common_step.cpp)
 
-target_include_directories(${PROJECT_NAME}
-    PUBLIC
-    include/
-)
+target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+                                                  "$<INSTALL_INTERFACE:include/ecat-client-advr/${PROJECT_NAME}>")            
+            
 
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
@@ -72,10 +71,21 @@ target_link_libraries(${PROJECT_NAME}
     pthread
     ec_common_library
     )
+    
 
-
+install(DIRECTORY include/
+    DESTINATION include/ecat-client-advr/${PROJECT_NAME}
+    COMPONENT headers
+    FILES_MATCHING PATTERN "*.h*"
+    PATTERN "cmake" EXCLUDE
+    )
+    
 install(TARGETS ec_common_library
-    DESTINATION lib)
+    EXPORT ecat_client_advrTargets
+    DESTINATION lib
+    COMPONENT libraries)
 
 install(TARGETS ${PROJECT_NAME}
-    DESTINATION lib)
+    EXPORT ecat_client_advrTargets
+    DESTINATION lib
+    COMPONENT libraries)

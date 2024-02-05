@@ -16,5 +16,5 @@ target_link_libraries(ec_gravity_compensation
     
 
 install(TARGETS ec_gravity_compensation
-    DESTINATION bin)
-
+        DESTINATION bin
+        COMPONENT applications)

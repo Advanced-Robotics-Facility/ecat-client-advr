@@ -66,17 +66,56 @@ include_directories(
 add_subdirectory(src/library)
 
 if(${COMPILE_EXAMPLE})
-	# compile example
-	add_subdirectory(src/examples)
+    # compile example
+    add_subdirectory(src/examples)
 endif()
 
 
 if(${COMPILE_GUI})
-	  # compile ec gui
-	  add_subdirectory(src/gui/ec_gui)
+    # compile ec gui
+    add_subdirectory(src/gui/ec_gui)
 endif()
 
 if(${COMPILE_MATLAB})
-	  # compile ec block
-	  add_subdirectory(src/matlab/ec_block/)
+    # compile ec block
+    add_subdirectory(src/matlab/ec_block/)
 endif()
+
+install(
+       DIRECTORY config
+       DESTINATION share/${PROJECT_NAME}
+       COMPONENT configs
+       FILES_MATCHING 
+       PATTERN "*.*")
+
+# Debian package for the ADVR Facility Debian package
+if (NOT CPACK_SYSTEM_NAME)
+    set(CPACK_SYSTEM_NAME "${CMAKE_SYSTEM_PROCESSOR}")
+    if (CPACK_SYSTEM_NAME STREQUAL "x86_64")
+        set(CPACK_SYSTEM_NAME "amd64")
+    endif ()
+endif ()
+
+set(VERSION_LIB "0.0.1")
+set(REVISION "0.0.1")
+
+set(DEB_INSTALL_PREFIX "/usr/local" CACHE STRING "Debs install prefix")
+
+include (InstallRequiredSystemLibraries)
+set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
+set(CPACK_PACKAGING_INSTALL_PREFIX ${DEB_INSTALL_PREFIX})
+set(CPACK_GENERATOR "DEB")
+set(CPACK_PACKAGE_NAME ${PROJECT_NAME}_package)
+set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}${LIB_TYPE}_package-${VERSION_LIB}-r${REVISION}-${CPACK_SYSTEM_NAME}")
+# note: comment out next line to be able to install ros msg and srv
+#set(CPACK_INSTALL_CMAKE_PROJECTS "${CMAKE_CURRENT_BINARY_DIR};${PROJECT_NAME};applications;/;${CMAKE_CURRENT_BINARY_DIR};${PROJECT_NAME};libraries;/;${CMAKE_CURRENT_BINARY_DIR};${PROJECT_NAME};headers;/;${CMAKE_CURRENT_BINARY_DIR};${PROJECT_NAME};configs;/;${CMAKE_CURRENT_BINARY_DIR};${PROJECT_NAME};targets;/")
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS OFF)
+set(CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS OFF)
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "davide.antonucci@iit.it")
+set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "ADVR Facility EtherCAT Client")
+include(CPack)
+
+include(cmake/ExportPackage.cmake)
+export_ecat_client_advr()
+
+

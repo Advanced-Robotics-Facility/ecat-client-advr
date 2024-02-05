@@ -65,4 +65,5 @@ add_executable(ec_gui src/ec_gui_main.cpp)
 target_link_libraries(ec_gui ec_gui_lib)
 
 install(TARGETS ec_gui
-    DESTINATION bin)
+    DESTINATION bin
+    COMPONENT applications)
