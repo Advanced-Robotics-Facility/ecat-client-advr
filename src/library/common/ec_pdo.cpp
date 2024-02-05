@@ -45,29 +45,40 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
         
         switch ( esc_type  )
         {
-                case CENT_AC:
-                case LO_PWR_DC_MC :
+                case iit::ecat::CENT_AC :
+                case iit::ecat::LO_PWR_DC_MC :
                     {
-                        
-                        auto moto_pdo = std::make_shared<MotorPdo<T>>(_ec_pdo_start, id, esc_type);
-                        _moto_pdo_map[id]=moto_pdo;
+                        auto hhcm_pdo = std::make_shared<HhcmPdo<T>>(_ec_pdo_start, id, esc_type);
+                        _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(hhcm_pdo);
                     }
                     break;
-                case FT6 :
+                case iit::ecat::CIRCULO9:
+                    {
+                        auto circulo9_pdo = std::make_shared<Circulo9Pdo<T>>(_ec_pdo_start, id, esc_type);
+                        _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(circulo9_pdo);
+                    }
+                    break;
+//                 case iit::ecat::AMC_FLEXPRO:
+//                     {
+//                         auto flex_pdo = std::make_shared<FlexproPdo<T>>(_ec_pdo_start, id, esc_type);
+//                         _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(flex_pdo);
+//                     }
+//                     break;
+                case iit::ecat::FT6:
                     {
                         auto ft_pdo = std::make_shared<FtPdo<T>>(_ec_pdo_start, id);
                         _ft_pdo_map[id]=ft_pdo;
                     }
                     break;
                     
-                case IMU_ANY :
+                case iit::ecat::IMU_ANY :
                     {
                         auto imu_pdo = std::make_shared<ImuPdo<T>>(_ec_pdo_start, id);
                         _imu_pdo_map[id]=imu_pdo;
                     }
                     break;
                     
-                case POW_F28M36_BOARD :
+                case iit::ecat::POW_F28M36_BOARD :
                     {
                         auto pow_pdo = std::make_shared<PowPdo<T>>(_ec_pdo_start, id);
                         _pow_pdo_map[id]=pow_pdo;

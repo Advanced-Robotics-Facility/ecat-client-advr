@@ -4,14 +4,12 @@
 #include <map>
 #include <vector>
 #include <tuple>
+#include <esc_info.h>
 
-#define LO_PWR_DC_MC 0x12
-#define CENT_AC 0x15
-#define FT6 0x20
-#define POW_F28M36_BOARD 0x32
-#define IMU_ANY 0x40
-
-
+static std::map<uint32_t,std::string>ec_motors={{iit::ecat::CENT_AC,"Motor_HP"},
+                                                {iit::ecat::LO_PWR_DC_MC,"Motor_LP"},
+                                                {iit::ecat::CIRCULO9,"Circulo9"}};
+                                              //{iit::ecat::AMC_FLEXPRO,"AMC flex pro"}};
 using MotorStatusMap = std::map<int, std::tuple<float, float, float, float,   // pos_{link,motor}, vel_{link,motor}
                                                 float,                        // torque
                                                 float,float,                  // {motor,board}

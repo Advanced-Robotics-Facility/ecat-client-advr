@@ -44,7 +44,7 @@ void EcCommonStep::autodetection(std::vector<int> motor_id_vector)
                 int motor_id = _motor_id_vector[motor_id_index];
                 bool motor_found=false;
                 for ( auto &[id, type, pos] : _slave_info ) {
-                    if((type==CENT_AC) || (type==LO_PWR_DC_MC)){
+                    if(ec_motors.count(type)>=0){
                         if(id == motor_id){
                             motor_found=true;
                             break;
@@ -70,7 +70,7 @@ void EcCommonStep::autodetection()
         if(!_slave_info.empty()){
             DPRINTF("Retrieved slaves\n");
             for ( auto &[id, type, pos] : _slave_info ) {
-                if((type==CENT_AC) || (type==LO_PWR_DC_MC)){
+                if(ec_motors.count(type)>=0){
                     _motor_id_vector.push_back(id);
                 }
             }
