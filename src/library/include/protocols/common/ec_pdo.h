@@ -1,16 +1,16 @@
 #ifndef __EC_PDO__
 #define __EC_PDO__
 
+#include "ec_iface.h"
 #include "ec_types.h"
+
 #include "protocols/common/pdo/motor/motor_pdo.h"
 #include "protocols/common/pdo/imu/imu_pdo.h"
 #include "protocols/common/pdo/ft/ft_pdo.h"
 #include "protocols/common/pdo/pow/pow_pdo.h"
 
-#include "protocols/common/ec_cmd.h"
-
 template <class T>
-class EcPdo: public EcCmd
+class EcPdo: public virtual EcIface
 {
     public:
         EcPdo(std::string protocol,std::string host_address,uint32_t host_port);

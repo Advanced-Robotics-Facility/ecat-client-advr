@@ -3,7 +3,6 @@
 
 template < class T >
 EcPdo<T>::EcPdo(std::string protocol, std::string host_address, uint32_t host_port):
-EcCmd(protocol,host_address,host_port),
 _protocol(protocol),
 _host_address(host_address),
 _host_port(host_port)
@@ -20,7 +19,6 @@ _host_port(host_port)
 }
 template < class T >
 EcPdo<T>::EcPdo(std::string robot_name,uint32_t host_port):
-EcCmd("tcp","localhost",host_port),
 _robot_name(robot_name)
 {
      _ec_pdo_start=_robot_name;

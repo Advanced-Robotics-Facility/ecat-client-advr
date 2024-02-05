@@ -23,6 +23,7 @@ EcIface::EcIface()
         createLogger("console","client");
         _consoleLog=spdlog::get("console");
     }
+    _consoleLog->info("EtherCAT Client initialized");
 }
 
 EcIface::~EcIface()

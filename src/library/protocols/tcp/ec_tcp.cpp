@@ -5,9 +5,9 @@
 
 
 EcTCP::EcTCP(std::string host_address,uint32_t host_port):
+  EcCmd("tcp",host_address,host_port),
   EcPdo<EcZmqPdo>("tcp",host_address,host_port)
 {
-
 }
 
 EcTCP::~EcTCP()

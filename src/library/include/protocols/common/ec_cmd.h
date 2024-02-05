@@ -4,7 +4,7 @@
 #include "ec_iface.h"
 #include "protocols/common/zmq/ec_zmq_cmd.h"
 
-class EcCmd : public EcIface
+class EcCmd : public virtual EcIface
 {
 public:
 
