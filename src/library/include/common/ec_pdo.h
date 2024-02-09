@@ -31,6 +31,7 @@ class EcPdo: public virtual EcIface
         void read_imu_pdo();
         void read_pow_pdo();
         
+        std::map<int, std::shared_ptr<HhcmPdo<T>>> _hhcm_pdo_map;
         std::map<int, std::shared_ptr<MotorPdo<T>>> _moto_pdo_map;
         std::map<int, std::shared_ptr<FtPdo<T>>> _ft_pdo_map;
         std::map<int, std::shared_ptr<PowPdo<T>>> _pow_pdo_map;

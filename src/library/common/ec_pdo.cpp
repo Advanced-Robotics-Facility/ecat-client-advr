@@ -49,25 +49,32 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                 case iit::ecat::LO_PWR_DC_MC :
                     {
                         auto hhcm_pdo = std::make_shared<HhcmPdo<T>>(_ec_pdo_start, id, esc_type);
+                        _hhcm_pdo_map[id]=hhcm_pdo;
                         _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(hhcm_pdo);
+                        _motor_status_map[id] = hhcm_pdo->_motor_pdo.mt_t;
+                        _motors_references.push_back(std::make_tuple(id, 0x00,0,0,0,0,0,0,0,0,0,0,0));
                     }
                     break;
                 case iit::ecat::CIRCULO9:
                     {
                         auto circulo9_pdo = std::make_shared<Circulo9Pdo<T>>(_ec_pdo_start, id, esc_type);
                         _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(circulo9_pdo);
+                        _motor_status_map[id] = circulo9_pdo->_motor_pdo.mt_t;
+                        _motors_references.push_back(std::make_tuple(id, 0x00,0,0,0,0,0,0,0,0,0,0,0));
                     }
                     break;
 //                 case iit::ecat::AMC_FLEXPRO:
 //                     {
 //                         auto flex_pdo = std::make_shared<FlexproPdo<T>>(_ec_pdo_start, id, esc_type);
 //                         _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(flex_pdo);
+//                         _motors_references.push_back(std::make_tuple(id, 0x00,0,0,0,0,0,0,0,0,0,0,0));
 //                     }
 //                     break;
                 case iit::ecat::FT6:
                     {
                         auto ft_pdo = std::make_shared<FtPdo<T>>(_ec_pdo_start, id);
                         _ft_pdo_map[id]=ft_pdo;
+                        _ft_status_map[id]= ft_pdo->_ft_pdo.ft_v;
                     }
                     break;
                     
@@ -75,6 +82,7 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                     {
                         auto imu_pdo = std::make_shared<ImuPdo<T>>(_ec_pdo_start, id);
                         _imu_pdo_map[id]=imu_pdo;
+                        _imu_status_map[id]= imu_pdo->_imu_pdo.imu_v;
                     }
                     break;
                     
@@ -82,6 +90,7 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                     {
                         auto pow_pdo = std::make_shared<PowPdo<T>>(_ec_pdo_start, id);
                         _pow_pdo_map[id]=pow_pdo;
+                        _pow_status_map[id]= pow_pdo->_pow_pdo.pow_v;
                     }
                     break;
                 
@@ -130,6 +139,7 @@ void EcPdo<T>::read_motor_pdo()
         }
         catch ( std::out_of_range ) {};   
     }
+    _ec_logger->log_motors_sts(_motor_status_map);
     pthread_mutex_unlock(&_mutex_motor_status);
 }
 
@@ -139,56 +149,62 @@ void EcPdo<T>::write_motor_pdo()
     pthread_mutex_lock(&_mutex_motor_reference);
     if(_motor_ref_flags!=MotorRefFlags::FLAG_NONE){
         for ( const auto &[bId,ctrl_type,pos,vel,tor,g0,g1,g2,g3,g4,op,idx,aux] : _motors_references ) {
-            auto _ctrl_type = static_cast<iit::advr::Gains_Type>(ctrl_type);
-            if(_moto_pdo_map.count(bId) > 0){
-                auto motor_pdo = _moto_pdo_map[bId];
+            if(_moto_pdo_map.count(bId) > 0 && ctrl_type!=0x00){
                 
-                motor_pdo->_motor_pdo.pos_ref= pos;
-                motor_pdo->_motor_pdo.vel_ref= vel;
-                motor_pdo->_motor_pdo.tor_ref= tor;
-                
-                if ( (_ctrl_type == iit::advr::Gains_Type_POSITION ||
-                _ctrl_type == iit::advr::Gains_Type_VELOCITY)) {
-                    motor_pdo->_motor_pdo.kp_ref= g0;
-                    motor_pdo->_motor_pdo.kd_ref= g2;
-                    motor_pdo->_motor_pdo.tau_p_ref=0;
-                    motor_pdo->_motor_pdo.tau_fc_ref=0;
-                    motor_pdo->_motor_pdo.tau_d_ref=0;
-                }
-                else if ( _ctrl_type == iit::advr::Gains_Type_IMPEDANCE) {
+                auto _ctrl_type = static_cast<iit::advr::Gains_Type>(ctrl_type);
+                if (iit::advr::Gains_Type_IsValid(ctrl_type) ) {
+                    auto motor_pdo = _moto_pdo_map[bId];
+                    
+                    motor_pdo->_motor_pdo.pos_ref= pos;
+                    motor_pdo->_motor_pdo.vel_ref= vel;
+                    motor_pdo->_motor_pdo.tor_ref= tor;
+                    
                     motor_pdo->_motor_pdo.kp_ref= g0;
                     motor_pdo->_motor_pdo.kd_ref= g1;
                     motor_pdo->_motor_pdo.tau_p_ref=g2;
                     motor_pdo->_motor_pdo.tau_fc_ref=g3;
                     motor_pdo->_motor_pdo.tau_d_ref=g4;
-                } else {
-
-                }
-                auto _op = static_cast<iit::advr::AuxPDO_Op>(op);
-
-                switch (_op)
-                {
-                    case iit::advr::AuxPDO_Op_SET:
-                        motor_pdo->_motor_pdo.aux_wr_idx=idx;
-                        motor_pdo->_motor_pdo.aux_wr=aux;
-                        break;
-                    case iit::advr::AuxPDO_Op_GET:
-                        motor_pdo->_motor_pdo.aux_rd_idx_req=idx;
-                        break;
-                    case iit::advr::AuxPDO_Op_NOP:
-                        break;
-                }
+                    
+                    if(_hhcm_pdo_map.count(bId)>0){
+                        if ( (_ctrl_type == iit::advr::Gains_Type_POSITION ||
+                        _ctrl_type == iit::advr::Gains_Type_VELOCITY)) {
+                            motor_pdo->_motor_pdo.kp_ref= g0;
+                            motor_pdo->_motor_pdo.kd_ref= g2;
+                            motor_pdo->_motor_pdo.tau_p_ref=0;
+                            motor_pdo->_motor_pdo.tau_fc_ref=0;
+                            motor_pdo->_motor_pdo.tau_d_ref=0;
+                        }
+                    }
                 
-                //write 
-                motor_pdo->write();
+                    auto _op = static_cast<iit::advr::AuxPDO_Op>(op);
+
+                    switch (_op)
+                    {
+                        case iit::advr::AuxPDO_Op_SET:
+                            motor_pdo->_motor_pdo.aux_wr_idx=idx;
+                            motor_pdo->_motor_pdo.aux_wr=aux;
+                            break;
+                        case iit::advr::AuxPDO_Op_GET:
+                            motor_pdo->_motor_pdo.aux_rd_idx_req=idx;
+                            break;
+                        case iit::advr::AuxPDO_Op_NOP:
+                            break;
+                    }
+                    
+                    //write 
+                    motor_pdo->write();
+                }
+                else{
+                    DPRINTF("Control mode not recognized for id 0x%04X \n", bId);
+                }
             }
             else{
-                //DPRINTF("Cannot send reference to id 0x%04X \n", bId);
+#ifndef TEST_LIBRARY 
+                DPRINTF("Cannot send reference to id 0x%04X \n", bId);
+#endif                   
             }
         }
-        if(!_motors_references.empty()){
-            _ec_logger->log_motors_ref(_motors_references);
-        }
+        _ec_logger->log_motors_ref(_motors_references);
     }
     
     pthread_mutex_unlock(&_mutex_motor_reference);
@@ -212,6 +228,7 @@ void EcPdo<T>::read_ft_pdo()
         }
         catch ( std::out_of_range ) {};   
     }
+    _ec_logger->log_ft_sts(_ft_status_map);
     pthread_mutex_unlock(&_mutex_ft_status);
 }
 template < class T >
@@ -232,6 +249,7 @@ void EcPdo<T>::read_imu_pdo()
         }
         catch ( std::out_of_range ) {};   
     }
+    _ec_logger->log_imu_sts(_imu_status_map);
     pthread_mutex_unlock(&_mutex_imu_status);
 }
 
@@ -253,6 +271,7 @@ void EcPdo<T>::read_pow_pdo()
         }
         catch ( std::out_of_range ) {};   
     }
+    _ec_logger->log_pow_sts(_pow_status_map);
     pthread_mutex_unlock(&_mutex_pow_status);
 }
 

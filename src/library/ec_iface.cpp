@@ -57,10 +57,7 @@ void EcIface::stop_logging()
 void EcIface::get_motors_status(MotorStatusMap &motor_status_map)
 {
     pthread_mutex_lock(&_mutex_motor_status);
-    
     motor_status_map= _motor_status_map;
-    _ec_logger->log_motors_sts(_motor_status_map);
-
     pthread_mutex_unlock(&_mutex_motor_status);
 }
 
@@ -78,20 +75,14 @@ void EcIface::set_motors_references(const MotorRefFlags motor_ref_flags,const st
 void EcIface::get_ft_status(FtStatusMap &ft_status_map)
 {
     pthread_mutex_lock(&_mutex_ft_status);
-    
     ft_status_map= _ft_status_map;
-    _ec_logger->log_ft_sts(ft_status_map);
-    
     pthread_mutex_unlock(&_mutex_ft_status);
 }
 
 void EcIface::get_pow_status(PwrStatusMap &pow_status_map)
 {
     pthread_mutex_lock(&_mutex_pow_status);
-
     pow_status_map= _pow_status_map;
-    _ec_logger->log_pow_sts(pow_status_map);
-
     pthread_mutex_unlock(&_mutex_pow_status);
 
 }
@@ -100,10 +91,7 @@ void EcIface::get_pow_status(PwrStatusMap &pow_status_map)
 void EcIface::get_imu_status(ImuStatusMap &imu_status_map)
 {
     pthread_mutex_lock(&_mutex_imu_status);
-    
     imu_status_map= _imu_status_map;
-    _ec_logger->log_imu_sts(imu_status_map);
-    
     pthread_mutex_unlock(&_mutex_imu_status);
 }
  

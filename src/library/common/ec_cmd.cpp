@@ -265,7 +265,7 @@ bool EcCmd::pdo_aux_cmd(const PAC & pac)
 
 void EcCmd::feed_motors()
 {
-//     auto start_cmd= std::chrono::steady_clock::now();
+   auto start_cmd_all= std::chrono::steady_clock::now();
     if(!_client_alive){
         _consoleLog->error("Client not alive, please stop the main process!");
         return;
@@ -276,12 +276,22 @@ void EcCmd::feed_motors()
         if(_motor_ref_flags!=MotorRefFlags::FLAG_NONE){
             if(!_motors_references.empty()){
                 std::string msg="";
+                
+                 auto start_cmd= std::chrono::steady_clock::now();
+                
                 auto fault=_ec_zmq_cmd->Motors_PDO_cmd(_motors_references,msg);
                 if(fault.get_type() == EC_ZMQ_CMD_STATUS::TIMEOUT){
                     _consoleLog->error("Client not alive, please stop the main process!");
                     _client_alive=false;
                 }
                 _ec_logger->log_motors_ref(_motors_references);
+                
+                auto end_cmd= std::chrono::steady_clock::now();
+                auto time_elapsed_us= std::chrono::duration_cast<std::chrono::microseconds>(end_cmd-start_cmd);
+                if(time_elapsed_us > std::chrono::microseconds(500)){
+                _consoleLog->info("commad executed: {}",time_elapsed_us.count());
+                }
+                
             }
             else{
                 _consoleLog->error("Got empty motors references structure");
@@ -289,10 +299,12 @@ void EcCmd::feed_motors()
         }
         pthread_mutex_unlock(&_mutex_motor_reference);
     }
-//     auto end_cmd= std::chrono::steady_clock::now();
-//     auto time_elapsed_ms= std::chrono::duration_cast<std::chrono::microseconds>(end_cmd-start_cmd);
-//     _consoleLog->info("commad executed: {}",time_elapsed_ms.count());
     
+    auto end_cmd_all= std::chrono::steady_clock::now();
+    auto time_elapsed_all_us= std::chrono::duration_cast<std::chrono::microseconds>(end_cmd_all-start_cmd_all);
+    if(time_elapsed_all_us > std::chrono::microseconds(500)){
+    _consoleLog->info("all commad executed: {}",time_elapsed_all_us.count());
+    }
 }
 
 //******************************* COMMANDS *****************************************************//
