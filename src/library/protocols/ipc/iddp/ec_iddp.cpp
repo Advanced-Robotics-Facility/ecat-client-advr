@@ -6,7 +6,7 @@
 
 EcIDDP::EcIDDP(std::string host_address,uint32_t host_port):
   EcCmd("tcp",host_address,host_port),
-  EcPdo<EcPipePdo>("None",host_port)
+  EcPdo<EcPipePdo>("None")
 {        
     
 }
@@ -19,7 +19,7 @@ EcIDDP::~EcIDDP()
     
     stop();
     
-    if(_create_thread){
+    if(_thread_jointable){
         join();
     }
 }
@@ -63,22 +63,32 @@ void EcIDDP::start_client(uint32_t period_ms,bool logging)
 
     SSI slave_info;
     retrieve_slaves_info(slave_info);
-    _create_thread=false;
+    
+    bool create_thread=false;
+    _thread_jointable=create_thread;
+    
     if(!slave_info.empty()){
-        _create_thread=true;
+        create_thread=true;
     }
     else{
 #ifdef TEST_LIBRARY 
-        _create_thread=true;
+        create_thread=true;
 #endif        
     }
     
-    if(_create_thread){
-        esc_factory(slave_info);
-        create(true); // real time thread
-        _client_alive=true;
-        if(_logging){
-            start_logging();
+    if(create_thread){
+        try{
+            esc_factory(slave_info);
+            create(true); // real time thread
+            _thread_jointable=true;
+            _client_alive=true;
+            if(_logging){
+                _ec_logger->init_mat_logger(slave_info);
+                start_logging();
+            }
+        } catch ( std::exception &e ) {
+            DPRINTF ( "Fatal Error: %s\n", e.what() );
+            stop_client();
         }
     }
 }
@@ -89,10 +99,12 @@ void EcIDDP::stop_client()
     
     stop();
     
-    join();
+    if(_thread_jointable){
+        join();
+        _thread_jointable=false;
+    }
     
     _client_alive=false;
-    _create_thread=false;
 }
 
 

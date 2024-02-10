@@ -11,7 +11,7 @@ _id(id),
 _type(type),
 _zmq_uri(zmq_uri)
 {   
-  
+    printf("PDO ZMQ URI: [%s]\n",zmq_uri.c_str());
 }
     
 EcZmqPdo::EcZmqPdo( int32_t id, const std::string esc_name, const std::string zmq_uri):
@@ -19,13 +19,13 @@ _id(id),
 _esc_name(esc_name),
 _zmq_uri(zmq_uri)
 {   
-
+    printf("PDO ZMQ URI: [%s]\n",zmq_uri.c_str());
 }
 
 EcZmqPdo::EcZmqPdo(const std::string zmq_uri):
 _zmq_uri(zmq_uri)
 {   
-
+    printf("PDO ZMQ URI: [%s]\n",zmq_uri.c_str());
 }
 
 std::string EcZmqPdo::get_zmq_pdo_uri()

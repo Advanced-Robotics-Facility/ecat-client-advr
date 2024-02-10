@@ -8,8 +8,8 @@
 
 static std::map<uint32_t,std::string>ec_motors={{iit::ecat::CENT_AC,"Motor_HP"},
                                                 {iit::ecat::LO_PWR_DC_MC,"Motor_LP"},
-                                                {iit::ecat::CIRCULO9,"Circulo9"}};
-                                              //{iit::ecat::AMC_FLEXPRO,"AMC flex pro"}};
+                                                {iit::ecat::CIRCULO9,"Circulo9"},
+                                                {iit::ecat::AMC_FLEXPRO,"AMC flex pro"}};
 using MotorStatusMap = std::map<int, std::tuple<float, float, float, float,   // pos_{link,motor}, vel_{link,motor}
                                                 float,                        // torque
                                                 float,float,                  // {motor,board}

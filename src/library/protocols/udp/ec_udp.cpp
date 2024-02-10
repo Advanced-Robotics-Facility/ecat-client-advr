@@ -669,6 +669,7 @@ void EcUDP::start_client(uint32_t period_ms,bool logging)
     
     if(logging)
     {
+        _ec_logger->init_mat_logger(_slave_info);
         start_logging();
     }
         

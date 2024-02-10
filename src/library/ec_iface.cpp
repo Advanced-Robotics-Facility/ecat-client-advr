@@ -84,7 +84,6 @@ void EcIface::get_pow_status(PwrStatusMap &pow_status_map)
     pthread_mutex_lock(&_mutex_pow_status);
     pow_status_map= _pow_status_map;
     pthread_mutex_unlock(&_mutex_pow_status);
-
 }
 
 

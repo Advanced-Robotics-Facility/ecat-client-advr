@@ -16,7 +16,7 @@ class EcPdo: public virtual EcIface
 {
     public:
         EcPdo(std::string protocol,std::string host_address,uint32_t host_port);
-        EcPdo(std::string robot_name="None",uint32_t host_port=5000);
+        EcPdo(std::string robot_name="None");
         ~EcPdo();
         
         void esc_factory(SSI slave_descr);
