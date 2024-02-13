@@ -137,7 +137,7 @@ void EcPdo<T>::write_motor_pdo()
         for ( const auto &[bId,ctrl_type,pos,vel,tor,g0,g1,g2,g3,g4,op,idx,aux] : _motors_references ) {
             if(_moto_pdo_map.count(bId) > 0 && ctrl_type!=0x00){
                 
-                auto _ctrl_type = static_cast<iit::advr::Gains_Type>(ctrl_type);
+                auto ctrl_type_cast = static_cast<iit::advr::Gains_Type>(ctrl_type);
                 if (iit::advr::Gains_Type_IsValid(ctrl_type) ) {
                     auto motor_pdo = _moto_pdo_map[bId];
                     
@@ -152,8 +152,8 @@ void EcPdo<T>::write_motor_pdo()
                     motor_pdo->_motor_pdo.tau_d_ref=g4;
                     
                     if(_hhcm_pdo_map.count(bId)>0){
-                        if ( (_ctrl_type == iit::advr::Gains_Type_POSITION ||
-                        _ctrl_type == iit::advr::Gains_Type_VELOCITY)) {
+                        if ( (ctrl_type_cast == iit::advr::Gains_Type_POSITION ||
+                              ctrl_type_cast == iit::advr::Gains_Type_VELOCITY)) {
                             motor_pdo->_motor_pdo.kp_ref= g0;
                             motor_pdo->_motor_pdo.kd_ref= g2;
                             motor_pdo->_motor_pdo.tau_p_ref=0;

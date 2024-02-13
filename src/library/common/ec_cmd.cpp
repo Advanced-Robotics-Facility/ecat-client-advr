@@ -275,11 +275,9 @@ void EcCmd::feed_motors()
         pthread_mutex_lock(&_mutex_motor_reference);
         if(_motor_ref_flags!=MotorRefFlags::FLAG_NONE){
             if(!_motors_references.empty()){
-                std::string msg="";
-                
                  auto start_cmd= std::chrono::steady_clock::now();
                 
-                auto fault=_ec_zmq_cmd->Motors_PDO_cmd(_motors_references,msg);
+                auto fault=_ec_zmq_cmd->Motors_PDO_cmd(_motors_references);
                 if(fault.get_type() == EC_ZMQ_CMD_STATUS::TIMEOUT){
                     _consoleLog->error("Client not alive, please stop the main process!");
                     _client_alive=false;

@@ -368,12 +368,10 @@ public:
     /**
     * @brief Command to send references 
     * 
-    * @param aux_cmds ref: references.
-    * @param msg p_msg: return feedback message from ZMQ communication.
+    * @param refs : references vector.
     * @return fault
     */
-    EcZmqFault Motors_PDO_cmd(motors_ref_t refs,
-                              std::string &msg);
+    EcZmqFault Motors_PDO_cmd(motors_ref_t refs);
     
     
     /**

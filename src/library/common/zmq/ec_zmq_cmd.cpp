@@ -362,38 +362,14 @@ EcZmqFault EcZmqCmd::Ctrl_cmd(Ctrl_cmd_Type type,
     if(!gains.empty())   //OPTIONAL VALUE
     {
         Gains *gains_send = new Gains();
-        if((value == 0x3B ) || (value == 0x71 ))
-        {
-         
-            /* SET CONTROL MODE*///
-            if(value == 0x3B ) 
-            {
-                gains_send->set_type(Gains_Type::Gains_Type_POSITION);
-            }
-            else
-            {
-                gains_send->set_type(Gains_Type::Gains_Type_VELOCITY);
-            }
-            
-            /* SET GAINS *///
-            gains_send->set_pos_kp(gains[0]);
-            gains_send->set_pos_kd(gains[2]);
-            gains_send->set_tor_kp(0.0);
-            gains_send->set_tor_kd(0.0);
-            gains_send->set_tor_ki(gains[1]);    
-            
-        }
-        else
-        {
-            /* SET CONTROL MODE AND GAINS *///
-            gains_send->set_type(Gains_Type::Gains_Type_IMPEDANCE);
-            gains_send->set_pos_kp(gains[0]);
-            gains_send->set_pos_kd(gains[1]);
-            gains_send->set_tor_kp(gains[2]);
-            gains_send->set_tor_kd(gains[3]);
-            gains_send->set_tor_ki(gains[4]);  // this is fc!
-        }
+        auto ctrl_type_cast = static_cast<iit::advr::Gains_Type>(value);
         
+        gains_send->set_type(ctrl_type_cast);
+        gains_send->set_pos_kp(gains[0]);
+        gains_send->set_pos_kd(gains[1]);
+        gains_send->set_tor_kp(gains[2]);
+        gains_send->set_tor_kd(gains[3]);
+        gains_send->set_tor_ki(gains[4]);
         pb_cmd.mutable_ctrl_cmd()->set_allocated_gains(gains_send);
     }
     
@@ -578,8 +554,7 @@ EcZmqFault EcZmqCmd::PDOs_aux_cmd(std::vector<aux_cmd_message_t> aux_cmds,
     return fault;
 }
 
-EcZmqFault EcZmqCmd::Motors_PDO_cmd(motors_ref_t refs,
-                                    std::string &msg)
+EcZmqFault EcZmqCmd::Motors_PDO_cmd(motors_ref_t refs)
 {
     iit::advr::Repl_cmd  pb_cmd;
     EcZmqFault fault;
@@ -615,17 +590,6 @@ EcZmqFault EcZmqCmd::Motors_PDO_cmd(motors_ref_t refs,
             motor_pdo_cmd->mutable_gains()->set_tor_kp(g2);
             motor_pdo_cmd->mutable_gains()->set_tor_ki(g3);
             motor_pdo_cmd->mutable_gains()->set_tor_kd(g4);
-            
-//             if(hhcm_type){
-                if ( (_ctrl_type == iit::advr::Gains_Type_POSITION ||
-                    _ctrl_type == iit::advr::Gains_Type_VELOCITY)) {
-                    motor_pdo_cmd->mutable_gains()->set_pos_kp(g0);
-                    motor_pdo_cmd->mutable_gains()->set_pos_kd(g2);
-                    motor_pdo_cmd->mutable_gains()->set_tor_kp(0.0);
-                    motor_pdo_cmd->mutable_gains()->set_tor_ki(0.0);
-                    motor_pdo_cmd->mutable_gains()->set_tor_kd(0.0);
-                }
-//             }
             
             auto op_msg = static_cast<iit::advr::AuxPDO_Op>(op);
             motor_pdo_cmd->mutable_aux_pdo()->set_op(op_msg);
