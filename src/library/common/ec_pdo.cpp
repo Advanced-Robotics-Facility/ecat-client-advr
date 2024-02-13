@@ -158,7 +158,7 @@ void EcPdo<T>::write_motor_pdo()
                             motor_pdo->_motor_pdo.kd_ref= g2;
                             motor_pdo->_motor_pdo.tau_p_ref=0;
                             motor_pdo->_motor_pdo.tau_fc_ref=0;
-                            motor_pdo->_motor_pdo.tau_d_ref=0;
+                            motor_pdo->_motor_pdo.tau_d_ref=g1;
                         }
                     }
                 
