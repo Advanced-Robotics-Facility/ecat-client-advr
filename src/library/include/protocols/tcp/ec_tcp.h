@@ -2,10 +2,10 @@
 #define EC_TCP_H
 
 #include <thread_util.h>
-#include "common/ec_cmd.h"
+#include "common/zmq/ec_zmq_cmd.h"
 #include "common/ec_pdo.h"
 
-class EcTCP : public EcCmd,EcPdo<EcZmqPdo>,Thread_hook
+class EcTCP : public EcZmqCmd,EcPdo<EcZmqPdo>,Thread_hook
 {
 public:
 

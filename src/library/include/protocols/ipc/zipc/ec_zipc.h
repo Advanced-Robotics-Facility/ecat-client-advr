@@ -2,10 +2,10 @@
 #define EC_ZIPC_H
 
 #include <thread_util.h>
-#include "common/ec_cmd.h"
+#include "common/zmq/ec_zmq_cmd.h"
 #include "common/ec_pdo.h"
 
-class EcZipc : public EcCmd,EcPdo<EcZmqPdo>,Thread_hook
+class EcZipc : public EcZmqCmd,EcPdo<EcZmqPdo>,Thread_hook
 {
 public:
 

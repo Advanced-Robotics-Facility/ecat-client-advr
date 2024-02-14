@@ -25,10 +25,10 @@ ENDIF(TEST_LIBRARY)
 
 # compile ecat common library
 add_library(ec_common_library STATIC
+            common/zmq/ec_repl_cmd.cpp
             common/zmq/ec_zmq_cmd.cpp
             common/zmq/ec_zmq_pdo.cpp
             common/pipe/ec_pipe_pdo.cpp
-            common/ec_cmd.cpp
             common/ec_pdo.cpp
             logger/ec_logger.cpp
             ec_iface.cpp)
