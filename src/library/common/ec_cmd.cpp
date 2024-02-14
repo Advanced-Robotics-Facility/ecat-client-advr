@@ -81,14 +81,25 @@ bool EcCmd::retrieve_slaves_info(SSI &slave_info)
             YAML::Node slaves_info = YAML::Load(slave_descr_info);
             
             auto slave_map = slaves_info.as<std::map<int, std::map<std::string, int>>>();
+            std::map<int32_t,std::string> motor_type_map;
             for ( auto const &item : slave_map ) {
                 auto esc_id = item.first;
                 auto esc_info = item.second;
                 _slave_info.push_back(std::make_tuple(esc_id,esc_info["esc_type"],esc_info["position"]));
+                if(esc_info["esc_type"]== iit::ecat::CENT_AC || esc_info["esc_type"]==iit::ecat::LO_PWR_DC_MC){
+                    motor_type_map[esc_id]="HHCM_MOTOR";
+                }
+                else if(esc_info["esc_type"]== iit::ecat::CIRCULO9){
+                    motor_type_map[esc_id]="CIRCULO9_MOTOR";
+                }
+                else if(esc_info["esc_type"]== iit::ecat::AMC_FLEXPRO){
+                    motor_type_map[esc_id]="AMC_FLEXPRO_MOTOR";
+                }
             }
             
             slave_info.clear();
             slave_info = _slave_info;
+            _ec_zmq_cmd->set_motor_type_map(motor_type_map);
             
             return true;
         }
@@ -177,10 +188,10 @@ bool EcCmd::start_motors(const MST &motors_start)
             
             std::string msg="";
             auto fault=_ec_zmq_cmd->Ctrl_cmd(iit::advr::Ctrl_cmd_Type::Ctrl_cmd_Type_CTRL_CMD_START,
-                                            motor_id,
-                                            ctrl_type,
-                                            gains,
-                                            msg);   
+                                             motor_id,
+                                             ctrl_type,
+                                             gains,
+                                             msg);   
             if(cmd_error_status(fault, "start_motors",msg)){
                 motors_started &= false; 
             }
@@ -275,8 +286,7 @@ void EcCmd::feed_motors()
         pthread_mutex_lock(&_mutex_motor_reference);
         if(_motor_ref_flags!=MotorRefFlags::FLAG_NONE){
             if(!_motors_references.empty()){
-                 auto start_cmd= std::chrono::steady_clock::now();
-                
+                auto start_cmd= std::chrono::steady_clock::now();
                 auto fault=_ec_zmq_cmd->Motors_PDO_cmd(_motors_references);
                 if(fault.get_type() == EC_ZMQ_CMD_STATUS::TIMEOUT){
                     _consoleLog->error("Client not alive, please stop the main process!");

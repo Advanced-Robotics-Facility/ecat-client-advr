@@ -322,7 +322,6 @@ public:
                         std::vector<float> gains,
                         std::string &msg);
     
-    
     /**
     * @brief Command to send a trajectory to the slave.
     * 
@@ -394,6 +393,8 @@ public:
     * @param timeout p_timeout:...
     */
     void set_zmq_timeout(int timeout);
+    
+    void set_motor_type_map(std::map<int32_t,std::string> motor_type_map);
 
 private:
     
@@ -401,6 +402,11 @@ private:
     int _timeout;
     std::shared_ptr<zmq::context_t> _context;
     std::shared_ptr<zmq::socket_t>  _publisher;
+    
+    std::map<int32_t,std::string> _hhcm_motor_map;
+    std::map<int32_t,std::string> _circulo9_motor_map;
+    std::map<int32_t,std::string> _amc_flexpro_motor_map;
+    void check_hhcm_motor_gains(iit::advr::Gains_Type ctrl_type,std::vector<float> &gains);
 };
 
 #endif

@@ -132,7 +132,6 @@ void EcZmqCmd::zmq_cmd_recv(string& msg,
     }
 }
 
-
 EcZmqFault EcZmqCmd::Ecat_Master_cmd(Ecat_Master_cmd_Type type,
                                      std::map<std::string ,std::string> args,
                                      std::string &msg)
@@ -276,7 +275,7 @@ EcZmqFault EcZmqCmd::Slave_SDO_cmd(long int board_id,
        {
            for(int i=0; i<rd_sdo.size();i++)
            {
-            pb_cmd.mutable_slave_sdo_cmd()->add_rd_sdo(rd_sdo.at(i));   // REQUIRED VALUE IF NOT WD  
+                pb_cmd.mutable_slave_sdo_cmd()->add_rd_sdo(rd_sdo.at(i));   // REQUIRED VALUE IF NOT WD  
            }
        }
        else if(!wr_sdo.empty())
@@ -334,6 +333,19 @@ EcZmqFault EcZmqCmd::Flash_cmd(Flash_cmd_Type type,
     return fault;
 }
 
+void EcZmqCmd::check_hhcm_motor_gains(iit::advr::Gains_Type ctrl_type,std::vector<float> &gains)
+{
+    if((ctrl_type == iit::advr::Gains_Type_POSITION ||
+        ctrl_type == iit::advr::Gains_Type_VELOCITY)) {
+        auto copy_gains=gains;
+        gains[0]=copy_gains[0];
+        gains[1]=copy_gains[2];
+        gains[2]=0.0;
+        gains[3]=0.0;
+        gains[4]=copy_gains[1];
+    }
+}
+
 EcZmqFault EcZmqCmd::Ctrl_cmd(Ctrl_cmd_Type type,
                               long int board_id,
                               float value,
@@ -361,10 +373,21 @@ EcZmqFault EcZmqCmd::Ctrl_cmd(Ctrl_cmd_Type type,
 
     if(!gains.empty())   //OPTIONAL VALUE
     {
+        if ( ! iit::advr::Gains_Type_IsValid(value) ) {
+            fault.set_zmq_cmd(get_cmd_type(CmdType::CTRL_CMD));
+            fault.set_type(EC_ZMQ_CMD_STATUS::WRONG_CMD_TYPE);
+            fault.set_info("Bad command: Wrong control type detected");
+            fault.set_recovery_info("Retry command");
+            return fault;
+        }
+        
         Gains *gains_send = new Gains();
         auto ctrl_type_cast = static_cast<iit::advr::Gains_Type>(value);
         
         gains_send->set_type(ctrl_type_cast);
+        if(_hhcm_motor_map.count(board_id)>0){
+           check_hhcm_motor_gains(ctrl_type_cast,gains);
+        }
         gains_send->set_pos_kp(gains[0]);
         gains_send->set_pos_kd(gains[1]);
         gains_send->set_tor_kp(gains[2]);
@@ -582,14 +605,19 @@ EcZmqFault EcZmqCmd::Motors_PDO_cmd(motors_ref_t refs)
             motor_pdo_cmd->set_vel_ref(vel);
             motor_pdo_cmd->set_tor_ref(tor);
                 
-            auto _ctrl_type = static_cast<iit::advr::Gains_Type>(ctrl_type);
-            motor_pdo_cmd->mutable_gains()->set_type(_ctrl_type);
+            auto ctrl_type_cast = static_cast<iit::advr::Gains_Type>(ctrl_type);
+            motor_pdo_cmd->mutable_gains()->set_type(ctrl_type_cast);
             
-            motor_pdo_cmd->mutable_gains()->set_pos_kp(g0);
-            motor_pdo_cmd->mutable_gains()->set_pos_kd(g1);
-            motor_pdo_cmd->mutable_gains()->set_tor_kp(g2);
-            motor_pdo_cmd->mutable_gains()->set_tor_ki(g3);
-            motor_pdo_cmd->mutable_gains()->set_tor_kd(g4);
+            std::vector<float> gains_check={g0,g1,g2,g3,g4};
+            if(_hhcm_motor_map.count(bId)>0){
+                check_hhcm_motor_gains(ctrl_type_cast,gains_check);
+            }
+                
+            motor_pdo_cmd->mutable_gains()->set_pos_kp(gains_check[0]);
+            motor_pdo_cmd->mutable_gains()->set_pos_kd(gains_check[1]);
+            motor_pdo_cmd->mutable_gains()->set_tor_kp(gains_check[2]);
+            motor_pdo_cmd->mutable_gains()->set_tor_ki(gains_check[3]);
+            motor_pdo_cmd->mutable_gains()->set_tor_kd(gains_check[4]);
             
             auto op_msg = static_cast<iit::advr::AuxPDO_Op>(op);
             motor_pdo_cmd->mutable_aux_pdo()->set_op(op_msg);
@@ -609,6 +637,20 @@ EcZmqFault EcZmqCmd::Motors_PDO_cmd(motors_ref_t refs)
     return fault;
 }
 
+void EcZmqCmd::set_motor_type_map(std::map<int32_t,std::string> motor_type_map)
+{
+    for ( const auto &[motor_id,motor_type] : motor_type_map ) {
+        if(motor_type=="HHCM_MOTOR"){
+            _hhcm_motor_map[motor_id]=motor_type;
+        }
+        else if(motor_type=="CIRCULO9_MOTOR"){
+            _circulo9_motor_map[motor_id]=motor_type;
+        }
+        else if(motor_type=="AMC_FLEXPRO_MOTOR"){
+            _amc_flexpro_motor_map[motor_id]=motor_type;
+        }
+    }
+}
 
 
 EcZmqCmd::~EcZmqCmd()
