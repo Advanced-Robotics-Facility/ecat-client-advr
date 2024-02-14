@@ -274,6 +274,13 @@ bool EcZmqCmd::pdo_aux_cmd(const PAC & pac)
     return false;
 }
 
+void EcZmqCmd::send_pdo()
+{
+    feed_motors(); 
+    feed_valves();
+    feed_pumps();
+}
+
 void EcZmqCmd::feed_motors()
 {
    auto start_cmd_all= std::chrono::steady_clock::now();
@@ -314,6 +321,16 @@ void EcZmqCmd::feed_motors()
     _consoleLog->info("all commad executed: {}",time_elapsed_all_us.count());
     }
 }
+
+void EcZmqCmd::feed_valves()
+{
+}
+
+void EcZmqCmd::feed_pumps()
+{
+}
+
+
 
 //******************************* COMMANDS *****************************************************//
 

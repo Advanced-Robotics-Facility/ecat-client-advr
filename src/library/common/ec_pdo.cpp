@@ -79,6 +79,16 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                         _pow_pdo_map[id]=pow_pdo;
                         _pow_status_map[id]= pow_pdo->_pow_pdo.pow_v;
                 }break;
+                case iit::ecat::HYQ_KNEE:{
+                        auto valve_pdo = std::make_shared<ValvePdo<T>>(_ec_pdo_start, id);
+                        _valve_pdo_map[id]=valve_pdo;
+                        _valve_status_map[id]= valve_pdo->_valve_pdo.valve_v;
+                }break;
+                case iit::ecat::HYQ_HPU:{
+                        auto pump_pdo = std::make_shared<PumpPdo<T>>(_ec_pdo_start, id);
+                        _pump_pdo_map[id]=pump_pdo;
+                        _pump_status_map[id]= pump_pdo->_pump_pdo.pump_v;
+                }break;
                 
                 default:
                     break;
@@ -96,12 +106,20 @@ void EcPdo<T>::read_pdo()
     read_imu_pdo();
     
     read_pow_pdo();
+    
+    read_valve_pdo();
+    
+    read_pump_pdo();
 }
 
 template < class T >
 void EcPdo<T>::write_pdo()
 {
     write_motor_pdo();
+    
+    write_valve_pdo();
+    
+    write_pump_pdo();
 }
 
 
@@ -259,6 +277,64 @@ void EcPdo<T>::read_pow_pdo()
     }
     _ec_logger->log_pow_sts(_pow_status_map);
     pthread_mutex_unlock(&_mutex_pow_status);
+}
+
+template < class T >
+void EcPdo<T>::read_valve_pdo()
+{
+    pthread_mutex_lock(&_mutex_valve_status);
+    for (auto const &[id,valve_pdo] : _valve_pdo_map )  {
+        try { 
+            ///////////////////////////////////////////////////////////////
+            // read
+            int nbytes;
+            do {
+                // read protobuf data
+                nbytes = valve_pdo->read();
+            } while ( nbytes > 0);
+            //////////////////////////////////////////////////////////////
+            _valve_status_map[id]= valve_pdo->_valve_pdo.valve_v;
+        }
+        catch ( std::out_of_range ) {};   
+    }
+    //_ec_logger->log_pow_sts(_pow_status_map);
+    pthread_mutex_unlock(&_mutex_valve_status);
+}
+template < class T >
+void EcPdo<T>::write_valve_pdo()
+{
+    pthread_mutex_lock(&_mutex_valve_reference);
+    
+    pthread_mutex_unlock(&_mutex_valve_reference);
+}
+
+template < class T >
+void EcPdo<T>::read_pump_pdo()
+{
+    pthread_mutex_lock(&_mutex_pump_status);
+    for (auto const &[id,pump_pdo] : _pump_pdo_map )  {
+        try { 
+            ///////////////////////////////////////////////////////////////
+            // read
+            int nbytes;
+            do {
+                // read protobuf data
+                nbytes = pump_pdo->read();
+            } while ( nbytes > 0);
+            //////////////////////////////////////////////////////////////
+            _pump_status_map[id]= pump_pdo->_pump_pdo.pump_v;
+        }
+        catch ( std::out_of_range ) {};   
+    }
+    //_ec_logger->log_pow_sts(_pow_status_map);
+    pthread_mutex_unlock(&_mutex_pump_status);
+}
+template < class T >
+void EcPdo<T>::write_pump_pdo()
+{
+    pthread_mutex_lock(&_mutex_pump_reference);
+    
+    pthread_mutex_unlock(&_mutex_pump_reference);
 }
 
 template class EcPdo<EcPipePdo>;

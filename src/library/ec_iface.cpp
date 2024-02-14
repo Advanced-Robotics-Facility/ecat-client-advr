@@ -17,6 +17,13 @@ EcIface::EcIface()
     
     pthread_mutex_init(&_mutex_imu_status, NULL);
     
+    pthread_mutex_init(&_mutex_valve_status, NULL);
+    pthread_mutex_init(&_mutex_valve_reference, NULL);
+    
+    
+    pthread_mutex_init(&_mutex_pump_status, NULL);
+    pthread_mutex_init(&_mutex_pump_reference, NULL);
+    
     _consoleLog=spdlog::get("console");
     if(!_consoleLog)
     {
@@ -36,6 +43,13 @@ EcIface::~EcIface()
     pthread_mutex_destroy(&_mutex_pow_status);
     
     pthread_mutex_destroy(&_mutex_imu_status);
+    
+    pthread_mutex_destroy(&_mutex_valve_status);
+    pthread_mutex_destroy(&_mutex_valve_reference);
+    
+    pthread_mutex_destroy(&_mutex_pump_status);
+    pthread_mutex_destroy(&_mutex_pump_reference);
+    
 }
 
 bool EcIface::is_client_alive()
@@ -92,6 +106,36 @@ void EcIface::get_imu_status(ImuStatusMap &imu_status_map)
     pthread_mutex_lock(&_mutex_imu_status);
     imu_status_map= _imu_status_map;
     pthread_mutex_unlock(&_mutex_imu_status);
+}
+
+void EcIface::get_valve_status(ValveStatusMap &valve_status_map)
+{
+    pthread_mutex_lock(&_mutex_valve_status);
+    valve_status_map= _valve_status_map;
+    pthread_mutex_unlock(&_mutex_valve_status);
+}
+
+void EcIface::set_valve_references()
+{
+    pthread_mutex_lock(&_mutex_valve_reference);
+
+    
+    pthread_mutex_unlock(&_mutex_valve_reference);
+}
+
+void EcIface::get_pump_status(PumpStatusMap &pump_status_map)
+{
+    pthread_mutex_lock(&_mutex_pump_status);
+    pump_status_map= _pump_status_map;
+    pthread_mutex_unlock(&_mutex_pump_status);
+}
+
+void EcIface::set_pump_references()
+{
+    pthread_mutex_lock(&_mutex_pump_reference);
+
+    
+    pthread_mutex_unlock(&_mutex_pump_reference);
 }
  
 bool EcIface::pdo_aux_cmd_sts(const PAC & pac)

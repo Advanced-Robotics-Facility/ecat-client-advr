@@ -29,10 +29,14 @@ public:
     void get_ft_status(FtStatusMap &ft_status_map);
     void get_pow_status(PwrStatusMap &pow_status_map);
     void get_imu_status(ImuStatusMap &imu_status_map);
+    void get_valve_status(ValveStatusMap &valve_status_map);
+    void get_pump_status(PumpStatusMap &pump_status_map);
     bool pdo_aux_cmd_sts(const PAC & pac);
     
     // EtherCAT Client ADVR Facilty setters
     void set_motors_references(const MotorRefFlags, const std::vector<MR>);
+    void set_valve_references();
+    void set_pump_references();
     
     // EtherCAT Client ADVR Facilty manager
     virtual void start_client(uint32_t period_ms,bool logging) = 0;
@@ -68,6 +72,10 @@ protected:
     PwrStatusMap _pow_status_map;
     // last received imu data
     ImuStatusMap _imu_status_map;
+    // last received valve data
+    ValveStatusMap _valve_status_map;
+    // last received pump data
+    PumpStatusMap _pump_status_map;
     
     MotorRefFlags _motor_ref_flags;
     std::vector<MR> _motors_references;
@@ -77,6 +85,10 @@ protected:
     pthread_mutex_t _mutex_ft_status;
     pthread_mutex_t _mutex_pow_status;
     pthread_mutex_t _mutex_imu_status;
+    pthread_mutex_t _mutex_valve_status;
+    pthread_mutex_t _mutex_valve_reference;
+    pthread_mutex_t _mutex_pump_status;
+    pthread_mutex_t _mutex_pump_reference;
 };
 
 #endif // EC_IFACE_H

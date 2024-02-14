@@ -118,11 +118,11 @@ void EcZipc::th_loop( void * )
         return;
     }
     
-    // Receive motors, imu, ft, power board and others pdo information
+    // read motors, imu, ft, power board and others pdo information
     read_pdo();
     
-    // Send motors references
-    feed_motors();
+    // send motors and others pdo
+    send_pdo();
 }
 
 //******************************* Periodic Activity *****************************************************//

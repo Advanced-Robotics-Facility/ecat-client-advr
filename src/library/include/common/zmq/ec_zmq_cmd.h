@@ -30,9 +30,14 @@ public:
                     const RD_SDO &rd_sdo,
                     const WR_SDO &wr_sdo) final;
                     
-    void feed_motors();    
+    void send_pdo();
 
 private:
+    
+    void feed_motors(); 
+    void feed_valves();
+    void feed_pumps();
+    
     EcReplCmd::Ptr  _ec_repl_cmd;
     const int _max_cmd_attemps=3;
     SSI _slave_info;
