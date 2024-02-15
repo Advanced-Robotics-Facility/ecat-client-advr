@@ -5,6 +5,7 @@
 #include <pb_utils.h>
 #include "common/pipe/ec_pipe_pdo.h"
 #include "common/zmq/ec_zmq_pdo.h"
+#include <esc/esc.h>
 
 
 typedef struct MOTOR_PDO_t{
@@ -12,26 +13,7 @@ typedef struct MOTOR_PDO_t{
                                              "motor_vel", "torque", "motor_temp",
                                              "board_temp","fault","rtt","op_idx_ack","aux","cmd_aux_sts"};
     
-    std::tuple<float, float, float, float,   // pos_{link,motor}, vel_{link,motor}
-               float,// torque
-               float,float,                  // {motor,board}
-               uint32_t, uint32_t,           // fault, rtt, op_idx_ack                  
-               uint32_t, float, uint32_t> mt_t;  // aux // cmd_aux_sts
-               
-    
-    // tx_pdo values
-    float pos_ref, vel_ref, tor_ref,curr_ref, kp_ref, kd_ref;
-    float tau_p_ref, tau_d_ref, tau_fc_ref;
-    uint32_t aux_rd_idx_req, aux_wr_idx;
-    float aux_wr;
-
-    // rx_pdo values
-    float   motor_pos, motor_vel, link_pos, link_vel, torque;
-    float   motor_temperature, board_temperature;
-    uint32_t aux_rd_idx_ack, fault,rtt,cmd_aux_sts;
-    float aux_rd;
-    float read_pos_ref, read_vel_ref, read_torque_ref,read_curr_ref;
-    
+            
 }MOTOR_PDO;
 
 template <class T>
@@ -47,7 +29,19 @@ public:
 
     virtual void set_to_pb(void)=0;
     
-    MOTOR_PDO _motor_pdo;
+    iit::ecat::McEscPdoTypes::pdo_rx rx_pdo;
+    float read_pos_ref,read_vel_ref,read_torque_ref,read_curr_ref; // should be added in rx_pdo
+    float motor_temperature,board_temperature; // should be added in rx_pdo
+    uint32_t cmd_aux_sts; // should be added in rx_pdo
+
+    iit::ecat::McEscPdoTypes::pdo_tx tx_pdo;
+    float curr_ref; // should be added in tx_pdo
+    
+    std::tuple<float, float, float, float,   // pos_{link,motor}, vel_{link,motor}
+            float,// torque
+            float,float,                  // {motor,board}
+            uint32_t, uint32_t,           // fault, rtt, op_idx_ack                  
+            uint32_t, float, uint32_t> mt_t;  // aux // cmd_aux_sts
 
 };
 
@@ -55,7 +49,7 @@ template < class T >
 inline MotorPdo<T>::MotorPdo(std::string value,int id):
                            T(id,"Motor",value)
 {
-    _motor_pdo.pos_ref = _motor_pdo.vel_ref = _motor_pdo.tor_ref = 0.0;
+    tx_pdo.pos_ref = tx_pdo.vel_ref = tx_pdo.tor_ref = curr_ref= 0.0;
     
     T::init();
     T::write_connect();
@@ -65,7 +59,7 @@ template < class T >
 inline MotorPdo<T>::MotorPdo(std::string value,int32_t id, uint32_t type):
                            T(id, type, value)
 {
-    _motor_pdo.pos_ref = _motor_pdo.vel_ref = _motor_pdo.tor_ref = 0.0;
+    tx_pdo.pos_ref = tx_pdo.vel_ref = tx_pdo.tor_ref = curr_ref=0.0;
     
     T::init();
     T::write_connect();

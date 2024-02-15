@@ -5,6 +5,7 @@
 #include <vector>
 #include <tuple>
 #include <esc_info.h>
+#include <esc/hyq_hpu_esc.h>
 
 static std::map<uint32_t,std::string>ec_motors={{iit::ecat::CENT_AC,"Motor_HP"},
                                                 {iit::ecat::LO_PWR_DC_MC,"Motor_LP"},
@@ -19,7 +20,7 @@ using FtStatusMap = std::map<int, std::vector<float>>;
 using PwrStatusMap = std::map<int32_t, std::vector<float>>;
 using ImuStatusMap = std::map<int32_t, std::vector<float>>;
 using ValveStatusMap = std::map<int32_t, std::vector<float>>;
-using PumpStatusMap = std::map<int32_t, std::vector<float>>;
+using PumpStatusMap = std::map<int32_t, iit::ecat::HyQ_HpuEscPdoTypes::pdo_rx>;
 
 // MotorsRef
 using MR = std::tuple<int32_t, int32_t,                     // bId, ctrl_type

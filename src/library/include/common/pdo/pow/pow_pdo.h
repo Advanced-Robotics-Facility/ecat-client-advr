@@ -4,18 +4,7 @@
 #include <pb_utils.h>
 #include "common/pipe/ec_pipe_pdo.h"
 #include "common/zmq/ec_zmq_pdo.h"
-
-typedef struct POW_PDO_t{
-    
-    std::vector<std::string>pow_pb_name = {"v_batt", "v_load", "i_load","temp_batt", "temp_heatsink", "temp_pcb"};
-    std::vector<float> pow_v={0,0,0,0,0,0};
-    
-    // rx_pdo values
-    float v_batt, v_load, i_load;
-    float temp_batt, temp_heatsink, temp_pcb;
-    float fault, status;
-    
-}POW_PDO_t;
+#include <esc/power_f28m36_board.h>
 
 template <class T>
 class PowPdo: public T{
@@ -29,7 +18,8 @@ public:
 
     void set_to_pb();
     
-    POW_PDO_t _pow_pdo;
+    iit::ecat::PowF28M36EscPdoTypes::pdo_rx rx_pdo;
+    std::vector<float> pow_v={0,0,0,0,0,0};
 
 };
 
@@ -47,25 +37,26 @@ inline PowPdo<T>::~PowPdo()
     T::write_quit();
 };
 
-
 template < class T >
 inline void PowPdo<T>::get_from_pb() 
 {
-    _pow_pdo.v_batt              = T::pb_rx_pdos.mutable_powf28m36_rx_pdo()->v_batt();
-    _pow_pdo.pow_v[0]            = _pow_pdo.v_batt;
-    _pow_pdo.v_load              = T::pb_rx_pdos.mutable_powf28m36_rx_pdo()->v_load();
-    _pow_pdo.pow_v[1]            = _pow_pdo.v_load;
-    _pow_pdo.i_load              = T::pb_rx_pdos.mutable_powf28m36_rx_pdo()->i_load();
-    _pow_pdo.pow_v[2]            = _pow_pdo.i_load;
-    _pow_pdo.temp_batt           = T::pb_rx_pdos.mutable_powf28m36_rx_pdo()->temp_batt();
-    _pow_pdo.pow_v[3]            = _pow_pdo.temp_batt;
-    _pow_pdo.temp_heatsink       = T::pb_rx_pdos.mutable_powf28m36_rx_pdo()->temp_heatsink();
-    _pow_pdo.pow_v[4]            = _pow_pdo.temp_heatsink;
-    _pow_pdo.temp_pcb            = T::pb_rx_pdos.mutable_powf28m36_rx_pdo()->temp_pcb();
-    _pow_pdo.pow_v[5]            = _pow_pdo.temp_pcb;
+    rx_pdo.v_batt              = T::pb_rx_pdos.mutable_powf28m36_rx_pdo()->v_batt();
+    pow_v[0]                   = rx_pdo.v_batt;
+    rx_pdo.v_load              = T::pb_rx_pdos.mutable_powf28m36_rx_pdo()->v_load();
+    pow_v[1]                   = rx_pdo.v_load;
+    rx_pdo.i_load              = T::pb_rx_pdos.mutable_powf28m36_rx_pdo()->i_load();
+    pow_v[2]                   = rx_pdo.i_load;
+    rx_pdo.temp_batt           = T::pb_rx_pdos.mutable_powf28m36_rx_pdo()->temp_batt();
+    pow_v[3]                   = rx_pdo.temp_batt;
+    rx_pdo.temp_heatsink       = T::pb_rx_pdos.mutable_powf28m36_rx_pdo()->temp_heatsink();
+    pow_v[4]                   = rx_pdo.temp_heatsink;
+    rx_pdo.temp_pcb            = T::pb_rx_pdos.mutable_powf28m36_rx_pdo()->temp_pcb();
+    pow_v[5]                   = rx_pdo.temp_pcb;
             
-    _pow_pdo.status              = T::pb_rx_pdos.mutable_powf28m36_rx_pdo()->status();
-    _pow_pdo.fault               = T::pb_rx_pdos.mutable_powf28m36_rx_pdo()->fault();
+    rx_pdo.status.all          = T::pb_rx_pdos.mutable_powf28m36_rx_pdo()->status();
+    rx_pdo.fault               = T::pb_rx_pdos.mutable_powf28m36_rx_pdo()->fault();
+    rx_pdo.op_idx_ack          = T::pb_rx_pdos.mutable_powf28m36_rx_pdo()->op_idx_ack();
+    rx_pdo.aux                 = T::pb_rx_pdos.mutable_powf28m36_rx_pdo()->aux();
 }
 
 template < class T >

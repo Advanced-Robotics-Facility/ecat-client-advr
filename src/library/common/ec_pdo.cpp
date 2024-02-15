@@ -50,13 +50,13 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                         auto hhcm_pdo = std::make_shared<HhcmPdo<T>>(_ec_pdo_start, id, esc_type);
                         _hhcm_pdo_map[id]=hhcm_pdo;
                         _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(hhcm_pdo);
-                        _motor_status_map[id] = hhcm_pdo->_motor_pdo.mt_t;
+                        _motor_status_map[id] = hhcm_pdo->mt_t;
                         _motors_references.push_back(std::make_tuple(id, 0x00,0,0,0,0,0,0,0,0,0,0,0));
                 }break;
                 case iit::ecat::CIRCULO9:{
                     auto circulo9_pdo = std::make_shared<Circulo9Pdo<T>>(_ec_pdo_start, id, esc_type);
                     _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(circulo9_pdo);
-                    _motor_status_map[id] = circulo9_pdo->_motor_pdo.mt_t;
+                    _motor_status_map[id] = circulo9_pdo->mt_t;
                     _motors_references.push_back(std::make_tuple(id, 0x00,0,0,0,0,0,0,0,0,0,0,0));
                 }break;
                 case iit::ecat::AMC_FLEXPRO:{
@@ -67,17 +67,17 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                 case iit::ecat::FT6:{
                     auto ft_pdo = std::make_shared<FtPdo<T>>(_ec_pdo_start, id);
                     _ft_pdo_map[id]=ft_pdo;
-                    _ft_status_map[id]= ft_pdo->_ft_pdo.ft_v;
+                    _ft_status_map[id]= ft_pdo->ft_v;
                 }break;   
                 case iit::ecat::IMU_ANY :{
                     auto imu_pdo = std::make_shared<ImuPdo<T>>(_ec_pdo_start, id);
                     _imu_pdo_map[id]=imu_pdo;
-                    _imu_status_map[id]= imu_pdo->_imu_pdo.imu_v;
+                    _imu_status_map[id]= imu_pdo->imu_v;
                 }break;
                 case iit::ecat::POW_F28M36_BOARD :{
                         auto pow_pdo = std::make_shared<PowPdo<T>>(_ec_pdo_start, id);
                         _pow_pdo_map[id]=pow_pdo;
-                        _pow_status_map[id]= pow_pdo->_pow_pdo.pow_v;
+                        _pow_status_map[id]= pow_pdo->pow_v;
                 }break;
                 case iit::ecat::HYQ_KNEE:{
                         auto valve_pdo = std::make_shared<ValvePdo<T>>(_ec_pdo_start, id);
@@ -87,7 +87,7 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                 case iit::ecat::HYQ_HPU:{
                         auto pump_pdo = std::make_shared<PumpPdo<T>>(_ec_pdo_start, id);
                         _pump_pdo_map[id]=pump_pdo;
-                        _pump_status_map[id]= pump_pdo->_pump_pdo.pump_v;
+                        _pump_status_map[id]= pump_pdo->rx_pdo;
                 }break;
                 
                 default:
@@ -139,7 +139,7 @@ void EcPdo<T>::read_motor_pdo()
             } while ( nbytes > 0);
             //////////////////////////////////////////////////////////////
             
-            _motor_status_map[id] = motor_pdo->_motor_pdo.mt_t;
+            _motor_status_map[id] = motor_pdo->mt_t;
         }
         catch ( std::out_of_range ) {};   
     }
@@ -159,24 +159,24 @@ void EcPdo<T>::write_motor_pdo()
                 if (iit::advr::Gains_Type_IsValid(ctrl_type) ) {
                     auto motor_pdo = _moto_pdo_map[bId];
                     
-                    motor_pdo->_motor_pdo.pos_ref= pos;
-                    motor_pdo->_motor_pdo.vel_ref= vel;
-                    motor_pdo->_motor_pdo.tor_ref= tor;
+                    motor_pdo->tx_pdo.pos_ref= pos;
+                    motor_pdo->tx_pdo.vel_ref= vel;
+                    motor_pdo->tx_pdo.tor_ref= tor;
                     
-                    motor_pdo->_motor_pdo.kp_ref= g0;
-                    motor_pdo->_motor_pdo.kd_ref= g1;
-                    motor_pdo->_motor_pdo.tau_p_ref=g2;
-                    motor_pdo->_motor_pdo.tau_fc_ref=g3;
-                    motor_pdo->_motor_pdo.tau_d_ref=g4;
+                    motor_pdo->tx_pdo.gain_0= g0;
+                    motor_pdo->tx_pdo.gain_0= g1;
+                    motor_pdo->tx_pdo.gain_0= g2;
+                    motor_pdo->tx_pdo.gain_0= g3;
+                    motor_pdo->tx_pdo.gain_0= g4;
                     
                     if(_hhcm_pdo_map.count(bId)>0){
                         if ( (ctrl_type_cast == iit::advr::Gains_Type_POSITION ||
                               ctrl_type_cast == iit::advr::Gains_Type_VELOCITY)) {
-                            motor_pdo->_motor_pdo.kp_ref= g0;
-                            motor_pdo->_motor_pdo.kd_ref= g2;
-                            motor_pdo->_motor_pdo.tau_p_ref=0;
-                            motor_pdo->_motor_pdo.tau_fc_ref=0;
-                            motor_pdo->_motor_pdo.tau_d_ref=g1;
+                            motor_pdo->tx_pdo.gain_0= g0;
+                            motor_pdo->tx_pdo.gain_0= g2;
+                            motor_pdo->tx_pdo.gain_0= 0;
+                            motor_pdo->tx_pdo.gain_0= 0;
+                            motor_pdo->tx_pdo.gain_0= g1;
                         }
                     }
                 
@@ -185,11 +185,11 @@ void EcPdo<T>::write_motor_pdo()
                     switch (_op)
                     {
                         case iit::advr::AuxPDO_Op_SET:
-                            motor_pdo->_motor_pdo.aux_wr_idx=idx;
-                            motor_pdo->_motor_pdo.aux_wr=aux;
+                            motor_pdo->tx_pdo.op_idx_aux=idx;
+                            motor_pdo->tx_pdo.aux=aux;
                             break;
                         case iit::advr::AuxPDO_Op_GET:
-                            motor_pdo->_motor_pdo.aux_rd_idx_req=idx;
+                            motor_pdo->tx_pdo.op_idx_aux=idx;
                             break;
                         case iit::advr::AuxPDO_Op_NOP:
                             break;
@@ -228,7 +228,7 @@ void EcPdo<T>::read_ft_pdo()
                 nbytes = ft_pdo->read();
             } while ( nbytes > 0);
             //////////////////////////////////////////////////////////////
-            _ft_status_map[id]= ft_pdo->_ft_pdo.ft_v; 
+            _ft_status_map[id]= ft_pdo->ft_v; 
         }
         catch ( std::out_of_range ) {};   
     }
@@ -249,7 +249,7 @@ void EcPdo<T>::read_imu_pdo()
                 nbytes = imu_pdo->read();
             } while ( nbytes > 0);
             //////////////////////////////////////////////////////////////
-            _imu_status_map[id]= imu_pdo->_imu_pdo.imu_v;
+            _imu_status_map[id]= imu_pdo->imu_v;
         }
         catch ( std::out_of_range ) {};   
     }
@@ -271,7 +271,7 @@ void EcPdo<T>::read_pow_pdo()
                 nbytes = pow_pdo->read();
             } while ( nbytes > 0);
             //////////////////////////////////////////////////////////////
-            _pow_status_map[id]= pow_pdo->_pow_pdo.pow_v;
+            _pow_status_map[id]= pow_pdo->pow_v;
         }
         catch ( std::out_of_range ) {};   
     }
@@ -322,7 +322,7 @@ void EcPdo<T>::read_pump_pdo()
                 nbytes = pump_pdo->read();
             } while ( nbytes > 0);
             //////////////////////////////////////////////////////////////
-            _pump_status_map[id]= pump_pdo->_pump_pdo.pump_v;
+            _pump_status_map[id]= pump_pdo->rx_pdo;
         }
         catch ( std::out_of_range ) {};   
     }

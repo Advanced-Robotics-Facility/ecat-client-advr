@@ -4,24 +4,7 @@
 #include <pb_utils.h>
 #include "common/pipe/ec_pipe_pdo.h"
 #include "common/zmq/ec_zmq_pdo.h"
-
-
-typedef struct FT_PDO_t{
-    std::vector<std::string>ft_pb_name = {"force_x", "force_y", "force_z","torque_x", "torque_y", "torque_z"};
-    std::vector<float> ft_v={0,0,0,0,0,0};
-    
-    // rx_pdo values
-    
-    float force_x, force_y, force_z;
-    
-    float torque_x, torque_y, torque_z;
-    
-    
-    float aux;
-    
-    uint32_t op_idx_ack, fault;
-    
-}FT_PDO;
+#include <esc/ft6_esc.h>
 
 template <class T>
 class FtPdo: public T{
@@ -35,7 +18,8 @@ public:
 
     void set_to_pb();
     
-    FT_PDO _ft_pdo;
+    iit::ecat::Ft6EscPdoTypes::pdo_rx rx_pdo;
+    std::vector<float> ft_v={0,0,0,0,0,0};
 
 };
 
@@ -56,23 +40,22 @@ inline FtPdo<T>::~FtPdo()
 template < class T >
 inline void FtPdo<T>::get_from_pb() 
 {
-    _ft_pdo.force_x          = T::pb_rx_pdos.mutable_ft6_rx_pdo()->force_x();
-    _ft_pdo.ft_v[0]          = _ft_pdo.force_x;
-    _ft_pdo.force_y          = T::pb_rx_pdos.mutable_ft6_rx_pdo()->force_y();
-    _ft_pdo.ft_v[1]          = _ft_pdo.force_y;
-    _ft_pdo.force_z          = T::pb_rx_pdos.mutable_ft6_rx_pdo()->force_z();
-    _ft_pdo.ft_v[2]          = _ft_pdo.force_z;
+    rx_pdo.force_X          = T::pb_rx_pdos.mutable_ft6_rx_pdo()->force_x();
+    ft_v[0]                 = rx_pdo.force_X;
+    rx_pdo.force_Y          = T::pb_rx_pdos.mutable_ft6_rx_pdo()->force_y();
+    ft_v[1]                 = rx_pdo.force_Y;
+    rx_pdo.force_Z          = T::pb_rx_pdos.mutable_ft6_rx_pdo()->force_z();
+    ft_v[2]                 = rx_pdo.force_Z;
     
-    _ft_pdo.torque_x         = T::pb_rx_pdos.mutable_ft6_rx_pdo()->torque_x();
-    _ft_pdo.ft_v[3]          = _ft_pdo.torque_x;
-    _ft_pdo.torque_y         = T::pb_rx_pdos.mutable_ft6_rx_pdo()->torque_y();
-    _ft_pdo.ft_v[4]          = _ft_pdo.torque_y;
-    _ft_pdo.torque_z         = T::pb_rx_pdos.mutable_ft6_rx_pdo()->torque_z(); 
-    _ft_pdo.ft_v[5]          = _ft_pdo.torque_z;
+    rx_pdo.torque_X         = T::pb_rx_pdos.mutable_ft6_rx_pdo()->torque_x();
+    ft_v[3]                 = rx_pdo.torque_X;
+    rx_pdo.torque_Y         = T::pb_rx_pdos.mutable_ft6_rx_pdo()->torque_y();
+    ft_v[4]                 = rx_pdo.torque_Y;
+    rx_pdo.torque_Z         = T::pb_rx_pdos.mutable_ft6_rx_pdo()->torque_z(); 
+    ft_v[5]                 = rx_pdo.torque_Z;
     
-    _ft_pdo.aux              = T::pb_rx_pdos.mutable_ft6_rx_pdo()->aux();
-    _ft_pdo.op_idx_ack       = T::pb_rx_pdos.mutable_ft6_rx_pdo()->op_idx_ack();
-    _ft_pdo.fault            = T::pb_rx_pdos.mutable_ft6_rx_pdo()->fault();
+    rx_pdo.rtt              = T::pb_rx_pdos.mutable_ft6_rx_pdo()->rtt();
+    rx_pdo.fault            = T::pb_rx_pdos.mutable_ft6_rx_pdo()->fault();
 }
 
 template < class T >
