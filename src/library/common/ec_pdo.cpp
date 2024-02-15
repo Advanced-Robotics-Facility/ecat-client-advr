@@ -1,6 +1,5 @@
 #include "common/ec_pdo.h"
 
-
 template < class T >
 EcPdo<T>::EcPdo(std::string protocol, std::string host_address, uint32_t host_port):
 _protocol(protocol),

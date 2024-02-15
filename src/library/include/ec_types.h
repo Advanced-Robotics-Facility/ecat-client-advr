@@ -4,8 +4,15 @@
 #include <map>
 #include <vector>
 #include <tuple>
-#include <esc_info.h>
-#include <esc/hyq_hpu_esc.h>
+
+#include "common/pdo/motor/hhcm/hhcm_pdo.h"
+#include "common/pdo/motor/circulo9/circulo9_pdo.h"
+#include "common/pdo/motor/flexpro/flexpro_pdo.h"
+#include "common/pdo/imu/imu_pdo.h"
+#include "common/pdo/ft/ft_pdo.h"
+#include "common/pdo/pow/pow_pdo.h"
+#include "common/pdo/valve/valve_pdo.h"
+#include "common/pdo/pump/pump_pdo.h"
 
 static std::map<uint32_t,std::string>ec_motors={{iit::ecat::CENT_AC,"Motor_HP"},
                                                 {iit::ecat::LO_PWR_DC_MC,"Motor_LP"},

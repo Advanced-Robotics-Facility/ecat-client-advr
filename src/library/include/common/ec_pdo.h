@@ -2,16 +2,6 @@
 #define __EC_PDO__
 
 #include "ec_iface.h"
-#include "ec_types.h"
-
-#include "common/pdo/motor/hhcm/hhcm_pdo.h"
-#include "common/pdo/motor/circulo9/circulo9_pdo.h"
-#include "common/pdo/motor/flexpro/flexpro_pdo.h"
-#include "common/pdo/imu/imu_pdo.h"
-#include "common/pdo/ft/ft_pdo.h"
-#include "common/pdo/pow/pow_pdo.h"
-#include "common/pdo/valve/valve_pdo.h"
-#include "common/pdo/pump/pump_pdo.h"
 
 template <class T>
 class EcPdo: public virtual EcIface
