@@ -31,7 +31,7 @@ public:
     * @brief Destructor of EC_Client_PDO Class.
     * 
     */
-    ~EcZmqPdo(){
+    virtual ~EcZmqPdo(){
         
     };
     
