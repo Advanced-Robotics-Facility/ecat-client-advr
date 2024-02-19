@@ -1,0 +1,38 @@
+network:
+  #protocol: zipc
+  #hostname: /tmp/ecat_master
+  
+  protocol: tcp #tcp #iddp #udp
+  hostname: localhost #10.240.23.30 #localhost #192.168.99.10 #192.168.9.99 #10.240.22.49
+  port: 5000 #54321(UDP)
+  timeout: 1000
+
+period_ms: 1
+logging: true
+
+control:
+  motor_config_path: ${PWD}/motor_config/mirror/mirror_impd4.yaml 
+  id_map_path: &id_map_path '${PWD}/id_map/mirror/mirror_id_map.yaml' 
+
+  homing_position: {21: -0.75, 22: -1.0, 23: -1.0, 24: -0.75, 25: 1.0, 26: -0.75,
+                    11: -0.75, 12: -1.0, 13: -1.0, 14: -0.75, 15: 1.0, 16: -0.75,
+                    31: -0.75, 32: -1.0, 33: -1.0, 34: -0.75, 35: 1.0, 36: -0.75}
+  homing_time_sec: 3
+  trajectory: {21: 0.0, 22: -1.9, 23: -2.3, 24: 0.0, 25: -0.4, 26: 0.0,
+               11: 0.0, 12: -1.9, 13: -2.3, 14: 0.0, 15: -0.4, 16: 0.0,
+               31: 0.0, 32: -1.9, 33: -2.3, 34: 0.0, 35: -0.4, 36: 0.0}
+  trajectory_time_sec: 3
+  repeat_trj: 1
+
+  imu_id: [102,103]
+  ft_id: [110,111]
+  pow_id: [201]
+  
+XBotInterface:
+  urdf_path: ${PWD}/urdf/mirror/mirror.urdf
+  srdf_path: ${PWD}/srdf/mirror/mirror.srdf
+  joint_map_path: *id_map_path
+ModelInterface:
+  model_type: "RBDL"
+  is_model_floating_base: "true"
+

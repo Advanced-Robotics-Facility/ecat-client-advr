@@ -1,10 +1,14 @@
 project(ec_frequency_test)
 
 # compile frequency test
-add_executable(ec_frequency_test
+add_executable(${PROJECT_NAME}
                src/ec_frequency_test.cpp)
+               
+if ( Xenomai_FOUND )
+    xenomai_target_bootstrap(${PROJECT_NAME} SKINS posix)
+endif()
  
-target_link_libraries(ec_frequency_test
+target_link_libraries(${PROJECT_NAME}
     PUBLIC
     ${YAML_CPP_LIBRARIES}
     ${Boost_SYSTEM_LIBRARY}
@@ -12,7 +16,7 @@ target_link_libraries(ec_frequency_test
     ec_library
     ecat_master::tools_utils
     )
-
-install(TARGETS ec_frequency_test
+    
+install(TARGETS ${PROJECT_NAME}
         DESTINATION bin
         COMPONENT applications)

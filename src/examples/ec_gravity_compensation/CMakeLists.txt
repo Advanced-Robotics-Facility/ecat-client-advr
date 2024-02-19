@@ -3,10 +3,14 @@ project(ec_gravity_compensation)
 find_package(XBotInterface REQUIRED)
 
 # compile gravity_compensation
-add_executable(ec_gravity_compensation
+add_executable(${PROJECT_NAME}
                src/ec_gravity_compensation.cpp)
                
-target_link_libraries(ec_gravity_compensation
+if ( Xenomai_FOUND )
+    xenomai_target_bootstrap(${PROJECT_NAME} SKINS posix)
+endif()
+               
+target_link_libraries(${PROJECT_NAME}
     PRIVATE 
     ${XBotInterface_LIBRARIES}
     PUBLIC
@@ -15,6 +19,6 @@ target_link_libraries(ec_gravity_compensation
     )
     
 
-install(TARGETS ec_gravity_compensation
+install(TARGETS ${PROJECT_NAME}
         DESTINATION bin
         COMPONENT applications)
