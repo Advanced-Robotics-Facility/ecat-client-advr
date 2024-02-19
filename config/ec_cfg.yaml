@@ -2,7 +2,7 @@ network:
   #protocol: zipc
   #hostname: /tmp/ecat_master
   
-  protocol: tcp #tcp #iddp #udp
+  protocol: iddp #tcp #iddp #udp
   hostname: localhost #10.240.23.30 #localhost #192.168.99.10 #192.168.9.99 #10.240.22.49
   port: 5000 #54321(UDP)
   timeout: 1000
@@ -11,12 +11,12 @@ period_ms: 1
 logging: true
 
 control:
-  motor_config_path: ${PWD}/motor_config/mirror/mirror_impd4.yaml 
-  id_map_path: &id_map_path '${PWD}/id_map/mirror/mirror_id_map.yaml' 
+  motor_config_path: ${PWD}/motor_config/hqr3/hqr3_pos3.yaml 
+  id_map_path: &id_map_path '${PWD}/id_map/hqr3/hqr3_id_map.yaml' 
 
-  homing_position: {21: -0.75, 22: -1.0, 23: -1.0, 24: -0.75, 25: 1.0}
+  homing_position: {1: -0.75, 2: -1.0, 3: -1.0, 4: -0.75, 5: 1.0}
   homing_time_sec: 3
-  trajectory: {21: 0.0, 22: -1.9, 23: -2.3, 24: 0.0, 25: -0.4}
+  trajectory: {1: 0.0, 2: -1.9, 3: -2.3, 4: 0.0, 5: -0.4}
   trajectory_time_sec: 3
   repeat_trj: 1
 
