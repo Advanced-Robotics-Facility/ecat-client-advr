@@ -1,0 +1,31 @@
+#############################
+# ARM 1 
+#############################
+arm_1_joint_1:
+  brake_present: false
+  control_mode: idle
+  gains: [0.0,0.0,0.0,0.0,0.0]
+
+
+arm_1_joint_2:
+  brake_present: false
+  control_mode: idle
+  gains: [0.0,0.0,0.0,0.0,0.0]
+
+    
+arm_1_joint_3:
+  brake_present: false
+  control_mode: idle
+  gains: [0.0,0.0,0.0,0.0,0.0]
+  
+
+arm_1_joint_4:
+  brake_present: false
+  control_mode: idle
+  gains: [0.0,0.0,0.0,0.0,0.0]
+
+
+#arm_1_joint_5:
+  #brake_present: false
+  #control_mode: idle
+  #gains: [0.0,0.0,0.0,0.0,0.0]
