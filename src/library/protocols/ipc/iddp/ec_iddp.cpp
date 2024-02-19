@@ -6,7 +6,7 @@
 
 EcIDDP::EcIDDP(std::string host_address,uint32_t host_port):
   EcZmqCmd("tcp",host_address,host_port),
-  EcPdo<EcPipePdo>("None")
+  EcPdo<EcPipePdo>("NoNe")
 {        
     
 }
