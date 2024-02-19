@@ -11,7 +11,7 @@ period_ms: 1
 logging: true
 
 control:
-  motor_config_path: ${PWD}/motor_config/hqr3/hqr3_pos3.yaml 
+  motor_config_path: ${PWD}/motor_config/hqr3/hqr3_pos3b.yaml 
   id_map_path: &id_map_path '${PWD}/id_map/hqr3/hqr3_id_map.yaml' 
 
   homing_position: {1: -0.75, 2: -1.0, 3: -1.0, 4: -0.75, 5: 1.0}
