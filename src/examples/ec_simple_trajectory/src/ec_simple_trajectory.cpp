@@ -43,6 +43,7 @@ int main(int argc, char * const argv[])
     try{
         ec_common_step.autodetection(motor_id_vector);
         //motor_ctrl=ec_common_step.start_ec_motors();
+        motor_ctrl=true;
     }catch(std::exception &ex){
         DPRINTF("%s\n",ex.what());
         return 1;
@@ -54,8 +55,8 @@ int main(int argc, char * const argv[])
     {
         motor_ctrl=true;
     }
-#endif
-            
+#endif 
+
     if(motor_ctrl)
     {                                               
         struct timespec ts= { 0, ec_cfg.period_ms*1000000}; //sample time
@@ -197,6 +198,7 @@ int main(int argc, char * const argv[])
                             {
                                 q_start[esc_id]=motor_pos; // get actual motor position at first time
                             }
+                            DPRINTF("ID: [%d], MOTOR_POS: [%f], LINK_POS: [%f]\n",esc_id,motor_pos,link_pos);
                         }
                 } catch (std::out_of_range oor) {}
             }
