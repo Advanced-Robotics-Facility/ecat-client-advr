@@ -61,6 +61,7 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                 case iit::ecat::AMC_FLEXPRO:{
                     auto flex_pdo = std::make_shared<FlexproPdo<T>>(_ec_pdo_start, id, esc_type);
                     _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(flex_pdo);
+                    _motor_status_map[id] = flex_pdo->mt_t;
                     _motors_references.push_back(std::make_tuple(id, 0x00,0,0,0,0,0,0,0,0,0,0,0));
                 }break;
                 case iit::ecat::FT6:{
