@@ -40,8 +40,8 @@ public:
     std::tuple<float, float, float, float,   // pos_{link,motor}, vel_{link,motor}
             float,// torque
             float,float,                  // {motor,board}
-            uint32_t, uint32_t,           // fault, rtt, op_idx_ack                  
-            uint32_t, float, uint32_t> mt_t;  // aux // cmd_aux_sts
+            uint32_t, uint32_t,           // fault, rtt, op_idx_ack   // aux // cmd_aux_sts               
+            uint32_t, float, uint32_t> mt_t={0,0,0,0,0,0,0,0,0,0,0,0};  
 
 };
 
