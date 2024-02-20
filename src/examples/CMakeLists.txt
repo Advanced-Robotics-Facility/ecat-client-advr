@@ -11,4 +11,4 @@ IF(COMPILE_GRAVITY_COMPENSATION)
 add_subdirectory(ec_gravity_compensation)
 ENDIF(COMPILE_GRAVITY_COMPENSATION)
 add_subdirectory(ec_frequency_test)
-
+add_subdirectory(ec_dummy)

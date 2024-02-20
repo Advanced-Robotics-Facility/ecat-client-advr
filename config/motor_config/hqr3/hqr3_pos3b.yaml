@@ -25,7 +25,7 @@ arm_1_joint_4:
   gains: [0.0,0.0,0.0,0.0,0.0]
 
 
-#arm_1_joint_5:
-  #brake_present: false
-  #control_mode: 0x3B
-  #gains: [0.0,0.0,0.0,0.0,0.0]
+arm_1_joint_5:
+  brake_present: false
+  control_mode: 0x3B
+  gains: [0.0,0.0,0.0,0.0,0.0]
