@@ -73,6 +73,9 @@ void EcIDDP::start_client(uint32_t period_ms,bool logging)
     else{
 #ifdef TEST_LIBRARY 
         create_thread=true;
+        for(int i=1;i<6;i++){
+            slave_info.push_back(std::make_tuple(i,iit::ecat::CENT_AC,i));
+        }
 #endif        
     }
     

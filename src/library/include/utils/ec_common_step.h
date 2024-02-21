@@ -9,6 +9,7 @@ class EcCommonStep
 public:
     
     // Common EtherCAT steps
+    EcUtils::EC_CONFIG retrieve_ec_cfg();
     void create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg);
     void autodetection(void);
     void autodetection(std::vector<int> motor_id_vector);

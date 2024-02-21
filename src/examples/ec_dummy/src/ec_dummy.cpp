@@ -10,17 +10,12 @@
 #include <cmath>
 #include <random>
 
+#include "utils/ec_common_step.h"
 #include <cxxopts.hpp>
 #include <test_common.h>
 
-#include "rt_motor.h"
+#include "rt_esc_pipe.h"
 
-/*
- * Use protobuf msg iit::advr::Repl_cmd
- * - set type ad iit::advr::CmdType::CTRL_CMD
- * - set header
- * 
- */
 #define SIG_TEST 
 
 
@@ -46,24 +41,14 @@ static void test_sighandler(int signum) {
 
 int main ( int argc, char * argv[] ) try {
 
-    cxxopts::Options options(argv[0], " - wizardry setup");
-    int motor_numb;
-    int rt_th_period_us;
+    EcUtils::EC_CONFIG ec_cfg;
+    EcCommonStep ec_common_step;
     
-    try
-    {
-        options.add_options()
-        ("m, motor_numb", "motor_numb", cxxopts::value<int>()->default_value("5"))
-        ("p, rt_th_period_us", "rt_th_period_us", cxxopts::value<int>()->default_value("1000"));
-        auto result = options.parse(argc, argv);
-
-        motor_numb = result["motor_numb"].as<int>();
-        rt_th_period_us = result["rt_th_period_us"].as<int>();
-    }
-    catch (const cxxopts::OptionException& e)
-    {
-        std::cout << "error parsing options: " << e.what() << std::endl;
-        exit(1);
+    try{
+        ec_cfg=ec_common_step.retrieve_ec_cfg();
+    }catch(std::exception &ex){
+        DPRINTF("%s\n",ex.what());
+        return 1;
     }
 
 #ifdef SIG_TEST
@@ -79,14 +64,36 @@ int main ( int argc, char * argv[] ) try {
     main_common (&argc, (char*const**)&argv, test_sighandler);
 #endif
     
-    std::map<int,int> motor_map;
-    for(int i=1;i<motor_numb+1;i++){
-        motor_map[i]=iit::ecat::CENT_AC;
+    uint32_t rt_th_period_us=ec_cfg.period_ms*1000;
+    
+    std::map<int,int> esc_map;
+    // MOTOR
+    for(int i=0;i<ec_cfg.motor_id.size();i++){
+        int motor_id=ec_cfg.motor_id[i];
+        esc_map[motor_id]=iit::ecat::CENT_AC;
     }
     
-    threads["RtMotor"] = new RtMotor("NoNe", motor_map,rt_th_period_us);
+    // IMU
+    for(int i=0;i<ec_cfg.imu_id.size();i++){
+        int imu_id=ec_cfg.imu_id[i];
+        esc_map[imu_id]=iit::ecat::IMU_ANY;
+    }
+    
+    // FT
+    for(int i=0;i<ec_cfg.ft_id.size();i++){
+        int ft_id=ec_cfg.ft_id[i];
+        esc_map[ft_id]=iit::ecat::FT6_MSP432;
+    }
+    
+    // POW
+    for(int i=0;i<ec_cfg.pow_id.size();i++){
+        int pow_id=ec_cfg.pow_id[i];
+        esc_map[pow_id]=iit::ecat::POW_F28M36_BOARD;
+    }
+    
+    threads["RtEscPipe"] = new RtEscPipe("NoNe", esc_map,rt_th_period_us);
 
-    threads["RtMotor"]->create();
+    threads["RtEscPipe"]->create(true);
 
 #ifdef SIG_TEST
     #ifdef __COBALT__
@@ -101,7 +108,7 @@ int main ( int argc, char * argv[] ) try {
     }
 #endif
 
-    threads["RtMotor"]->stop();
+    threads["RtEscPipe"]->stop();
     
     for ( auto const &t : threads) {
         //t.second->stop();

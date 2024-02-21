@@ -2,18 +2,23 @@
 
 
 using namespace std::chrono;
-void EcCommonStep::create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg)
+
+EcUtils::EC_CONFIG EcCommonStep::retrieve_ec_cfg()
 {
     try{
         _ec_utils=std::make_shared<EcUtils>();
         _ec_cfg = _ec_utils->get_ec_cfg();
-        ec_cfg=_ec_cfg;
     }catch(std::exception &ex){
         DPRINTF("Error on ec client config file \n");
         throw std::runtime_error("ex.what()");
     }
-    
+    return _ec_cfg;
+}
+
+void EcCommonStep::create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg)
+{
     try{
+        ec_cfg=retrieve_ec_cfg();
         _client=_ec_utils->make_ec_iface();
         client=_client;
     }catch(std::exception &ex){
