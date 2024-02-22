@@ -291,7 +291,7 @@ void EcZmqCmd::feed_motors()
     else{
             
         pthread_mutex_lock(&_mutex_motor_reference);
-        if(_motor_ref_flags!=MotorRefFlags::FLAG_NONE){
+        if(_motor_ref_flags!=RefFlags::FLAG_NONE){
             if(!_motors_references.empty()){
                 auto start_cmd= std::chrono::steady_clock::now();
                 auto fault=_ec_repl_cmd->Motors_PDO_cmd(_motors_references);

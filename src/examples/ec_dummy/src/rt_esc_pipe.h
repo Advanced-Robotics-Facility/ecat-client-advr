@@ -9,7 +9,11 @@
 #include <protobuf/repl_cmd.pb.h>
 #include <protobuf/ecat_pdo.pb.h>
 #include <esc_info.h>
+
 #include "pb/motor/motor_pb.h"
+#include "pb/pow/pow_pb.h"
+#include "pb/imu/imu_pb.h"
+#include "pb/ft/ft_pb.h"
 
 #define POOL_SIZE   4096
 #define MAX_WRK     64
@@ -61,7 +65,7 @@ public:
             {
                 case iit::ecat::CENT_AC :
                 case iit::ecat::LO_PWR_DC_MC:{
-                    auto motor_pb= std::make_shared<MotorPb>(); ;
+                    auto motor_pb= std::make_shared<MotorPb>();
                     esc_pb[id]=std::static_pointer_cast<EscPb>(motor_pb);
                 }break;
                 case iit::ecat::CIRCULO9:{
@@ -70,14 +74,17 @@ public:
                 case iit::ecat::AMC_FLEXPRO:{
 
                 }break;
-                case iit::ecat::FT6_MSP432:{
-
+                case iit::ecat::FT6:{
+                    auto ft_pb= std::make_shared<FtPb>();
+                    esc_pb[id]=std::static_pointer_cast<EscPb>(ft_pb);
                 }break;   
                 case iit::ecat::IMU_ANY :{
-
+                    auto imu_pb= std::make_shared<ImuPb>();
+                    esc_pb[id]=std::static_pointer_cast<EscPb>(imu_pb);
                 }break;
                 case iit::ecat::POW_F28M36_BOARD :{
-
+                    auto pow_pb= std::make_shared<PowPb>();
+                    esc_pb[id]=std::static_pointer_cast<EscPb>(pow_pb);
                 }break;
                 case iit::ecat::HYQ_KNEE:{
 

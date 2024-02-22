@@ -151,7 +151,7 @@ template < class T >
 void EcPdo<T>::write_motor_pdo()
 {
     pthread_mutex_lock(&_mutex_motor_reference);
-    if(_motor_ref_flags!=MotorRefFlags::FLAG_NONE){
+    if(_motor_ref_flags!=RefFlags::FLAG_NONE){
         for ( const auto &[bId,ctrl_type,pos,vel,tor,g0,g1,g2,g3,g4,op,idx,aux] : _motors_references ) {
             if(_moto_pdo_map.count(bId) > 0 && ctrl_type!=0x00){
                 
@@ -204,7 +204,7 @@ void EcPdo<T>::write_motor_pdo()
             }
             else{
 #ifndef TEST_LIBRARY 
-                DPRINTF("Cannot send reference to id 0x%04X \n", bId);
+                DPRINTF("Cannot send motor reference to id 0x%04X \n", bId);
 #endif                   
             }
         }
@@ -304,6 +304,20 @@ template < class T >
 void EcPdo<T>::write_valve_pdo()
 {
     pthread_mutex_lock(&_mutex_valve_reference);
+    if(_valve_ref_flags!=RefFlags::FLAG_NONE){
+        for ( const auto &[bId,curr_ref] : _valves_references ) {
+            if(_valve_pdo_map.count(bId) > 0 ){
+                auto valve_pdo=_valve_pdo_map[bId];
+                valve_pdo->_valve_pdo.current_ref=curr_ref;
+                valve_pdo->write();
+            }
+            else{
+#ifndef TEST_LIBRARY 
+                DPRINTF("Cannot send valve reference to id 0x%04X \n", bId);
+#endif                   
+            }
+        }
+    }
     
     pthread_mutex_unlock(&_mutex_valve_reference);
 }

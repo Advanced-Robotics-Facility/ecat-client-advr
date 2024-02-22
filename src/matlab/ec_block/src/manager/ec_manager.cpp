@@ -371,7 +371,7 @@ bool EcManager::output(const blockfactory::core::BlockInformation* blockInfo)
         // unit delay during sensing and moving operation
         if(!_avoid_first_move)
         {
-            if(!EcBlockUtils::ec_move(MotorRefFlags::FLAG_MULTI_REF,_motors_ref))
+            if(!EcBlockUtils::ec_move(RefFlags::FLAG_MULTI_REF,_motors_ref))
             {
                 bfError << "EtherCAT Client not alive! ";
                 return false;

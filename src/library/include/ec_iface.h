@@ -34,14 +34,15 @@ public:
     bool pdo_aux_cmd_sts(const PAC & pac);
     
     // EtherCAT Client ADVR Facilty setters
-    void set_motors_references(const MotorRefFlags, const std::vector<MR>);
-    void set_valve_references();
+    void set_motors_references(const RefFlags, const std::vector<MR>);
+    void set_valves_references(const RefFlags valve_ref_flags,const std::vector<VR> valves_references);
     void set_pump_references();
     
     // EtherCAT Client ADVR Facilty manager
     virtual void start_client(uint32_t period_ms,bool logging) = 0;
     virtual void stop_client(void) = 0;
     virtual void set_loop_time(uint32_t period_ms) = 0;
+    void test_client(SSI slave_info);
     
     // EtherCAT Client ADVR Facilty commands
     virtual bool start_motors(const MST &) = 0;
@@ -64,6 +65,7 @@ protected:
     bool _client_alive;
     bool _logging;
 
+    SSI _fake_slave_info;
     // last received motor data
     MotorStatusMap _motor_status_map;
     // last received ft data
@@ -77,8 +79,11 @@ protected:
     // last received pump data
     PumpStatusMap _pump_status_map;
     
-    MotorRefFlags _motor_ref_flags;
+    RefFlags _motor_ref_flags;
     std::vector<MR> _motors_references;
+    
+    RefFlags _valve_ref_flags;
+    std::vector<VR> _valves_references;
     
     pthread_mutex_t _mutex_motor_status;
     pthread_mutex_t _mutex_motor_reference;

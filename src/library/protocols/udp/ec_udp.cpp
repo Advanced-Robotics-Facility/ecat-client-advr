@@ -513,7 +513,7 @@ bool EcUDP::start_motors(const MST &motors_start)
                 pthread_mutex_lock(&_mutex_motor_reference);
 
                 // clear motors references
-                _motor_ref_flags=MotorRefFlags::FLAG_NONE;
+                _motor_ref_flags=RefFlags::FLAG_NONE;
                 _motors_references.clear();
 
                  pthread_mutex_unlock(&_mutex_motor_reference);
@@ -570,7 +570,7 @@ bool EcUDP::stop_motors()
                 _client_status=ClientStatus::MOTORS_STOPPED;
 
                 // clear motors references
-                _motor_ref_flags=MotorRefFlags::FLAG_NONE;
+                _motor_ref_flags=RefFlags::FLAG_NONE;
                 _motors_references.clear();
 
                  pthread_mutex_unlock(&_mutex_motor_reference);
@@ -719,7 +719,7 @@ void EcUDP::periodicActivity()
         {
              // Stop to receive motors, imu, ft, power board pdo information // 
             // reset motors references
-            _motor_ref_flags = MotorRefFlags::FLAG_NONE;
+            _motor_ref_flags = RefFlags::FLAG_NONE;
             _motors_references.clear();
             
             // stop client
@@ -736,10 +736,10 @@ void EcUDP::periodicActivity()
         // Send motors references
         pthread_mutex_lock(&_mutex_motor_reference);
 
-        if(_motor_ref_flags!=MotorRefFlags::FLAG_NONE &&
+        if(_motor_ref_flags!=RefFlags::FLAG_NONE &&
            !_motors_references.empty())
         {
-            if(_motor_ref_flags==MotorRefFlags::FLAG_MULTI_REF )
+            if(_motor_ref_flags==RefFlags::FLAG_MULTI_REF )
             {
                 feed_motors(std::make_tuple(1, _motors_references));
             }

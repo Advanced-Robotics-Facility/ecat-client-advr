@@ -63,9 +63,12 @@ void EcTCP::start_client(uint32_t period_ms,bool logging)
         create_thread=true;
     }
     else{
-#ifdef TEST_LIBRARY 
-        create_thread=true;
-#endif        
+//#ifdef TEST_LIBRARY 
+        if(!_fake_slave_info.empty()){
+            create_thread=true;
+            slave_info=_fake_slave_info;
+        }    
+//#endif     
     }
     
     if(create_thread){

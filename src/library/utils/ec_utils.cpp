@@ -52,6 +52,11 @@ EcUtils::EcUtils()
     else
         _ec_cfg.logging=ec_cfg_node["logging"].as<bool>();
     
+    if(!ec_cfg_node["auto-start"])
+        _ec_cfg.auto_start=true;
+    else
+        _ec_cfg.auto_start=ec_cfg_node["auto-start"].as<bool>();
+    
     
     //****** Trajectory **************//
     if(ec_cfg_node["control"])
@@ -193,9 +198,46 @@ EcUtils::EcUtils()
             _ec_cfg.pow_id.clear();
         else
             _ec_cfg.pow_id=ec_cfg_node["control"]["pow_id"].as<std::vector<int>>();
+        
+        generate_fake_slave_info();
     }
 
 };
+
+void EcUtils::generate_fake_slave_info()
+{
+    int slave_pos=0;
+    // MOTOR
+    for(int i=0;i<_ec_cfg.motor_id.size();i++){
+        int motor_id=_ec_cfg.motor_id[i];
+        _ec_cfg.fake_slave_info.push_back(std::make_tuple(motor_id,iit::ecat::CENT_AC,slave_pos));
+        slave_pos++;
+    }
+    
+    // IMU
+    slave_pos++;
+    for(int i=0;i<_ec_cfg.imu_id.size();i++){
+        int imu_id=_ec_cfg.imu_id[i];
+        _ec_cfg.fake_slave_info.push_back(std::make_tuple(imu_id,iit::ecat::IMU_ANY,slave_pos));
+        slave_pos++;
+    }
+    
+    // FT
+    slave_pos++;
+    for(int i=0;i<_ec_cfg.ft_id.size();i++){
+        int ft_id=_ec_cfg.ft_id[i];
+        _ec_cfg.fake_slave_info.push_back(std::make_tuple(ft_id,iit::ecat::FT6,slave_pos));
+        slave_pos++;
+    }
+    
+    // POW
+    slave_pos++;
+    for(int i=0;i<_ec_cfg.pow_id.size();i++){
+        int pow_id=_ec_cfg.pow_id[i];
+        _ec_cfg.fake_slave_info.push_back(std::make_tuple(pow_id,iit::ecat::POW_F28M36_BOARD,slave_pos));
+        slave_pos++;
+    }
+}
 
 void EcUtils::compute_absolute_path(std::string &file_path)
 {
@@ -322,7 +364,12 @@ EcIface::Ptr EcUtils::make_ec_iface()
     
     if(ec_iface_ptr != nullptr)
     {
-        ec_iface_ptr->start_client(_ec_cfg.period_ms,_ec_cfg.logging); // auto-start 
+        if(_ec_cfg.auto_start){
+#ifdef TEST_LIBRARY 
+            ec_iface_ptr->test_client(_ec_cfg.fake_slave_info);
+#endif 
+            ec_iface_ptr->start_client(_ec_cfg.period_ms,_ec_cfg.logging); // auto-start
+        }
     }
     
     return ec_iface_ptr;    

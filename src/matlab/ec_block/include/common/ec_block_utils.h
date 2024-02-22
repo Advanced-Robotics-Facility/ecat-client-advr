@@ -29,7 +29,7 @@ public:
                          PwrStatusMap &pow_status_map,
                          std::vector<MR> &motors_ref);
     
-    static bool ec_move(MotorRefFlags flag,std::vector<MR> motors_ref);
+    static bool ec_move(RefFlags flag,std::vector<MR> motors_ref);
     
     
     static void check_param_selected(std::string param_selection,std::vector<std::string> &param_selected);

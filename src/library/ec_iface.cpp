@@ -5,8 +5,11 @@ EcIface::EcIface()
     _ec_logger = std::make_shared<EcLogger>();
     _logging=false;
     
-    _motor_ref_flags=MotorRefFlags::FLAG_NONE;
+    _motor_ref_flags=RefFlags::FLAG_NONE;
     _motors_references.clear();
+    
+    _valve_ref_flags=RefFlags::FLAG_NONE;
+    _valves_references.clear();
     
     pthread_mutex_init(&_mutex_motor_status, NULL);
     pthread_mutex_init(&_mutex_motor_reference, NULL);
@@ -68,6 +71,11 @@ void EcIface::stop_logging()
     _ec_logger->stop_mat_logger();
 }
 
+void EcIface::test_client(SSI slave_info)
+{
+    _fake_slave_info=slave_info;
+}
+
 void EcIface::get_motors_status(MotorStatusMap &motor_status_map)
 {
     pthread_mutex_lock(&_mutex_motor_status);
@@ -75,7 +83,7 @@ void EcIface::get_motors_status(MotorStatusMap &motor_status_map)
     pthread_mutex_unlock(&_mutex_motor_status);
 }
 
-void EcIface::set_motors_references(const MotorRefFlags motor_ref_flags,const std::vector<MR> motors_references)
+void EcIface::set_motors_references(const RefFlags motor_ref_flags,const std::vector<MR> motors_references)
 {
     pthread_mutex_lock(&_mutex_motor_reference);
 
@@ -115,11 +123,11 @@ void EcIface::get_valve_status(ValveStatusMap &valve_status_map)
     pthread_mutex_unlock(&_mutex_valve_status);
 }
 
-void EcIface::set_valve_references()
+void EcIface::set_valves_references(const RefFlags valve_ref_flags,const std::vector<VR> valves_references)
 {
     pthread_mutex_lock(&_mutex_valve_reference);
-
-    
+    _valve_ref_flags=valve_ref_flags;
+    _valves_references=valves_references;
     pthread_mutex_unlock(&_mutex_valve_reference);
 }
 

@@ -221,7 +221,7 @@ int main(int argc, char * const argv[])
             // Tx "MOVE"  @NOTE: motors_ref done when the state machine switch between homing and trajectory after motor_ref will remain equal to old references 
             if(!motors_ref.empty())
             {
-                client->set_motors_references(MotorRefFlags::FLAG_MULTI_REF, motors_ref);
+                client->set_motors_references(RefFlags::FLAG_MULTI_REF, motors_ref);
             }
             else
             {

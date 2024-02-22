@@ -83,6 +83,12 @@ int main(int argc, char * const argv[])
         PwrStatusMap pow_status_map;
         float v_batt,v_load,i_load,temp_pcb,temp_heatsink,temp_batt;
         
+        // IMU
+        ImuStatusMap imu_status_map;
+        float x_rate,y_rate,z_rate;
+        float x_acc,y_acc,z_acc;
+        float x_quat,y_quat,z_quat,w_quat;
+        
         // Motor
         float  link_pos,motor_pos,link_vel,motor_vel,torque,aux;
         float  motor_temp, board_temp;
@@ -96,6 +102,7 @@ int main(int argc, char * const argv[])
         
         // memory allocation
         client->get_pow_status(pow_status_map);
+        client->get_imu_status(imu_status_map);
         client->get_motors_status(motors_status_map);
         
         for ( const auto &[esc_id, motor_status] : motors_status_map){
@@ -175,6 +182,25 @@ int main(int argc, char * const argv[])
                 DPRINTF("POW ID: [%d], VBATT: [%f], VLOAD: [%f], ILOAD: [%f]\n",esc_id,v_batt,v_load,i_load);
             }
             //******************* Power Board Telemetry ********
+            
+            //******************* IMU Telemetry ********
+            client->get_imu_status(imu_status_map);
+            for ( const auto &[esc_id, imu_status] : imu_status_map){
+                x_rate= imu_status[0];
+                y_rate= imu_status[1];
+                z_rate= imu_status[2];
+                x_acc=  imu_status[3];
+                y_acc=  imu_status[4];
+                z_acc=  imu_status[5];
+                x_quat= imu_status[6];
+                y_quat= imu_status[7];
+                z_quat= imu_status[8];
+                w_quat= imu_status[9];
+                DPRINTF("IMU ID: [%d], X_RATE: [%f], Y_RATE: [%f], Z_RATE: [%f]\n",esc_id,x_rate,y_rate,z_rate);
+                DPRINTF("IMU ID: [%d], X_ACC: [%f], Y_ACC: [%f], Z_ACC: [%f]\n",esc_id,x_acc,y_acc,z_acc);
+                DPRINTF("IMU ID: [%d], X_QUAT: [%f], Y_QUAT: [%f], Z_QUAT: [%f], W_QUAT: [%f]\n",esc_id,x_quat,y_quat,z_quat,w_quat);
+            }
+            //******************* IMU Telemetry ********
             
             //******************* Motor Telemetry **************
             client->get_motors_status(motors_status_map);

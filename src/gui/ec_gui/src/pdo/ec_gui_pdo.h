@@ -114,7 +114,7 @@ private:
         double filtering(SecondOrderFilter<double>::Ptr filter,double actual_value);
         
         std::vector<MR> _motors_ref;
-        MotorRefFlags _motor_ref_flags;
+        RefFlags _motor_ref_flags;
         std::vector<float> _gains;
         float _ctrl_cmd;
         //************************ WRITE PDO ******************************

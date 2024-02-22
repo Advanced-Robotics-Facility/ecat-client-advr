@@ -34,6 +34,9 @@ using MR = std::tuple<int32_t, int32_t,                     // bId, ctrl_type
                       float, float, float,                  // pos_ref, vel_ref, tor_ref
                       float, float, float, float, float,    // gains
                       uint32_t, uint32_t, float>;           // op, idx, aux
+
+// ValvesRef
+using VR = std::tuple<int32_t, float>;                     // bId, curr_ref
                       
 // MotorsStarT
 using MST = std::vector<std::tuple<int32_t, int32_t, std::vector<float>>>;
@@ -50,7 +53,7 @@ using PAC = std::vector<std::tuple<int32_t, int32_t>>;
 // SlaveSInfo
 using SSI = std::vector<std::tuple<int32_t, int32_t, int32_t>>;
 
-enum class MotorRefFlags : uint32_t
+enum class RefFlags : uint32_t
 {
     FLAG_NONE           = 0x0,        //
     FLAG_MULTI_REF      = 1 << 0,

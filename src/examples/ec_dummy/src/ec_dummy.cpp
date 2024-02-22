@@ -67,28 +67,8 @@ int main ( int argc, char * argv[] ) try {
     uint32_t rt_th_period_us=ec_cfg.period_ms*1000;
     
     std::map<int,int> esc_map;
-    // MOTOR
-    for(int i=0;i<ec_cfg.motor_id.size();i++){
-        int motor_id=ec_cfg.motor_id[i];
-        esc_map[motor_id]=iit::ecat::CENT_AC;
-    }
-    
-    // IMU
-    for(int i=0;i<ec_cfg.imu_id.size();i++){
-        int imu_id=ec_cfg.imu_id[i];
-        esc_map[imu_id]=iit::ecat::IMU_ANY;
-    }
-    
-    // FT
-    for(int i=0;i<ec_cfg.ft_id.size();i++){
-        int ft_id=ec_cfg.ft_id[i];
-        esc_map[ft_id]=iit::ecat::FT6_MSP432;
-    }
-    
-    // POW
-    for(int i=0;i<ec_cfg.pow_id.size();i++){
-        int pow_id=ec_cfg.pow_id[i];
-        esc_map[pow_id]=iit::ecat::POW_F28M36_BOARD;
+    for ( auto &[esc_id, esc_type, pos] : ec_cfg.fake_slave_info ) {
+        esc_map[esc_id]=esc_type;
     }
     
     threads["RtEscPipe"] = new RtEscPipe("NoNe", esc_map,rt_th_period_us);

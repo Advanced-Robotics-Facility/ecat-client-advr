@@ -317,7 +317,7 @@ bool EcBlockUtils::ec_sense(MotorStatusMap &motors_status_map,
     return true;
 }
 
-bool EcBlockUtils::ec_move(MotorRefFlags flag,std::vector<MR> motors_ref)
+bool EcBlockUtils::ec_move(RefFlags flag,std::vector<MR> motors_ref)
 {
     if(!_client->is_client_alive())
     {

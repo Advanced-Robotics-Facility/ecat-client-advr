@@ -282,7 +282,7 @@ int main(int argc, char * const argv[])
 
                 motor_ref_index++;
             }
-            client->set_motors_references(MotorRefFlags::FLAG_MULTI_REF, motors_ref);
+            client->set_motors_references(RefFlags::FLAG_MULTI_REF, motors_ref);
             // ************************* SEND ALWAYS REFERENCES***********************************//
             
             // get period ns

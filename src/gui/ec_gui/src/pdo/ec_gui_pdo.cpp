@@ -474,7 +474,7 @@ double  EcGuiPdo::filtering(SecondOrderFilter<double>::Ptr filter,double actual_
 void EcGuiPdo::write()
 {
     _motors_ref.clear();
-    _motor_ref_flags = MotorRefFlags::FLAG_MULTI_REF;
+    _motor_ref_flags = RefFlags::FLAG_MULTI_REF;
     
     for (auto& [slave_id, slider_wid]:_slider_map.actual_sw_map_selected)
     {

@@ -71,12 +71,12 @@ void EcIDDP::start_client(uint32_t period_ms,bool logging)
         create_thread=true;
     }
     else{
-#ifdef TEST_LIBRARY 
-        create_thread=true;
-        for(int i=1;i<6;i++){
-            slave_info.push_back(std::make_tuple(i,iit::ecat::CENT_AC,i));
-        }
-#endif        
+//#ifdef TEST_LIBRARY 
+        if(!_fake_slave_info.empty()){
+            create_thread=true;
+            slave_info=_fake_slave_info;
+        }    
+//#endif     
     }
     
     if(create_thread){
