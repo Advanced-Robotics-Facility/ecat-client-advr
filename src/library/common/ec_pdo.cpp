@@ -83,6 +83,7 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                         auto valve_pdo = std::make_shared<ValvePdo<T>>(_ec_pdo_start, id);
                         _valve_pdo_map[id]=valve_pdo;
                         _valve_status_map[id]= valve_pdo->_valve_pdo.valve_v;
+                        _valves_references.push_back(std::make_tuple(id, 0.0));
                 }break;
                 case iit::ecat::HYQ_HPU:{
                         auto pump_pdo = std::make_shared<PumpPdo<T>>(_ec_pdo_start, id);

@@ -27,6 +27,9 @@ public:
     void log_pow_sts(const PwrStatusMap pow_sts_map);
     void log_ft_sts(const FtStatusMap ft_sts_map);
     void log_imu_sts(const ImuStatusMap imu_sts_map);
+    void log_valve_sts(const ValveStatusMap valve_sts_map);
+    void log_pump_sts(const PumpStatusMap pump_sts_map);
+    
     
 private: 
 
@@ -38,6 +41,8 @@ private:
     XBot::MatLogger2::Ptr _ft_status_logger;
     XBot::MatLogger2::Ptr _pow_status_logger;
     XBot::MatLogger2::Ptr _imu_status_logger;
+    XBot::MatLogger2::Ptr _valve_status_logger;
+    XBot::MatLogger2::Ptr _pump_status_logger;
     
     Eigen::VectorXd _motor_ref_eigen,_motor_sts_eigen;
     SSI _slave_descr;
@@ -46,6 +51,8 @@ private:
     std::map<int,std::string> _log_ft_map;
     std::map<int,std::string> _log_imu_map;
     std::map<int,std::string> _log_pow_map;
+    std::map<int,std::string> _log_valve_map;
+    std::map<int,std::string> _log_pump_map;
 };
 
 #endif // EC_LOGGER_H

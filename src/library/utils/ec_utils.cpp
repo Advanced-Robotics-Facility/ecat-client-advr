@@ -179,6 +179,10 @@ EcUtils::EcUtils()
         else
             _ec_cfg.repeat_trj=ec_cfg_node["control"]["repeat_trj"].as<int>();
         
+        if(_ec_cfg.repeat_trj<=0){
+            _ec_cfg.repeat_trj=1;
+        }
+        
         if(!ec_cfg_node["control"]["slave_id_led"])
             _ec_cfg.slave_id_led.clear();
         else
@@ -198,6 +202,16 @@ EcUtils::EcUtils()
             _ec_cfg.pow_id.clear();
         else
             _ec_cfg.pow_id=ec_cfg_node["control"]["pow_id"].as<std::vector<int>>();
+        
+        if(!ec_cfg_node["control"]["valve_id"])
+            _ec_cfg.valve_id.clear();
+        else
+            _ec_cfg.valve_id=ec_cfg_node["control"]["valve_id"].as<std::vector<int>>();
+        
+        if(!ec_cfg_node["control"]["pump_id"])
+            _ec_cfg.pump_id.clear();
+        else
+            _ec_cfg.pump_id=ec_cfg_node["control"]["pump_id"].as<std::vector<int>>();
         
         generate_fake_slave_info();
     }

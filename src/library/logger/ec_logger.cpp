@@ -85,7 +85,28 @@ void EcLogger::start_mat_logger()
                     _log_pow_map[esc_id]=pow_id;
                     _pow_status_logger->create(pow_id,6);
                 }
-
+            }break;
+            case iit::ecat::HYQ_KNEE:{
+                if(_valve_status_logger==nullptr){
+                    _valve_status_logger = XBot::MatLogger2::MakeLogger("/tmp/valve_status_logger", opt);
+                    _valve_status_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
+                }
+                if(_log_valve_map.count(esc_id)==0){
+                    std::string valve_id="valve_id_"+std::to_string(esc_id);
+                    _log_valve_map[esc_id]=valve_id;
+                    _valve_status_logger->create(valve_id,10);
+                }
+            }break;
+            case iit::ecat::HYQ_HPU:{
+                if(_pump_status_logger==nullptr){
+                    _pump_status_logger = XBot::MatLogger2::MakeLogger("/tmp/pump_status_logger", opt);
+                    _pump_status_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
+                }
+                if(_log_pump_map.count(esc_id)==0){
+                    std::string pump_id="pump_id_"+std::to_string(esc_id);
+                    _log_pump_map[esc_id]=pump_id;
+                    _pump_status_logger->create(pump_id,6);
+                }
             }break;
                 
             default:
@@ -102,6 +123,8 @@ void EcLogger::stop_mat_logger()
     _ft_status_logger.reset();
     _pow_status_logger.reset();
     _imu_status_logger.reset();
+    _valve_status_logger.reset();
+    _pump_status_logger.reset();
 }
 
 void EcLogger::add_motors_ref(const std::vector<MR> motors_ref,XBot::MatLogger2::Ptr logger)
@@ -196,4 +219,14 @@ void EcLogger::log_imu_sts(const ImuStatusMap imu_sts_map)
             }
         }
     }
+}
+
+void EcLogger::log_valve_sts(const ValveStatusMap valve_sts_map)
+{
+
+}
+
+void EcLogger::log_pump_sts(const PumpStatusMap pump_sts_map)
+{
+
 }

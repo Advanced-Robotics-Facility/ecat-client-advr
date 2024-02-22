@@ -148,7 +148,7 @@ int main(int argc, char * const argv[])
         }
 
 #ifdef TEST_EXAMPLES
-        if(!first_Rx){
+        if(q_ref.empty()){
             for(int i=0; i<motor_id_vector.size();i++){
                 int id=motor_id_vector[i];
                 q[id]=0.0;

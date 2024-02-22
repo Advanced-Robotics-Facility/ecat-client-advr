@@ -75,6 +75,10 @@ int main(int argc, char * const argv[])
         std::string STM_sts="Homing";
         std::map<int,double> q_set_trj=ec_cfg.homing_position;
         std::map<int,double> q_ref,q_start,qdot;
+        
+        double valve_curr_ref=5.0; //mA
+        std::map<int,double> valves_trj_1,valves_trj_2,valves_set_zero,valves_set_trj;
+        std::map<int,double> valves_set_ref,valves_start;
 
         
         int trajectory_counter=0;
@@ -88,6 +92,15 @@ int main(int argc, char * const argv[])
         float x_rate,y_rate,z_rate;
         float x_acc,y_acc,z_acc;
         float x_quat,y_quat,z_quat,w_quat;
+        
+        // Valve
+        ValveStatusMap valve_status_map;
+        float encoder_position,tor_valve;           
+        float pressure1,pressure2,temperature;   
+        
+        int valve_ref_index=0;
+        std::vector<VR> valves_ref;
+        
         
         // Motor
         float  link_pos,motor_pos,link_vel,motor_vel,torque,aux;
@@ -103,7 +116,15 @@ int main(int argc, char * const argv[])
         // memory allocation
         client->get_pow_status(pow_status_map);
         client->get_imu_status(imu_status_map);
+        client->get_valve_status(valve_status_map);
         client->get_motors_status(motors_status_map);
+        
+        for ( const auto &[esc_id, valve_status] : valve_status_map){
+            valves_trj_1[esc_id]=valve_curr_ref;
+            valves_trj_2[esc_id]=-valve_curr_ref;
+            valves_set_zero[esc_id]=0.0;
+            valves_set_ref[esc_id]=valves_start[esc_id]=valves_set_zero[esc_id];
+        }
         
         for ( const auto &[esc_id, motor_status] : motors_status_map){
             q_start[esc_id]= std::get<1>(motor_status); //motor pos
@@ -111,7 +132,7 @@ int main(int argc, char * const argv[])
             q_ref[esc_id]=q_start[esc_id];
         }
 #ifdef TEST_EXAMPLES
-        if(!first_Rx){
+        if(q_ref.empty()){
             for(int i=0; i<q_set_trj.size();i++){
                 int id=motor_id_vector[i];
                 q_start[id] = 0.0;
@@ -119,39 +140,62 @@ int main(int argc, char * const argv[])
                 q_ref[id]   = 0.0;
             }
         }
+        
+        if(valves_set_ref.empty()){
+            for(int i=0; i<ec_cfg.valve_id.size();i++){
+                int valve_id=ec_cfg.valve_id[i];
+                valves_trj_1[valve_id]=valve_curr_ref;
+                valves_trj_2[valve_id]=-valve_curr_ref;
+                valves_set_zero[valve_id]=0.0;
+                valves_set_ref[valve_id]=valves_start[valve_id]=valves_set_zero[valve_id];
+            }
+        }
 #endif
 
-        if(q_start.size() == q_set_trj.size()){
-            //Open Loop SENSE
-            first_Rx=true;
-        }
-        else{
-            throw std::runtime_error("fatal error: different size of initial position and trajectory vectors");
+        valves_set_trj=valves_trj_1;
+        //valves references check
+        for ( const auto &[esc_id, curr_ref] : valves_set_ref){
+            valves_ref.push_back(std::make_tuple(esc_id,curr_ref));
         }
         
-        for ( const auto &[esc_id, pos_ref] : q_ref){
-           motors_ref.push_back(std::make_tuple(esc_id, //bId
-                                                ec_cfg.motor_config_map[esc_id].control_mode_type, //ctrl_type
-                                                pos_ref, //pos_ref
-                                                0.0, //vel_ref
-                                                0.0, //tor_ref
-                                                ec_cfg.motor_config_map[esc_id].gains[0], //gain_1
-                                                ec_cfg.motor_config_map[esc_id].gains[1], //gain_2
-                                                ec_cfg.motor_config_map[esc_id].gains[2], //gain_3
-                                                ec_cfg.motor_config_map[esc_id].gains[3], //gain_4
-                                                ec_cfg.motor_config_map[esc_id].gains[4], //gain_5
-                                                1, // op means NO_OP
-                                                0, // idx
-                                                0  // aux
-                                            ));
+        // motors references check
+        if(!q_ref.empty()){
+            if(q_start.size() == q_set_trj.size()){
+                //Open Loop SENSE
+                first_Rx=true;
+            }
+            else{
+                throw std::runtime_error("fatal error: different size of initial position and trajectory vectors");
+            }
+            
+            for ( const auto &[esc_id, pos_ref] : q_ref){
+            motors_ref.push_back(std::make_tuple(esc_id, //bId
+                                                    ec_cfg.motor_config_map[esc_id].control_mode_type, //ctrl_type
+                                                    pos_ref, //pos_ref
+                                                    0.0, //vel_ref
+                                                    0.0, //tor_ref
+                                                    ec_cfg.motor_config_map[esc_id].gains[0], //gain_1
+                                                    ec_cfg.motor_config_map[esc_id].gains[1], //gain_2
+                                                    ec_cfg.motor_config_map[esc_id].gains[2], //gain_3
+                                                    ec_cfg.motor_config_map[esc_id].gains[3], //gain_4
+                                                    ec_cfg.motor_config_map[esc_id].gains[4], //gain_5
+                                                    1, // op means NO_OP
+                                                    0, // idx
+                                                    0  // aux
+                                                ));
+            }
+            
+            if(motors_ref.empty()){
+                throw std::runtime_error("fatal error: motors references structure empty!");
+            }
+            
+            if(motors_ref.size() != q_set_trj.size()){
+                throw std::runtime_error("fatal error: different size of reference and trajectory vectors");
+            }
         }
         
-        if(motors_ref.empty()){
-            throw std::runtime_error("fatal error: motors references structure empty!");
-        }
-        
-        if(motors_ref.size() != q_set_trj.size()){
-            throw std::runtime_error("fatal error: different size of reference and trajectory vectors");
+        if(motors_ref.empty() && valves_ref.empty()){
+            throw std::runtime_error("fatal error: motor references and valves references are both empty");
         }
         // memory allocation
                 
@@ -202,6 +246,19 @@ int main(int argc, char * const argv[])
             }
             //******************* IMU Telemetry ********
             
+            //******************* Valve Telemetry ********
+            client->get_valve_status(valve_status_map);
+            for ( const auto &[esc_id, valve_status] : valve_status_map){
+                encoder_position=   valve_status[0];
+                tor_valve =         valve_status[1];
+                pressure1 =         valve_status[2];
+                pressure2 =         valve_status[3];
+                temperature=        valve_status[4];
+                DPRINTF("VALVE ID: [%d], Encoder pos: [%f], Torque: [%f]\n",esc_id,encoder_position,tor_valve);
+                DPRINTF("VALVE ID: [%d], Press1: [%f], Press2: [%f],Temp: [%f]\n",esc_id,pressure1,pressure2,temperature);
+            }
+            //******************* Valve Telemetry ********
+            
             //******************* Motor Telemetry **************
             client->get_motors_status(motors_status_map);
             for ( const auto &[esc_id, motor_status] : motors_status_map){
@@ -234,24 +291,46 @@ int main(int argc, char * const argv[])
             tau= time_elapsed_ms / set_trj_time_ms;
             // quintic poly 6t^5 - 15t^4 + 10t^3
             alpha = ((6*tau - 15)*tau + 10)*tau*tau*tau;
-            // interpolate
-            for(int i=0; i<q_set_trj.size();i++)
-            {
-                int id=motor_id_vector[i];
-                if(q_set_trj.count(id)>0)
-                {
-                    q_ref[id] = q_start[id] + alpha * (q_set_trj[id] - q_start[id]);
+            
+            // Valves references
+            if(!valves_ref.empty()){
+                // interpolate
+                for ( const auto &[esc_id, target] : valves_set_trj){
+                    valves_set_ref[esc_id] = valves_start[esc_id] + alpha * (target - valves_start[esc_id]);
                 }
+                
+                // ************************* SEND ALWAYS REFERENCES***********************************//
+                valve_ref_index=0;
+                for ( const auto &[esc_id, curr_ref] : valves_set_ref){
+                    std::get<1>(valves_ref[valve_ref_index]) = curr_ref;
+                    valve_ref_index++;
+                }
+                client->set_valves_references(RefFlags::FLAG_MULTI_REF, valves_ref);
+                // ************************* SEND ALWAYS REFERENCES***********************************//
             }
             
-            // ************************* SEND ALWAYS REFERENCES***********************************//
-            motor_ref_index=0;
-            for ( const auto &[esc_id, pos_ref] : q_ref){
-                std::get<2>(motors_ref[motor_ref_index]) = pos_ref;
-                motor_ref_index++;
+            
+            // Motors references
+            if(!q_ref.empty()){
+                // interpolate
+                for(int i=0; i<q_set_trj.size();i++)
+                {
+                    int id=motor_id_vector[i];
+                    if(q_set_trj.count(id)>0)
+                    {
+                        q_ref[id] = q_start[id] + alpha * (q_set_trj[id] - q_start[id]);
+                    }
+                }
+                
+                // ************************* SEND ALWAYS REFERENCES***********************************//
+                motor_ref_index=0;
+                for ( const auto &[esc_id, pos_ref] : q_ref){
+                    std::get<2>(motors_ref[motor_ref_index]) = pos_ref;
+                    motor_ref_index++;
+                }
+                client->set_motors_references(RefFlags::FLAG_MULTI_REF, motors_ref);
+                // ************************* SEND ALWAYS REFERENCES***********************************//
             }
-            client->set_motors_references(RefFlags::FLAG_MULTI_REF, motors_ref);
-            // ************************* SEND ALWAYS REFERENCES***********************************//
 
             // get period ns
             time_ns = iit::ecat::get_time_ns();
@@ -262,8 +341,13 @@ int main(int argc, char * const argv[])
                 start_time_ns=time_ns;
                 trajectory_counter=trajectory_counter+1;
                 set_trj_time_ms=trj_time_ms;
+                
                 q_set_trj=ec_cfg.trajectory;
                 q_start=q_ref;
+                
+                valves_set_trj=valves_trj_2;
+                valves_start=valves_set_ref;
+                
                 tau=alpha=0;
             }
             else if((time_elapsed_ms>=trj_time_ms)&&(STM_sts=="Trajectory"))
@@ -278,8 +362,18 @@ int main(int argc, char * const argv[])
                     STM_sts="Homing";
                     start_time_ns=time_ns;
                     set_trj_time_ms=hm_time_ms;
+                    
                     q_set_trj=ec_cfg.homing_position;
                     q_start=q_ref;
+                    
+                    if(trajectory_counter==ec_cfg.repeat_trj-1){ // last references
+                        valves_set_trj=valves_set_zero;
+                    }
+                    else{
+                        valves_set_trj=valves_trj_1;
+                    }
+                    valves_start=valves_set_ref;
+                    
                     tau=alpha=0;
                 }
             } 

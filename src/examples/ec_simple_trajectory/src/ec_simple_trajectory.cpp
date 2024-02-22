@@ -104,7 +104,7 @@ int main(int argc, char * const argv[])
             q_ref[esc_id]=q_start[esc_id];
         }
 #ifdef TEST_EXAMPLES
-        if(!first_Rx){
+        if(q_ref.empty()){
             for(int i=0; i<q_set_trj.size();i++){
                 int id=motor_id_vector[i];
                 q_start[id] = 0.0;

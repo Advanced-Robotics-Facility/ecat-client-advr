@@ -37,6 +37,8 @@ public:
         std::vector<int> imu_id;
         std::vector<int> ft_id;
         std::vector<int> pow_id;
+        std::vector<int> valve_id;
+        std::vector<int> pump_id;
         
         SSI fake_slave_info;
         

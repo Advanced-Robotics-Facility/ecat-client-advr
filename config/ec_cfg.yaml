@@ -8,7 +8,7 @@ network:
   timeout: 1000
 
 period_ms: 1
-logging: true
+logging: false
 auto-start: true
 
 control:
@@ -24,4 +24,6 @@ control:
   imu_id: [102,103]
   ft_id: [110,111]
   pow_id: [201]
+  valve_id: [120,121,122,123,124]
+  pump_id: [202]
 
