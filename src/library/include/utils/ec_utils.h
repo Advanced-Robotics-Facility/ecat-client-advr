@@ -14,6 +14,7 @@ public:
     
     typedef struct MOTOR_CONFIG_t{
         std::string motor_name;
+        uint32_t type;
         int control_mode_type;
         std::vector<float> gains;
         bool brake_present;

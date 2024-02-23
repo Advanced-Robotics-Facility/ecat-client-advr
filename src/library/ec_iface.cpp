@@ -86,11 +86,8 @@ void EcIface::get_motors_status(MotorStatusMap &motor_status_map)
 void EcIface::set_motors_references(const RefFlags motor_ref_flags,const std::vector<MR> motors_references)
 {
     pthread_mutex_lock(&_mutex_motor_reference);
-
     _motor_ref_flags = motor_ref_flags;
     _motors_references = motors_references;
-    _ec_logger->log_set_motors_ref(_motors_references);
-
     pthread_mutex_unlock(&_mutex_motor_reference);
 }
 

@@ -234,9 +234,9 @@ void EcGuiStart::try_gui()
         _ec_wrapper_info.internal_motor_status_map[i] = std::make_tuple(10,10,0,0,100,25,25,0,0,0,0,0);
         _ec_wrapper_info.internal_sdo_map[i] = rr_sdo_info_motor;
     }
-    _ec_wrapper_info.device_info.push_back(std::make_tuple(100,iit::ecat::FT6,21));   // create ft6 board
+    _ec_wrapper_info.device_info.push_back(std::make_tuple(100,iit::ecat::FT6_MSP432,21));   // create ft6 board
     _ec_wrapper_info.internal_ft6_status_map[100]={10.0,5.0,2.0,100.0,125.0,130.0};
-    _ec_wrapper_info.device_info.push_back(std::make_tuple(101,iit::ecat::FT6,22));   // create ft6 board
+    _ec_wrapper_info.device_info.push_back(std::make_tuple(101,iit::ecat::FT6_MSP432,22));   // create ft6 board
     _ec_wrapper_info.internal_ft6_status_map[101]={10.0,5.0,2.0,100.0,125.0,130.0};
     _ec_wrapper_info.device_info.push_back(std::make_tuple(102,iit::ecat::IMU_ANY,23));   // create imu board
     _ec_wrapper_info.internal_imu_status_map[102]={5.0,15.0,20.0,5.0,2.0,3.0,0,0,0,1};

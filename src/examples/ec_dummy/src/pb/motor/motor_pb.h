@@ -4,10 +4,10 @@
 
 #include "../esc_pb.h"
 
-class MotorPb : public EscPb{
+class HhcmMotor : public EscPb{
 
 private:
-    float pos_ref,vel_ref,tor_ref;
+    float pos_ref,vel_ref,tor_ref,curr_ref;
     
 public:
    
@@ -49,6 +49,57 @@ public:
         pb.mutable_motor_xt_rx_pdo()->set_pos_ref(pos_ref);
         pb.mutable_motor_xt_rx_pdo()->set_vel_ref(vel_ref);
         pb.mutable_motor_xt_rx_pdo()->set_tor_ref(tor_ref);
+    } 
+};
+
+
+class CirculoMotor : public EscPb{
+
+private:
+    float pos_ref,vel_ref,tor_ref,curr_ref;
+    
+public:
+   
+    virtual void pbDeserialize(iit::advr::Ec_slave_pdo pb)
+    {
+        pos_ref=pb.mutable_circulo9_tx_pdo()->target_pos();
+        vel_ref=pb.mutable_circulo9_tx_pdo()->target_vel();
+        tor_ref=pb.mutable_circulo9_tx_pdo()->target_torque();
+        curr_ref=pb.mutable_circulo9_tx_pdo()->target_current();
+    }
+    
+    virtual void  pbSerialize(iit::advr::Ec_slave_pdo& pb)
+    {
+        static struct timespec ts;
+        clock_gettime(CLOCK_MONOTONIC, &ts);
+
+        // Type
+        pb.set_type(iit::advr::Ec_slave_pdo::RX_CIRCULO9);
+
+        // Header
+        clock_gettime(CLOCK_MONOTONIC, &ts);
+        pb.mutable_header()->mutable_stamp()->set_sec(ts.tv_sec);
+        pb.mutable_header()->mutable_stamp()->set_nsec(ts.tv_nsec);
+        
+        pb.mutable_circulo9_rx_pdo()->set_statusword(0.0);
+        pb.mutable_circulo9_rx_pdo()->set_modes_of_op(0.0);
+        
+        pb.mutable_circulo9_rx_pdo()->set_motor_pos(pos_ref);
+        pb.mutable_circulo9_rx_pdo()->set_link_pos(pos_ref);
+        pb.mutable_circulo9_rx_pdo()->set_demanded_pos(pos_ref);
+        
+        pb.mutable_circulo9_rx_pdo()->set_motor_vel(vel_ref);
+        pb.mutable_circulo9_rx_pdo()->set_link_vel(vel_ref);
+        pb.mutable_circulo9_rx_pdo()->set_demanded_vel(vel_ref);
+        
+        pb.mutable_circulo9_rx_pdo()->set_current(0.0);
+        pb.mutable_circulo9_rx_pdo()->set_demanded_current(0.0);
+        
+        pb.mutable_circulo9_rx_pdo()->set_torque(tor_ref);
+        pb.mutable_circulo9_rx_pdo()->set_demanded_torque(tor_ref);
+
+        pb.mutable_circulo9_rx_pdo()->set_control_effort(0.0);
+        pb.mutable_circulo9_rx_pdo()->set_drive_temp(0.0);
     } 
 };
 

@@ -10,7 +10,7 @@ EcUtils::EC_CONFIG EcCommonStep::retrieve_ec_cfg()
         _ec_cfg = _ec_utils->get_ec_cfg();
     }catch(std::exception &ex){
         DPRINTF("Error on ec client config file \n");
-        throw std::runtime_error("ex.what()");
+        throw std::runtime_error(ex.what());
     }
     return _ec_cfg;
 }

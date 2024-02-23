@@ -155,7 +155,7 @@ int main(int argc, char * const argv[])
         valves_set_trj=valves_trj_1;
         //valves references check
         for ( const auto &[esc_id, curr_ref] : valves_set_ref){
-            valves_ref.push_back(std::make_tuple(esc_id,curr_ref));
+            valves_ref.push_back(std::make_tuple(esc_id,curr_ref,0,0,0));
         }
         
         // motors references check
@@ -339,16 +339,22 @@ int main(int argc, char * const argv[])
             {
                 STM_sts="Trajectory";
                 start_time_ns=time_ns;
-                trajectory_counter=trajectory_counter+1;
                 set_trj_time_ms=trj_time_ms;
                 
                 q_set_trj=ec_cfg.trajectory;
                 q_start=q_ref;
                 
-                valves_set_trj=valves_trj_2;
+                if(trajectory_counter==ec_cfg.repeat_trj-1){ // second last references
+                        valves_set_trj=valves_set_zero; //set to zero. (close valves)
+                }
+                else{
+                    valves_set_trj=valves_trj_2;
+                }
+                
                 valves_start=valves_set_ref;
                 
                 tau=alpha=0;
+                trajectory_counter=trajectory_counter+1;
             }
             else if((time_elapsed_ms>=trj_time_ms)&&(STM_sts=="Trajectory"))
             {
@@ -365,13 +371,8 @@ int main(int argc, char * const argv[])
                     
                     q_set_trj=ec_cfg.homing_position;
                     q_start=q_ref;
-                    
-                    if(trajectory_counter==ec_cfg.repeat_trj-1){ // last references
-                        valves_set_trj=valves_set_zero;
-                    }
-                    else{
-                        valves_set_trj=valves_trj_1;
-                    }
+        
+                    valves_set_trj=valves_trj_1;
                     valves_start=valves_set_ref;
                     
                     tau=alpha=0;

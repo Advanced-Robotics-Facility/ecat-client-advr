@@ -36,7 +36,7 @@ using MR = std::tuple<int32_t, int32_t,                     // bId, ctrl_type
                       uint32_t, uint32_t, float>;           // op, idx, aux
 
 // ValvesRef
-using VR = std::tuple<int32_t, float>;                     // bId, curr_ref
+using VR = std::tuple<int32_t, float,uint32_t,uint32_t,uint32_t>; // bId, curr_ref,pwm_1,pwm_2,dout
                       
 // MotorsStarT
 using MST = std::vector<std::tuple<int32_t, int32_t, std::vector<float>>>;

@@ -121,7 +121,7 @@ EcUtils::EcUtils()
                     }
                     else
                     {
-                        throw std::runtime_error("The ID: " + std::to_string(id) + "hasn't a motor configuration, please setup the control mode");
+                        throw std::runtime_error("The ID: " + std::to_string(id) + " hasn't a motor configuration, please setup the control mode");
                     }     
                 }
                 else
@@ -224,8 +224,10 @@ void EcUtils::generate_fake_slave_info()
     // MOTOR
     for(int i=0;i<_ec_cfg.motor_id.size();i++){
         int motor_id=_ec_cfg.motor_id[i];
-        _ec_cfg.fake_slave_info.push_back(std::make_tuple(motor_id,iit::ecat::CENT_AC,slave_pos));
-        slave_pos++;
+        if(_ec_cfg.motor_config_map.count(motor_id)>0){
+            _ec_cfg.fake_slave_info.push_back(std::make_tuple(motor_id,_ec_cfg.motor_config_map[motor_id].type,slave_pos));
+            slave_pos++;
+        }
     }
     
     // IMU
@@ -240,7 +242,7 @@ void EcUtils::generate_fake_slave_info()
     slave_pos++;
     for(int i=0;i<_ec_cfg.ft_id.size();i++){
         int ft_id=_ec_cfg.ft_id[i];
-        _ec_cfg.fake_slave_info.push_back(std::make_tuple(ft_id,iit::ecat::FT6,slave_pos));
+        _ec_cfg.fake_slave_info.push_back(std::make_tuple(ft_id,iit::ecat::FT6_MSP432,slave_pos));
         slave_pos++;
     }
     
@@ -249,6 +251,14 @@ void EcUtils::generate_fake_slave_info()
     for(int i=0;i<_ec_cfg.pow_id.size();i++){
         int pow_id=_ec_cfg.pow_id[i];
         _ec_cfg.fake_slave_info.push_back(std::make_tuple(pow_id,iit::ecat::POW_F28M36_BOARD,slave_pos));
+        slave_pos++;
+    }
+    
+    // VALVE
+    slave_pos++;
+    for(int i=0;i<_ec_cfg.valve_id.size();i++){
+        int valve_id=_ec_cfg.valve_id[i];
+        _ec_cfg.fake_slave_info.push_back(std::make_tuple(valve_id,iit::ecat::HYQ_KNEE,slave_pos));
         slave_pos++;
     }
 }
@@ -301,20 +311,41 @@ std::map<int,EcUtils::MOTOR_CONFIG> EcUtils::get_motor_config_map(const YAML::No
                 _ec_cfg.motor_id.push_back(esc_id);
                 
                 motor_config_map[esc_id].motor_name=esc_name;
+                
+                motor_config_map[esc_id].type=iit::ecat::CENT_AC;
+                if(motor_config_node[esc_name]["motor_type"]){
+                    std::string type_str=motor_config_node[esc_name]["motor_type"].as<std::string>();
+                    
+                    if(type_str=="HHCM"){
+                        motor_config_map[esc_id].type=iit::ecat::CENT_AC;
+                    }
+                    else if(type_str=="Circulo"){
+                        motor_config_map[esc_id].type=iit::ecat::CIRCULO9;
+                    }
+                    else if(type_str=="FlexPro"){
+                        motor_config_map[esc_id].type=iit::ecat::AMC_FLEXPRO;
+                    }
+                    else{
+                    
+                    }
+                }
+                
                 motor_config_map[esc_id].control_mode_type=0x00;
-                if(motor_config_node[esc_name]["control_mode"])
-                {
+                if(motor_config_node[esc_name]["control_mode"]){
                     motor_config_map[esc_id].control_mode_type=motor_config_node[esc_name]["control_mode"].as<int>();
                 }
 
-                if(motor_config_node[esc_name]["gains"])
-                {
-                    motor_config_map[esc_id].gains=motor_config_node[esc_name]["gains"].as<std::vector<float>>();
+                if(motor_config_map[esc_id].control_mode_type==0x00){
+                    motor_config_map[esc_id].gains={0,0,0,0,0};
                 }
-
-                if(motor_config_map[esc_id].gains.size()!=5)
-                {
-                    throw std::runtime_error("Error invalid dimension of impedance gains. It has to be equal to five! ");
+                else{
+                    if(motor_config_node[esc_name]["gains"]){
+                        motor_config_map[esc_id].gains=motor_config_node[esc_name]["gains"].as<std::vector<float>>();
+                    }
+                }
+                
+                if(motor_config_map[esc_id].gains.size()!=5){
+                        throw std::runtime_error("Error invalid dimension of gains. It has to be equal to five! ");
                 }
 
                 motor_config_map[esc_id].brake_present=false;

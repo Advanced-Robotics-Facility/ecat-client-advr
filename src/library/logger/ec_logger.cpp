@@ -4,6 +4,7 @@ EcLogger::EcLogger()
 {
     _motor_ref_eigen.resize(11);
     _motor_sts_eigen.resize(12);
+    _valve_ref_eigen.resize(4);
 }
 
 void EcLogger::init_mat_logger(SSI slave_descr)
@@ -41,19 +42,14 @@ void EcLogger::start_mat_logger()
                     _motors_references_logger = XBot::MatLogger2::MakeLogger("/tmp/motors_references_logger");
                     _motors_references_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
                 }
-                if(_set_motors_references_logger==nullptr){
-                    _set_motors_references_logger = XBot::MatLogger2::MakeLogger("/tmp/set_motors_references_logger");
-                    _set_motors_references_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
-                }
                 
                 if(_log_motor_ref_map.count(esc_id)==0){
                     std::string motor_ref_id="motor_ref_id_"+std::to_string(esc_id);
                     _log_motor_ref_map[esc_id]=motor_ref_id;
                     _motors_references_logger->create(motor_ref_id,_motor_ref_eigen.size());
-                    _set_motors_references_logger->create(motor_ref_id,_motor_ref_eigen.size());
                 }
             }break;
-            case iit::ecat::FT6:{
+            case iit::ecat::FT6_MSP432:{
                 if(_ft_status_logger==nullptr){
                     _ft_status_logger = XBot::MatLogger2::MakeLogger("/tmp/ft_status_logger", opt);
                     _ft_status_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
@@ -92,10 +88,23 @@ void EcLogger::start_mat_logger()
                     _valve_status_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
                 }
                 if(_log_valve_map.count(esc_id)==0){
-                    std::string valve_id="valve_id_"+std::to_string(esc_id);
-                    _log_valve_map[esc_id]=valve_id;
-                    _valve_status_logger->create(valve_id,10);
+                    std::string valve_sts_id="valve_sts_id_"+std::to_string(esc_id);
+                    _log_valve_map[esc_id]=valve_sts_id;
+                    _valve_status_logger->create(valve_sts_id,5);
                 }
+                
+                if(_valves_references_logger==nullptr){
+                    _valves_references_logger = XBot::MatLogger2::MakeLogger("/tmp/valves_references_logger");
+                    _valves_references_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
+                }
+                
+                if(_log_valve_ref_map.count(esc_id)==0){
+                    std::string valve_ref_id="valve_ref_id_"+std::to_string(esc_id);
+                    _log_valve_ref_map[esc_id]=valve_ref_id;
+                    _valves_references_logger->create(valve_ref_id,_valve_ref_eigen.size());
+                }
+                
+                
             }break;
             case iit::ecat::HYQ_HPU:{
                 if(_pump_status_logger==nullptr){
@@ -118,7 +127,7 @@ void EcLogger::start_mat_logger()
 void EcLogger::stop_mat_logger()
 {
     _motors_references_logger.reset();
-    _set_motors_references_logger.reset();
+    _valves_references_logger.reset();
     _motors_status_logger.reset();
     _ft_status_logger.reset();
     _pow_status_logger.reset();
@@ -127,9 +136,9 @@ void EcLogger::stop_mat_logger()
     _pump_status_logger.reset();
 }
 
-void EcLogger::add_motors_ref(const std::vector<MR> motors_ref,XBot::MatLogger2::Ptr logger)
+void EcLogger::log_motors_ref(const std::vector<MR> motors_ref)
 {
-    if(logger != nullptr){
+    if(_motors_references_logger != nullptr){
         for ( const auto &[esc_id,ctrl_type,pos_ref,vel_ref,tor_ref,gain_0,gain_1,gain_2,gain_3,gain_4,op,idx,aux] : motors_ref) {
             if(ctrl_type!=0x00){
                 if ((ctrl_type==0x3B)||(ctrl_type==0x71)|| 
@@ -146,7 +155,7 @@ void EcLogger::add_motors_ref(const std::vector<MR> motors_ref,XBot::MatLogger2:
                         _motor_ref_eigen(8)=op;
                         _motor_ref_eigen(9)=idx;
                         _motor_ref_eigen(10)=aux;
-                        logger->add(_log_motor_ref_map[esc_id], _motor_ref_eigen);
+                        _motors_references_logger->add(_log_motor_ref_map[esc_id], _motor_ref_eigen);
                     }
                 }
             }
@@ -154,16 +163,6 @@ void EcLogger::add_motors_ref(const std::vector<MR> motors_ref,XBot::MatLogger2:
     }
 }
 
-
-void EcLogger::log_motors_ref(const std::vector<MR> motors_ref)
-{
-    add_motors_ref(motors_ref,_motors_references_logger);
-}
-
-void EcLogger::log_set_motors_ref(const std::vector<MR> motors_ref)
-{
-    add_motors_ref(motors_ref,_set_motors_references_logger);
-}
 
 void EcLogger::log_motors_sts(const MotorStatusMap motors_sts_map)
 {
@@ -221,9 +220,30 @@ void EcLogger::log_imu_sts(const ImuStatusMap imu_sts_map)
     }
 }
 
+void EcLogger::log_valve_ref(const std::vector<VR> valves_ref)
+{
+    if(_valves_references_logger != nullptr){
+        for ( const auto &[esc_id,curr_ref,pwm_1,pwm_2,dout] : valves_ref) {
+            if(_log_valve_ref_map.count(esc_id)>0){
+                _valve_ref_eigen(0)=curr_ref;
+                _valve_ref_eigen(1)=pwm_1;
+                _valve_ref_eigen(2)=pwm_2;
+                _valve_ref_eigen(3)=dout;
+                _valves_references_logger->add(_log_valve_ref_map[esc_id], _valve_ref_eigen);
+            }
+        }
+    }
+}
+
 void EcLogger::log_valve_sts(const ValveStatusMap valve_sts_map)
 {
-
+    if(_valve_status_logger != nullptr){
+        for ( const auto &[esc_id, valve_sts] : valve_sts_map) {
+            if(_log_valve_map.count(esc_id)>0){
+                _valve_status_logger->add(_log_valve_map[esc_id],valve_sts);
+            }
+        }
+    }
 }
 
 void EcLogger::log_pump_sts(const PumpStatusMap pump_sts_map)

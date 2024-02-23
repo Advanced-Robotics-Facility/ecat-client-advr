@@ -1,6 +1,9 @@
 joint_map:
-  1: arm_1_joint_1
-  2: arm_1_joint_2
-  3: arm_1_joint_3
-  4: arm_1_joint_4
-  5: arm_1_joint_5
+  1: leg_1_joint_1
+  2: leg_1_joint_2
+  3: leg_2_joint_1
+  4: leg_2_joint_2
+  5: leg_3_joint_1
+  6: leg_3_joint_2
+  7: leg_4_joint_1
+  8: leg_4_joint_2
