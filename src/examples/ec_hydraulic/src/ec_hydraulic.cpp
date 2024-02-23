@@ -223,7 +223,7 @@ int main(int argc, char * const argv[])
                 temp_pcb =      pow_status[3];
                 temp_heatsink=  pow_status[4];
                 temp_batt=      pow_status[5];
-                DPRINTF("POW ID: [%d], VBATT: [%f], VLOAD: [%f], ILOAD: [%f]\n",esc_id,v_batt,v_load,i_load);
+                //DPRINTF("POW ID: [%d], VBATT: [%f], VLOAD: [%f], ILOAD: [%f]\n",esc_id,v_batt,v_load,i_load);
             }
             //******************* Power Board Telemetry ********
             
@@ -240,9 +240,9 @@ int main(int argc, char * const argv[])
                 y_quat= imu_status[7];
                 z_quat= imu_status[8];
                 w_quat= imu_status[9];
-                DPRINTF("IMU ID: [%d], X_RATE: [%f], Y_RATE: [%f], Z_RATE: [%f]\n",esc_id,x_rate,y_rate,z_rate);
-                DPRINTF("IMU ID: [%d], X_ACC: [%f], Y_ACC: [%f], Z_ACC: [%f]\n",esc_id,x_acc,y_acc,z_acc);
-                DPRINTF("IMU ID: [%d], X_QUAT: [%f], Y_QUAT: [%f], Z_QUAT: [%f], W_QUAT: [%f]\n",esc_id,x_quat,y_quat,z_quat,w_quat);
+                //DPRINTF("IMU ID: [%d], X_RATE: [%f], Y_RATE: [%f], Z_RATE: [%f]\n",esc_id,x_rate,y_rate,z_rate);
+                //DPRINTF("IMU ID: [%d], X_ACC: [%f], Y_ACC: [%f], Z_ACC: [%f]\n",esc_id,x_acc,y_acc,z_acc);
+                //DPRINTF("IMU ID: [%d], X_QUAT: [%f], Y_QUAT: [%f], Z_QUAT: [%f], W_QUAT: [%f]\n",esc_id,x_quat,y_quat,z_quat,w_quat);
             }
             //******************* IMU Telemetry ********
             
@@ -254,8 +254,8 @@ int main(int argc, char * const argv[])
                 pressure1 =         valve_status[2];
                 pressure2 =         valve_status[3];
                 temperature=        valve_status[4];
-                DPRINTF("VALVE ID: [%d], Encoder pos: [%f], Torque: [%f]\n",esc_id,encoder_position,tor_valve);
-                DPRINTF("VALVE ID: [%d], Press1: [%f], Press2: [%f],Temp: [%f]\n",esc_id,pressure1,pressure2,temperature);
+                //DPRINTF("VALVE ID: [%d], Encoder pos: [%f], Torque: [%f]\n",esc_id,encoder_position,tor_valve);
+                //DPRINTF("VALVE ID: [%d], Press1: [%f], Press2: [%f],Temp: [%f]\n",esc_id,pressure1,pressure2,temperature);
             }
             //******************* Valve Telemetry ********
             
@@ -281,7 +281,7 @@ int main(int argc, char * const argv[])
                             {
                                 q_start[esc_id]=motor_pos; // get actual motor position at first time
                             }
-                            DPRINTF("MOTOR ID: [%d], MOTOR_POS: [%f], LINK_POS: [%f]\n",esc_id,motor_pos,link_pos);
+                            //DPRINTF("MOTOR ID: [%d], MOTOR_POS: [%f], LINK_POS: [%f]\n",esc_id,motor_pos,link_pos);
                         }
                 } catch (std::out_of_range oor) {}
             }
