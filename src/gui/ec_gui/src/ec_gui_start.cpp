@@ -327,7 +327,7 @@ void EcGuiStart::scan_device()
             for ( auto &[esc_id, type, pos] : _ec_wrapper_info.device_info )
             {
                 RR_SDO rr_sdo_info;
-                if(ec_motors.count(type))
+                if(ec_motors.count(type)>0)
                 {
                     motors_counter++;
                     if(_ec_wrapper_info.client->retrieve_rr_sdo(esc_id,rd_sdo,wr_sdo,rr_sdo_info))
