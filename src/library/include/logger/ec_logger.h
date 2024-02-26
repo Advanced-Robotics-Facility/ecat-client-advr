@@ -41,7 +41,7 @@ private:
     XBot::MatLogger2::Ptr _valve_status_logger;
     XBot::MatLogger2::Ptr _pump_status_logger;
     
-    Eigen::VectorXd _motor_ref_eigen,_motor_sts_eigen,_valve_ref_eigen;
+    Eigen::VectorXd _motor_ref_eigen,_motor_sts_eigen,_valve_ref_eigen,_pump_ref_eigen;
     SSI _slave_descr;
     std::map<int,std::string> _log_motor_ref_map;
     std::map<int,std::string> _log_valve_ref_map;

@@ -5,6 +5,7 @@ EcLogger::EcLogger()
     _motor_ref_eigen.resize(11);
     _motor_sts_eigen.resize(12);
     _valve_ref_eigen.resize(4);
+    _pump_ref_eigen.resize(25);
 }
 
 void EcLogger::init_mat_logger(SSI slave_descr)
@@ -128,7 +129,7 @@ void EcLogger::stop_mat_logger()
 {
     _motors_references_logger.reset();
     _valves_references_logger.reset();
-    _motors_status_logger.reset();
+    _motors_status_logger.reset();idx
     _ft_status_logger.reset();
     _pow_status_logger.reset();
     _imu_status_logger.reset();
@@ -248,5 +249,9 @@ void EcLogger::log_valve_sts(const ValveStatusMap valve_sts_map)
 
 void EcLogger::log_pump_sts(const PumpStatusMap pump_sts_map)
 {
+    if(_valve_status_logger != nullptr){
+        for ( const auto &[esc_id, pdo_rx] : pump_sts_map) {
 
+        }
+    }
 }
