@@ -64,6 +64,7 @@ protected:
     
     bool _client_alive;
     bool _logging;
+    ClientStatus _client_status;
 
     SSI _fake_slave_info;
     // last received motor data

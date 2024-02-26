@@ -101,6 +101,8 @@ bool EcZmqCmd::retrieve_slaves_info(SSI &slave_info)
             slave_info = _slave_info;
             _ec_repl_cmd->set_motor_type_map(motor_type_map);
             
+            _client_status=ClientStatus::MOTORS_MAPPED;
+            
             return true;
         }
         else{
@@ -178,6 +180,10 @@ bool EcZmqCmd::start_motors(const MST &motors_start)
 {
     
     int attemps_cnt = 0; 
+    // stop references
+    _motor_ref_flags=RefFlags::FLAG_NONE;
+    _valve_ref_flags=RefFlags::FLAG_NONE;
+    
     while(_client_alive && attemps_cnt < _max_cmd_attemps){
         bool motors_started=true;
         for (auto &[motor_id ,ctrl_type, gains] : motors_start) {
@@ -198,6 +204,7 @@ bool EcZmqCmd::start_motors(const MST &motors_start)
         }
         
         if(motors_started){
+            _client_status=ClientStatus::MOTORS_STARTED;
             return motors_started;
         }
         else{
@@ -213,6 +220,9 @@ bool EcZmqCmd::start_motors(const MST &motors_start)
 bool EcZmqCmd::stop_motors()
 {
     int attemps_cnt = 0; 
+    // stop references
+    _motor_ref_flags=RefFlags::FLAG_NONE;
+    _valve_ref_flags=RefFlags::FLAG_NONE;
     while(_client_alive && attemps_cnt < _max_cmd_attemps){
         bool motors_stopped=true;
         for ( auto &[esc_id, type, pos] : _slave_info ) {
@@ -234,6 +244,7 @@ bool EcZmqCmd::stop_motors()
         }
         
         if(motors_stopped){
+            _client_status=ClientStatus::MOTORS_STOPPED;
             return motors_stopped;
         }
         else{

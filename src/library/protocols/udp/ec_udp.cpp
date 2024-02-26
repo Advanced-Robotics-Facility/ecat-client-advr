@@ -50,7 +50,6 @@ EcUDP::EcUDP(std::string host_address,uint32_t host_port) :
         
     _server_alive_check_ms=milliseconds(_wait_reply_time)+milliseconds(500); //1.5s
     _actual_server_status= ServerStatus::IDLE;
-    _client_status=ClientStatus::IDLE;
 }
 
 EcUDP::~EcUDP()

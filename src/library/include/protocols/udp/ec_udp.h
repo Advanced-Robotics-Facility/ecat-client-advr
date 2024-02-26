@@ -84,7 +84,6 @@ private:
     std::chrono::steady_clock::time_point _client_alive_time; 
     std::chrono::duration<int, std::milli>_server_alive_check_ms;
     bool _cmd_req_reply;
-    ClientStatus _client_status;
 
 private:
     std::string _reply_err_msg;
