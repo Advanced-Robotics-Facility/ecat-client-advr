@@ -25,11 +25,6 @@ public:
         
         std::map<int ,EcGuiSlider::joint_info_t > joint_info_map;
         
-        MotorStatusMap internal_motor_status_map;
-        FtStatusMap internal_ft6_status_map;
-        PwrStatusMap internal_pow_status_map;
-        ImuStatusMap internal_imu_status_map;
-        
         SRD_SDO internal_sdo_map;
         SRD_SDO sdo_map;
     };

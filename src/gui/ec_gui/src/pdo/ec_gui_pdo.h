@@ -21,12 +21,7 @@ public:
                QWidget * parent = 0);
       
       ~EcGuiPdo();
-      
-      void set_internal_map(MotorStatusMap internal_motor_status_map, 
-                            FtStatusMap internal_ft6_status_map,
-                            PwrStatusMap internal_pow_status_map,
-                            ImuStatusMap internal_imu_status_map);
-      
+    
       void restart_ec_gui_pdo(EcIface::Ptr client);
       void restart_receive_timer();
       void read();
@@ -40,10 +35,6 @@ private:
       EcGuiSlider::slider_map_t _slider_map;
       
       //************************ READ PDO ******************************
-      MotorStatusMap _internal_motor_status_map;
-      FtStatusMap _internal_ft6_status_map;
-      PwrStatusMap _internal_pow_status_map;
-      ImuStatusMap _internal_imu_status_map;
       
       QTreeWidget *_tree_wid;
       QElapsedTimer *_receive_timer;

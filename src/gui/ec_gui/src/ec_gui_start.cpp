@@ -201,11 +201,6 @@ void EcGuiStart::restart_gui()
 void EcGuiStart::try_gui()
 {
 // ********************* TEST ****************************////
-
-    _ec_wrapper_info.device_info.push_back(std::make_tuple(201,iit::ecat::POW_F28M36_BOARD,0));   // create power board
-    
-    _ec_wrapper_info.internal_pow_status_map[201]={48.0,48.0,2.0,25.0,25.0,25.0};
-    
     RR_SDO rr_sdo_info_motor = {
         { "motor_pos", 0.0},
         { "Min_pos",  -1.0},
@@ -218,7 +213,6 @@ void EcGuiStart::try_gui()
     
     for(int i=1; i<21; i++)
     {
-        _ec_wrapper_info.device_info.push_back(std::make_tuple(i,iit::ecat::CENT_AC,i));   // create motor board
         EcGuiSlider::joint_info_t joint_info_s;
 
         joint_info_s.joint_name    ="motor_id_"+std::to_string(i);
@@ -231,17 +225,8 @@ void EcGuiStart::try_gui()
         joint_info_s.max_torq      =5.0;
 
         _ec_wrapper_info.joint_info_map[i]=joint_info_s;
-        _ec_wrapper_info.internal_motor_status_map[i] = std::make_tuple(10,10,0,0,100,25,25,0,0,0,0,0);
         _ec_wrapper_info.internal_sdo_map[i] = rr_sdo_info_motor;
     }
-    _ec_wrapper_info.device_info.push_back(std::make_tuple(100,iit::ecat::FT6_MSP432,21));   // create ft6 board
-    _ec_wrapper_info.internal_ft6_status_map[100]={10.0,5.0,2.0,100.0,125.0,130.0};
-    _ec_wrapper_info.device_info.push_back(std::make_tuple(101,iit::ecat::FT6_MSP432,22));   // create ft6 board
-    _ec_wrapper_info.internal_ft6_status_map[101]={10.0,5.0,2.0,100.0,125.0,130.0};
-    _ec_wrapper_info.device_info.push_back(std::make_tuple(102,iit::ecat::IMU_ANY,23));   // create imu board
-    _ec_wrapper_info.internal_imu_status_map[102]={5.0,15.0,20.0,5.0,2.0,3.0,0,0,0,1};
-    _ec_wrapper_info.device_info.push_back(std::make_tuple(103,iit::ecat::IMU_ANY,24));   // create imu board
-    _ec_wrapper_info.internal_imu_status_map[103]={5.0,15.0,20.0,5.0,2.0,3.0,0,0,0,1};
 
 // ********************* TEST ****************************////
     
@@ -294,12 +279,7 @@ void EcGuiStart::clear_device()
     
     _ec_wrapper_info.device_info.clear();
     _ec_wrapper_info.joint_info_map.clear();
-    
-    _ec_wrapper_info.internal_motor_status_map.clear();
-    _ec_wrapper_info.internal_ft6_status_map.clear();
-    _ec_wrapper_info.internal_pow_status_map.clear();
-    _ec_wrapper_info.internal_imu_status_map.clear();
-    
+
     _ec_wrapper_info.sdo_map.clear();
     _ec_wrapper_info.internal_sdo_map.clear();
 }

@@ -48,24 +48,6 @@ void EcGuiPdo::restart_receive_timer()
     _receive_timer->restart();
 }
 
-void EcGuiPdo::set_internal_map(MotorStatusMap internal_motor_status_map, 
-                                FtStatusMap internal_ft6_status_map,
-                                PwrStatusMap internal_pow_status_map,
-                                ImuStatusMap internal_imu_status_map)
-{
-    _internal_motor_status_map.clear();
-    _internal_motor_status_map = internal_motor_status_map;
-    
-    _internal_ft6_status_map.clear();
-    _internal_ft6_status_map = internal_ft6_status_map;
-    
-    _internal_pow_status_map.clear();
-    _internal_pow_status_map = internal_pow_status_map;
-    
-    _internal_imu_status_map.clear();
-    _internal_imu_status_map = internal_imu_status_map;
-}
-
 void EcGuiPdo::restart_ec_gui_pdo(EcIface::Ptr client)
 {
     _client.reset();
@@ -196,11 +178,6 @@ void EcGuiPdo::read_motor_status()
 {
     MotorStatusMap motors_status_map;
     _client->get_motors_status(motors_status_map);
-    if(motors_status_map.empty())
-    {
-        motors_status_map=_internal_motor_status_map;
-    }
-
     if(!motors_status_map.empty())
     {
         for ( const auto &[esc_id, motor_status] : motors_status_map)
@@ -309,10 +286,6 @@ void EcGuiPdo::read_ft6_status()
 {
     FtStatusMap ft6_status_map;
     _client->get_ft_status(ft6_status_map);
-    if(ft6_status_map.empty())
-    {
-        ft6_status_map=_internal_ft6_status_map;
-    }
     /*************************************FT*****************************************************************/
      if(!ft6_status_map.empty())
      {
@@ -337,11 +310,6 @@ inline void EcGuiPdo::read_pow_status()
 {
     PwrStatusMap pow_status_map;
     _client->get_pow_status(pow_status_map);
-    
-    if(pow_status_map.empty())
-    {
-        pow_status_map=_internal_pow_status_map;
-    }
     /*************************************Power Board*****************************************************************/
      if(!pow_status_map.empty())
      {
@@ -366,11 +334,6 @@ void EcGuiPdo::read_imu_status()
 {
     ImuStatusMap imu_status_map;
     _client->get_imu_status(imu_status_map);
-    
-    if(imu_status_map.empty())
-    {
-        imu_status_map=_internal_imu_status_map;
-    }
     /*************************************IMU*****************************************************************/
      if(!imu_status_map.empty())
      {
