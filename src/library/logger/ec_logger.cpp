@@ -129,7 +129,7 @@ void EcLogger::stop_mat_logger()
 {
     _motors_references_logger.reset();
     _valves_references_logger.reset();
-    _motors_status_logger.reset();idx
+    _motors_status_logger.reset();
     _ft_status_logger.reset();
     _pow_status_logger.reset();
     _imu_status_logger.reset();

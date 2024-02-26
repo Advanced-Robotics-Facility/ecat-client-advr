@@ -165,19 +165,19 @@ void EcPdo<T>::write_motor_pdo()
                     motor_pdo->tx_pdo.tor_ref= tor;
                     
                     motor_pdo->tx_pdo.gain_0= g0;
-                    motor_pdo->tx_pdo.gain_0= g1;
-                    motor_pdo->tx_pdo.gain_0= g2;
-                    motor_pdo->tx_pdo.gain_0= g3;
-                    motor_pdo->tx_pdo.gain_0= g4;
+                    motor_pdo->tx_pdo.gain_1= g1;
+                    motor_pdo->tx_pdo.gain_2= g2;
+                    motor_pdo->tx_pdo.gain_3= g3;
+                    motor_pdo->tx_pdo.gain_4= g4;
                     
                     if(_hhcm_pdo_map.count(bId)>0){
                         if ( (ctrl_type_cast == iit::advr::Gains_Type_POSITION ||
                               ctrl_type_cast == iit::advr::Gains_Type_VELOCITY)) {
                             motor_pdo->tx_pdo.gain_0= g0;
-                            motor_pdo->tx_pdo.gain_0= g2;
-                            motor_pdo->tx_pdo.gain_0= 0;
-                            motor_pdo->tx_pdo.gain_0= 0;
-                            motor_pdo->tx_pdo.gain_0= g1;
+                            motor_pdo->tx_pdo.gain_1= g2;
+                            motor_pdo->tx_pdo.gain_2= 0;
+                            motor_pdo->tx_pdo.gain_3= 0;
+                            motor_pdo->tx_pdo.gain_4= g1;
                         }
                     }
                 
