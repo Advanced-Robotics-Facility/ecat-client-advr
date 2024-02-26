@@ -93,6 +93,11 @@ int main(int argc, char * const argv[])
         float x_acc,y_acc,z_acc;
         float x_quat,y_quat,z_quat,w_quat;
         
+        // Pump
+        PumpStatusMap pump_status_map;
+        iit::ecat::HyQ_HpuEscPdoTypes::pdo_rx pump_pdo_rx;
+        iit::ecat::HyQ_HpuEscPdoTypes::pdo_rx pump_pdo_tx;
+        
         // Valve
         ValveStatusMap valve_status_map;
         float encoder_position,tor_valve;           
@@ -116,6 +121,7 @@ int main(int argc, char * const argv[])
         // memory allocation
         client->get_pow_status(pow_status_map);
         client->get_imu_status(imu_status_map);
+        client->get_pump_status(pump_status_map);
         client->get_valve_status(valve_status_map);
         client->get_motors_status(motors_status_map);
         
@@ -245,6 +251,15 @@ int main(int argc, char * const argv[])
                 //DPRINTF("IMU ID: [%d], X_QUAT: [%f], Y_QUAT: [%f], Z_QUAT: [%f], W_QUAT: [%f]\n",esc_id,x_quat,y_quat,z_quat,w_quat);
             }
             //******************* IMU Telemetry ********
+            
+            
+            //******************* PUMP Telemetry ********
+            client->get_pump_status(pump_status_map);
+            for ( const auto &[esc_id, pdo_rx] : pump_status_map){
+                pump_pdo_rx=pdo_rx;
+                DPRINTF("PUMP ID: [%d], Pressure: [%hhu] \n",esc_id,pump_pdo_rx.pressure);
+            }
+            //******************* PUMP Telemetry ********
             
             //******************* Valve Telemetry ********
             client->get_valve_status(valve_status_map);

@@ -261,6 +261,14 @@ void EcUtils::generate_fake_slave_info()
         _ec_cfg.fake_slave_info.push_back(std::make_tuple(valve_id,iit::ecat::HYQ_KNEE,slave_pos));
         slave_pos++;
     }
+    
+    // PUMP
+    slave_pos++;
+    for(int i=0;i<_ec_cfg.pump_id.size();i++){
+        int pump_id=_ec_cfg.pump_id[i];
+        _ec_cfg.fake_slave_info.push_back(std::make_tuple(pump_id,iit::ecat::HYQ_HPU,slave_pos));
+        slave_pos++;
+    }
 }
 
 void EcUtils::compute_absolute_path(std::string &file_path)
