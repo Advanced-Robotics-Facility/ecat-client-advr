@@ -89,6 +89,7 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                         auto pump_pdo = std::make_shared<PumpPdo<T>>(_ec_pdo_start, id);
                         _pump_pdo_map[id]=pump_pdo;
                         _pump_status_map[id]= pump_pdo->rx_pdo;
+                        _pumps_references[id]= pump_pdo->tx_pdo;
                 }break;
                 
                 default:
@@ -352,7 +353,13 @@ template < class T >
 void EcPdo<T>::write_pump_pdo()
 {
     pthread_mutex_lock(&_mutex_pump_reference);
-    
+    if(_pump_ref_flags!=RefFlags::FLAG_NONE){
+        for (auto const &[id,pump_tx] : _pumps_references)  {
+            auto pump_pdo=_pump_pdo_map[id];    
+            pump_pdo->tx_pdo=pump_tx;
+            pump_pdo->write();
+        }
+    }
     pthread_mutex_unlock(&_mutex_pump_reference);
 }
 

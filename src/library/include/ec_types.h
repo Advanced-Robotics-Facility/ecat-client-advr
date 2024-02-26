@@ -27,7 +27,9 @@ using FtStatusMap = std::map<int, std::vector<float>>;
 using PwrStatusMap = std::map<int32_t, std::vector<float>>;
 using ImuStatusMap = std::map<int32_t, std::vector<float>>;
 using ValveStatusMap = std::map<int32_t, std::vector<float>>;
-using PumpStatusMap = std::map<int32_t, iit::ecat::HyQ_HpuEscPdoTypes::pdo_rx>;
+
+using PumpStatusMap =   std::map<int32_t, iit::ecat::HyQ_HpuEscPdoTypes::pdo_rx>;
+using PumpReferenceMap= std::map<int32_t, iit::ecat::HyQ_HpuEscPdoTypes::pdo_tx>;     
 
 // MotorsRef
 using MR = std::tuple<int32_t, int32_t,                     // bId, ctrl_type
@@ -35,6 +37,8 @@ using MR = std::tuple<int32_t, int32_t,                     // bId, ctrl_type
                       float, float, float, float, float,    // gains
                       uint32_t, uint32_t, float>;           // op, idx, aux
 
+
+                      
 // ValvesRef
 using VR = std::tuple<int32_t, float,uint32_t,uint32_t,uint32_t>; // bId, curr_ref,pwm_1,pwm_2,dout
                       

@@ -12,6 +12,10 @@ EcIface::EcIface()
     _valve_ref_flags=RefFlags::FLAG_NONE;
     _valves_references.clear();
     
+    _pump_ref_flags=RefFlags::FLAG_NONE;
+    _pumps_references.clear();
+    
+    
     pthread_mutex_init(&_mutex_motor_status, NULL);
     pthread_mutex_init(&_mutex_motor_reference, NULL);
     
@@ -136,11 +140,11 @@ void EcIface::get_pump_status(PumpStatusMap &pump_status_map)
     pthread_mutex_unlock(&_mutex_pump_status);
 }
 
-void EcIface::set_pump_references()
+void EcIface::set_pump_references(const RefFlags pump_ref_flags,const PumpReferenceMap pumps_references)
 {
     pthread_mutex_lock(&_mutex_pump_reference);
-
-    
+    _pump_ref_flags=pump_ref_flags;
+    _pumps_references=pumps_references;
     pthread_mutex_unlock(&_mutex_pump_reference);
 }
  

@@ -251,7 +251,8 @@ void EcLogger::log_pump_sts(const PumpStatusMap pump_sts_map)
 {
     if(_valve_status_logger != nullptr){
         for ( const auto &[esc_id, pdo_rx] : pump_sts_map) {
-
+            if(_log_pump_map.count(esc_id)>0){
+            }
         }
     }
 }
