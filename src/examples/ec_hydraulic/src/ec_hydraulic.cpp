@@ -258,6 +258,7 @@ int main(int argc, char * const argv[])
             for ( const auto &[esc_id, pdo_rx] : pump_status_map){
                 pump_pdo_rx=pdo_rx;
                 DPRINTF("PUMP ID: [%d], Pressure: [%hhu] \n",esc_id,pump_pdo_rx.pressure);
+                //std::cout << pump_pdo_rx << std::endl;
             }
             //******************* PUMP Telemetry ********
             
