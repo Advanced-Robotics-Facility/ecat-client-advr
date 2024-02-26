@@ -171,6 +171,7 @@ void EcGuiPdo::read()
     read_ft6_status();
     read_pow_status();
     read_imu_status();
+    read_valve_status();
     /************************************* READ PDOs  ********************************************/
 }
 
@@ -352,6 +353,29 @@ void EcGuiPdo::read_imu_status()
         }
      }
     /*************************************IMU*****************************************************************/
+}
+void EcGuiPdo::read_valve_status()
+{
+     ValveStatusMap valve_status_map;
+    _client->get_valve_status(valve_status_map);
+    /*************************************VALVE*****************************************************************/
+     if(!valve_status_map.empty())
+     {
+        for ( const auto &[esc_id, valve_status] : valve_status_map)
+        {
+            std::string esc_id_name="valve_id_"+std::to_string(esc_id);
+            QTreeWidgetItem *topLevel=nullptr;
+
+            topLevel=search_slave_into_treewid(esc_id_name);
+            if(!topLevel)
+            {
+                topLevel= initial_setup(esc_id_name,_valve_pdo_fields);
+            }
+
+            fill_data(esc_id_name,topLevel,_valve_pdo_fields,valve_status);
+        }
+     }
+    /*************************************VALVE*****************************************************************/
 }
 
 void EcGuiPdo::update_plot()

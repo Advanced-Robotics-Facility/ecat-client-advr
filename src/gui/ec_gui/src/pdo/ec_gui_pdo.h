@@ -86,6 +86,12 @@ private:
                                           "orientation_z",
                                           "orientation_w"};
                                           
+        QList<QString> _valve_pdo_fields=  {"encoder_position",
+                                            "torque",
+                                            "pressure1",
+                                            "pressure2",
+                                            "temperature"};
+                                          
         void create_color(std::string esc_id_pdo);
         QTreeWidgetItem * search_slave_into_treewid(std::string esc_id_name);
         QTreeWidgetItem * initial_setup(std::string esc_id_name,QList<QString> pdo_fields);
@@ -97,6 +103,7 @@ private:
         void read_ft6_status();
         void read_pow_status();
         void read_imu_status();
+        void read_valve_status();
         //************************ READ PDO ******************************
         
         //************************ WRITE PDO ******************************
