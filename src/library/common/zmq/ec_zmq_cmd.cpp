@@ -335,10 +335,56 @@ void EcZmqCmd::feed_motors()
 
 void EcZmqCmd::feed_valves()
 {
+    if(!_client_alive){
+        _consoleLog->error("Client not alive, please stop the main process!");
+        return;
+    }
+    else{
+            
+        pthread_mutex_lock(&_mutex_valve_reference);
+        if(_valve_ref_flags!=RefFlags::FLAG_NONE){
+            if(!_valves_references.empty()){
+//                 auto fault=_ec_repl_cmd->Motors_PDO_cmd(_motors_references);
+//                 if(fault.get_type() == EC_REPL_CMD_STATUS::TIMEOUT){
+//                     _consoleLog->error("Client not alive, please stop the main process!");
+//                     _client_alive=false;
+//                 }
+                _ec_logger->log_valve_ref(_valves_references);
+                
+            }
+            else{
+                _consoleLog->error("Got empty valves references structure");
+            }
+        }
+        pthread_mutex_unlock(&_mutex_valve_reference);
+    }
 }
 
 void EcZmqCmd::feed_pumps()
 {
+    if(!_client_alive){
+        _consoleLog->error("Client not alive, please stop the main process!");
+        return;
+    }
+    else{
+            
+        pthread_mutex_lock(&_mutex_pump_reference);
+        if(_pump_ref_flags!=RefFlags::FLAG_NONE){
+            if(!_pumps_references.empty()){
+//                 auto fault=_ec_repl_cmd->Motors_PDO_cmd(_motors_references);
+//                 if(fault.get_type() == EC_REPL_CMD_STATUS::TIMEOUT){
+//                     _consoleLog->error("Client not alive, please stop the main process!");
+//                     _client_alive=false;
+//                 }
+                _ec_logger->log_pump_ref(_pumps_references);
+                
+            }
+            else{
+                _consoleLog->error("Got empty pumps references structure");
+            }
+        }
+        pthread_mutex_unlock(&_mutex_pump_reference);
+    }
 }
 
 
