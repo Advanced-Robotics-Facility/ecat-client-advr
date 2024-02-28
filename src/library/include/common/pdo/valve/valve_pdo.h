@@ -4,12 +4,49 @@
 #include <pb_utils.h>
 #include "common/pipe/ec_pipe_pdo.h"
 #include "common/zmq/ec_zmq_pdo.h"
-#include <esc/hyq_knee_esc.h>
 
-typedef struct VALVE_PDO_t{
-    
-    std::vector<std::string>valve_pb_name = {"encoder_position", "torque", "pressure1","pressure2", "temperature"};
-}VALVE_PDO_t;
+namespace ValvePdoRx{
+    static const std::vector<std::string>name = {"encoder_position", "torque", "pressure1","pressure2", "temperature","fault","rtt","op_idx_ack","aux"};
+    static const int pdo_size=9;
+    using pdo_t=std::tuple<float, float, float, float, float,uint16_t,uint16_t,uint16_t,float>;
+    template <typename T>
+    inline bool make_vector_from_tuple(const pdo_t pdo_tuple,std::vector<T>& pdo_vector){
+        if(pdo_vector.size()!=pdo_size){
+           return false;
+        }
+        pdo_vector[0]= std::get<0>(pdo_tuple);
+        pdo_vector[1]= std::get<1>(pdo_tuple);
+        pdo_vector[2]= std::get<2>(pdo_tuple);
+        pdo_vector[3]= std::get<3>(pdo_tuple);
+        pdo_vector[4]= std::get<4>(pdo_tuple);
+        pdo_vector[5]= std::get<5>(pdo_tuple);
+        pdo_vector[6]= std::get<6>(pdo_tuple);
+        pdo_vector[7]= std::get<7>(pdo_tuple);
+        pdo_vector[8]= std::get<8>(pdo_tuple);
+        return true;
+    }
+};
+
+namespace ValvePdoTx{
+    static const std::vector<std::string>name = {"current_ref", "pwm_1", "pwm_2","dout", "fault_ack","ts","op_idx_aux","aux"};
+    static const int pdo_size=8;
+    using pdo_t=std::tuple<float, uint16_t, uint16_t, uint16_t, uint16_t,uint16_t,uint16_t,float>;
+    template <typename T>
+    inline bool make_vector_from_tuple(const pdo_t pdo_tuple,std::vector<T>& pdo_vector){
+        if(pdo_vector.size()!=pdo_size){
+           return false;
+        }
+        pdo_vector[0]= std::get<0>(pdo_tuple);
+        pdo_vector[1]= std::get<1>(pdo_tuple);
+        pdo_vector[2]= std::get<2>(pdo_tuple);
+        pdo_vector[3]= std::get<3>(pdo_tuple);
+        pdo_vector[4]= std::get<4>(pdo_tuple);
+        pdo_vector[5]= std::get<5>(pdo_tuple);
+        pdo_vector[6]= std::get<6>(pdo_tuple);
+        pdo_vector[7]= std::get<7>(pdo_tuple);
+        return true;
+    }
+};
 
 template <class T>
 class ValvePdo: public T{
@@ -23,11 +60,8 @@ public:
 
     void set_to_pb();
     
-    iit::ecat::HyQ_KneeEscPdoTypes::pdo_rx rx_pdo;
-    iit::ecat::HyQ_KneeEscPdoTypes::pdo_tx tx_pdo;
-    
-    std::vector<float> valve_v={0,0,0,0,0};
-
+    ValvePdoRx::pdo_t rx_pdo={0,0,0,0,0,0,0,0,0};
+    ValvePdoTx::pdo_t tx_pdo={0,0,0,0,0,0,0,0};
 };
 
 template < class T >
@@ -47,22 +81,15 @@ inline ValvePdo<T>::~ValvePdo()
 template < class T >
 inline void ValvePdo<T>::get_from_pb() 
 {
-    rx_pdo.encoder_position    = T::pb_rx_pdos.mutable_hyqknee_rx_pdo()->encoder_position();
-    valve_v[0]                 = rx_pdo.encoder_position;
-    rx_pdo.torque              = T::pb_rx_pdos.mutable_hyqknee_rx_pdo()->torque();
-    valve_v[1]                 = rx_pdo.torque;
-    rx_pdo.pressure_1          = T::pb_rx_pdos.mutable_hyqknee_rx_pdo()->pressure_1();
-    valve_v[2]                 = rx_pdo.pressure_1;
-    rx_pdo.pressure_2          = T::pb_rx_pdos.mutable_hyqknee_rx_pdo()->pressure_2();
-    valve_v[3]                 = rx_pdo.pressure_1;
-    rx_pdo.temperature         = T::pb_rx_pdos.mutable_hyqknee_rx_pdo()->temperature();
-    valve_v[4]                 = rx_pdo.temperature; 
-    
-    rx_pdo.fault               = T::pb_rx_pdos.mutable_hyqknee_rx_pdo()->fault();
-    rx_pdo.op_idx_ack          = T::pb_rx_pdos.mutable_hyqknee_rx_pdo()->op_idx_ack();
-    rx_pdo.aux                 = T::pb_rx_pdos.mutable_hyqknee_rx_pdo()->aux();
-    rx_pdo.rtt                 = T::pb_rx_pdos.mutable_hyqknee_rx_pdo()->rtt();
-    
+    std::get<0>(rx_pdo)   = T::pb_rx_pdos.mutable_hyqknee_rx_pdo()->encoder_position();
+    std::get<1>(rx_pdo)   = T::pb_rx_pdos.mutable_hyqknee_rx_pdo()->torque();
+    std::get<2>(rx_pdo)   = T::pb_rx_pdos.mutable_hyqknee_rx_pdo()->pressure_1();
+    std::get<3>(rx_pdo)   = T::pb_rx_pdos.mutable_hyqknee_rx_pdo()->pressure_2();
+    std::get<4>(rx_pdo)   = T::pb_rx_pdos.mutable_hyqknee_rx_pdo()->temperature();
+    std::get<5>(rx_pdo)   = T::pb_rx_pdos.mutable_hyqknee_rx_pdo()->fault();
+    std::get<6>(rx_pdo)   = T::pb_rx_pdos.mutable_hyqknee_rx_pdo()->rtt();
+    std::get<7>(rx_pdo)   = T::pb_rx_pdos.mutable_hyqknee_rx_pdo()->op_idx_ack();
+    std::get<8>(rx_pdo)   = T::pb_rx_pdos.mutable_hyqknee_rx_pdo()->aux();
 }
 
 template < class T >
@@ -72,10 +99,14 @@ inline void ValvePdo<T>::set_to_pb()
     // Type
     T::pb_tx_pdos.set_type(iit::advr::Ec_slave_pdo::TX_HYQ_KNEE);
     
-    T::pb_tx_pdos.mutable_hyqknee_tx_pdo()->set_current_ref(tx_pdo.current_ref);
-    T::pb_tx_pdos.mutable_hyqknee_tx_pdo()->set_pwm_1(tx_pdo.pwm_1);  
-    T::pb_tx_pdos.mutable_hyqknee_tx_pdo()->set_pwm_2(tx_pdo.pwm_2);
-    T::pb_tx_pdos.mutable_hyqknee_tx_pdo()->set_dout(tx_pdo.dout);
+    T::pb_tx_pdos.mutable_hyqknee_tx_pdo()->set_current_ref(std::get<0>(tx_pdo));
+    T::pb_tx_pdos.mutable_hyqknee_tx_pdo()->set_pwm_1(std::get<1>(tx_pdo));  
+    T::pb_tx_pdos.mutable_hyqknee_tx_pdo()->set_pwm_2(std::get<2>(tx_pdo));
+    T::pb_tx_pdos.mutable_hyqknee_tx_pdo()->set_dout(std::get<3>(tx_pdo));
+    T::pb_tx_pdos.mutable_hyqknee_tx_pdo()->set_fault_ack(std::get<4>(tx_pdo));  
+    T::pb_tx_pdos.mutable_hyqknee_tx_pdo()->set_ts(std::get<5>(tx_pdo));
+    T::pb_tx_pdos.mutable_hyqknee_tx_pdo()->set_op_idx_aux(std::get<6>(tx_pdo));
+    T::pb_tx_pdos.mutable_hyqknee_tx_pdo()->set_aux(std::get<7>(tx_pdo));
 }
 
 template class ValvePdo<EcPipePdo>;

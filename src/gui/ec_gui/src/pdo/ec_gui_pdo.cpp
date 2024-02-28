@@ -37,6 +37,9 @@ _ec_gui_slider(ec_gui_slider)
     _update_plot=_first_update=_clear_plot=false;
     
     _slider_map=_ec_gui_slider->get_sliders();
+    
+    _valve_rx_v.resize(ValvePdoRx::pdo_size);
+    _valve_tx_v.resize(ValvePdoTx::pdo_size);
 }
       
 EcGuiPdo::~EcGuiPdo(){}
@@ -88,6 +91,17 @@ void EcGuiPdo::create_color(std::string esc_id_pdo)
     _color_pdo_map[esc_id_pdo] = color;
 }
 /************************************* GENERATE COLORS FOR THE GRAPH ***************************************/
+
+/************************************* CONVERT PDO NAME***************************************/
+QList<QString> EcGuiPdo::get_pdo_fields(const std::vector<std::string> pdo_name)
+{
+    QList<QString> list;
+    list.reserve(pdo_name.size());
+    for(int i=0;i<pdo_name.size();i++){
+        list.push_back(QString::fromStdString(pdo_name[i]));
+    }
+    return list;
+}
 
 /************************************* INITIAL SETUP ***************************************/
 QTreeWidgetItem * EcGuiPdo::initial_setup(std::string esc_id_name,QList<QString> pdo_fields)
@@ -361,7 +375,7 @@ void EcGuiPdo::read_valve_status()
     /*************************************VALVE*****************************************************************/
      if(!valve_status_map.empty())
      {
-        for ( const auto &[esc_id, valve_status] : valve_status_map)
+        for ( const auto &[esc_id, valve_rx_pdo] : valve_status_map)
         {
             std::string esc_id_name="valve_id_"+std::to_string(esc_id);
             QTreeWidgetItem *topLevel=nullptr;
@@ -369,10 +383,12 @@ void EcGuiPdo::read_valve_status()
             topLevel=search_slave_into_treewid(esc_id_name);
             if(!topLevel)
             {
+                _valve_pdo_fields=get_pdo_fields(ValvePdoRx::name);
                 topLevel= initial_setup(esc_id_name,_valve_pdo_fields);
             }
-
-            fill_data(esc_id_name,topLevel,_valve_pdo_fields,valve_status);
+            
+            ValvePdoRx::make_vector_from_tuple(valve_rx_pdo,_valve_rx_v);
+            fill_data(esc_id_name,topLevel,_valve_pdo_fields,_valve_rx_v);
         }
      }
     /*************************************VALVE*****************************************************************/

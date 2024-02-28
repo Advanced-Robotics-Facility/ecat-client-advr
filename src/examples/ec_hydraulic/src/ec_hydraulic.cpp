@@ -102,10 +102,7 @@ int main(int argc, char * const argv[])
         ValveStatusMap valve_status_map;
         float encoder_position,tor_valve;           
         float pressure1,pressure2,temperature;   
-        
-        int valve_ref_index=0;
-        std::vector<VR> valves_ref;
-        
+        ValveReferenceMap valves_ref;
         
         // Motor
         float  link_pos,motor_pos,link_vel,motor_vel,torque,aux;
@@ -125,7 +122,7 @@ int main(int argc, char * const argv[])
         client->get_valve_status(valve_status_map);
         client->get_motors_status(motors_status_map);
         
-        for ( const auto &[esc_id, valve_status] : valve_status_map){
+        for ( const auto &[esc_id, valve_rx_pdo] : valve_status_map){
             valves_trj_1[esc_id]=valve_curr_ref;
             valves_trj_2[esc_id]=-valve_curr_ref;
             valves_set_zero[esc_id]=0.0;
@@ -161,7 +158,7 @@ int main(int argc, char * const argv[])
         valves_set_trj=valves_trj_1;
         //valves references check
         for ( const auto &[esc_id, curr_ref] : valves_set_ref){
-            valves_ref.push_back(std::make_tuple(esc_id,curr_ref,0,0,0));
+            valves_ref[esc_id]=std::make_tuple(curr_ref,0,0,0,0,0,0,0);
         }
         
         // motors references check
@@ -264,12 +261,12 @@ int main(int argc, char * const argv[])
             
             //******************* Valve Telemetry ********
             client->get_valve_status(valve_status_map);
-            for ( const auto &[esc_id, valve_status] : valve_status_map){
-                encoder_position=   valve_status[0];
-                tor_valve =         valve_status[1];
-                pressure1 =         valve_status[2];
-                pressure2 =         valve_status[3];
-                temperature=        valve_status[4];
+            for ( const auto &[esc_id, valve_rx_pdo] : valve_status_map){
+                encoder_position=   std::get<0>(valve_rx_pdo);
+                tor_valve =         std::get<1>(valve_rx_pdo);
+                pressure1 =         std::get<2>(valve_rx_pdo);
+                pressure2 =         std::get<3>(valve_rx_pdo);
+                temperature=        std::get<4>(valve_rx_pdo);
                 //DPRINTF("VALVE ID: [%d], Encoder pos: [%f], Torque: [%f]\n",esc_id,encoder_position,tor_valve);
                 //DPRINTF("VALVE ID: [%d], Press1: [%f], Press2: [%f],Temp: [%f]\n",esc_id,pressure1,pressure2,temperature);
             }
@@ -316,10 +313,8 @@ int main(int argc, char * const argv[])
                 }
                 
                 // ************************* SEND ALWAYS REFERENCES***********************************//
-                valve_ref_index=0;
                 for ( const auto &[esc_id, curr_ref] : valves_set_ref){
-                    std::get<1>(valves_ref[valve_ref_index]) = curr_ref;
-                    valve_ref_index++;
+                    std::get<0>(valves_ref[esc_id]) = curr_ref;
                 }
                 client->set_valves_references(RefFlags::FLAG_MULTI_REF, valves_ref);
                 // ************************* SEND ALWAYS REFERENCES***********************************//

@@ -125,7 +125,7 @@ void EcIface::get_valve_status(ValveStatusMap &valve_status_map)
     pthread_mutex_unlock(&_mutex_valve_status);
 }
 
-void EcIface::set_valves_references(const RefFlags valve_ref_flags,const std::vector<VR> valves_references)
+void EcIface::set_valves_references(const RefFlags valve_ref_flags,const ValveReferenceMap valves_references)
 {
     pthread_mutex_lock(&_mutex_valve_reference);
     _valve_ref_flags=valve_ref_flags;

@@ -4,8 +4,9 @@ EcLogger::EcLogger()
 {
     _motor_ref_eigen.resize(11);
     _motor_sts_eigen.resize(12);
-    _valve_ref_eigen.resize(4);
     _pump_ref_eigen.resize(25);
+    _valve_rx_v.resize(ValvePdoRx::pdo_size);
+    _valve_tx_v.resize(ValvePdoTx::pdo_size);
 }
 
 void EcLogger::init_mat_logger(SSI slave_descr)
@@ -91,7 +92,7 @@ void EcLogger::start_mat_logger()
                 if(_log_valve_map.count(esc_id)==0){
                     std::string valve_sts_id="valve_sts_id_"+std::to_string(esc_id);
                     _log_valve_map[esc_id]=valve_sts_id;
-                    _valve_status_logger->create(valve_sts_id,5);
+                    _valve_status_logger->create(valve_sts_id,9);
                 }
                 
                 if(_valves_references_logger==nullptr){
@@ -102,7 +103,7 @@ void EcLogger::start_mat_logger()
                 if(_log_valve_ref_map.count(esc_id)==0){
                     std::string valve_ref_id="valve_ref_id_"+std::to_string(esc_id);
                     _log_valve_ref_map[esc_id]=valve_ref_id;
-                    _valves_references_logger->create(valve_ref_id,_valve_ref_eigen.size());
+                    _valves_references_logger->create(valve_ref_id,8);
                 }
                 
                 
@@ -221,16 +222,13 @@ void EcLogger::log_imu_sts(const ImuStatusMap imu_sts_map)
     }
 }
 
-void EcLogger::log_valve_ref(const std::vector<VR> valves_ref)
+void EcLogger::log_valve_ref(const ValveReferenceMap valves_ref)
 {
     if(_valves_references_logger != nullptr){
-        for ( const auto &[esc_id,curr_ref,pwm_1,pwm_2,dout] : valves_ref) {
+        for ( const auto &[esc_id,valve_tx_pdo] : valves_ref) {
             if(_log_valve_ref_map.count(esc_id)>0){
-                _valve_ref_eigen(0)=curr_ref;
-                _valve_ref_eigen(1)=pwm_1;
-                _valve_ref_eigen(2)=pwm_2;
-                _valve_ref_eigen(3)=dout;
-                _valves_references_logger->add(_log_valve_ref_map[esc_id], _valve_ref_eigen);
+                ValvePdoTx::make_vector_from_tuple(valve_tx_pdo,_valve_tx_v);
+                _valves_references_logger->add(_log_valve_ref_map[esc_id],_valve_tx_v);
             }
         }
     }
@@ -239,9 +237,10 @@ void EcLogger::log_valve_ref(const std::vector<VR> valves_ref)
 void EcLogger::log_valve_sts(const ValveStatusMap valve_sts_map)
 {
     if(_valve_status_logger != nullptr){
-        for ( const auto &[esc_id, valve_sts] : valve_sts_map) {
+        for ( const auto &[esc_id, valve_rx_pdo] : valve_sts_map) {
             if(_log_valve_map.count(esc_id)>0){
-                _valve_status_logger->add(_log_valve_map[esc_id],valve_sts);
+                ValvePdoRx::make_vector_from_tuple(valve_rx_pdo,_valve_rx_v);
+                _valve_status_logger->add(_log_valve_map[esc_id],_valve_rx_v);
             }
         }
     }

@@ -86,14 +86,11 @@ private:
                                           "orientation_z",
                                           "orientation_w"};
                                           
-        QList<QString> _valve_pdo_fields=  {"encoder_position",
-                                            "torque",
-                                            "pressure1",
-                                            "pressure2",
-                                            "temperature"};
+        QList<QString> _valve_pdo_fields;
                                           
         void create_color(std::string esc_id_pdo);
         QTreeWidgetItem * search_slave_into_treewid(std::string esc_id_name);
+        QList<QString> get_pdo_fields(const std::vector<std::string> pdo_name);
         QTreeWidgetItem * initial_setup(std::string esc_id_name,QList<QString> pdo_fields);
         void fill_data(std::string esc_id_name,QTreeWidgetItem * topLevel,QList<QString> pdo_fields,std::vector<float> pdo);
         void onStopPlotting();
@@ -115,6 +112,7 @@ private:
         RefFlags _motor_ref_flags;
         std::vector<float> _gains;
         float _ctrl_cmd;
+        std::vector<float> _valve_rx_v,_valve_tx_v;
         //************************ WRITE PDO ******************************
 
 };

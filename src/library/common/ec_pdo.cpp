@@ -82,8 +82,8 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                 case iit::ecat::HYQ_KNEE:{
                         auto valve_pdo = std::make_shared<ValvePdo<T>>(_ec_pdo_start, id);
                         _valve_pdo_map[id]=valve_pdo;
-                        _valve_status_map[id]= valve_pdo->valve_v;
-                        _valves_references.push_back(std::make_tuple(id, 0.0,0,0,0));
+                        _valve_status_map[id]=  valve_pdo->rx_pdo;
+                        _valves_references[id]= valve_pdo->tx_pdo;
                 }break;
                 case iit::ecat::HYQ_HPU:{
                         auto pump_pdo = std::make_shared<PumpPdo<T>>(_ec_pdo_start, id);
@@ -295,7 +295,7 @@ void EcPdo<T>::read_valve_pdo()
                 nbytes = valve_pdo->read();
             } while ( nbytes > 0);
             //////////////////////////////////////////////////////////////
-            _valve_status_map[id]= valve_pdo->valve_v;
+            _valve_status_map[id]= valve_pdo->rx_pdo;
         }
         catch ( std::out_of_range ) {};   
     }
@@ -307,20 +307,10 @@ void EcPdo<T>::write_valve_pdo()
 {
     pthread_mutex_lock(&_mutex_valve_reference);
     if(_valve_ref_flags!=RefFlags::FLAG_NONE){
-        for ( const auto &[bId,curr_ref,pwm_1,pwm_2,dout] : _valves_references ) {
-            if(_valve_pdo_map.count(bId) > 0 ){
-                auto valve_pdo=_valve_pdo_map[bId];
-                valve_pdo->tx_pdo.current_ref=curr_ref;
-                valve_pdo->tx_pdo.pwm_1=pwm_1;
-                valve_pdo->tx_pdo.pwm_2=pwm_2;
-                valve_pdo->tx_pdo.dout=dout;
-                valve_pdo->write();
-            }
-            else{
-#ifndef TEST_LIBRARY 
-                DPRINTF("Cannot send valve reference to id 0x%04X \n", bId);
-#endif                   
-            }
+        for ( const auto &[bId,valve_tx] : _valves_references ) {
+            auto valve_pdo=_valve_pdo_map[bId];    
+            valve_pdo->tx_pdo=valve_tx;
+            valve_pdo->write();
         }
         _ec_logger->log_valve_ref(_valves_references);
     }
