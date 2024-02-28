@@ -281,7 +281,7 @@ int main(int argc, char * const argv[])
             //******************* IMU Telemetry ********
             
             
-            //******************* PUMP Telemetry ********
+            //******************* Pump Telemetry ********
             client->get_pump_status(pump_status_map);
             for ( const auto &[esc_id, pump_rx_pdo] : pump_status_map){
                 //DPRINTF("PUMP ID: [%d], Pressure: [%hhu] \n",esc_id,std::get<0>(pump_rx_pdo));
@@ -290,7 +290,7 @@ int main(int argc, char * const argv[])
                     first_pump_RX=true;
                 }
             }
-            //******************* PUMP Telemetry ********
+            //******************* Pump Telemetry ********
             
             //******************* Valve Telemetry ********
             client->get_valve_status(valve_status_map);
