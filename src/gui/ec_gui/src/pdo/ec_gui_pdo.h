@@ -86,7 +86,7 @@ private:
                                           "orientation_z",
                                           "orientation_w"};
                                           
-        QList<QString> _valve_pdo_fields;
+        QList<QString> _valve_pdo_fields,_pump_pdo_fields;
                                           
         void create_color(std::string esc_id_pdo);
         QTreeWidgetItem * search_slave_into_treewid(std::string esc_id_name);
@@ -101,6 +101,7 @@ private:
         void read_pow_status();
         void read_imu_status();
         void read_valve_status();
+        void read_pump_status();
         //************************ READ PDO ******************************
         
         //************************ WRITE PDO ******************************
@@ -112,7 +113,7 @@ private:
         RefFlags _motor_ref_flags;
         std::vector<float> _gains;
         float _ctrl_cmd;
-        std::vector<float> _valve_rx_v,_valve_tx_v;
+        std::vector<float> _valve_rx_v,_pump_rx_v;
         //************************ WRITE PDO ******************************
 
 };

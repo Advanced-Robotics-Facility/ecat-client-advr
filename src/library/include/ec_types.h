@@ -29,9 +29,8 @@ using ImuStatusMap = std::map<int32_t, std::vector<float>>;
 
 using ValveStatusMap=    std::map<int32_t, ValvePdoRx::pdo_t>;
 using ValveReferenceMap= std::map<int32_t, ValvePdoTx::pdo_t>;    
-
-using PumpStatusMap =   std::map<int32_t, iit::ecat::HyQ_HpuEscPdoTypes::pdo_rx>;
-using PumpReferenceMap= std::map<int32_t, iit::ecat::HyQ_HpuEscPdoTypes::pdo_tx>;     
+using PumpStatusMap =    std::map<int32_t, PumpPdoRx::pdo_t>;
+using PumpReferenceMap=  std::map<int32_t, PumpPdoTx::pdo_t >;     
 
 // MotorsRef
 using MR = std::tuple<int32_t, int32_t,                     // bId, ctrl_type

@@ -36,7 +36,7 @@ public:
     // EtherCAT Client ADVR Facilty setters
     void set_motors_references(const RefFlags, const std::vector<MR>);
     void set_valves_references(const RefFlags valve_ref_flags,const ValveReferenceMap valves_references);
-    void set_pump_references(const RefFlags pump_ref_flags,const PumpReferenceMap pumps_references);
+    void set_pumps_references(const RefFlags pump_ref_flags,const PumpReferenceMap pumps_references);
     
     // EtherCAT Client ADVR Facilty manager
     virtual void start_client(uint32_t period_ms,bool logging) = 0;

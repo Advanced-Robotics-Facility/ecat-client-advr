@@ -336,7 +336,7 @@ void EcPdo<T>::read_pump_pdo()
         }
         catch ( std::out_of_range ) {};   
     }
-    //_ec_logger->log_pow_sts(_pow_status_map);
+    _ec_logger->log_pump_sts(_pump_status_map);
     pthread_mutex_unlock(&_mutex_pump_status);
 }
 template < class T >
@@ -347,8 +347,9 @@ void EcPdo<T>::write_pump_pdo()
         for (auto const &[id,pump_tx] : _pumps_references)  {
             auto pump_pdo=_pump_pdo_map[id];    
             pump_pdo->tx_pdo=pump_tx;
-            pump_pdo->write();
+            //pump_pdo->write();
         }
+        _ec_logger->log_pump_ref(_pumps_references);
     }
     pthread_mutex_unlock(&_mutex_pump_reference);
 }

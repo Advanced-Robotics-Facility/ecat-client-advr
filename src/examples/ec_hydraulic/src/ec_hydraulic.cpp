@@ -69,12 +69,17 @@ int main(int argc, char * const argv[])
         double trj_time_ms=ec_cfg.trajectory_time_sec*1000;
         double set_trj_time_ms=hm_time_ms;
         
+        std::string STM_sts;
         bool run=true;
-        bool first_Rx=false;
+        bool fisr_motor_RX=false;
         
-        std::string STM_sts="Homing";
         std::map<int,double> q_set_trj=ec_cfg.homing_position;
         std::map<int,double> q_ref,q_start,qdot;
+        
+        bool first_pump_RX=false;
+        uint8_t pump_pressure_ref=180; //bar
+        std::map<int,uint8_t> pumps_trj_1,pumps_set_zero,pumps_set_trj;
+        std::map<int,uint8_t> pumps_set_ref,pumps_start;
         
         double valve_curr_ref=5.0; //mA
         std::map<int,double> valves_trj_1,valves_trj_2,valves_set_zero,valves_set_trj;
@@ -95,8 +100,7 @@ int main(int argc, char * const argv[])
         
         // Pump
         PumpStatusMap pump_status_map;
-        iit::ecat::HyQ_HpuEscPdoTypes::pdo_rx pump_pdo_rx;
-        iit::ecat::HyQ_HpuEscPdoTypes::pdo_rx pump_pdo_tx;
+        PumpReferenceMap pumps_ref;
         
         // Valve
         ValveStatusMap valve_status_map;
@@ -121,6 +125,12 @@ int main(int argc, char * const argv[])
         client->get_pump_status(pump_status_map);
         client->get_valve_status(valve_status_map);
         client->get_motors_status(motors_status_map);
+        
+        for ( const auto &[esc_id, pump_rx_pdo] : pump_status_map){
+            pumps_trj_1[esc_id]=pump_pressure_ref;
+            pumps_set_zero[esc_id]=0.0;
+            pumps_set_ref[esc_id]=pumps_start[esc_id]=std::get<0>(pump_rx_pdo);
+        }
         
         for ( const auto &[esc_id, valve_rx_pdo] : valve_status_map){
             valves_trj_1[esc_id]=valve_curr_ref;
@@ -153,7 +163,21 @@ int main(int argc, char * const argv[])
                 valves_set_ref[valve_id]=valves_start[valve_id]=valves_set_zero[valve_id];
             }
         }
+        if(pumps_set_ref.empty()){
+            for(int i=0; i<ec_cfg.pump_id.size();i++){
+                int pump_id=ec_cfg.pump_id[i];
+                pumps_trj_1[pump_id]=pump_pressure_ref;
+                pumps_set_zero[pump_id]=0.0;
+                pumps_set_ref[pump_id]=pumps_start[pump_id]=pumps_set_zero[pump_id];
+            }
+        }
 #endif
+
+        pumps_set_trj=pumps_trj_1;
+        //valves references check
+        for ( const auto &[esc_id, press_ref] : pumps_set_trj){
+            pumps_ref[esc_id]=std::make_tuple(press_ref,0,0,0,0,0,0,0,0);
+        }
 
         valves_set_trj=valves_trj_1;
         //valves references check
@@ -165,7 +189,7 @@ int main(int argc, char * const argv[])
         if(!q_ref.empty()){
             if(q_start.size() == q_set_trj.size()){
                 //Open Loop SENSE
-                first_Rx=true;
+                fisr_motor_RX=true;
             }
             else{
                 throw std::runtime_error("fatal error: different size of initial position and trajectory vectors");
@@ -197,8 +221,15 @@ int main(int argc, char * const argv[])
             }
         }
         
-        if(motors_ref.empty() && valves_ref.empty()){
-            throw std::runtime_error("fatal error: motor references and valves references are both empty");
+        if(motors_ref.empty() && valves_ref.empty() && pumps_ref.empty()){
+            throw std::runtime_error("fatal error: motor references, pump reference and valves references are both empty");
+        }
+        
+        if(!pumps_ref.empty()){
+            STM_sts="Pressure";
+        }
+        else{
+            STM_sts="Homing";
         }
         // memory allocation
                 
@@ -252,10 +283,12 @@ int main(int argc, char * const argv[])
             
             //******************* PUMP Telemetry ********
             client->get_pump_status(pump_status_map);
-            for ( const auto &[esc_id, pdo_rx] : pump_status_map){
-                pump_pdo_rx=pdo_rx;
-                DPRINTF("PUMP ID: [%d], Pressure: [%hhu] \n",esc_id,pump_pdo_rx.pressure);
-                //std::cout << pump_pdo_rx << std::endl;
+            for ( const auto &[esc_id, pump_rx_pdo] : pump_status_map){
+                //DPRINTF("PUMP ID: [%d], Pressure: [%hhu] \n",esc_id,std::get<0>(pump_rx_pdo));
+                if(!first_pump_RX){
+                    pumps_start[esc_id]=std::get<0>(pump_rx_pdo);
+                    first_pump_RX=true;
+                }
             }
             //******************* PUMP Telemetry ********
             
@@ -290,7 +323,7 @@ int main(int argc, char * const argv[])
                             //Closed Loop SENSE for motor velocity
                             qdot[esc_id] = motor_vel;
                             
-                            if(!first_Rx)
+                            if(!fisr_motor_RX)
                             {
                                 q_start[esc_id]=motor_pos; // get actual motor position at first time
                             }
@@ -305,11 +338,30 @@ int main(int argc, char * const argv[])
             // quintic poly 6t^5 - 15t^4 + 10t^3
             alpha = ((6*tau - 15)*tau + 10)*tau*tau*tau;
             
+            // Pump references
+            if(!pumps_ref.empty()){
+                if(STM_sts=="Pressure"){
+                    // interpolate
+                    for ( const auto &[esc_id, target] : pumps_set_trj){
+                        pumps_set_ref[esc_id] = pumps_start[esc_id] + alpha * (target - pumps_start[esc_id]);
+                    }
+                }
+                
+                // ************************* SEND ALWAYS REFERENCES***********************************//
+                for ( const auto &[esc_id, press_ref] : pumps_set_ref){
+                    std::get<0>(pumps_ref[esc_id]) = press_ref;
+                }
+                client->set_pumps_references(RefFlags::FLAG_MULTI_REF, pumps_ref);
+                // ************************* SEND ALWAYS REFERENCES***********************************//
+            }
+            
             // Valves references
             if(!valves_ref.empty()){
-                // interpolate
-                for ( const auto &[esc_id, target] : valves_set_trj){
-                    valves_set_ref[esc_id] = valves_start[esc_id] + alpha * (target - valves_start[esc_id]);
+                if(STM_sts!="Pressure"){
+                    // interpolate
+                    for ( const auto &[esc_id, target] : valves_set_trj){
+                        valves_set_ref[esc_id] = valves_start[esc_id] + alpha * (target - valves_start[esc_id]);
+                    }
                 }
                 
                 // ************************* SEND ALWAYS REFERENCES***********************************//
@@ -323,13 +375,15 @@ int main(int argc, char * const argv[])
             
             // Motors references
             if(!q_ref.empty()){
-                // interpolate
-                for(int i=0; i<q_set_trj.size();i++)
-                {
-                    int id=motor_id_vector[i];
-                    if(q_set_trj.count(id)>0)
+                if(STM_sts!="Pressure"){
+                    // interpolate
+                    for(int i=0; i<q_set_trj.size();i++)
                     {
-                        q_ref[id] = q_start[id] + alpha * (q_set_trj[id] - q_start[id]);
+                        int id=motor_id_vector[i];
+                        if(q_set_trj.count(id)>0)
+                        {
+                            q_ref[id] = q_start[id] + alpha * (q_set_trj[id] - q_start[id]);
+                        }
                     }
                 }
                 
@@ -345,8 +399,27 @@ int main(int argc, char * const argv[])
 
             // get period ns
             time_ns = iit::ecat::get_time_ns();
-                
-            if((time_elapsed_ms>=hm_time_ms)&&(STM_sts=="Homing"))
+            
+            if((time_elapsed_ms>=hm_time_ms)&&(STM_sts=="Pressure"))
+            {
+                if(trajectory_counter==ec_cfg.repeat_trj){
+                    run=false;
+                }
+                else{
+                    STM_sts="Homing";
+                    start_time_ns=time_ns;
+                    set_trj_time_ms=hm_time_ms;
+                    
+                    q_set_trj=ec_cfg.homing_position;
+                    q_start=q_ref;
+        
+                    valves_set_trj=valves_trj_1;
+                    valves_start=valves_set_ref;
+                    
+                    tau=alpha=0;
+                }
+            }
+            else if((time_elapsed_ms>=hm_time_ms)&&(STM_sts=="Homing"))
             {
                 STM_sts="Trajectory";
                 start_time_ns=time_ns;
@@ -371,8 +444,14 @@ int main(int argc, char * const argv[])
             {
                 if(trajectory_counter==ec_cfg.repeat_trj)
                 {
+                    STM_sts="Pressure";
                     start_time_ns=time_ns;
-                    run=false;
+                    set_trj_time_ms=hm_time_ms;
+                    
+                    pumps_set_trj=pumps_set_zero;
+                    pumps_start=pumps_set_ref;
+                    
+                    tau=alpha=0;
                 }
                 else
                 {

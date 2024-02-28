@@ -5,6 +5,8 @@ EcLogger::EcLogger()
     _motor_ref_eigen.resize(11);
     _motor_sts_eigen.resize(12);
     _pump_ref_eigen.resize(25);
+    _pump_rx_v.resize(PumpPdoRx::pdo_size);
+    _pump_tx_v.resize(PumpPdoTx::pdo_size);
     _valve_rx_v.resize(ValvePdoRx::pdo_size);
     _valve_tx_v.resize(ValvePdoTx::pdo_size);
 }
@@ -92,7 +94,7 @@ void EcLogger::start_mat_logger()
                 if(_log_valve_map.count(esc_id)==0){
                     std::string valve_sts_id="valve_sts_id_"+std::to_string(esc_id);
                     _log_valve_map[esc_id]=valve_sts_id;
-                    _valve_status_logger->create(valve_sts_id,9);
+                    _valve_status_logger->create(valve_sts_id,ValvePdoRx::pdo_size);
                 }
                 
                 if(_valves_references_logger==nullptr){
@@ -103,7 +105,7 @@ void EcLogger::start_mat_logger()
                 if(_log_valve_ref_map.count(esc_id)==0){
                     std::string valve_ref_id="valve_ref_id_"+std::to_string(esc_id);
                     _log_valve_ref_map[esc_id]=valve_ref_id;
-                    _valves_references_logger->create(valve_ref_id,8);
+                    _valves_references_logger->create(valve_ref_id,ValvePdoTx::pdo_size);
                 }
                 
                 
@@ -116,8 +118,21 @@ void EcLogger::start_mat_logger()
                 if(_log_pump_map.count(esc_id)==0){
                     std::string pump_id="pump_id_"+std::to_string(esc_id);
                     _log_pump_map[esc_id]=pump_id;
-                    _pump_status_logger->create(pump_id,6);
+                    _pump_status_logger->create(pump_id,PumpPdoRx::pdo_size);
                 }
+                
+                if(_pumps_references_logger==nullptr){
+                    _pumps_references_logger = XBot::MatLogger2::MakeLogger("/tmp/pumps_references_logger");
+                    _pumps_references_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
+                }
+                
+                if(_log_pump_ref_map.count(esc_id)==0){
+                    std::string pump_ref_id="pump_ref_id_"+std::to_string(esc_id);
+                    _log_pump_ref_map[esc_id]=pump_ref_id;
+                    _pumps_references_logger->create(pump_ref_id,PumpPdoTx::pdo_size);
+                }
+                
+                
             }break;
                 
             default:
@@ -130,6 +145,7 @@ void EcLogger::stop_mat_logger()
 {
     _motors_references_logger.reset();
     _valves_references_logger.reset();
+    _pumps_references_logger.reset();
     _motors_status_logger.reset();
     _ft_status_logger.reset();
     _pow_status_logger.reset();
@@ -227,8 +243,9 @@ void EcLogger::log_valve_ref(const ValveReferenceMap valves_ref)
     if(_valves_references_logger != nullptr){
         for ( const auto &[esc_id,valve_tx_pdo] : valves_ref) {
             if(_log_valve_ref_map.count(esc_id)>0){
-                ValvePdoTx::make_vector_from_tuple(valve_tx_pdo,_valve_tx_v);
-                _valves_references_logger->add(_log_valve_ref_map[esc_id],_valve_tx_v);
+                if(ValvePdoTx::make_vector_from_tuple(valve_tx_pdo,_valve_tx_v)){
+                    _valves_references_logger->add(_log_valve_ref_map[esc_id],_valve_tx_v);
+                }
             }
         }
     }
@@ -239,8 +256,22 @@ void EcLogger::log_valve_sts(const ValveStatusMap valve_sts_map)
     if(_valve_status_logger != nullptr){
         for ( const auto &[esc_id, valve_rx_pdo] : valve_sts_map) {
             if(_log_valve_map.count(esc_id)>0){
-                ValvePdoRx::make_vector_from_tuple(valve_rx_pdo,_valve_rx_v);
-                _valve_status_logger->add(_log_valve_map[esc_id],_valve_rx_v);
+                if(ValvePdoRx::make_vector_from_tuple(valve_rx_pdo,_valve_rx_v)){
+                    _valve_status_logger->add(_log_valve_map[esc_id],_valve_rx_v);
+                }
+            }
+        }
+    }
+}
+
+void EcLogger::log_pump_ref(const PumpReferenceMap pumps_ref)
+{
+    if(_pumps_references_logger != nullptr){
+        for ( const auto &[esc_id,pump_tx_pdo] : pumps_ref) {
+            if(_log_pump_ref_map.count(esc_id)>0){
+                if(PumpPdoTx::make_vector_from_tuple(pump_tx_pdo,_pump_tx_v)){
+                    _pumps_references_logger->add(_log_pump_ref_map[esc_id],_pump_tx_v);
+                }
             }
         }
     }
@@ -248,9 +279,12 @@ void EcLogger::log_valve_sts(const ValveStatusMap valve_sts_map)
 
 void EcLogger::log_pump_sts(const PumpStatusMap pump_sts_map)
 {
-    if(_valve_status_logger != nullptr){
-        for ( const auto &[esc_id, pdo_rx] : pump_sts_map) {
+    if(_pump_status_logger != nullptr){
+        for ( const auto &[esc_id, pump_rx_pdo] : pump_sts_map) {
             if(_log_pump_map.count(esc_id)>0){
+                if(PumpPdoRx::make_vector_from_tuple(pump_rx_pdo,_pump_rx_v)){
+                    _pump_status_logger->add(_log_pump_map[esc_id],_pump_rx_v);
+                }
             }
         }
     }

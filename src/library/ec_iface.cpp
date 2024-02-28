@@ -140,7 +140,7 @@ void EcIface::get_pump_status(PumpStatusMap &pump_status_map)
     pthread_mutex_unlock(&_mutex_pump_status);
 }
 
-void EcIface::set_pump_references(const RefFlags pump_ref_flags,const PumpReferenceMap pumps_references)
+void EcIface::set_pumps_references(const RefFlags pump_ref_flags,const PumpReferenceMap pumps_references)
 {
     pthread_mutex_lock(&_mutex_pump_reference);
     _pump_ref_flags=pump_ref_flags;

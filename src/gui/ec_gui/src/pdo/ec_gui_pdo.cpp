@@ -39,7 +39,7 @@ _ec_gui_slider(ec_gui_slider)
     _slider_map=_ec_gui_slider->get_sliders();
     
     _valve_rx_v.resize(ValvePdoRx::pdo_size);
-    _valve_tx_v.resize(ValvePdoTx::pdo_size);
+    _pump_rx_v.resize(PumpPdoRx::pdo_size);
 }
       
 EcGuiPdo::~EcGuiPdo(){}
@@ -186,6 +186,7 @@ void EcGuiPdo::read()
     read_pow_status();
     read_imu_status();
     read_valve_status();
+    read_pump_status();
     /************************************* READ PDOs  ********************************************/
 }
 
@@ -386,9 +387,35 @@ void EcGuiPdo::read_valve_status()
                 _valve_pdo_fields=get_pdo_fields(ValvePdoRx::name);
                 topLevel= initial_setup(esc_id_name,_valve_pdo_fields);
             }
-            
-            ValvePdoRx::make_vector_from_tuple(valve_rx_pdo,_valve_rx_v);
-            fill_data(esc_id_name,topLevel,_valve_pdo_fields,_valve_rx_v);
+            if(ValvePdoRx::make_vector_from_tuple(valve_rx_pdo,_valve_rx_v)){
+                fill_data(esc_id_name,topLevel,_valve_pdo_fields,_valve_rx_v);
+            }
+        }
+     }
+    /*************************************VALVE*****************************************************************/
+}
+
+void EcGuiPdo::read_pump_status()
+{
+     PumpStatusMap pump_status_map;
+    _client->get_pump_status(pump_status_map);
+    /*************************************VALVE*****************************************************************/
+     if(!pump_status_map.empty())
+     {
+        for ( const auto &[esc_id, pump_rx_pdo] : pump_status_map)
+        {
+            std::string esc_id_name="pump_id_"+std::to_string(esc_id);
+            QTreeWidgetItem *topLevel=nullptr;
+
+            topLevel=search_slave_into_treewid(esc_id_name);
+            if(!topLevel)
+            {
+                _pump_pdo_fields=get_pdo_fields(PumpPdoRx::name);
+                topLevel= initial_setup(esc_id_name,_pump_pdo_fields);
+            }
+            if(PumpPdoRx::make_vector_from_tuple(pump_rx_pdo,_pump_rx_v)){
+                fill_data(esc_id_name,topLevel,_pump_pdo_fields,_pump_rx_v);
+            }
         }
      }
     /*************************************VALVE*****************************************************************/
