@@ -74,7 +74,8 @@ public:
                     esc_pb[id]=std::static_pointer_cast<EscPb>(circulo_motor_pb);
                 }break;
                 case iit::ecat::AMC_FLEXPRO:{
-
+                    auto flexpro_motor_pb= std::make_shared<FlexProMotor>();
+                    esc_pb[id]=std::static_pointer_cast<EscPb>(flexpro_motor_pb);
                 }break;
                 case iit::ecat::FT6_MSP432:{
                     auto ft_pb= std::make_shared<FtPb>();

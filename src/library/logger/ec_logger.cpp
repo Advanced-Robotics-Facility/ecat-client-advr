@@ -3,8 +3,8 @@
 EcLogger::EcLogger()
 {
     _motor_ref_eigen.resize(11);
-    _motor_sts_eigen.resize(12);
     _pump_ref_eigen.resize(25);
+    _motor_rx_v.resize(MotorPdoRx::pdo_size);
     _imu_rx_v.resize(ImuPdoRx::pdo_size);
     _pump_rx_v.resize(PumpPdoRx::pdo_size);
     _pump_tx_v.resize(PumpPdoTx::pdo_size);
@@ -40,7 +40,7 @@ void EcLogger::start_mat_logger()
                     std::string motor_sts_id="motor_sts_id_"+std::to_string(esc_id);
                     std::cout << "mot_sts_id: " << motor_sts_id << std::endl;
                     _log_motor_sts_map[esc_id]=motor_sts_id;
-                    _motors_status_logger->create(motor_sts_id,_motor_sts_eigen.size());
+                    _motors_status_logger->create(motor_sts_id,MotorPdoRx::pdo_size);
                 }
                 
                 if(_motors_references_logger==nullptr){
@@ -186,21 +186,11 @@ void EcLogger::log_motors_ref(const std::vector<MR> motors_ref)
 void EcLogger::log_motors_sts(const MotorStatusMap motors_sts_map)
 {
     if(_motors_status_logger != nullptr){
-        for ( const auto &[esc_id, motor_sts] : motors_sts_map) {
+        for ( const auto &[esc_id, motor_rx_pdo] : motors_sts_map) {
             if(_log_motor_sts_map.count(esc_id)>0){
-                _motor_sts_eigen(0)=std::get<0>(motor_sts);
-                _motor_sts_eigen(1)=std::get<1>(motor_sts);
-                _motor_sts_eigen(2)=std::get<2>(motor_sts);
-                _motor_sts_eigen(3)=std::get<3>(motor_sts);
-                _motor_sts_eigen(4)=std::get<4>(motor_sts);
-                _motor_sts_eigen(5)=std::get<5>(motor_sts);
-                _motor_sts_eigen(6)=std::get<6>(motor_sts);
-                _motor_sts_eigen(7)=std::get<7>(motor_sts);
-                _motor_sts_eigen(8)=std::get<8>(motor_sts);
-                _motor_sts_eigen(9)=std::get<9>(motor_sts);
-                _motor_sts_eigen(10)=std::get<10>(motor_sts);
-                _motor_sts_eigen(11)=std::get<11>(motor_sts);
-                _motors_status_logger->add(_log_motor_sts_map[esc_id],_motor_sts_eigen);
+                if(MotorPdoRx::make_vector_from_tuple(motor_rx_pdo,_motor_rx_v)){
+                    _motors_status_logger->add(_log_motor_sts_map[esc_id],_motor_rx_v);
+                }
             }
         }
     }

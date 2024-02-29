@@ -103,4 +103,38 @@ public:
     } 
 };
 
+class FlexProMotor : public EscPb{
+
+private:
+    float pos_ref,vel_ref,tor_ref,curr_ref;
+    
+public:
+   
+    virtual void pbDeserialize(iit::advr::Ec_slave_pdo pb)
+    {
+        pos_ref=pb.mutable_cia402_tx_pdo()->target_pos();
+        vel_ref=pb.mutable_cia402_tx_pdo()->target_vel();
+        tor_ref=pb.mutable_cia402_tx_pdo()->target_cur();
+        curr_ref=pb.mutable_cia402_tx_pdo()->target_cur();
+    }
+    
+    virtual void  pbSerialize(iit::advr::Ec_slave_pdo& pb)
+    {
+        static struct timespec ts;
+        clock_gettime(CLOCK_MONOTONIC, &ts);
+        // Type
+        pb.set_type(iit::advr::Ec_slave_pdo::RX_CIA402);
+        // Header
+        pb.mutable_header()->mutable_stamp()->set_sec(ts.tv_sec);
+        pb.mutable_header()->mutable_stamp()->set_nsec(ts.tv_nsec);
+        // Cia402
+        pb.mutable_cia402_rx_pdo()->set_status_word(0);
+        pb.mutable_cia402_rx_pdo()->set_modes_of_op_display(0);
+        pb.mutable_cia402_rx_pdo()->set_drive_status(0);
+        pb.mutable_cia402_rx_pdo()->set_actual_pos(pos_ref);
+        pb.mutable_cia402_rx_pdo()->set_actual_vel(vel_ref);
+        pb.mutable_cia402_rx_pdo()->set_actual_cur(tor_ref);
+    } 
+};
+
 #endif

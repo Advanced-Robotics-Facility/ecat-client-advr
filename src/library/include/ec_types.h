@@ -18,11 +18,8 @@ static std::map<uint32_t,std::string>ec_motors={{iit::ecat::CENT_AC,"Motor_HP"},
                                                 {iit::ecat::LO_PWR_DC_MC,"Motor_LP"},
                                                 {iit::ecat::CIRCULO9,"Circulo9"},
                                                 {iit::ecat::AMC_FLEXPRO,"AMC flex pro"}};
-using MotorStatusMap = std::map<int, std::tuple<float, float, float, float,   // pos_{link,motor}, vel_{link,motor}
-                                                float,                        // torque
-                                                float,float,                  // {motor,board}
-                                                uint32_t, uint32_t,           // fault, rtt, op_idx_ack                  
-                                                uint32_t, float, uint32_t>>;  // aux // cmd_aux_sts
+                                                
+using MotorStatusMap = std::map<int32_t, MotorPdoRx::pdo_t>;
 using FtStatusMap = std::map<int, std::vector<float>>;
 using PwrStatusMap = std::map<int32_t, std::vector<float>>;
 using ImuStatusMap = std::map<int32_t, ImuPdoRx::pdo_t>;

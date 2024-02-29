@@ -41,39 +41,23 @@ inline Circulo9Pdo<T>::~Circulo9Pdo()
 template < class T >
 inline void Circulo9Pdo<T>::get_from_pb() 
 {
-    MotorPdo<T>::rx_pdo.link_pos            = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->link_pos();
-    std::get<0>(MotorPdo<T>::mt_t)          = MotorPdo<T>::rx_pdo.link_pos;
-    MotorPdo<T>::rx_pdo.motor_pos           = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->motor_pos();
-    std::get<1>(MotorPdo<T>::mt_t)          = MotorPdo<T>::rx_pdo.motor_pos;
-    MotorPdo<T>::rx_pdo.link_vel            = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->link_vel();
-    std::get<2>(MotorPdo<T>::mt_t)          = MotorPdo<T>::rx_pdo.link_vel;
-    MotorPdo<T>::rx_pdo.motor_vel           = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->motor_vel();
-    std::get<3>(MotorPdo<T>::mt_t)          = MotorPdo<T>::rx_pdo.motor_vel;
-    MotorPdo<T>::rx_pdo.torque              = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->torque(); 
-    std::get<4>(MotorPdo<T>::mt_t)          = MotorPdo<T>::rx_pdo.torque;
-    MotorPdo<T>::motor_temperature          = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->drive_temp();
-    std::get<5>(MotorPdo<T>::mt_t)          = MotorPdo<T>::motor_temperature;
-    MotorPdo<T>::board_temperature          = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->drive_temp();
-    std::get<6>(MotorPdo<T>::mt_t)          = MotorPdo<T>::board_temperature;
-    MotorPdo<T>::rx_pdo.fault               = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->statusword();
-    std::get<7>(MotorPdo<T>::mt_t)          = MotorPdo<T>::rx_pdo.fault;
+    std::get<0>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->link_pos();
+    std::get<1>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->motor_pos();
+    std::get<2>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->link_vel();
+    std::get<3>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->motor_vel();
+    std::get<4>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->torque(); 
+    std::get<5>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->drive_temp();
+    std::get<6>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->drive_temp();
+    std::get<7>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->statusword();
+    std::get<8>(MotorPdo<T>::rx_pdo)    = 0; //rtt
+    std::get<9>(MotorPdo<T>::rx_pdo)    = 0; //op_idx_ack
+    std::get<10>(MotorPdo<T>::rx_pdo)   = 0; //aux
+    std::get<11>(MotorPdo<T>::rx_pdo)   = 0; //cmd_aux_sts
     
-    //MotorPdo<T>::rx_pdo.rtt                 = 0
-    std::get<8>(MotorPdo<T>::mt_t)          = 0;
-   
-    //MotorPdo<T>::rx_pdo.aux_rd_idx_ack      = 0;
-    std::get<9>(MotorPdo<T>::mt_t)          = 0;
-    
-    //MotorPdo<T>::rx_pdo.aux_rd              = 0;
-    std::get<10>(MotorPdo<T>::mt_t)         = 0;
-    
-    MotorPdo<T>::read_pos_ref               = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->demanded_pos();
-    MotorPdo<T>::read_vel_ref               = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->demanded_vel();
-    MotorPdo<T>::read_torque_ref            = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->demanded_torque();
-    MotorPdo<T>::read_curr_ref              = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->demanded_current();
-    
-    //MotorPdo<T>::rx_pdo.cmd_aux_sts         = 0;
-    std::get<11>(MotorPdo<T>::mt_t)         = 0;
+    MotorPdo<T>::read_pos_ref           = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->demanded_pos();
+    MotorPdo<T>::read_vel_ref           = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->demanded_vel();
+    MotorPdo<T>::read_torque_ref        = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->demanded_torque();
+    MotorPdo<T>::read_curr_ref          = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->demanded_current();
 }
 
 template < class T >

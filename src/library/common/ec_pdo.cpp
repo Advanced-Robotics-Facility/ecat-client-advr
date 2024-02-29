@@ -49,19 +49,19 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                         auto hhcm_pdo = std::make_shared<HhcmPdo<T>>(_ec_pdo_start, id, esc_type);
                         _hhcm_pdo_map[id]=hhcm_pdo;
                         _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(hhcm_pdo);
-                        _motor_status_map[id] = hhcm_pdo->mt_t;
+                        _motor_status_map[id] = hhcm_pdo->rx_pdo;
                         _motors_references.push_back(std::make_tuple(id, 0x00,0,0,0,0,0,0,0,0,0,0,0));
                 }break;
                 case iit::ecat::CIRCULO9:{
                     auto circulo9_pdo = std::make_shared<Circulo9Pdo<T>>(_ec_pdo_start, id, esc_type);
                     _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(circulo9_pdo);
-                    _motor_status_map[id] = circulo9_pdo->mt_t;
+                    _motor_status_map[id] = circulo9_pdo->rx_pdo;
                     _motors_references.push_back(std::make_tuple(id, 0x00,0,0,0,0,0,0,0,0,0,0,0));
                 }break;
                 case iit::ecat::AMC_FLEXPRO:{
                     auto flex_pdo = std::make_shared<FlexproPdo<T>>(_ec_pdo_start, id, esc_type);
                     _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(flex_pdo);
-                    _motor_status_map[id] = flex_pdo->mt_t;
+                    _motor_status_map[id] = flex_pdo->rx_pdo;
                     _motors_references.push_back(std::make_tuple(id, 0x00,0,0,0,0,0,0,0,0,0,0,0));
                 }break;
                 case iit::ecat::FT6_MSP432:{
@@ -141,7 +141,7 @@ void EcPdo<T>::read_motor_pdo()
             } while ( nbytes > 0);
             //////////////////////////////////////////////////////////////
             
-            _motor_status_map[id] = motor_pdo->mt_t;
+            _motor_status_map[id] = motor_pdo->rx_pdo;
         }
         catch ( std::out_of_range ) {};   
     }
