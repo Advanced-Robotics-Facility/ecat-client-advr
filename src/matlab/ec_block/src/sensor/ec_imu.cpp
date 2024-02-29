@@ -105,20 +105,20 @@ bool Imu::getImu(const blockfactory::core::BlockInformation* blockInfo,ImuStatus
                                         output->set(imu_id_index, imu_id_read);
                                     } break;
                     case quat:  {
-                                    output->set(4*imu_id_index, imu_status_id[9]);
-                                    output->set(4*imu_id_index+1, imu_status_id[6]);
-                                    output->set(4*imu_id_index+2, imu_status_id[7]);
-                                    output->set(4*imu_id_index+3, imu_status_id[8]);
+                                    output->set(4*imu_id_index,   std::get<9>(imu_status_id));
+                                    output->set(4*imu_id_index+1, std::get<6>(imu_status_id));
+                                    output->set(4*imu_id_index+2, std::get<7>(imu_status_id));
+                                    output->set(4*imu_id_index+3, std::get<8>(imu_status_id));
                                 }break;
                     case a: {
-                                output->set(3*imu_id_index, imu_status_id[0]);
-                                output->set(3*imu_id_index+1, imu_status_id[1]);
-                                output->set(3*imu_id_index+2, imu_status_id[2]);
+                                output->set(3*imu_id_index,   std::get<0>(imu_status_id));
+                                output->set(3*imu_id_index+1, std::get<1>(imu_status_id));
+                                output->set(3*imu_id_index+2, std::get<2>(imu_status_id));
                             }break;
                     case omega: {
-                                output->set(3*imu_id_index, imu_status_id[3]);
-                                output->set(3*imu_id_index+1, imu_status_id[4]);
-                                output->set(3*imu_id_index+2, imu_status_id[5]);
+                                output->set(3*imu_id_index,   std::get<3>(imu_status_id));
+                                output->set(3*imu_id_index+1, std::get<4>(imu_status_id));
+                                output->set(3*imu_id_index+2, std::get<5>(imu_status_id));
                                 }break;              
                 }
             }

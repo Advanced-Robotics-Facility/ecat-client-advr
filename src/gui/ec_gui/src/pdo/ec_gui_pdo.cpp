@@ -38,6 +38,7 @@ _ec_gui_slider(ec_gui_slider)
     
     _slider_map=_ec_gui_slider->get_sliders();
     
+    _imu_rx_v.resize(ImuPdoRx::pdo_size);
     _valve_rx_v.resize(ValvePdoRx::pdo_size);
     _pump_rx_v.resize(PumpPdoRx::pdo_size);
 }
@@ -353,7 +354,7 @@ void EcGuiPdo::read_imu_status()
     /*************************************IMU*****************************************************************/
      if(!imu_status_map.empty())
      {
-        for ( const auto &[esc_id, imu_status] : imu_status_map)
+        for ( const auto &[esc_id, imu_rx_pdo] : imu_status_map)
         {
             std::string esc_id_name="imu_id_"+std::to_string(esc_id);
             QTreeWidgetItem *topLevel=nullptr;
@@ -361,10 +362,12 @@ void EcGuiPdo::read_imu_status()
             topLevel=search_slave_into_treewid(esc_id_name);
             if(!topLevel)
             {
+                _imu_pdo_fields=get_pdo_fields(ImuPdoRx::name);
                 topLevel= initial_setup(esc_id_name,_imu_pdo_fields);
             }
-
-            fill_data(esc_id_name,topLevel,_imu_pdo_fields,imu_status);
+            if(ImuPdoRx::make_vector_from_tuple(imu_rx_pdo,_imu_rx_v)){
+                fill_data(esc_id_name,topLevel,_imu_pdo_fields,_imu_rx_v);
+            }
         }
      }
     /*************************************IMU*****************************************************************/

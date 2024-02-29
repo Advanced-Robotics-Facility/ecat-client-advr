@@ -25,7 +25,7 @@ using MotorStatusMap = std::map<int, std::tuple<float, float, float, float,   //
                                                 uint32_t, float, uint32_t>>;  // aux // cmd_aux_sts
 using FtStatusMap = std::map<int, std::vector<float>>;
 using PwrStatusMap = std::map<int32_t, std::vector<float>>;
-using ImuStatusMap = std::map<int32_t, std::vector<float>>;
+using ImuStatusMap = std::map<int32_t, ImuPdoRx::pdo_t>;
 
 using ValveStatusMap=    std::map<int32_t, ValvePdoRx::pdo_t>;
 using ValveReferenceMap= std::map<int32_t, ValvePdoTx::pdo_t>;    

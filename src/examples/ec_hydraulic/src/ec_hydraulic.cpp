@@ -263,17 +263,17 @@ int main(int argc, char * const argv[])
             
             //******************* IMU Telemetry ********
             client->get_imu_status(imu_status_map);
-            for ( const auto &[esc_id, imu_status] : imu_status_map){
-                x_rate= imu_status[0];
-                y_rate= imu_status[1];
-                z_rate= imu_status[2];
-                x_acc=  imu_status[3];
-                y_acc=  imu_status[4];
-                z_acc=  imu_status[5];
-                x_quat= imu_status[6];
-                y_quat= imu_status[7];
-                z_quat= imu_status[8];
-                w_quat= imu_status[9];
+            for ( const auto &[esc_id, imu_rx_pdo] : imu_status_map){
+                x_rate= std::get<0>(imu_rx_pdo);
+                y_rate= std::get<1>(imu_rx_pdo);
+                z_rate= std::get<2>(imu_rx_pdo);
+                x_acc=  std::get<3>(imu_rx_pdo);
+                y_acc=  std::get<4>(imu_rx_pdo);
+                z_acc=  std::get<5>(imu_rx_pdo);
+                x_quat= std::get<6>(imu_rx_pdo);
+                y_quat= std::get<7>(imu_rx_pdo);
+                z_quat= std::get<8>(imu_rx_pdo);
+                w_quat= std::get<9>(imu_rx_pdo);
                 //DPRINTF("IMU ID: [%d], X_RATE: [%f], Y_RATE: [%f], Z_RATE: [%f]\n",esc_id,x_rate,y_rate,z_rate);
                 //DPRINTF("IMU ID: [%d], X_ACC: [%f], Y_ACC: [%f], Z_ACC: [%f]\n",esc_id,x_acc,y_acc,z_acc);
                 //DPRINTF("IMU ID: [%d], X_QUAT: [%f], Y_QUAT: [%f], Z_QUAT: [%f], W_QUAT: [%f]\n",esc_id,x_quat,y_quat,z_quat,w_quat);

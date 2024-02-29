@@ -75,17 +75,7 @@ private:
                                          "temp_heatsink",
                                          "temp_batt"};
                                          
-        QList<QString> _imu_pdo_fields=  {"ang_vel_x",
-                                          "ang_vel_y",
-                                          "ang_vel_z",
-                                          "lin_acc_x",
-                                          "lin_acc_y",
-                                          "lin_acc_z",
-                                          "orientation_x",
-                                          "orientation_y",
-                                          "orientation_z",
-                                          "orientation_w"};
-                                          
+        QList<QString> _imu_pdo_fields;                                         
         QList<QString> _valve_pdo_fields,_pump_pdo_fields;
                                           
         void create_color(std::string esc_id_pdo);
@@ -113,6 +103,7 @@ private:
         RefFlags _motor_ref_flags;
         std::vector<float> _gains;
         float _ctrl_cmd;
+        std::vector<float> _imu_rx_v;
         std::vector<float> _valve_rx_v,_pump_rx_v;
         //************************ WRITE PDO ******************************
 

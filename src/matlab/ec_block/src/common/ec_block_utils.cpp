@@ -283,15 +283,15 @@ bool EcBlockUtils::ec_sense(MotorStatusMap &motors_status_map,
     if(imu_status_map.empty())
     {
 #ifdef TEST_MATLAB 
-        std::vector<int> imu_id_v;
-        std::string error_info="";
-        retrieve_imu_info(imu_id_v,error_info);
-        for(int i=0; i < imu_id_v.size();i++)
-        {
-            int imu_id = imu_id_v[i];
-            float value_rand = (float) imu_id;
-            imu_status_map[imu_id] = {value_rand,15.0,20.0,5.0,2.0,3.0,0,0,0,1};
-        }
+//         std::vector<int> imu_id_v;
+//         std::string error_info="";
+//         retrieve_imu_info(imu_id_v,error_info);
+//         for(int i=0; i < imu_id_v.size();i++)
+//         {
+//             int imu_id = imu_id_v[i];
+//             float value_rand = (float) imu_id;
+//             imu_status_map[imu_id] = {value_rand,15.0,20.0,5.0,2.0,3.0,0,0,0,1};
+//         }
 #endif
     }
     

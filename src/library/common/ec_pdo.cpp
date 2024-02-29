@@ -72,7 +72,7 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                 case iit::ecat::IMU_ANY :{
                     auto imu_pdo = std::make_shared<ImuPdo<T>>(_ec_pdo_start, id);
                     _imu_pdo_map[id]=imu_pdo;
-                    _imu_status_map[id]= imu_pdo->imu_v;
+                    _imu_status_map[id]= imu_pdo->rx_pdo;
                 }break;
                 case iit::ecat::POW_F28M36_BOARD :{
                         auto pow_pdo = std::make_shared<PowPdo<T>>(_ec_pdo_start, id);
@@ -251,7 +251,7 @@ void EcPdo<T>::read_imu_pdo()
                 nbytes = imu_pdo->read();
             } while ( nbytes > 0);
             //////////////////////////////////////////////////////////////
-            _imu_status_map[id]= imu_pdo->imu_v;
+            _imu_status_map[id]= imu_pdo->rx_pdo;
         }
         catch ( std::out_of_range ) {};   
     }

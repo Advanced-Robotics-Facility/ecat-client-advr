@@ -5,6 +5,7 @@ EcLogger::EcLogger()
     _motor_ref_eigen.resize(11);
     _motor_sts_eigen.resize(12);
     _pump_ref_eigen.resize(25);
+    _imu_rx_v.resize(ImuPdoRx::pdo_size);
     _pump_rx_v.resize(PumpPdoRx::pdo_size);
     _pump_tx_v.resize(PumpPdoTx::pdo_size);
     _valve_rx_v.resize(ValvePdoRx::pdo_size);
@@ -72,7 +73,7 @@ void EcLogger::start_mat_logger()
                 if(_log_imu_map.count(esc_id)==0){
                     std::string imu_id="imu_id_"+std::to_string(esc_id);
                     _log_imu_map[esc_id]=imu_id;
-                    _imu_status_logger->create(imu_id,10);
+                    _imu_status_logger->create(imu_id,ImuPdoRx::pdo_size);
                 }
             }break;
             case iit::ecat::POW_F28M36_BOARD :{
@@ -230,9 +231,11 @@ void EcLogger::log_ft_sts(const FtStatusMap ft_sts_map)
 void EcLogger::log_imu_sts(const ImuStatusMap imu_sts_map)
 {
     if(_imu_status_logger != nullptr){
-        for ( const auto &[esc_id, imu_sts] : imu_sts_map) {
+        for ( const auto &[esc_id, imu_rx_pdo] : imu_sts_map) {
             if(_log_imu_map.count(esc_id)>0){
-                _imu_status_logger->add(_log_imu_map[esc_id],imu_sts);
+                if(ImuPdoRx::make_vector_from_tuple(imu_rx_pdo,_imu_rx_v)){
+                    _imu_status_logger->add(_log_imu_map[esc_id],_imu_rx_v);
+                }
             }
         }
     }
