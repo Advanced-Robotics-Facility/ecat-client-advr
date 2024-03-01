@@ -155,7 +155,7 @@ void EcLogger::stop_mat_logger()
     _pump_status_logger.reset();
 }
 
-void EcLogger::log_motors_ref(const std::vector<MR> motors_ref)
+void EcLogger::log_motors_ref(const std::vector<MR>& motors_ref)
 {
     if(_motors_references_logger != nullptr){
         for ( const auto &[esc_id,ctrl_type,pos_ref,vel_ref,tor_ref,gain_0,gain_1,gain_2,gain_3,gain_4,op,idx,aux] : motors_ref) {
@@ -183,7 +183,7 @@ void EcLogger::log_motors_ref(const std::vector<MR> motors_ref)
 }
 
 
-void EcLogger::log_motors_sts(const MotorStatusMap motors_sts_map)
+void EcLogger::log_motors_sts(const MotorStatusMap& motors_sts_map)
 {
     if(_motors_status_logger != nullptr){
         for ( const auto &[esc_id, motor_rx_pdo] : motors_sts_map) {
@@ -196,7 +196,7 @@ void EcLogger::log_motors_sts(const MotorStatusMap motors_sts_map)
     }
 }
 
-void EcLogger::log_pow_sts(const PwrStatusMap pow_sts_map)
+void EcLogger::log_pow_sts(const PwrStatusMap& pow_sts_map)
 {
     if(_pow_status_logger != nullptr){
         for ( const auto &[esc_id, pow_sts] : pow_sts_map) {
@@ -207,7 +207,7 @@ void EcLogger::log_pow_sts(const PwrStatusMap pow_sts_map)
     }
 }
 
-void EcLogger::log_ft_sts(const FtStatusMap ft_sts_map)
+void EcLogger::log_ft_sts(const FtStatusMap& ft_sts_map)
 {
     if(_ft_status_logger != nullptr){
         for ( const auto &[esc_id, ft_sts] : ft_sts_map) {
@@ -218,7 +218,7 @@ void EcLogger::log_ft_sts(const FtStatusMap ft_sts_map)
     }
 }
 
-void EcLogger::log_imu_sts(const ImuStatusMap imu_sts_map)
+void EcLogger::log_imu_sts(const ImuStatusMap& imu_sts_map)
 {
     if(_imu_status_logger != nullptr){
         for ( const auto &[esc_id, imu_rx_pdo] : imu_sts_map) {
@@ -231,7 +231,7 @@ void EcLogger::log_imu_sts(const ImuStatusMap imu_sts_map)
     }
 }
 
-void EcLogger::log_valve_ref(const ValveReferenceMap valves_ref)
+void EcLogger::log_valve_ref(const ValveReferenceMap& valves_ref)
 {
     if(_valves_references_logger != nullptr){
         for ( const auto &[esc_id,valve_tx_pdo] : valves_ref) {
@@ -244,7 +244,7 @@ void EcLogger::log_valve_ref(const ValveReferenceMap valves_ref)
     }
 }
 
-void EcLogger::log_valve_sts(const ValveStatusMap valve_sts_map)
+void EcLogger::log_valve_sts(const ValveStatusMap& valve_sts_map)
 {
     if(_valve_status_logger != nullptr){
         for ( const auto &[esc_id, valve_rx_pdo] : valve_sts_map) {
@@ -257,7 +257,7 @@ void EcLogger::log_valve_sts(const ValveStatusMap valve_sts_map)
     }
 }
 
-void EcLogger::log_pump_ref(const PumpReferenceMap pumps_ref)
+void EcLogger::log_pump_ref(const PumpReferenceMap& pumps_ref)
 {
     if(_pumps_references_logger != nullptr){
         for ( const auto &[esc_id,pump_tx_pdo] : pumps_ref) {
@@ -270,7 +270,7 @@ void EcLogger::log_pump_ref(const PumpReferenceMap pumps_ref)
     }
 }
 
-void EcLogger::log_pump_sts(const PumpStatusMap pump_sts_map)
+void EcLogger::log_pump_sts(const PumpStatusMap& pump_sts_map)
 {
     if(_pump_status_logger != nullptr){
         for ( const auto &[esc_id, pump_rx_pdo] : pump_sts_map) {
