@@ -152,7 +152,7 @@ public:
                             DPRINTF ("connect to %s_tx_pdo port\n", wr_esc_pdo[id].c_str() );
                         } 
                         else{
-                            DPRINTF (" Already connected to %s_tx_pdo\n", wr_esc_pdo[id].c_str() );                                
+                            //DPRINTF (" Already connected to %s_tx_pdo\n", wr_esc_pdo[id].c_str() );                                
                         }
                     } 
                     else if ( pb_client_pdo->type() == iit::advr::Client_pipe::QUIT ) {
@@ -162,7 +162,7 @@ public:
                             DPRINTF ("quit %s_tx_pdo\n", wr_esc_pdo[id].c_str() );
                         } 
                         else {
-                            DPRINTF (" Already disconnected to %s_tx_pdo\n", wr_esc_pdo[id].c_str() );
+                            //DPRINTF (" Already disconnected to %s_tx_pdo\n", wr_esc_pdo[id].c_str() );
                         }               
                     }
                 } 
