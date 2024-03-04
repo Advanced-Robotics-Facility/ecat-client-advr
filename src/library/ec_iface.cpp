@@ -91,8 +91,13 @@ void EcIface::get_motors_status(MotorStatusMap &motor_status_map)
 void EcIface::set_motors_references(const RefFlags motor_ref_flags,const std::vector<MR> motors_references)
 {
     pthread_mutex_lock(&_mutex_motor_reference);
-    _motor_ref_flags = motor_ref_flags;
-    _motors_references = motors_references;
+    if(_motors_references.size()==motors_references.size()){
+        _motor_ref_flags = motor_ref_flags;
+        _motors_references = motors_references;
+    }
+    else{
+        DPRINTF("Error on motors references size [%lu] [%lu]\n",motors_references.size(),_motors_references.size());
+    }
     pthread_mutex_unlock(&_mutex_motor_reference);
 }
 
@@ -128,8 +133,22 @@ void EcIface::get_valve_status(ValveStatusMap &valve_status_map)
 void EcIface::set_valves_references(const RefFlags valve_ref_flags,const ValveReferenceMap valves_references)
 {
     pthread_mutex_lock(&_mutex_valve_reference);
-    _valve_ref_flags=valve_ref_flags;
-    _valves_references=valves_references;
+    int ret=check_maps(_valves_references,valves_references);
+    if(ret==0){
+        _valve_ref_flags=valve_ref_flags;
+        _valves_references=valves_references;
+    }
+    else{
+        if(ret==-1){
+            DPRINTF("No valve detected!\n");
+        }
+        else if(ret==-2){
+            DPRINTF("Got an empy valves references map\n");
+        }
+        else{
+            DPRINTF("Esc id [%d] is not a valve\n",ret);
+        }
+    }
     pthread_mutex_unlock(&_mutex_valve_reference);
 }
 
@@ -143,8 +162,22 @@ void EcIface::get_pump_status(PumpStatusMap &pump_status_map)
 void EcIface::set_pumps_references(const RefFlags pump_ref_flags,const PumpReferenceMap pumps_references)
 {
     pthread_mutex_lock(&_mutex_pump_reference);
-    _pump_ref_flags=pump_ref_flags;
-    _pumps_references=pumps_references;
+    int ret=check_maps(_pumps_references,pumps_references);
+    if(ret==0){
+        _pump_ref_flags=pump_ref_flags;
+        _pumps_references=pumps_references;
+    }
+    else{
+        if(ret==-1){
+            DPRINTF("No pump detected!\n");
+        }
+        else if(ret==-2){
+            DPRINTF("Got an empy pumps references map\n");
+        }
+        else{
+            DPRINTF("Esc id [%d] is not a pump\n",ret);
+        }
+    }
     pthread_mutex_unlock(&_mutex_pump_reference);
 }
  
@@ -202,3 +235,21 @@ bool EcIface::pdo_aux_cmd_sts(const PAC & pac)
         
     return true;
 } 
+
+template <typename T>
+int32_t EcIface::check_maps(const std::map<int32_t,T>& map1,const std::map<int32_t,T>& map2)
+{
+    if(map1.size()==0)
+        return -1;
+    else if(map2.size()==0)
+        return -2;
+    else{
+        for ( const auto &[esc_id,tx_pdo] : map2) {
+            if(map1.count(esc_id)==0){
+                return esc_id; 
+            }
+        }
+    }
+
+    return 0;
+}

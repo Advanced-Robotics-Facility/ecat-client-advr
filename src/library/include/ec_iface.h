@@ -98,6 +98,9 @@ protected:
     pthread_mutex_t _mutex_valve_reference;
     pthread_mutex_t _mutex_pump_status;
     pthread_mutex_t _mutex_pump_reference;
+private:
+    template <typename T>
+    int32_t check_maps(const std::map<int32_t,T>& map1,const std::map<int32_t,T>& map2);
 };
 
 #endif // EC_IFACE_H
