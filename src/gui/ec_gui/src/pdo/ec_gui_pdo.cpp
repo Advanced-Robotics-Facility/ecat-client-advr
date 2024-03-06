@@ -39,6 +39,7 @@ _ec_gui_slider(ec_gui_slider)
     _slider_map=_ec_gui_slider->get_sliders();
     
     _motor_rx_v.resize(MotorPdoRx::pdo_size);
+    _pow_rx_v.resize(PowPdoRx::pdo_size);
     _ft_rx_v.resize(FtPdoRx::pdo_size);
     _imu_rx_v.resize(ImuPdoRx::pdo_size);
     _valve_rx_v.resize(ValvePdoRx::pdo_size);
@@ -252,20 +253,19 @@ inline void EcGuiPdo::read_pow_status()
     PwrStatusMap pow_status_map;
     _client->get_pow_status(pow_status_map);
     /*************************************Power Board*****************************************************************/
-     if(!pow_status_map.empty())
-     {
-        for ( const auto &[esc_id, pow_status] : pow_status_map)
-        {
+     if(!pow_status_map.empty()){
+        for ( const auto &[esc_id, pow_rx_pdo] : pow_status_map){
             std::string esc_id_name="pow_id_"+std::to_string(esc_id);
             QTreeWidgetItem *topLevel=nullptr;
 
             topLevel=search_slave_into_treewid(esc_id_name);
-            if(!topLevel)
-            {
+            if(!topLevel){
+                _pow_pdo_fields=get_pdo_fields(PowPdoRx::name);
                 topLevel= initial_setup(esc_id_name,_pow_pdo_fields);
             }
-
-            fill_data(esc_id_name,topLevel,_pow_pdo_fields,pow_status);
+            if(PowPdoRx::make_vector_from_tuple(pow_rx_pdo,_pow_rx_v)){
+                fill_data(esc_id_name,topLevel,_pow_pdo_fields,_pow_rx_v);
+            }
         }
      }
     /*************************************Power Board*****************************************************************/

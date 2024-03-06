@@ -248,7 +248,9 @@ void EcUDP::pwr_status_handler(char *buf, size_t size)
 
     cnt++;
     for ( const auto &[id, values] : pow_status) {
-        _pow_status_map[id] = values;
+        _pow_status_map[id] = std::make_tuple(values[0],values[1],values[2],
+                                              values[3],values[4],values[5],
+                                              0,0,0,0);
     }
 
     if ( ! (cnt % 100) ) {

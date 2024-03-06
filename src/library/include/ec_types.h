@@ -5,6 +5,7 @@
 #include <vector>
 #include <tuple>
 
+#include <esc_info.h>
 #include "common/pdo/motor/hhcm/hhcm_pdo.h"
 #include "common/pdo/motor/circulo9/circulo9_pdo.h"
 #include "common/pdo/motor/flexpro/flexpro_pdo.h"
@@ -19,10 +20,9 @@ static std::map<uint32_t,std::string>ec_motors={{iit::ecat::CENT_AC,"Motor_HP"},
                                                 {iit::ecat::CIRCULO9,"Circulo9"},
                                                 {iit::ecat::AMC_FLEXPRO,"AMC flex pro"}};
                                             
-using PwrStatusMap = std::map<int32_t, std::vector<float>>;
-
 using MotorStatusMap =   std::map<int32_t, MotorPdoRx::pdo_t>;
 using MotorReferenceMap= std::map<int32_t, MotorPdoTx::pdo_t>; 
+using PwrStatusMap=      std::map<int32_t, PowPdoRx::pdo_t>;
 using FtStatusMap=       std::map<int32_t, FtPdoRx::pdo_t>;
 using ImuStatusMap=      std::map<int32_t, ImuPdoRx::pdo_t>;
 using ValveStatusMap=    std::map<int32_t, ValvePdoRx::pdo_t>;

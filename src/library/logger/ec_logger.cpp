@@ -4,6 +4,7 @@ EcLogger::EcLogger()
 {
     _motor_rx_v.resize(MotorPdoRx::pdo_size);
     _motor_tx_v.resize(MotorPdoTx::pdo_size);
+    _pow_rx_v.resize(PowPdoRx::pdo_size);
     _ft_rx_v.resize(FtPdoRx::pdo_size);
     _imu_rx_v.resize(ImuPdoRx::pdo_size);
     _pump_rx_v.resize(PumpPdoRx::pdo_size);
@@ -84,7 +85,7 @@ void EcLogger::start_mat_logger()
                 if(_log_pow_map.count(esc_id)==0){
                     std::string pow_id="pow_id_"+std::to_string(esc_id);
                     _log_pow_map[esc_id]=pow_id;
-                    _pow_status_logger->create(pow_id,6);
+                    _pow_status_logger->create(pow_id,PowPdoRx::pdo_size);
                 }
             }break;
             case iit::ecat::HYQ_KNEE:{
@@ -191,9 +192,11 @@ void EcLogger::log_motors_sts(const MotorStatusMap& motors_sts_map)
 void EcLogger::log_pow_sts(const PwrStatusMap& pow_sts_map)
 {
     if(_pow_status_logger != nullptr){
-        for ( const auto &[esc_id, pow_sts] : pow_sts_map) {
+        for ( const auto &[esc_id, pow_rx_pdo] : pow_sts_map) {
             if(_log_pow_map.count(esc_id)>0){
-                _pow_status_logger->add(_log_pow_map[esc_id], pow_sts);
+                if(PowPdoRx::make_vector_from_tuple(pow_rx_pdo,_pow_rx_v)){
+                    _pow_status_logger->add(_log_pow_map[esc_id], _pow_rx_v);
+                }
             }
         }
     }

@@ -354,9 +354,9 @@ void EcGuiWrapper::receive()
         
         if(!pow_status_map.empty())
         {
-            for ( const auto &[esc_id, pow_status] : pow_status_map)
+            for ( const auto &[esc_id, pow_rx_pdo] : pow_status_map)
             {
-                float v_batt = pow_status[0];
+                float v_batt = std::get<0>(pow_rx_pdo);
                 v_batt = std::round(v_batt * 100) / 100;
                 _battery_level->display(v_batt);
                 

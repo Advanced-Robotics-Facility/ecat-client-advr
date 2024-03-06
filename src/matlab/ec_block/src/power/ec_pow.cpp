@@ -89,23 +89,23 @@ bool Pow::getPow(const blockfactory::core::BlockInformation* blockInfo,PwrStatus
                                         output->set(pow_id_index, pow_id_read);
                                     } break;
                     case v_batt:  {
-                                    output->set(pow_id_index, pow_status_id[0]);
+                                    output->set(pow_id_index, std::get<0>(pow_status_id));
                                 }break;
                     case v_load:  {
-                                    output->set(pow_id_index, pow_status_id[1]);
+                                    output->set(pow_id_index, std::get<1>(pow_status_id));
                                 }break;
                     case i_load:  {
-                                    output->set(pow_id_index, pow_status_id[2]);
+                                    output->set(pow_id_index, std::get<2>(pow_status_id));
                                 }break;
                                 
                     case temp_pcb:  {
-                                    output->set(pow_id_index, pow_status_id[3]);
+                                    output->set(pow_id_index, std::get<3>(pow_status_id));
                                 }break;
                     case temp_heatsink:  {
-                                    output->set(pow_id_index, pow_status_id[4]);
+                                    output->set(pow_id_index, std::get<4>(pow_status_id));
                                 }break;
                     case temp_batt:  {
-                                    output->set(pow_id_index, pow_status_id[5]);
+                                    output->set(pow_id_index, std::get<5>(pow_status_id));
                                 }break;
                 }
             }

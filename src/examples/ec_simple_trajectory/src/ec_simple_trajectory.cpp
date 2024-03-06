@@ -164,14 +164,13 @@ int main(int argc, char * const argv[])
             // Rx "SENSE"
             //******************* Power Board Telemetry ********
             client->get_pow_status(pow_status_map);
-            for ( const auto &[esc_id, pow_status] : pow_status_map){
-                v_batt =        pow_status[0];
-                v_load =        pow_status[1];
-                i_load =        pow_status[2];
-                temp_pcb =      pow_status[3];
-                temp_heatsink=  pow_status[4];
-                temp_batt=      pow_status[5];
-                DPRINTF("POW ID: [%d], VBATT: [%f], VLOAD: [%f], ILOAD: [%f]\n",esc_id,v_batt,v_load,i_load);
+            for ( const auto &[esc_id, pow_rx_pdo] : pow_status_map){
+                v_batt =        std::get<0>(pow_rx_pdo);
+                v_load =        std::get<1>(pow_rx_pdo);
+                i_load =        std::get<2>(pow_rx_pdo);
+                temp_pcb =      std::get<3>(pow_rx_pdo);
+                temp_heatsink=  std::get<4>(pow_rx_pdo);
+                temp_batt=      std::get<5>(pow_rx_pdo);
             }
             //******************* Power Board Telemetry ********
             

@@ -76,7 +76,7 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                 case iit::ecat::POW_F28M36_BOARD :{
                         auto pow_pdo = std::make_shared<PowPdo<T>>(_ec_pdo_start, id);
                         _pow_pdo_map[id]=pow_pdo;
-                        _pow_status_map[id]= pow_pdo->pow_v;
+                        _pow_status_map[id]= pow_pdo->rx_pdo;
                 }break;
                 case iit::ecat::HYQ_KNEE:{
                         auto valve_pdo = std::make_shared<ValvePdo<T>>(_ec_pdo_start, id);
@@ -230,7 +230,7 @@ void EcPdo<T>::read_pow_pdo()
                 nbytes = pow_pdo->read();
             } while ( nbytes > 0);
             //////////////////////////////////////////////////////////////
-            _pow_status_map[id]= pow_pdo->pow_v;
+            _pow_status_map[id]= pow_pdo->rx_pdo;
         }
         catch ( std::out_of_range ) {};   
     }
