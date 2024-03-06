@@ -47,22 +47,21 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                 case iit::ecat::CENT_AC :
                 case iit::ecat::LO_PWR_DC_MC:{
                         auto hhcm_pdo = std::make_shared<HhcmPdo<T>>(_ec_pdo_start, id, esc_type);
-                        _hhcm_pdo_map[id]=hhcm_pdo;
                         _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(hhcm_pdo);
-                        _motor_status_map[id] = hhcm_pdo->rx_pdo;
-                        _motors_references.push_back(std::make_tuple(id, 0x00,0,0,0,0,0,0,0,0,0,0,0));
+                        _motor_status_map[id]=  hhcm_pdo->rx_pdo;
+                        _motors_references[id]= hhcm_pdo->tx_pdo;
                 }break;
                 case iit::ecat::CIRCULO9:{
                     auto circulo9_pdo = std::make_shared<Circulo9Pdo<T>>(_ec_pdo_start, id, esc_type);
                     _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(circulo9_pdo);
-                    _motor_status_map[id] = circulo9_pdo->rx_pdo;
-                    _motors_references.push_back(std::make_tuple(id, 0x00,0,0,0,0,0,0,0,0,0,0,0));
+                    _motor_status_map[id]=  circulo9_pdo->rx_pdo;
+                    _motors_references[id]= circulo9_pdo->tx_pdo;
                 }break;
                 case iit::ecat::AMC_FLEXPRO:{
                     auto flex_pdo = std::make_shared<FlexproPdo<T>>(_ec_pdo_start, id, esc_type);
                     _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(flex_pdo);
                     _motor_status_map[id] = flex_pdo->rx_pdo;
-                    _motors_references.push_back(std::make_tuple(id, 0x00,0,0,0,0,0,0,0,0,0,0,0));
+                    _motors_references[id]= flex_pdo->tx_pdo;
                 }break;
                 case iit::ecat::FT6_MSP432:{
                     auto ft_pdo = std::make_shared<FtPdo<T>>(_ec_pdo_start, id);
@@ -154,60 +153,18 @@ void EcPdo<T>::write_motor_pdo()
 {
     pthread_mutex_lock(&_mutex_motor_reference);
     if(_motor_ref_flags!=RefFlags::FLAG_NONE){
-        for ( const auto &[bId,ctrl_type,pos,vel,tor,g0,g1,g2,g3,g4,op,idx,aux] : _motors_references ) {
-            if(_moto_pdo_map.count(bId) > 0 && ctrl_type!=0x00){
-                
-                auto ctrl_type_cast = static_cast<iit::advr::Gains_Type>(ctrl_type);
+        for ( const auto &[bId,motor_tx] : _motors_references ) {
+            auto ctrl_type=std::get<0>(motor_tx);
+            if(ctrl_type!=0x00){
                 if (iit::advr::Gains_Type_IsValid(ctrl_type) ) {
                     auto motor_pdo = _moto_pdo_map[bId];
-                    
-                    motor_pdo->tx_pdo.pos_ref= pos;
-                    motor_pdo->tx_pdo.vel_ref= vel;
-                    motor_pdo->tx_pdo.tor_ref= tor;
-                    
-                    motor_pdo->tx_pdo.gain_0= g0;
-                    motor_pdo->tx_pdo.gain_1= g1;
-                    motor_pdo->tx_pdo.gain_2= g2;
-                    motor_pdo->tx_pdo.gain_3= g3;
-                    motor_pdo->tx_pdo.gain_4= g4;
-                    
-                    if(_hhcm_pdo_map.count(bId)>0){
-                        if ( (ctrl_type_cast == iit::advr::Gains_Type_POSITION ||
-                              ctrl_type_cast == iit::advr::Gains_Type_VELOCITY)) {
-                            motor_pdo->tx_pdo.gain_0= g0;
-                            motor_pdo->tx_pdo.gain_1= g2;
-                            motor_pdo->tx_pdo.gain_2= 0;
-                            motor_pdo->tx_pdo.gain_3= 0;
-                            motor_pdo->tx_pdo.gain_4= g1;
-                        }
-                    }
-                
-                    auto _op = static_cast<iit::advr::AuxPDO_Op>(op);
-
-                    switch (_op)
-                    {
-                        case iit::advr::AuxPDO_Op_SET:
-                            motor_pdo->tx_pdo.op_idx_aux=idx;
-                            motor_pdo->tx_pdo.aux=aux;
-                            break;
-                        case iit::advr::AuxPDO_Op_GET:
-                            motor_pdo->tx_pdo.op_idx_aux=idx;
-                            break;
-                        case iit::advr::AuxPDO_Op_NOP:
-                            break;
-                    }
-                    
+                    motor_pdo->tx_pdo=motor_tx;
                     //write 
                     motor_pdo->write();
                 }
                 else{
                     DPRINTF("Control mode not recognized for id 0x%04X \n", bId);
                 }
-            }
-            else{
-#ifndef TEST_LIBRARY 
-                DPRINTF("Cannot send motor reference to id 0x%04X \n", bId);
-#endif                   
             }
         }
         _ec_logger->log_motors_ref(_motors_references);
@@ -310,6 +267,7 @@ void EcPdo<T>::write_valve_pdo()
         for ( const auto &[bId,valve_tx] : _valves_references ) {
             auto valve_pdo=_valve_pdo_map[bId];    
             valve_pdo->tx_pdo=valve_tx;
+            //write 
             valve_pdo->write();
         }
         _ec_logger->log_valve_ref(_valves_references);
@@ -347,6 +305,7 @@ void EcPdo<T>::write_pump_pdo()
         for (auto const &[id,pump_tx] : _pumps_references)  {
             auto pump_pdo=_pump_pdo_map[id];    
             pump_pdo->tx_pdo=pump_tx;
+            //write 
             //pump_pdo->write();
         }
         _ec_logger->log_pump_ref(_pumps_references);

@@ -23,7 +23,7 @@ private:
     PwrStatusMap _pow_status_map;
     
     
-    std::vector<MR> _motors_ref;
+    MotorReferenceMap _motors_ref;
     std::vector<std::string> _readings_list,_references_list,_imu_list,_ft_list,_pow_list;
     std::shared_ptr<EcBlock::Reading> _readings_ptr;
     std::shared_ptr<EcBlock::Reference> _references_ptr;

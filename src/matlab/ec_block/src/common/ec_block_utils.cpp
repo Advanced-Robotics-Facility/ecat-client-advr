@@ -3,7 +3,7 @@
 
 EcIface::Ptr EcBlockUtils::_client;
 std::vector<int> EcBlockUtils::_joint_id;
-std::vector<MR> EcBlockUtils::_motors_ref;
+MotorReferenceMap EcBlockUtils::_motors_ref;
 bool EcBlockUtils::_robot_started;
 
 using namespace std::chrono;
@@ -88,8 +88,7 @@ bool EcBlockUtils::start_robot(std::string &error_info)
         if(motors_status_map.count(id) >0)
         {
             auto motor_pos = std::get<1>(motors_status_map[id]);
-            _motors_ref.push_back(std::make_tuple(id,ctrl_mode,motor_pos,0.0,0.0,gains[0],gains[1],gains[2],gains[3],gains[4],1,0,0));
-            
+            _motors_ref[id]=std::make_tuple(ctrl_mode,motor_pos,0.0,0.0,gains[0],gains[1],gains[2],gains[3],gains[4],1,0,0);
             //motors_start.push_back(std::make_tuple(id,ctrl_mode,gains));
             //brake_cmds.push_back(std::make_tuple(id,to_underlying(PdoAuxCmdType::BRAKE_RELEASE)));
         }
@@ -237,7 +236,7 @@ bool EcBlockUtils::ec_sense(MotorStatusMap &motors_status_map,
                             FtStatusMap &ft6_status_map,
                             ImuStatusMap &imu_status_map,
                             PwrStatusMap &pow_status_map,
-                            std::vector<MR> &motors_ref)
+                            MotorReferenceMap &motors_ref)
 {
     
     if(!_client->is_client_alive())
@@ -248,76 +247,23 @@ bool EcBlockUtils::ec_sense(MotorStatusMap &motors_status_map,
     motors_status_map.clear();
     _client->get_motors_status(motors_status_map);
     
-    if(motors_status_map.empty())
-    {
-#ifdef TEST_MATLAB 
-        for(int i=0; i < _joint_id.size();i++)
-        {
-            int q_id = _joint_id[i];
-            motors_status_map[q_id] = std::make_tuple(0,0,0,0,0,25,26,3,0,0,0,2);
-        }
-#endif
-    }
-    
     ft6_status_map.clear();
     _client->get_ft_status(ft6_status_map);
-
-    if(ft6_status_map.empty())
-    {
-#ifdef TEST_MATLAB 
-        std::vector<int> ft_id_v;
-        std::string error_info="";
-        retrieve_ft_info(ft_id_v,error_info);
-        for(int i=0; i < ft_id_v.size();i++)
-        {
-            int ft_id = ft_id_v[i];
-            float value_rand = (float) ft_id;
-            ft6_status_map[ft_id] = {value_rand,120,130,20,25,30};
-        }
-#endif
-    }
     
     imu_status_map.clear();
     _client->get_imu_status(imu_status_map);
-    
-    if(imu_status_map.empty())
-    {
-#ifdef TEST_MATLAB 
-//         std::vector<int> imu_id_v;
-//         std::string error_info="";
-//         retrieve_imu_info(imu_id_v,error_info);
-//         for(int i=0; i < imu_id_v.size();i++)
-//         {
-//             int imu_id = imu_id_v[i];
-//             float value_rand = (float) imu_id;
-//             imu_status_map[imu_id] = {value_rand,15.0,20.0,5.0,2.0,3.0,0,0,0,1};
-//         }
-#endif
-    }
+
     
     pow_status_map.clear();
     _client->get_pow_status(pow_status_map);
     
-    if(pow_status_map.empty())
-    {
-#ifdef TEST_MATLAB 
-        std::vector<int> pow_id_v;
-        std::string error_info="";
-        retrieve_pow_info(pow_id_v,error_info);
-        for(int i=0; i < pow_id_v.size();i++)
-        {
-            int pow_id = pow_id_v[i];
-            pow_status_map[pow_id] = {48.0,47.5,5.0,20,25,30};
-        }
-#endif
-    }
     
     motors_ref = _motors_ref;
     
     return true;
 }
 
-bool EcBlockUtils::ec_move(RefFlags flag,std::vector<MR> motors_ref)
+bool EcBlockUtils::ec_move(RefFlags flag,MotorReferenceMap motors_ref)
 {
     if(!_client->is_client_alive())
     {

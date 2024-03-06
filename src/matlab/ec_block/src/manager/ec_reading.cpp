@@ -39,7 +39,7 @@ void Reading::configureSizeAndPorts(blockfactory::core::OutputPortsInfo &outputP
     }
 }
 
-bool Reading::getReadings(const blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map,std::vector<MR> motors_ref,std::string &error_info)
+bool Reading::getReadings(const blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map,MotorReferenceMap motors_ref,std::string &error_info)
 {
     if(motors_status_map.empty())
     {
@@ -73,15 +73,14 @@ bool Reading::getReadings(const blockfactory::core::BlockInformation* blockInfo,
             for(int i=0;i<aux_vector.size();i++)
             {
                 auto motor_id = _q_id[i];
-                MR mot_ref = motors_ref[i];
                 if(motors_status_map.count(motor_id) == 0)
                 {
                     error_info = "Motor id: " + std::to_string(motor_id) + " not found in motors map status, please check ec conf file";
                     return false;
                 }
-                else if(motor_id != std::get<0>(mot_ref))
+                else if(motor_id != std::get<0>(motors_ref[motor_id]))
                 {
-                    error_info = "Motor id read: " + std::to_string(motor_id) + "different to motor references id: " + std::to_string(std::get<0>(mot_ref)) ;
+                    error_info = "Motor id read: " + std::to_string(motor_id) + "different to motor references id: " + std::to_string(std::get<0>(motors_ref[motor_id])) ;
                     return false;
                 }
                 else
@@ -122,25 +121,25 @@ bool Reading::getReadings(const blockfactory::core::BlockInformation* blockInfo,
                                         aux_vector[i]=_q_trj[i];
                                     }break;
                         case qJ_ref:{
-                                        aux_vector[i]=std::get<2>(mot_ref) ;
+                                        aux_vector[i]=std::get<1>(motors_ref[motor_id]) ;
                                     }break;
                         case qJdot_ref:{
-                                        aux_vector[i]=std::get<3>(mot_ref) ;
+                                        aux_vector[i]=std::get<2>(motors_ref[motor_id]) ;
                                     }break;
                         case tau_ref:{
-                                        aux_vector[i]=std::get<4>(mot_ref) ;
+                                        aux_vector[i]=std::get<3>(motors_ref[motor_id]) ;
                                     }break;
                         case gainP_ref:{
-                                        aux_vector[i]=std::get<5>(mot_ref) ;
+                                        aux_vector[i]=std::get<4>(motors_ref[motor_id]) ;
                                     }break;
                         case gainD_ref:{
                                         if(_ctrl_mode == 0xD4)
                                         {
-                                            aux_vector[i]=std::get<6>(mot_ref);
+                                            aux_vector[i]=std::get<5>(motors_ref[motor_id]);
                                         }
                                         else
                                         {
-                                            aux_vector[i]=std::get<7>(mot_ref);
+                                            aux_vector[i]=std::get<6>(motors_ref[motor_id]);
                                         }
                                     }break;            
                                     
@@ -177,7 +176,7 @@ bool Reading::getReadings(const blockfactory::core::BlockInformation* blockInfo,
     return true;
 }
 
-bool Reading::initialize(blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map,std::vector<MR> motors_ref)
+bool Reading::initialize(blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map,MotorReferenceMap motors_ref)
 {
     std::string error_info="";
     if(!getReadings(blockInfo,motors_status_map,motors_ref,error_info))
@@ -190,7 +189,7 @@ bool Reading::initialize(blockfactory::core::BlockInformation* blockInfo,MotorSt
 }
 
 
-bool Reading::output(const blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map,std::vector<MR> motors_ref)
+bool Reading::output(const blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map,MotorReferenceMap motors_ref)
 {
     std::string error_info="";
     if(!getReadings(blockInfo,motors_status_map,motors_ref,error_info))

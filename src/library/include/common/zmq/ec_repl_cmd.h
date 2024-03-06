@@ -182,12 +182,12 @@ public:
         
     };
     
-    using m_ref_t = std::tuple<int32_t, int32_t,                     // bId, ctrl_type
+    using m_ref_t = std::tuple<int32_t,                              //ctrl_type
                                float, float, float,                  // pos_ref, vel_ref, tor_ref
                                float, float, float, float, float,    // gains
                                uint32_t, uint32_t, float>;           // op, idx, aux
 
-    using motors_ref_t = std::vector<m_ref_t>;
+    using motors_ref_map = std::map<int32_t,m_ref_t>;
     
     
     /**
@@ -367,10 +367,10 @@ public:
     /**
     * @brief Command to send references 
     * 
-    * @param refs : references vector.
+    * @param refs : references motors map.
     * @return fault
     */
-    EcReplFault Motors_PDO_cmd(motors_ref_t refs);
+    EcReplFault Motors_PDO_cmd(motors_ref_map motors_references);
     
     
     /**

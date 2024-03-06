@@ -48,7 +48,7 @@ public:
     ~Reference(){};
 
     void configureSizeAndPorts(blockfactory::core::InputPortsInfo &inputPortInfo);
-    bool setReferences(const blockfactory::core::BlockInformation* blockInfo,std::vector<MR> &motors_ref,std::string &error_info);
-    bool output(const blockfactory::core::BlockInformation* blockInfo,std::vector<MR> &motors_ref);
+    bool setReferences(const blockfactory::core::BlockInformation* blockInfo,MotorReferenceMap &motors_ref,std::string &error_info);
+    bool output(const blockfactory::core::BlockInformation* blockInfo,MotorReferenceMap &motors_ref);
 };
 

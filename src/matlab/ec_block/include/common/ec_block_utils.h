@@ -27,9 +27,9 @@ public:
                          FtStatusMap &ft6_status_map,
                          ImuStatusMap &imu_status_map,
                          PwrStatusMap &pow_status_map,
-                         std::vector<MR> &motors_ref);
+                         MotorReferenceMap &motors_ref);
     
-    static bool ec_move(RefFlags flag,std::vector<MR> motors_ref);
+    static bool ec_move(RefFlags flag,MotorReferenceMap motors_ref);
     
     
     static void check_param_selected(std::string param_selection,std::vector<std::string> &param_selected);
@@ -37,7 +37,7 @@ public:
 private:
     static EcIface::Ptr _client;
     static std::vector<int> _joint_id;
-    static std::vector<MR> _motors_ref;
+    static MotorReferenceMap _motors_ref;
     static bool _robot_started;
     
     static bool start_robot(std::string &error_info);

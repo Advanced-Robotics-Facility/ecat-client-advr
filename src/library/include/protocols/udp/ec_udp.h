@@ -93,6 +93,7 @@ private:
     std::shared_ptr<std::thread> _ec_udp_thread;
     
     SSI _slave_info;
+    std::vector<MR> _mot_ref_tv; //vector of tuple
 };
 
 #endif // EC_UDP_H

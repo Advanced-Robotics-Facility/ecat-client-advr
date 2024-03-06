@@ -513,7 +513,7 @@ bool EcUDP::start_motors(const MST &motors_start)
 
                 // clear motors references
                 _motor_ref_flags=RefFlags::FLAG_NONE;
-                _motors_references.clear();
+                //_motors_references.clear();
 
                  pthread_mutex_unlock(&_mutex_motor_reference);
 
@@ -570,7 +570,7 @@ bool EcUDP::stop_motors()
 
                 // clear motors references
                 _motor_ref_flags=RefFlags::FLAG_NONE;
-                _motors_references.clear();
+                //_motors_references.clear();
 
                  pthread_mutex_unlock(&_mutex_motor_reference);
             }
@@ -719,7 +719,7 @@ void EcUDP::periodicActivity()
              // Stop to receive motors, imu, ft, power board pdo information // 
             // reset motors references
             _motor_ref_flags = RefFlags::FLAG_NONE;
-            _motors_references.clear();
+            //_motors_references.clear();
             
             // stop client
             stop_client();
@@ -738,13 +738,20 @@ void EcUDP::periodicActivity()
         if(_motor_ref_flags!=RefFlags::FLAG_NONE &&
            !_motors_references.empty())
         {
+            std::vector<MR> mot_ref_v;
+            for ( const auto &[bId,motor_tx] : _motors_references ) {
+                auto ctrl_type=std::get<0>(motor_tx);
+                if(ctrl_type!=0x00){
+                    mot_ref_v.push_back(std::tuple_cat(std::make_tuple(bId),motor_tx));
+                }
+            }
             if(_motor_ref_flags==RefFlags::FLAG_MULTI_REF )
             {
-                feed_motors(std::make_tuple(1, _motors_references));
+                feed_motors(std::make_tuple(1, mot_ref_v));
             }
             else
             {
-                feed_motors(std::make_tuple(2, _motors_references));
+                feed_motors(std::make_tuple(2, mot_ref_v));
             }
         }
 

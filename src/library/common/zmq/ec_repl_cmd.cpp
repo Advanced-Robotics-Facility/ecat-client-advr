@@ -577,7 +577,7 @@ EcReplFault EcReplCmd::PDOs_aux_cmd(std::vector<aux_cmd_message_t> aux_cmds,
     return fault;
 }
 
-EcReplFault EcReplCmd::Motors_PDO_cmd(motors_ref_t refs)
+EcReplFault EcReplCmd::Motors_PDO_cmd(motors_ref_map motors_references)
 {
     iit::advr::Repl_cmd  pb_cmd;
     EcReplFault fault;
@@ -587,8 +587,8 @@ EcReplFault EcReplCmd::Motors_PDO_cmd(motors_ref_t refs)
     pb_cmd.set_type(CmdType::MOTOR_PDO_CMD);
     
     
-    for ( const auto &[bId,ctrl_type,pos,vel,tor,g0,g1,g2,g3,g4,op,idx,aux] : refs ) {
-        
+    for ( const auto &[bId,motor_ref] : motors_references ) {
+        const auto &[ctrl_type,pos,vel,tor,g0,g1,g2,g3,g4,op,idx,aux]= motor_ref;
         if(ctrl_type!=0x00){
             if ( ! iit::advr::Gains_Type_IsValid(ctrl_type) ) {
                 fault.set_zmq_cmd(get_cmd_type(CmdType::MOTOR_PDO_CMD));

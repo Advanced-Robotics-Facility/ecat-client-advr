@@ -72,8 +72,8 @@ public:
     ~Reading(){};
 
     void configureSizeAndPorts(blockfactory::core::OutputPortsInfo &outputPortInfo);
-    bool getReadings(const blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map,std::vector<MR> motors_ref,std::string &error_info);
-    bool initialize(blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map,std::vector<MR> motors_ref);
-    bool output(const blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map,std::vector<MR> motors_ref);
+    bool getReadings(const blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map,MotorReferenceMap motors_ref,std::string &error_info);
+    bool initialize(blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map,MotorReferenceMap motors_ref);
+    bool output(const blockfactory::core::BlockInformation* blockInfo,MotorStatusMap motors_status_map,MotorReferenceMap motors_ref);
 };
 

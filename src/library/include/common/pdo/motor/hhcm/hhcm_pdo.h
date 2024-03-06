@@ -66,19 +66,43 @@ inline void HhcmPdo<T>::set_to_pb()
     // Type
     T::pb_tx_pdos.set_type(iit::advr::Ec_slave_pdo::TX_XT_MOTOR);
     //
-    T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_pos_ref(MotorPdo<T>::tx_pdo.pos_ref);
-    T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_vel_ref(MotorPdo<T>::tx_pdo.vel_ref);
-    T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_tor_ref(MotorPdo<T>::tx_pdo.tor_ref);
-
-    T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_gain_0(MotorPdo<T>::tx_pdo.gain_0);
-    T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_gain_1(MotorPdo<T>::tx_pdo.gain_1);
-    T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_gain_2(MotorPdo<T>::tx_pdo.gain_2);
-    T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_gain_3(MotorPdo<T>::tx_pdo.gain_3);
-    T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_gain_4(MotorPdo<T>::tx_pdo.gain_4);
+    T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_pos_ref(std::get<1>(MotorPdo<T>::tx_pdo));
+    T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_vel_ref(std::get<2>(MotorPdo<T>::tx_pdo));
+    T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_tor_ref(std::get<3>(MotorPdo<T>::tx_pdo));  
     
+    T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_gain_0(std::get<4>(MotorPdo<T>::tx_pdo));
+    T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_gain_1(std::get<5>(MotorPdo<T>::tx_pdo));
+    T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_gain_2(std::get<6>(MotorPdo<T>::tx_pdo));
+    T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_gain_3(std::get<7>(MotorPdo<T>::tx_pdo));
+    T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_gain_4(std::get<8>(MotorPdo<T>::tx_pdo));
+    
+    auto ctrl_type_cast = static_cast<iit::advr::Gains_Type>(std::get<0>(MotorPdo<T>::tx_pdo));
+
+    if((ctrl_type_cast == iit::advr::Gains_Type_POSITION ||
+        ctrl_type_cast == iit::advr::Gains_Type_VELOCITY)) {
+        T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_gain_0(std::get<4>(MotorPdo<T>::tx_pdo));
+        T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_gain_1(std::get<6>(MotorPdo<T>::tx_pdo));
+        T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_gain_2(0.0);
+        T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_gain_3(0.0);
+        T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_gain_4(std::get<5>(MotorPdo<T>::tx_pdo));
+    }
+
     T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_ts(uint32_t(iit::ecat::get_time_ns()/1000));
     T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_fault_ack(0);
-    T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_op_idx_aux(MotorPdo<T>::tx_pdo.op_idx_aux);
-    T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_aux(MotorPdo<T>::tx_pdo.aux);
+                
+    auto _op = static_cast<iit::advr::AuxPDO_Op>(std::get<9>(MotorPdo<T>::tx_pdo));
+
+    switch (_op)
+    {
+        case iit::advr::AuxPDO_Op_SET:{
+            T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_op_idx_aux(std::get<10>(MotorPdo<T>::tx_pdo));
+            T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_aux(std::get<11>(MotorPdo<T>::tx_pdo));
+        }break;
+        case iit::advr::AuxPDO_Op_GET:
+            T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_op_idx_aux(std::get<10>(MotorPdo<T>::tx_pdo));
+            break;
+        case iit::advr::AuxPDO_Op_NOP:
+            break;
+    }
 }
 #endif

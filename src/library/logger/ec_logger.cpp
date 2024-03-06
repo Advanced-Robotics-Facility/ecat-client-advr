@@ -2,9 +2,8 @@
 
 EcLogger::EcLogger()
 {
-    _motor_ref_eigen.resize(11);
-    _pump_ref_eigen.resize(25);
     _motor_rx_v.resize(MotorPdoRx::pdo_size);
+    _motor_tx_v.resize(MotorPdoTx::pdo_size);
     _imu_rx_v.resize(ImuPdoRx::pdo_size);
     _pump_rx_v.resize(PumpPdoRx::pdo_size);
     _pump_tx_v.resize(PumpPdoTx::pdo_size);
@@ -51,7 +50,7 @@ void EcLogger::start_mat_logger()
                 if(_log_motor_ref_map.count(esc_id)==0){
                     std::string motor_ref_id="motor_ref_id_"+std::to_string(esc_id);
                     _log_motor_ref_map[esc_id]=motor_ref_id;
-                    _motors_references_logger->create(motor_ref_id,_motor_ref_eigen.size());
+                    _motors_references_logger->create(motor_ref_id,MotorPdoTx::pdo_size);
                 }
             }break;
             case iit::ecat::FT6_MSP432:{
@@ -155,26 +154,18 @@ void EcLogger::stop_mat_logger()
     _pump_status_logger.reset();
 }
 
-void EcLogger::log_motors_ref(const std::vector<MR>& motors_ref)
+void EcLogger::log_motors_ref(const MotorReferenceMap& motors_ref)
 {
     if(_motors_references_logger != nullptr){
-        for ( const auto &[esc_id,ctrl_type,pos_ref,vel_ref,tor_ref,gain_0,gain_1,gain_2,gain_3,gain_4,op,idx,aux] : motors_ref) {
+        for ( const auto &[esc_id,motor_tx_pdo] : motors_ref) {
+            auto ctrl_type=std::get<0>(motor_tx_pdo);
             if(ctrl_type!=0x00){
                 if ((ctrl_type==0x3B)||(ctrl_type==0x71)|| 
                     (ctrl_type==0xD4)||(ctrl_type==0xCC)){
                     if(_log_motor_ref_map.count(esc_id)>0){
-                        _motor_ref_eigen(0)=pos_ref;
-                        _motor_ref_eigen(1)=vel_ref;
-                        _motor_ref_eigen(2)=tor_ref;
-                        _motor_ref_eigen(3)=gain_0;
-                        _motor_ref_eigen(4)=gain_1;
-                        _motor_ref_eigen(5)=gain_2;
-                        _motor_ref_eigen(6)=gain_3;
-                        _motor_ref_eigen(7)=gain_4;
-                        _motor_ref_eigen(8)=op;
-                        _motor_ref_eigen(9)=idx;
-                        _motor_ref_eigen(10)=aux;
-                        _motors_references_logger->add(_log_motor_ref_map[esc_id], _motor_ref_eigen);
+                        if(MotorPdoTx::make_vector_from_tuple(motor_tx_pdo,_motor_tx_v)){
+                            _motors_references_logger->add(_log_motor_ref_map[esc_id], _motor_tx_v);
+                        }
                     }
                 }
             }

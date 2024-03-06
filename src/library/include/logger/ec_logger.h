@@ -21,7 +21,7 @@ public:
     void start_mat_logger();
     void stop_mat_logger();
     
-    void log_motors_ref(const std::vector<MR>& motors_ref);
+    void log_motors_ref(const MotorReferenceMap& motors_ref);
     void log_motors_sts(const MotorStatusMap& motors_sts_map);
     void log_pow_sts(const PwrStatusMap& pow_sts_map);
     void log_ft_sts(const FtStatusMap& ft_sts_map);
@@ -43,9 +43,8 @@ private:
     XBot::MatLogger2::Ptr _valve_status_logger;
     XBot::MatLogger2::Ptr _pump_status_logger;
     
-    Eigen::VectorXd _motor_ref_eigen,_pump_ref_eigen;
-    
-    std::vector<float> _motor_rx_v,_imu_rx_v;
+    std::vector<float> _motor_rx_v,_motor_tx_v;
+    std::vector<float> _imu_rx_v;
     std::vector<float> _pump_rx_v,_pump_tx_v;
     std::vector<float> _valve_rx_v,_valve_tx_v;
     

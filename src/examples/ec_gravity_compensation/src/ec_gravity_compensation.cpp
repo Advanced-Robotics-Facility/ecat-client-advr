@@ -134,8 +134,7 @@ int main(int argc, char * const argv[])
         MotorStatusMap motors_status_map;
         
         double tau=0,alpha=0;
-        std::vector<MR> motors_ref;
-        int motor_ref_index=0;
+        MotorReferenceMap motors_ref;
         
         // memory allocation
         client->get_pow_status(pow_status_map);
@@ -167,20 +166,19 @@ int main(int argc, char * const argv[])
         }
         
         for ( const auto &[esc_id, pos_ref] : q_ref){
-           motors_ref.push_back(std::make_tuple(esc_id, //bId
-                                                ec_cfg.motor_config_map[esc_id].control_mode_type, //ctrl_type
-                                                pos_ref, //pos_ref
-                                                0.0, //vel_ref
-                                                0.0, //tor_ref
-                                                ec_cfg.motor_config_map[esc_id].gains[0], //gain_1
-                                                ec_cfg.motor_config_map[esc_id].gains[1], //gain_2
-                                                ec_cfg.motor_config_map[esc_id].gains[2], //gain_3
-                                                ec_cfg.motor_config_map[esc_id].gains[3], //gain_4
-                                                ec_cfg.motor_config_map[esc_id].gains[4], //gain_5
-                                                1, // op means NO_OP
-                                                0, // idx
-                                                0  // aux
-                                            ));
+           motors_ref[esc_id]=std::make_tuple(ec_cfg.motor_config_map[esc_id].control_mode_type, //ctrl_type
+                                              pos_ref, //pos_ref
+                                              0.0, //vel_ref
+                                              0.0, //tor_ref
+                                              ec_cfg.motor_config_map[esc_id].gains[0], //gain_1
+                                              ec_cfg.motor_config_map[esc_id].gains[1], //gain_2
+                                              ec_cfg.motor_config_map[esc_id].gains[2], //gain_3
+                                              ec_cfg.motor_config_map[esc_id].gains[3], //gain_4
+                                              ec_cfg.motor_config_map[esc_id].gains[4], //gain_5
+                                              1, // op means NO_OP
+                                              0, // idx
+                                              0  // aux
+                                              );
         }
         
         if(motors_ref.empty()){
@@ -269,18 +267,15 @@ int main(int argc, char * const argv[])
             model->eigenToMap(tau_g,tau_ref);
             
             // ************************* SEND ALWAYS REFERENCES***********************************//
-            motor_ref_index=0;
             for ( const auto &[esc_id, tor_ref] : tau_ref){
                 double pos_ref = q_ref[esc_id];
-                std::get<2>(motors_ref[motor_ref_index]) = pos_ref;
-                std::get<4>(motors_ref[motor_ref_index]) = tor_ref;
-                std::get<5>(motors_ref[motor_ref_index]) = gain_ref_map[esc_id][0];
-                std::get<6>(motors_ref[motor_ref_index]) = gain_ref_map[esc_id][1];
-                std::get<7>(motors_ref[motor_ref_index]) = gain_ref_map[esc_id][2];
-                std::get<8>(motors_ref[motor_ref_index]) = gain_ref_map[esc_id][3];
-                std::get<9>(motors_ref[motor_ref_index]) = gain_ref_map[esc_id][4];
-
-                motor_ref_index++;
+                std::get<1>(motors_ref[esc_id]) = pos_ref;
+                std::get<3>(motors_ref[esc_id]) = tor_ref;
+                std::get<4>(motors_ref[esc_id]) = gain_ref_map[esc_id][0];
+                std::get<5>(motors_ref[esc_id]) = gain_ref_map[esc_id][1];
+                std::get<6>(motors_ref[esc_id]) = gain_ref_map[esc_id][2];
+                std::get<7>(motors_ref[esc_id]) = gain_ref_map[esc_id][3];
+                std::get<8>(motors_ref[esc_id]) = gain_ref_map[esc_id][4];
             }
             client->set_motors_references(RefFlags::FLAG_MULTI_REF, motors_ref);
             // ************************* SEND ALWAYS REFERENCES***********************************//

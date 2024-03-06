@@ -34,7 +34,7 @@ public:
     bool pdo_aux_cmd_sts(const PAC & pac);
     
     // EtherCAT Client ADVR Facilty setters
-    void set_motors_references(const RefFlags, const std::vector<MR>);
+    void set_motors_references(const RefFlags motor_ref_flags,const MotorReferenceMap motors_references);
     void set_valves_references(const RefFlags valve_ref_flags,const ValveReferenceMap valves_references);
     void set_pumps_references(const RefFlags pump_ref_flags,const PumpReferenceMap pumps_references);
     
@@ -81,7 +81,7 @@ protected:
     PumpStatusMap _pump_status_map;
     
     RefFlags _motor_ref_flags;
-    std::vector<MR> _motors_references;
+    MotorReferenceMap _motors_references;
     
     RefFlags _valve_ref_flags;
     ValveReferenceMap _valves_references;

@@ -18,24 +18,17 @@ static std::map<uint32_t,std::string>ec_motors={{iit::ecat::CENT_AC,"Motor_HP"},
                                                 {iit::ecat::LO_PWR_DC_MC,"Motor_LP"},
                                                 {iit::ecat::CIRCULO9,"Circulo9"},
                                                 {iit::ecat::AMC_FLEXPRO,"AMC flex pro"}};
-                                                
-using MotorStatusMap = std::map<int32_t, MotorPdoRx::pdo_t>;
+                                            
 using FtStatusMap = std::map<int, std::vector<float>>;
 using PwrStatusMap = std::map<int32_t, std::vector<float>>;
-using ImuStatusMap = std::map<int32_t, ImuPdoRx::pdo_t>;
 
+using MotorStatusMap =   std::map<int32_t, MotorPdoRx::pdo_t>;
+using MotorReferenceMap= std::map<int32_t, MotorPdoTx::pdo_t>; 
+using ImuStatusMap=      std::map<int32_t, ImuPdoRx::pdo_t>;
 using ValveStatusMap=    std::map<int32_t, ValvePdoRx::pdo_t>;
 using ValveReferenceMap= std::map<int32_t, ValvePdoTx::pdo_t>;    
 using PumpStatusMap =    std::map<int32_t, PumpPdoRx::pdo_t>;
 using PumpReferenceMap=  std::map<int32_t, PumpPdoTx::pdo_t >;     
-
-// MotorsRef
-using MR = std::tuple<int32_t, int32_t,                     // bId, ctrl_type
-                      float, float, float,                  // pos_ref, vel_ref, tor_ref
-                      float, float, float, float, float,    // gains
-                      uint32_t, uint32_t, float>;           // op, idx, aux
-
-
                       
 // MotorsStarT
 using MST = std::vector<std::tuple<int32_t, int32_t, std::vector<float>>>;

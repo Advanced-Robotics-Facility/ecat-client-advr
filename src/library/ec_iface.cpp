@@ -88,15 +88,24 @@ void EcIface::get_motors_status(MotorStatusMap &motor_status_map)
     pthread_mutex_unlock(&_mutex_motor_status);
 }
 
-void EcIface::set_motors_references(const RefFlags motor_ref_flags,const std::vector<MR> motors_references)
+void EcIface::set_motors_references(const RefFlags motor_ref_flags,const MotorReferenceMap motors_references)
 {
     pthread_mutex_lock(&_mutex_motor_reference);
-    if(_motors_references.size()==motors_references.size()){
+    int ret=check_maps(_motors_references,motors_references);
+    if(ret==0){
         _motor_ref_flags = motor_ref_flags;
         _motors_references = motors_references;
     }
     else{
-        DPRINTF("Error on motors references size [%lu] [%lu]\n",motors_references.size(),_motors_references.size());
+        if(ret==-1){
+            DPRINTF("No motor detected!\n");
+        }
+        else if(ret==-2){
+            DPRINTF("Got an empy motors references map\n");
+        }
+        else{
+            DPRINTF("Esc id [%d] is not a motor\n",ret);
+        }
     }
     pthread_mutex_unlock(&_mutex_motor_reference);
 }

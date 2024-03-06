@@ -42,7 +42,7 @@ void Reference::configureSizeAndPorts(blockfactory::core::InputPortsInfo &inputP
 }
 
 
-bool Reference::setReferences(const blockfactory::core::BlockInformation* blockInfo,std::vector<MR> &motors_ref,std::string &error_info)
+bool Reference::setReferences(const blockfactory::core::BlockInformation* blockInfo,MotorReferenceMap &motors_ref,std::string &error_info)
 {
     if(motors_ref.empty())
     {
@@ -79,39 +79,40 @@ bool Reference::setReferences(const blockfactory::core::BlockInformation* blockI
         // verify if the element of the list exists like option
         if(_references_options.count(_references_list[i]) > 0)
         {
-            for(size_t j=0; j < motors_ref.size();j++)
-            {
+            size_t j=0;
+            for ( auto &[bId,motor_ref] : motors_ref ) {
                 // set aux_vector like reference 
                 switch(_references_options.at(_references_list[i]))
                 {
                     case qJ_ref: {   
-                                    std::get<2>(motors_ref[j]) = aux_vector[j];
+                                    std::get<1>(motor_ref) = aux_vector[j];
                                 }break;
                     
                                 
                     case qJdot_ref: {
-                                        std::get<3>(motors_ref[j]) = aux_vector[j];
+                                        std::get<2>(motor_ref) = aux_vector[j];
                                     }break;   
                     
                 
                     case tau_ref:   {
-                                        std::get<4>(motors_ref[j]) = aux_vector[j];
+                                        std::get<3>(motor_ref) = aux_vector[j];
                                     }break;
 
                     case gainP_ref: {
-                                    std::get<5>(motors_ref[j]) = aux_vector[j];
+                                    std::get<4>(motor_ref) = aux_vector[j];
                                 }break;
                     case gainD_ref: {
                                     if(_ctrl_mode == 0xD4)
                                     {
-                                        std::get<6>(motors_ref[j]) = aux_vector[j];
+                                        std::get<5>(motor_ref) = aux_vector[j];
                                     }
                                     else
                                     {
-                                        std::get<7>(motors_ref[j]) = aux_vector[j];
+                                        std::get<6>(motor_ref) = aux_vector[j];
                                     }
                                 }break;
                 }
+                j++;
             }
         }
         else
@@ -125,7 +126,7 @@ bool Reference::setReferences(const blockfactory::core::BlockInformation* blockI
 
 // NOTE: only output fuction was developed for the references, the intialization phase is not needed.
 
-bool Reference::output(const blockfactory::core::BlockInformation* blockInfo,std::vector<MR> &motors_ref)
+bool Reference::output(const blockfactory::core::BlockInformation* blockInfo,MotorReferenceMap &motors_ref)
 {
     std::string error_info="";
     if(!setReferences(blockInfo,motors_ref,error_info))

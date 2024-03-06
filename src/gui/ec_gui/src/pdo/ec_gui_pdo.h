@@ -99,7 +99,7 @@ private:
         bool _first_send;
         double filtering(SecondOrderFilter<double>::Ptr filter,double actual_value);
         
-        std::vector<MR> _motors_ref;
+        MotorReferenceMap _motors_ref;
         RefFlags _motor_ref_flags;
         std::vector<float> _gains;
         float _ctrl_cmd;

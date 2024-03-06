@@ -69,19 +69,8 @@ inline void FlexproPdo<T>::set_to_pb()
     //
     T::pb_tx_pdos.mutable_cia402_tx_pdo()->set_control_word(0);
     T::pb_tx_pdos.mutable_cia402_tx_pdo()->set_modes_of_op(0);
-    T::pb_tx_pdos.mutable_cia402_tx_pdo()->set_target_pos(100*MotorPdo<T>::tx_pdo.pos_ref); //added 100 for scaling
-    T::pb_tx_pdos.mutable_cia402_tx_pdo()->set_target_vel(100*MotorPdo<T>::tx_pdo.vel_ref);
-    //T::pb_tx_pdos.mutable_circulo9_tx_pdo()->set_target_torque(MotorPdo<T>::tx_pdo.tor_ref);
+    T::pb_tx_pdos.mutable_cia402_tx_pdo()->set_target_pos(100*std::get<1>(MotorPdo<T>::tx_pdo)); //added 100 for scaling
+    T::pb_tx_pdos.mutable_cia402_tx_pdo()->set_target_vel(100*std::get<2>(MotorPdo<T>::tx_pdo));
     T::pb_tx_pdos.mutable_cia402_tx_pdo()->set_target_cur(100*MotorPdo<T>::curr_ref);
-    //T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_ts(uint32_t(iit::ecat::get_time_ns()/1000));
-    
-//     T::pb_tx_pdos.mutable_circulo9_tx_pdo()->set_gain_0(MotorPdo<T>::tx_pdo.gain_0);
-//     T::pb_tx_pdos.mutable_circulo9_tx_pdo()->set_gain_1(MotorPdo<T>::tx_pdo.gain_1);
-//     T::pb_tx_pdos.mutable_circulo9_tx_pdo()->set_gain_2(MotorPdo<T>::tx_pdo.gain_2);
-//     T::pb_tx_pdos.mutable_circulo9_tx_pdo()->set_gain_3(MotorPdo<T>::tx_pdo.gain_3);
-//     T::pb_tx_pdos.mutable_circulo9_tx_pdo()->set_gain_4(MotorPdo<T>::tx_pdo.gain_4);
-//     
-    //T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_fault_ack(0);
-    //T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_op_idx_aux(MotorPdo<T>::tx_pdo.aux_rd_idx_req);
 }
 #endif
