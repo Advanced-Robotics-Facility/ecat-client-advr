@@ -19,11 +19,11 @@ static std::map<uint32_t,std::string>ec_motors={{iit::ecat::CENT_AC,"Motor_HP"},
                                                 {iit::ecat::CIRCULO9,"Circulo9"},
                                                 {iit::ecat::AMC_FLEXPRO,"AMC flex pro"}};
                                             
-using FtStatusMap = std::map<int, std::vector<float>>;
 using PwrStatusMap = std::map<int32_t, std::vector<float>>;
 
 using MotorStatusMap =   std::map<int32_t, MotorPdoRx::pdo_t>;
 using MotorReferenceMap= std::map<int32_t, MotorPdoTx::pdo_t>; 
+using FtStatusMap=       std::map<int32_t, FtPdoRx::pdo_t>;
 using ImuStatusMap=      std::map<int32_t, ImuPdoRx::pdo_t>;
 using ValveStatusMap=    std::map<int32_t, ValvePdoRx::pdo_t>;
 using ValveReferenceMap= std::map<int32_t, ValvePdoTx::pdo_t>;    

@@ -44,6 +44,7 @@ private:
     XBot::MatLogger2::Ptr _pump_status_logger;
     
     std::vector<float> _motor_rx_v,_motor_tx_v;
+    std::vector<float> _ft_rx_v;
     std::vector<float> _imu_rx_v;
     std::vector<float> _pump_rx_v,_pump_tx_v;
     std::vector<float> _valve_rx_v,_valve_tx_v;

@@ -66,7 +66,7 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                 case iit::ecat::FT6_MSP432:{
                     auto ft_pdo = std::make_shared<FtPdo<T>>(_ec_pdo_start, id);
                     _ft_pdo_map[id]=ft_pdo;
-                    _ft_status_map[id]= ft_pdo->ft_v;
+                    _ft_status_map[id]= ft_pdo->rx_pdo;
                 }break;   
                 case iit::ecat::IMU_ANY :{
                     auto imu_pdo = std::make_shared<ImuPdo<T>>(_ec_pdo_start, id);
@@ -187,7 +187,7 @@ void EcPdo<T>::read_ft_pdo()
                 nbytes = ft_pdo->read();
             } while ( nbytes > 0);
             //////////////////////////////////////////////////////////////
-            _ft_status_map[id]= ft_pdo->ft_v; 
+            _ft_status_map[id]= ft_pdo->rx_pdo; 
         }
         catch ( std::out_of_range ) {};   
     }

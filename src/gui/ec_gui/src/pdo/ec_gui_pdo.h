@@ -46,35 +46,16 @@ private:
       qint64 _ms_receive_time;
       double _s_receive_time;
       float _currentHue = 0.0;
-      
-      QList<QString> _motor_pdo_fields= {"Link Position",
-                                         "Motor Position",
-                                         "Link Velocity",
-                                         "Motor Velocity",
-                                         "Torque",
-                                         "Motor Temperature",
-                                         "Board Temperature",
-                                         "fault",
-                                         "rtt",
-                                         "op_idx_ack",
-                                         "aux",          
-                                         "Brake_Sts",
-                                         "LED_Sts"};
-                                        
-       QList<QString> _ft6_pdo_fields=  {"force_x",
-                                         "force_y",
-                                         "force_z",
-                                         "torque_x",
-                                         "torque_y",
-                                         "torque_z"};
-                                         
+                              
        QList<QString> _pow_pdo_fields=  {"v_batt",
                                          "v_load",
                                          "i_load",
                                          "temp_pcb",
                                          "temp_heatsink",
                                          "temp_batt"};
-                                         
+         
+        QList<QString> _motor_pdo_fields;
+        QList<QString> _ft6_pdo_fields;
         QList<QString> _imu_pdo_fields;                                         
         QList<QString> _valve_pdo_fields,_pump_pdo_fields;
                                           
@@ -87,7 +68,7 @@ private:
         
         void update_plot();
         void read_motor_status();
-        void read_ft6_status();
+        void read_ft_status();
         void read_pow_status();
         void read_imu_status();
         void read_valve_status();
@@ -103,6 +84,8 @@ private:
         RefFlags _motor_ref_flags;
         std::vector<float> _gains;
         float _ctrl_cmd;
+        std::vector<float> _motor_rx_v;
+        std::vector<float> _ft_rx_v;
         std::vector<float> _imu_rx_v;
         std::vector<float> _valve_rx_v,_pump_rx_v;
         //************************ WRITE PDO ******************************

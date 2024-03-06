@@ -101,14 +101,14 @@ bool Ft::getFt(const blockfactory::core::BlockInformation* blockInfo,FtStatusMap
                                         output->set(ft_id_index, ft_id_read);
                                     } break;
                     case F: {
-                                output->set(3*ft_id_index, ft_status_id[0]);
-                                output->set(3*ft_id_index+1, ft_status_id[1]);
-                                output->set(3*ft_id_index+2, ft_status_id[2]);
+                                output->set(3*ft_id_index,   std::get<0>(ft_status_id));
+                                output->set(3*ft_id_index+1, std::get<1>(ft_status_id));
+                                output->set(3*ft_id_index+2, std::get<2>(ft_status_id));
                             }break;
                     case T: {
-                                output->set(3*ft_id_index, ft_status_id[3]);
-                                output->set(3*ft_id_index+1, ft_status_id[4]);
-                                output->set(3*ft_id_index+2, ft_status_id[5]);
+                                output->set(3*ft_id_index,   std::get<3>(ft_status_id));
+                                output->set(3*ft_id_index+1, std::get<4>(ft_status_id));
+                                output->set(3*ft_id_index+2, std::get<5>(ft_status_id));
                                 }break;              
                 }
             }

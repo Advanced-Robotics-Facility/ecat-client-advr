@@ -4,6 +4,7 @@ EcLogger::EcLogger()
 {
     _motor_rx_v.resize(MotorPdoRx::pdo_size);
     _motor_tx_v.resize(MotorPdoTx::pdo_size);
+    _ft_rx_v.resize(FtPdoRx::pdo_size);
     _imu_rx_v.resize(ImuPdoRx::pdo_size);
     _pump_rx_v.resize(PumpPdoRx::pdo_size);
     _pump_tx_v.resize(PumpPdoTx::pdo_size);
@@ -61,7 +62,7 @@ void EcLogger::start_mat_logger()
                 if(_log_ft_map.count(esc_id)==0){
                     std::string ft_id="ft_id_"+std::to_string(esc_id);
                     _log_ft_map[esc_id]=ft_id;
-                    _ft_status_logger->create(ft_id,6);
+                    _ft_status_logger->create(ft_id,FtPdoRx::pdo_size);
                 }
             }break; 
             case iit::ecat::IMU_ANY :{
@@ -201,9 +202,11 @@ void EcLogger::log_pow_sts(const PwrStatusMap& pow_sts_map)
 void EcLogger::log_ft_sts(const FtStatusMap& ft_sts_map)
 {
     if(_ft_status_logger != nullptr){
-        for ( const auto &[esc_id, ft_sts] : ft_sts_map) {
+        for ( const auto &[esc_id, ft_rx_pdo] : ft_sts_map) {
             if(_log_ft_map.count(esc_id)>0){
-                _ft_status_logger->add(_log_ft_map[esc_id],ft_sts);
+                if(FtPdoRx::make_vector_from_tuple(ft_rx_pdo,_ft_rx_v)){
+                    _ft_status_logger->add(_log_ft_map[esc_id],_ft_rx_v);
+                }
             }
         }
     }

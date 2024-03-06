@@ -220,8 +220,10 @@ void EcUDP::ft6_status_handler(char *buf, size_t size)
 
     cnt++;
     for ( const auto &[id, values] : fts_status) {
-        _ft_status_map[id] = values;
+        _ft_status_map[id] = std::make_tuple(values[0],values[1],values[2],
+                                             values[3],values[4],values[5],0,0);
     }
+                 
 
     if ( ! (cnt % 100) ) {
         for ( const auto &[esc_id, values] : _ft_status_map) {
