@@ -54,24 +54,9 @@ void EcZipc::start_client(uint32_t period_ms,bool logging)
     _logging=logging;
     
     SSI slave_info;
-    retrieve_slaves_info(slave_info);
+    _thread_jointable=false;
     
-    bool create_thread=false;
-    _thread_jointable=create_thread;
-    
-    if(!slave_info.empty()){
-        create_thread=true;
-    }
-    else{
-//#ifdef TEST_LIBRARY 
-        if(!_fake_slave_info.empty()){
-            create_thread=true;
-            slave_info=_fake_slave_info;
-        }    
-//#endif       
-    }
-    
-    if(create_thread){
+    if(retrieve_slaves_info(slave_info)){
         try{
             esc_factory(slave_info);
             if(_logging){

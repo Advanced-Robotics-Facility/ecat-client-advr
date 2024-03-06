@@ -670,6 +670,20 @@ void EcUDP::start_client(uint32_t period_ms,bool logging)
         
     connect();
     
+//     SSI slave_info;
+//     if(retrieve_slaves_info(slave_info)){
+//         try{
+//             esc_factory(slave_info);
+//             if(_logging){
+//                 _ec_logger->init_mat_logger(slave_info);
+//                 start_logging();
+//             }
+//         } catch ( std::exception &e ) {
+//             DPRINTF ( "Fatal Error: %s\n", e.what() );
+//             stop_client();
+//         }
+//     }
+    
     if(logging)
     {
         _ec_logger->init_mat_logger(_slave_info);
