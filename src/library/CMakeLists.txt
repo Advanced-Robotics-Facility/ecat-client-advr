@@ -25,6 +25,8 @@ ENDIF(TEST_LIBRARY)
 
 # compile ecat common library
 add_library(ec_common_library STATIC
+	    common/boost/ec_boost_cmd.cpp
+	    common/boost/ec_boost_pdo.cpp
             common/zmq/ec_repl_cmd.cpp
             common/zmq/ec_zmq_cmd.cpp
             common/zmq/ec_zmq_pdo.cpp

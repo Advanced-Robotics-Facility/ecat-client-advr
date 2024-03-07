@@ -14,6 +14,7 @@ _host_port(host_port)
     }
     
     _host_port=host_port+4000; // to be verified in the configuration file
+    _ec_pdo_start="";
     
 }
 template < class T >
@@ -46,10 +47,10 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
         {
                 case iit::ecat::CENT_AC :
                 case iit::ecat::LO_PWR_DC_MC:{
-                        auto hhcm_pdo = std::make_shared<HhcmPdo<T>>(_ec_pdo_start, id, esc_type);
-                        _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(hhcm_pdo);
-                        _motor_status_map[id]=  hhcm_pdo->rx_pdo;
-                        _motors_references[id]= hhcm_pdo->tx_pdo;
+                    auto hhcm_pdo = std::make_shared<HhcmPdo<T>>(_ec_pdo_start, id, esc_type);
+                    _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(hhcm_pdo);
+                    _motor_status_map[id]=  hhcm_pdo->rx_pdo;
+                    _motors_references[id]= hhcm_pdo->tx_pdo;
                 }break;
                 case iit::ecat::CIRCULO9:{
                     auto circulo9_pdo = std::make_shared<Circulo9Pdo<T>>(_ec_pdo_start, id, esc_type);
@@ -74,21 +75,21 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                     _imu_status_map[id]= imu_pdo->rx_pdo;
                 }break;
                 case iit::ecat::POW_F28M36_BOARD :{
-                        auto pow_pdo = std::make_shared<PowPdo<T>>(_ec_pdo_start, id);
-                        _pow_pdo_map[id]=pow_pdo;
-                        _pow_status_map[id]= pow_pdo->rx_pdo;
+                    auto pow_pdo = std::make_shared<PowPdo<T>>(_ec_pdo_start, id);
+                    _pow_pdo_map[id]=pow_pdo;
+                    _pow_status_map[id]= pow_pdo->rx_pdo;
                 }break;
                 case iit::ecat::HYQ_KNEE:{
-                        auto valve_pdo = std::make_shared<ValvePdo<T>>(_ec_pdo_start, id);
-                        _valve_pdo_map[id]=valve_pdo;
-                        _valve_status_map[id]=  valve_pdo->rx_pdo;
-                        _valves_references[id]= valve_pdo->tx_pdo;
+                    auto valve_pdo = std::make_shared<ValvePdo<T>>(_ec_pdo_start, id);
+                    _valve_pdo_map[id]=valve_pdo;
+                    _valve_status_map[id]=  valve_pdo->rx_pdo;
+                    _valves_references[id]= valve_pdo->tx_pdo;
                 }break;
                 case iit::ecat::HYQ_HPU:{
-                        auto pump_pdo = std::make_shared<PumpPdo<T>>(_ec_pdo_start, id);
-                        _pump_pdo_map[id]=pump_pdo;
-                        _pump_status_map[id]= pump_pdo->rx_pdo;
-                        _pumps_references[id]= pump_pdo->tx_pdo;
+                    auto pump_pdo = std::make_shared<PumpPdo<T>>(_ec_pdo_start, id);
+                    _pump_pdo_map[id]=pump_pdo;
+                    _pump_status_map[id]= pump_pdo->rx_pdo;
+                    _pumps_references[id]= pump_pdo->tx_pdo;
                 }break;
                 
                 default:

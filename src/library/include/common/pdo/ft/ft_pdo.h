@@ -4,7 +4,6 @@
 #include <pb_utils.h>
 #include "common/pipe/ec_pipe_pdo.h"
 #include "common/zmq/ec_zmq_pdo.h"
-
 namespace FtPdoRx{
     static const std::vector<std::string>name = {"force_x", "force_y", "force_z","torque_x", "torque_y","torque_z","fault","rtt"};
     static const int pdo_size=8;

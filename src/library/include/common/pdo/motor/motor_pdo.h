@@ -5,7 +5,6 @@
 #include <pb_utils.h>
 #include "common/pipe/ec_pipe_pdo.h"
 #include "common/zmq/ec_zmq_pdo.h"
-
 namespace MotorPdoRx{
     static const std::vector<std::string>name = {"link_pos", "motor_pos", "link_vel",
                                                  "motor_vel", "torque", "motor_temp",
