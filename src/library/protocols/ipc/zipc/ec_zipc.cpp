@@ -30,6 +30,11 @@ void EcZipc::th_init ( void * )
     start_time = iit::ecat::get_time_ns();
     tNow = tPre = start_time;
     loop_cnt = 0;
+    
+    read_pdo(); //first read.
+    if(_logging){
+        start_logging();
+    }
 }
 
 void EcZipc::set_loop_time(uint32_t period_ms)
@@ -59,13 +64,8 @@ void EcZipc::start_client(uint32_t period_ms,bool logging)
     if(retrieve_slaves_info(slave_info)){
         try{
             esc_factory(slave_info);
-            if(_logging){
-                _ec_logger->init_mat_logger(slave_info);
-                start_logging();
-            }
-            create(false); // non-real time thread
+            create(false); // nont real time thread
             _thread_jointable=true;
-            _client_alive=true;
         } catch ( std::exception &e ) {
             DPRINTF ( "Fatal Error: %s\n", e.what() );
             stop_client();

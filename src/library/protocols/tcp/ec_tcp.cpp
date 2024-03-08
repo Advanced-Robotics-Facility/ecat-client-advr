@@ -30,6 +30,11 @@ void EcTCP::th_init ( void * )
     start_time = iit::ecat::get_time_ns();
     tNow = tPre = start_time;
     loop_cnt = 0;
+    
+    read_pdo(); //first read.
+    if(_logging){
+        start_logging();
+    }
 }
 
 void EcTCP::set_loop_time(uint32_t period_ms)
@@ -52,20 +57,15 @@ void EcTCP::start_client(uint32_t period_ms,bool logging)
     stacksize = 0; // not set stak size !!!! YOU COULD BECAME CRAZY !!!!!!!!!!!!
     
     _logging=logging;
-    
+
     SSI slave_info;
     _thread_jointable=false;
     
     if(retrieve_slaves_info(slave_info)){
         try{
             esc_factory(slave_info);
-            if(_logging){
-                _ec_logger->init_mat_logger(slave_info);
-                start_logging();
-            }
-            create(false); // non-real time thread
+            create(false); // non real time thread
             _thread_jointable=true;
-            _client_alive=true;
         } catch ( std::exception &e ) {
             DPRINTF ( "Fatal Error: %s\n", e.what() );
             stop_client();
@@ -108,7 +108,7 @@ void EcTCP::th_loop( void * )
     // read motors, imu, ft, power board and others pdo information 
     read_pdo();
     
-    // send motors and others pdo
+//     // send motors and others pdo
     send_pdo();
 }
 

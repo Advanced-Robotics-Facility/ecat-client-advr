@@ -33,6 +33,7 @@ EcPdo<T>::~EcPdo()
 template < class T >
 void EcPdo<T>::esc_factory(SSI slave_descr)
 {
+    _ec_logger->init_mat_logger(slave_descr);
     for ( auto &[id, esc_type, pos] : slave_descr ) {
         
         if(_protocol!="pipe"){

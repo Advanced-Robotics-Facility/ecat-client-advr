@@ -5,6 +5,7 @@ EcIface::EcIface()
     _ec_logger = std::make_shared<EcLogger>();
     _logging=false;
     _client_status=ClientStatus::IDLE;
+    _client_alive=true;
     
     _motor_ref_flags=RefFlags::FLAG_NONE;
     _motors_references.clear();
