@@ -1,32 +1,10 @@
-#include <cassert>
-#include <tuple>
-
-#include "udpSock.h"
 #include "common/boost/ec_boost_cmd.h"
-#include <magic_enum.hpp>
-
 
 /**
  * @brief EcBoostCmd::EcBoostCmd
  */
-EcBoostCmd::EcBoostCmd(std::string task_name,std::string host_address,uint32_t host_port) : 
-UdpTask(task_name, host_port+1)
+EcBoostCmd::EcBoostCmd()
 {
-
-    if(host_address=="localhost")
-    {
-        host_address.clear();
-        host_address="127.0.0.1";
-    }
-    
-    _client_port=host_port+2;
-    
-    sender_endpoint.address(boost::asio::ip::address::from_string(host_address));
-    sender_endpoint.port(host_port);
-
-    // Register Message Handler
-    registerHandler(UdpPackMsg::MSG_REPL_REP,   &EcBoostCmd::repl_replies_handler);
-    
     _cv_repl_reply= std::make_shared<std::condition_variable>();
     
     _cmd_req_reply=false;
@@ -45,11 +23,35 @@ EcBoostCmd::~EcBoostCmd()
 
 //******************************* EVENT HANDLERS *****************************************************//
 
-/**
- * @brief repl_replies_handler
- * @param buf
- * @param size
- */
+void EcBoostCmd::server_replies_handler(char*buf, size_t size)
+{   
+    size_t offset {};
+    auto reply = proto.getCliReqSrvRep(buf, size, offset);
+    _consoleLog->info( " SRV REP : {}", magic_enum::enum_name(reply));
+    int64_t ts;
+    int64_t usecs_since_epoch = getTsEpoch<std::chrono::microseconds>();
+    SCA server_args;
+    uint32_t hash;
+
+    switch (reply) {
+    
+        case CliReqSrvRep::CONNECTED :
+            this->proto.getCliReqSrvRepPayload(buf, size, offset, server_args);
+            std::tie(hash, std::ignore) = server_args;
+            _consoleLog->info(" <-- Connected ! {}", hash);
+            _client_status=ClientStatus::CONNECTED;
+            break;
+    
+        case CliReqSrvRep::PONG :
+            this->proto.getCliReqSrvRepPayload(buf, size, offset, ts);
+            _consoleLog->info( "PING PONG rtt {} us", usecs_since_epoch-ts);
+            break;
+    
+        default:
+            break;
+    }
+}
+
 void EcBoostCmd::repl_replies_handler(char *buf, size_t size)
 {
     _reply_err_msg="";
@@ -96,6 +98,7 @@ void EcBoostCmd::connect()
     if(_client_status==ClientStatus::IDLE)
     {
         CBuff sendBuffer{};
+        _consoleLog->info(" Client port:{} and period_ms: {} \n", _client_port, get_period_ms());
         CCA client_args = std::make_tuple(_client_port, get_period_ms());
         auto sizet = proto.packClientRequest(sendBuffer, CliReqSrvRep::CONNECT, client_args);
         do_send(sendBuffer.data(),  sendBuffer.size() );
@@ -231,6 +234,8 @@ bool EcBoostCmd::retrieve_slaves_info(SSI &slave_info)
             ret_cmd_status=true;
         }     
     }
+    
+    _ec_logger->init_mat_logger(_slave_info);
     
     return ret_cmd_status;
 }

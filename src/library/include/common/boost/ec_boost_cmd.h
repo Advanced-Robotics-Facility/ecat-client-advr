@@ -1,19 +1,14 @@
 #ifndef EC_BOOST_CMD_H
 #define EC_BOOST_CMD_H
 
-#include <boost/asio.hpp>
-
 #include "ec_iface.h"
-#include "task.h"
-#include "pck_msgs.h"
-#include <chrono>
-using boost::asio::ip::udp;
+#include "ec_boost.h"
 
-class EcBoostCmd : public UdpTask<EcBoostCmd, MsgPackProtocol>, virtual public EcIface
+class EcBoostCmd : virtual public EcBoost, virtual public EcIface
 {
 public:
 
-    EcBoostCmd(std::string task_name,std::string host_address,uint32_t host_port);
+    EcBoostCmd();
     ~EcBoostCmd();
 
     virtual void start_client(uint32_t period_ms,bool logging) = 0;
@@ -37,6 +32,10 @@ public:
     void send_pdo();
 
 private:
+    
+    // MSG HANDLERS
+    void server_replies_handler(char*buf, size_t size);
+    void repl_replies_handler(char*buf, size_t size);
 
     //COMMANDS
     void get_slaves_info();
@@ -49,9 +48,6 @@ private:
     
     void set_wait_reply_time(uint32_t wait_reply_time);
     void restore_wait_reply_time();
-    
-    // MSG HANDLERS
-    void repl_replies_handler(char*buf, size_t size);
     
     std::shared_ptr<std::condition_variable> _cv_repl_reply;
     
@@ -72,7 +68,6 @@ private:
     std::string _reply_err_msg;
     ReplReqRep _repl_req_rep;
     SSI _slave_info;
-    int _client_port;
 };
 
 #endif

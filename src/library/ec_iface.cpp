@@ -38,6 +38,9 @@ EcIface::EcIface()
         createLogger("console","client");
         _consoleLog=spdlog::get("console");
     }
+    
+    _client_alive=true;
+    
     _consoleLog->info("EtherCAT Client initialized");
 }
 
@@ -57,6 +60,9 @@ EcIface::~EcIface()
     
     pthread_mutex_destroy(&_mutex_pump_status);
     pthread_mutex_destroy(&_mutex_pump_reference);
+    
+    _consoleLog->info("EtherCAT Client closed");
+    _consoleLog.reset();
     
 }
 

@@ -103,6 +103,7 @@ bool EcZmqCmd::retrieve_slaves_info(SSI &slave_info)
             
             _client_status=ClientStatus::MOTORS_MAPPED;
             
+            _ec_logger->init_mat_logger(_slave_info);
             return true;
         }
         else{
@@ -114,6 +115,7 @@ bool EcZmqCmd::retrieve_slaves_info(SSI &slave_info)
         if(!_fake_slave_info.empty()){
             _slave_info=_fake_slave_info;
             slave_info = _slave_info;
+            _ec_logger->init_mat_logger(_slave_info);
             return true;
         }     
     }

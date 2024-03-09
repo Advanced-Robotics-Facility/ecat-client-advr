@@ -24,9 +24,6 @@ public:
     void periodicActivity();
 
 private:
-    // MSG HANDLERS
-    void server_status_handler(char*buf, size_t size);
-    
     std::chrono::steady_clock::time_point _client_alive_time; 
     std::shared_ptr<std::thread> _ec_udp_thread;
     std::vector<MR> _mot_ref_tv; //vector of tuple
