@@ -58,7 +58,7 @@ void EcCommonStep::autodetection(std::vector<int> motor_id_vector)
                 }
             
                 if(!motor_found){
-                    throw std::runtime_error("ID: " + std::to_string(motor_id) + "not found");
+                    throw std::runtime_error("ID: " + std::to_string(motor_id) + " not found");
                 }
             }
 
