@@ -39,11 +39,12 @@ int main(int argc, char * const argv[])
         return 1;
     }
     
-    bool motor_ctrl=false;
+    bool sys_ctrl=true;
     try{
-        ec_common_step.autodetection(motor_id_vector);
-        //motor_ctrl=ec_common_step.start_ec_motors();
-        motor_ctrl=true;
+        ec_common_step.autodetection();
+        //sys_ctrl=ec_common_step.start_ec_motors(motor_id_vector);
+        sys_ctrl &= ec_common_step.start_ec_valves(ec_cfg.valve_id);
+        sys_ctrl=true;
     }catch(std::exception &ex){
         DPRINTF("%s\n",ex.what());
         return 1;
@@ -53,11 +54,11 @@ int main(int argc, char * const argv[])
 #ifdef TEST_EXAMPLES
     if(!motor_id_vector.empty())
     {
-        motor_ctrl=true;
+        sys_ctrl=true;
     }
 #endif 
 
-    if(motor_ctrl)
+    if(sys_ctrl)
     {                                               
         struct timespec ts= { 0, ec_cfg.period_ms*1000000}; //sample time
         
@@ -85,7 +86,6 @@ int main(int argc, char * const argv[])
         std::map<int,double> valves_trj_1,valves_trj_2,valves_set_zero,valves_set_trj;
         std::map<int,double> valves_set_ref,valves_start;
 
-        
         int trajectory_counter=0;
         
         // Power Board
@@ -468,9 +468,9 @@ int main(int argc, char * const argv[])
             
             clock_nanosleep(CLOCK_MONOTONIC, 0, &ts, NULL); 
         }
-            
     }
     
+    ec_common_step.stop_ec_valves();
     ec_common_step.stop_ec_motors();
     ec_common_step.stop_ec();
     

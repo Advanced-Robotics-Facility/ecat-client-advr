@@ -32,42 +32,6 @@ std::shared_ptr<EcUtils> EcCommonStep::get_ec_utils()
 }
                 
 
-void EcCommonStep::autodetection(std::vector<int> motor_id_vector)   
-{
-    if(motor_id_vector.empty()){
-        throw std::runtime_error("Got an empty motor id vector for scanning");
-    }
-    else{
-        _motor_id_vector=motor_id_vector;
-    }
-    
-    DPRINTF("Try autodetection\n");
-    if(_client->retrieve_slaves_info(_slave_info)){   
-        if(!_slave_info.empty()){
-            DPRINTF("Retrieved slaves\n");
-            for(int motor_id_index=0;motor_id_index<_motor_id_vector.size();motor_id_index++){
-                int motor_id = _motor_id_vector[motor_id_index];
-                bool motor_found=false;
-                for ( auto &[id, type, pos] : _slave_info ) {
-                    if(ec_motors.count(type)>0){
-                        if(id == motor_id){
-                            motor_found=true;
-                            break;
-                        }
-                    }
-                }
-            
-                if(!motor_found){
-                    throw std::runtime_error("ID: " + std::to_string(motor_id) + " not found");
-                }
-            }
-
-        }
-    }
-    
-    prepare_motors();
-}
-
 void EcCommonStep::autodetection()   
 {
     DPRINTF("Try autodetection\n");
@@ -78,11 +42,39 @@ void EcCommonStep::autodetection()
                 if(ec_motors.count(type)>0){
                     _motor_id_vector.push_back(id);
                 }
+                else if(type==iit::ecat::HYQ_KNEE){
+                    _valve_id_vector.push_back(id);
+                }
             }
         }
     }
+}
+
+void EcCommonStep::find_motors(std::vector<int> motor_id_vector)   
+{
+    if(motor_id_vector.empty()){
+        throw std::runtime_error("Got an empty motor id vector for scanning");
+    }
+    else{
+        _motor_id_vector=motor_id_vector;
+    }
+
+    for(int motor_id_index=0;motor_id_index<_motor_id_vector.size();motor_id_index++){
+        int motor_id = _motor_id_vector[motor_id_index];
+        bool motor_found=false;
+        for ( auto &[id, type, pos] : _slave_info ) {
+            if(ec_motors.count(type)>0){
+                if(id == motor_id){
+                    motor_found=true;
+                    break;
+                }
+            }
+        }
     
-    prepare_motors();
+        if(!motor_found){
+            throw std::runtime_error("Motor ID: " + std::to_string(motor_id) + " not found");
+        }
+    }
 }
 
 void EcCommonStep::prepare_motors()
@@ -103,12 +95,25 @@ void EcCommonStep::prepare_motors()
     }
 }
 
+bool EcCommonStep::start_ec_motors(std::vector<int> motor_id_vector)
+{
+    try{
+        find_motors(motor_id_vector);
+        bool ret=start_ec_motors();
+        return ret;
+    }catch(std::exception &ex){
+        throw std::runtime_error(ex.what());
+    }
+}
+
 bool EcCommonStep::start_ec_motors(void)
 {
     bool motor_started=false;
     bool motor_ctrl=motor_started;
     const int max_pdo_aux_cmd_attemps=3;
     int pdo_aux_cmd_attemps=0;
+
+    prepare_motors();
     
     if(!_motors_start.empty())
     {
@@ -191,20 +196,94 @@ void EcCommonStep::stop_ec_motors(void)
     // ************************* Engage brakes ***********************************//
 
     // ************************* STOP Motors ***********************************//
-    if(stop_motors)
-    {
-        if(!_client->stop_motors())
-        {
+    if(stop_motors){
+        if(!_client->stop_motors()){
             DPRINTF("Not all motors are stopped\n");
         }
-        else
-        {
+        else{
             DPRINTF("All Motors stopped\n");
         }
             
     }
     // ************************* STOP Motors ***********************************//
 }
+
+void EcCommonStep::find_valves(std::vector<int> valve_id_vector)
+{
+    if(valve_id_vector.empty()){
+        throw std::runtime_error("Got an empty valve id vector for scanning");
+    }
+    else{
+        _valve_id_vector=valve_id_vector;
+    }
+
+    for(int valve_id_index=0;valve_id_index<_valve_id_vector.size();valve_id_index++){
+        int valve_id = _valve_id_vector[valve_id_index];
+        bool valve_found=false;
+        for ( auto &[id, type, pos] : _slave_info ) {
+            if(type==iit::ecat::HYQ_KNEE){
+                if(id == valve_id){
+                    valve_found=true;
+                    break;
+                }
+            }
+        }
+    
+        if(!valve_found){
+            throw std::runtime_error("Valve ID: " + std::to_string(valve_id) + " not found");
+        }
+    }
+}
+
+
+
+bool EcCommonStep::start_ec_valves(std::vector<int> valve_id_vector)
+{
+    try{
+        find_valves(valve_id_vector);
+        bool ret=start_ec_valves();
+        return ret;
+    }catch(std::exception &ex){
+        throw std::runtime_error(ex.what());
+    }
+}
+
+bool EcCommonStep::start_ec_valves(void)
+{
+    WR_SDO start_valve={std::make_tuple("ctrl_status_cmd","0xA5")};
+    bool valve_started=true;
+    for(int i=0;i<_valve_id_vector.size();i++){
+        int valve_id=_valve_id_vector[i];
+        valve_started &=_client->set_wr_sdo(valve_id,{},start_valve);
+    }
+
+    if(!valve_started) {
+        DPRINTF("Not all valves are started\n");
+    }
+    else{
+        DPRINTF("All Valves started\n");
+    }
+
+    return valve_started;
+}
+
+void EcCommonStep::stop_ec_valves(void)
+{
+    WR_SDO stop_valve= {std::make_tuple("ctrl_status_cmd","0x5A")};
+    bool valve_stopped=true;
+    for(int i=0;i<_valve_id_vector.size();i++){
+        int valve_id=_valve_id_vector[i];
+        valve_stopped &=_client->set_wr_sdo(valve_id,{},stop_valve);
+    }
+
+    if(!valve_stopped) {
+        DPRINTF("Not all valves are stopped\n");
+    }
+    else{
+        DPRINTF("All Valves stopped\n");
+    }
+}
+
 void EcCommonStep::stop_ec()
 {
     // STOP CLIENT

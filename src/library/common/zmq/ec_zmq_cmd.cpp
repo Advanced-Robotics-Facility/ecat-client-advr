@@ -240,16 +240,17 @@ bool EcZmqCmd::stop_motors()
             if(!_client_alive){
                 return false;
             }
-            
-            std::string msg="";
-            auto fault=_ec_repl_cmd->Ctrl_cmd(iit::advr::Ctrl_cmd_Type::Ctrl_cmd_Type_CTRL_CMD_STOP,
-                                             esc_id,
-                                             0.0,  // ignored
-                                             {},  // ignored
-                                             msg);
-            if(cmd_error_status(fault, "stop_motors",msg))
-            {
-                motors_stopped &= false; 
+            if(ec_motors.count(esc_id)>0){
+                std::string msg="";
+                auto fault=_ec_repl_cmd->Ctrl_cmd(iit::advr::Ctrl_cmd_Type::Ctrl_cmd_Type_CTRL_CMD_STOP,
+                                                esc_id,
+                                                0.0,  // ignored
+                                                {},  // ignored
+                                                msg);
+                if(cmd_error_status(fault, "stop_motors",msg))
+                {
+                    motors_stopped &= false; 
+                }
             }
         }
         

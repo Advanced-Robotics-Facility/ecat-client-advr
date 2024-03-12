@@ -62,8 +62,8 @@ int main(int argc, char * const argv[])
     
     bool motor_ctrl=false;
     try{
-        ec_common_step.autodetection(motor_id_vector);
-        motor_ctrl=ec_common_step.start_ec_motors();
+        ec_common_step.autodetection();
+        motor_ctrl=ec_common_step.start_ec_motors(motor_id_vector);
     }catch(std::exception &ex){
         DPRINTF("%s\n",ex.what());
         return 1;
