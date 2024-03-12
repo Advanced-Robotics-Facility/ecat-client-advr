@@ -29,7 +29,7 @@ public:
         bool logging;
         bool auto_start;
         std::map<int,double> homing_position,trajectory;
-        int homing_time_sec,trajectory_time_sec;
+        double homing_time_sec,trajectory_time_sec;
         int repeat_trj;
         std::map<int,MOTOR_CONFIG> motor_config_map;
 

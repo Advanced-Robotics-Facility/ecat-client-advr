@@ -132,9 +132,9 @@ EcUtils::EcUtils()
         }
 
         if(!ec_cfg_node["control"]["homing_time_sec"])
-            _ec_cfg.homing_time_sec=60; // 60second
+            _ec_cfg.homing_time_sec=60.0; // 60second
         else
-            _ec_cfg.homing_time_sec=ec_cfg_node["control"]["homing_time_sec"].as<int>();
+            _ec_cfg.homing_time_sec=ec_cfg_node["control"]["homing_time_sec"].as<double>();
         
         
         if(2*_ec_cfg.period_ms> (_ec_cfg.homing_time_sec*1000))
@@ -164,9 +164,9 @@ EcUtils::EcUtils()
         }
         
         if(!ec_cfg_node["control"]["trajectory_time_sec"])
-            _ec_cfg.trajectory_time_sec=60; // 60 second
+            _ec_cfg.trajectory_time_sec=60.0; // 60 second
         else
-            _ec_cfg.trajectory_time_sec=ec_cfg_node["control"]["trajectory_time_sec"].as<int>();
+            _ec_cfg.trajectory_time_sec=ec_cfg_node["control"]["trajectory_time_sec"].as<double>();
         
         if(2*_ec_cfg.period_ms> (_ec_cfg.trajectory_time_sec*1000))
         {
