@@ -21,6 +21,8 @@ EcZipc::~EcZipc()
     if(_thread_jointable){
         join();
     }
+    
+    _client_alive=false;
 }
 
 //******************************* INIT *****************************************************//
@@ -82,8 +84,6 @@ void EcZipc::stop_client()
         join();
         _thread_jointable=false;
     }
-    
-    _client_alive=false;
 }
 
 

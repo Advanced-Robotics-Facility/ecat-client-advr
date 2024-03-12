@@ -21,6 +21,8 @@ EcTCP::~EcTCP()
     if(_thread_jointable){
         join();
     }
+    
+    _client_alive=false;
 }
 
 //******************************* INIT *****************************************************//
@@ -81,8 +83,6 @@ void EcTCP::stop_client()
         join();
         _thread_jointable=false;
     }
-    
-    _client_alive=false;
 }
 
 

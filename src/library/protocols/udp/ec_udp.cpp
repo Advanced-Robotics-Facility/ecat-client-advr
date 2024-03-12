@@ -79,7 +79,7 @@ void EcUDP::stop_client()
         
         disconnect();
         
-        _client_alive =false;
+        _client_alive=false;
     }
 }
 
