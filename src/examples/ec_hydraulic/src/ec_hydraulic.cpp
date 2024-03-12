@@ -81,7 +81,7 @@ int main(int argc, char * const argv[])
         std::map<int,uint8_t> pumps_trj_1,pumps_set_zero,pumps_set_trj;
         std::map<int,uint8_t> pumps_set_ref,pumps_start;
         
-        double valve_curr_ref=2.0; //mA
+        double valve_curr_ref=2.5; //mA
         std::map<int,double> valves_trj_1,valves_trj_2,valves_set_zero,valves_set_trj;
         std::map<int,double> valves_set_ref,valves_start;
 
