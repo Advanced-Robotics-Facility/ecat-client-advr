@@ -417,10 +417,10 @@ EcIface::Ptr EcUtils::make_ec_iface()
     
     if(ec_iface_ptr != nullptr)
     {
-        if(_ec_cfg.auto_start){
 #ifdef TEST_LIBRARY 
-            ec_iface_ptr->test_client(_ec_cfg.fake_slave_info);
+        ec_iface_ptr->test_client(_ec_cfg.fake_slave_info);
 #endif 
+        if(_ec_cfg.auto_start){
             ec_iface_ptr->start_client(_ec_cfg.period_ms,_ec_cfg.logging); // auto-start
         }
     }
