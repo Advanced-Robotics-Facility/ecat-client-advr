@@ -8,18 +8,18 @@ network:
   timeout: 1000
 
 period_ms: 1
-logging: false
-auto-start: true
+logging: true
+auto-start: false
 
 control:
   motor_config_path: ${PWD}/motor_config/hqr3/hqr3_pos3b.yaml 
   id_map_path: &id_map_path '${PWD}/id_map/hqr3/hqr3_id_map.yaml' 
 
   homing_position: {1: -0.75, 2: -1.0, 3: -1.0, 4: -0.75, 5: 1.0, 6: -0.75, 7: -1.0, 8: -1.0}
-  homing_time_sec: 1
+  homing_time_sec: 0.25
   trajectory: {1: 0.0, 2: -1.9, 3: -2.3, 4: 0.0, 5: -0.4, 6: 0.0, 7: -1.9, 8: -2.3}
-  trajectory_time_sec: 1
-  repeat_trj: 1
+  trajectory_time_sec: 0.25
+  repeat_trj: 10
 
   imu_id: [102]
   #ft_id: [110,111]

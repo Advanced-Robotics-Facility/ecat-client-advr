@@ -250,7 +250,7 @@ bool EcCommonStep::start_ec_valves(std::vector<int> valve_id_vector)
 
 bool EcCommonStep::start_ec_valves(void)
 {
-    WR_SDO start_valve={std::make_tuple("ctrl_status_cmd","0xA5")};
+    WR_SDO start_valve={std::make_tuple("ctrl_status_cmd","165")};
     bool valve_started=true;
     for(int i=0;i<_valve_id_vector.size();i++){
         int valve_id=_valve_id_vector[i];
@@ -269,7 +269,7 @@ bool EcCommonStep::start_ec_valves(void)
 
 void EcCommonStep::stop_ec_valves(void)
 {
-    WR_SDO stop_valve= {std::make_tuple("ctrl_status_cmd","0x5A")};
+    WR_SDO stop_valve= {std::make_tuple("ctrl_status_cmd","90")};
     bool valve_stopped=true;
     for(int i=0;i<_valve_id_vector.size();i++){
         int valve_id=_valve_id_vector[i];
