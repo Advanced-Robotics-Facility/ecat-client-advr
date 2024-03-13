@@ -284,7 +284,12 @@ void EcCommonStep::stop_ec_valves(void)
     }
 }
 
-void EcCommonStep::stop_ec()
+void EcCommonStep::start_ec(void)
+{
+    _client->start_client(_ec_cfg.period_ms,_ec_cfg.logging);
+}
+
+void EcCommonStep::stop_ec(void)
 {
     // STOP CLIENT
     if(_client->is_client_alive())

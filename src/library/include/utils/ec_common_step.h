@@ -18,6 +18,7 @@ public:
     bool start_ec_valves(std::vector<int> valve_id_vector);
     bool start_ec_valves(void);
     void stop_ec_valves(void);
+    void start_ec(void);
     void stop_ec(void);
     
     std::shared_ptr<EcUtils> get_ec_utils();

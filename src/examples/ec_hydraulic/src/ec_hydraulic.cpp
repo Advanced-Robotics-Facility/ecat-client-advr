@@ -59,7 +59,8 @@ int main(int argc, char * const argv[])
 #endif 
 
     if(sys_ctrl)
-    {                                               
+    {        
+        ec_common_step.start_ec(); // start client PDO reading/writing here.
         struct timespec ts= { 0, ec_cfg.period_ms*1000000}; //sample time
         
         uint64_t start_time_ns = iit::ecat::get_time_ns();
@@ -470,9 +471,9 @@ int main(int argc, char * const argv[])
         }
     }
     
+    ec_common_step.stop_ec();
     ec_common_step.stop_ec_valves();
     ec_common_step.stop_ec_motors();
-    ec_common_step.stop_ec();
     
     return 0;
 }
