@@ -91,6 +91,10 @@ public:
         if(host_address=="localhost"){
             host_address="127.0.0.1";
         }
+
+        if(protocol=="zipc"){
+            protocol="ipc";
+        }
     
         for ( const auto& [id, esc_type] : esc_map ) {
             auto esc_name = iit::ecat::esc_type_map.at(esc_type);  
