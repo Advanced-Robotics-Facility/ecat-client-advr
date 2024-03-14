@@ -84,19 +84,23 @@ void EcGuiStart::create_ec_iface()
             if(_ec_wrapper_info.client->is_client_alive()){
                 _ec_wrapper_info.client->stop_client();
             }
-        }
-    
+        } 
+#ifdef TEST_GUI 
+        EcUtils::Ptr ec_utils = std::make_shared<EcUtils>();
+#else
+        
         auto ec_net_info = _ec_gui_net->get_net_setup();
-        
-        EcUtils::EC_CONFIG ec_cfg;
-        
+    
+        EcUtils::EC_CONFIG ec_cfg;    
         ec_cfg.protocol=ec_net_info.protocol;
         ec_cfg.host_name=ec_net_info.host_name;
         ec_cfg.host_port=ec_net_info.host_port;
         ec_cfg.period_ms = _ec_gui_wrapper->get_period_ms();
         ec_cfg.logging = false;
-        
+        ec_cfg.auto_start=true;
         EcUtils::Ptr ec_utils = std::make_shared<EcUtils>(ec_cfg);
+#endif
+
         
         _ec_wrapper_info.client.reset();
         try{
@@ -198,40 +202,6 @@ void EcGuiStart::restart_gui()
 }
 
 
-void EcGuiStart::try_gui()
-{
-// ********************* TEST ****************************////
-    RR_SDO rr_sdo_info_motor = {
-        { "motor_pos", 0.0},
-        { "Min_pos",  -1.0},
-        { "Max_pos",   1.0},
-        { "motor_vel", 0.0},
-        { "Max_vel",   2.0},
-        { "torque",    0.0},
-        { "Max_tor",   5.0}
-    };
-    
-    for(int i=1; i<21; i++)
-    {
-        EcGuiSlider::joint_info_t joint_info_s;
-
-        joint_info_s.joint_name    ="motor_id_"+std::to_string(i);
-        joint_info_s.actual_pos    =0.0;
-        joint_info_s.min_pos       =-1.0;
-        joint_info_s.max_pos       =1.0;
-        joint_info_s.actual_vel    =0.0;
-        joint_info_s.max_vel       =2.0;
-        joint_info_s.actual_torq   =0.0;
-        joint_info_s.max_torq      =5.0;
-
-        _ec_wrapper_info.joint_info_map[i]=joint_info_s;
-        _ec_wrapper_info.internal_sdo_map[i] = rr_sdo_info_motor;
-    }
-
-// ********************* TEST ****************************////
-    
-}
-
 void EcGuiStart::error_on_scannig()
 {
     QMessageBox msgBox;
@@ -323,6 +293,23 @@ void EcGuiStart::scan_device()
                 _ec_wrapper_info.client->retrieve_all_sdo(esc_id,rr_sdo_info);
                 _ec_wrapper_info.sdo_map[esc_id] = rr_sdo_info;
             }
+#ifdef TEST_GUI 
+            RR_SDO rr_sdo_info_motor = {
+                { "motor_pos", 0.0},
+                { "Min_pos",  -1.0},
+                { "Max_pos",   1.0},
+                { "motor_vel", 0.0},
+                { "Max_vel",   2.0},
+                { "torque",    0.0},
+                { "Max_tor",   5.0}
+            };
+            for ( auto &[esc_id, type, pos] : _ec_wrapper_info.device_info )
+            {
+                if(ec_motors.count(type)>0){
+                    motor_info_map[esc_id]=rr_sdo_info_motor;   
+                }
+            }
+#endif
 
             if((motor_info_map.size()!=motors_counter)|| (motor_info_map.empty()))
             {
@@ -406,14 +393,7 @@ void EcGuiStart::onScanDeviceReleased()
     }
     
 
-    if(_ec_wrapper_info.device_info.empty())
-    {
-#ifdef TEST_GUI 
-        try_gui();
-        restart_gui();
-#endif
-    }
-    else
+    if(!_ec_wrapper_info.device_info.empty())
     {
         restart_gui();
     } 

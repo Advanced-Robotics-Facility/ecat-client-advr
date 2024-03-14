@@ -1,6 +1,9 @@
 #ifndef __ESC_PB__
 #define __ESC_PB__
 
+#include <protobuf/repl_cmd.pb.h>
+#include <protobuf/ecat_pdo.pb.h>
+
 class EscPb{
 
 public:

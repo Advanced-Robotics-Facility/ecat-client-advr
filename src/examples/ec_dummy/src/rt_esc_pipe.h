@@ -5,9 +5,6 @@
 #include <ipc_pipe.h>
 #include <thread_util.h>
 #include <pb_utils.h>
-
-#include <protobuf/repl_cmd.pb.h>
-#include <protobuf/ecat_pdo.pb.h>
 #include <esc_info.h>
 
 #include "pb/motor/motor_pb.h"

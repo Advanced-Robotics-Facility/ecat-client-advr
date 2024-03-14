@@ -15,6 +15,7 @@
 #include <test_common.h>
 
 #include "rt_esc_pipe.h"
+#include "nrt_esc_zmq.h"
 
 #define SIG_TEST 
 
@@ -71,9 +72,17 @@ int main ( int argc, char * argv[] ) try {
         esc_map[esc_id]=esc_type;
     }
     
-    threads["RtEscPipe"] = new RtEscPipe("NoNe", esc_map,rt_th_period_us);
-
-    threads["RtEscPipe"]->create(true);
+    std::string thread_name="";
+    if(ec_cfg.protocol=="iddp"){
+        thread_name="RtEscPipe";
+        threads[thread_name] = new RtEscPipe("NoNe", esc_map,rt_th_period_us);
+        threads[thread_name]->create(true);
+    }
+    else{
+        thread_name="NrtEscZmq";
+        threads[thread_name] = new NrtEscZmq(esc_map,rt_th_period_us,ec_cfg.protocol,ec_cfg.host_name,ec_cfg.host_port+4000);
+        threads[thread_name]->create(false);
+    }
 
 #ifdef SIG_TEST
     #ifdef __COBALT__
@@ -88,7 +97,7 @@ int main ( int argc, char * argv[] ) try {
     }
 #endif
 
-    threads["RtEscPipe"]->stop();
+    threads[thread_name]->stop();
     
     for ( auto const &t : threads) {
         //t.second->stop();

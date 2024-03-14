@@ -39,7 +39,6 @@ private:
   
   void error_on_scannig();
   void restart_gui();
-  void try_gui();
   void add_device();
   void scan_device();
   void clear_device();
