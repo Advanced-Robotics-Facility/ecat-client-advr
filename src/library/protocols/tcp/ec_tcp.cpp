@@ -8,6 +8,7 @@ EcTCP::EcTCP(std::string host_address,uint32_t host_port):
   EcZmqCmd("tcp",host_address,host_port),
   EcPdo<EcZmqPdo>("tcp",host_address,host_port)
 {
+    _thread_jointable=false;
 }
 
 EcTCP::~EcTCP()
@@ -56,8 +57,6 @@ void EcTCP::start_client(uint32_t period_ms,bool logging)
     _logging=logging;
     
     SSI slave_info;
-    _thread_jointable=false;
-    
     if(retrieve_slaves_info(slave_info)){
         try{
             esc_factory(slave_info);
