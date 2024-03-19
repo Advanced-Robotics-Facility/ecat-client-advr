@@ -8,6 +8,18 @@ EcIDDP::EcIDDP(std::string host_address,uint32_t host_port):
   EcZmqCmd("tcp",host_address,host_port),
   EcPdo<EcPipePdo>("NoNe")
 {        
+#ifdef __COBALT__
+    schedpolicy = SCHED_FIFO;
+#else
+//     #ifdef __PREEMPT_RT_
+//         schedpolicy = SCHED_FIFO;
+//     #else
+        schedpolicy = SCHED_OTHER;
+//     #endif
+#endif
+    priority = sched_get_priority_max ( schedpolicy ) / 2;
+    stacksize = 0; // not set stak size !!!! YOU COULD BECAME CRAZY !!!!!!!!!!!!
+    
     _thread_jointable=false;
 }
 
@@ -33,6 +45,11 @@ void EcIDDP::th_init ( void * )
     start_time = iit::ecat::get_time_ns();
     tNow = tPre = start_time;
     loop_cnt = 0;
+
+    read_pdo();
+    if(_logging){
+        start_logging();
+    }
 }
 
 void EcIDDP::set_loop_time(uint32_t period_ms)
@@ -48,18 +65,7 @@ void EcIDDP::start_client(uint32_t period_ms,bool logging)
     struct timespec ts;
     iit::ecat::us2ts(&ts, 1000*period_ms);
     // period.period is a timeval ... tv_usec 
-    period.period = { ts.tv_sec, ts.tv_nsec / 1000 };
-#ifdef __COBALT__
-    schedpolicy = SCHED_FIFO;
-#else
-//     #ifdef __PREEMPT_RT_
-//         schedpolicy = SCHED_FIFO;
-//     #else
-        schedpolicy = SCHED_OTHER;
-//     #endif
-#endif
-    priority = sched_get_priority_max ( schedpolicy ) / 2;
-    stacksize = 0; // not set stak size !!!! YOU COULD BECAME CRAZY !!!!!!!!!!!!
+    period.period = { ts.tv_sec, ts.tv_nsec / 1000 };   
     
     _logging=logging;
 
@@ -67,9 +73,6 @@ void EcIDDP::start_client(uint32_t period_ms,bool logging)
     if(retrieve_slaves_info(slave_info)){
         try{
             esc_factory(slave_info);
-            if(_logging){
-                start_logging();
-            }
             create(true); // real time thread
             _thread_jointable=true;
         } catch ( std::exception &e ) {

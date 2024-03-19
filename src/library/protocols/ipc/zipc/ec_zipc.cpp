@@ -8,6 +8,10 @@ EcZipc::EcZipc(std::string host_address,uint32_t host_port):
   EcZmqCmd("ipc",host_address,host_port),
   EcPdo<EcZmqPdo>("ipc",host_address,host_port)
 {
+    schedpolicy = SCHED_OTHER;
+    priority = sched_get_priority_max ( schedpolicy ) / 2;
+    stacksize = 0; // not set stak size !!!! YOU COULD BECAME CRAZY !!!!!!!!!!!!
+
     _thread_jointable=false;
 }
 
@@ -33,6 +37,12 @@ void EcZipc::th_init ( void * )
     start_time = iit::ecat::get_time_ns();
     tNow = tPre = start_time;
     loop_cnt = 0;
+
+    read_pdo();
+
+    if(_logging){
+        start_logging();
+    }
 }
 
 void EcZipc::set_loop_time(uint32_t period_ms)
@@ -49,10 +59,6 @@ void EcZipc::start_client(uint32_t period_ms,bool logging)
     iit::ecat::us2ts(&ts, 1000*period_ms);
     // period.period is a timeval ... tv_usec 
     period.period = { ts.tv_sec, ts.tv_nsec / 1000 };
-
-    schedpolicy = SCHED_OTHER;
-    priority = sched_get_priority_max ( schedpolicy ) / 2;
-    stacksize = 0; // not set stak size !!!! YOU COULD BECAME CRAZY !!!!!!!!!!!!
     
     _logging=logging;
     
@@ -60,9 +66,6 @@ void EcZipc::start_client(uint32_t period_ms,bool logging)
     if(retrieve_slaves_info(slave_info)){
         try{
             esc_factory(slave_info);
-            if(_logging){
-                start_logging();
-            }
             create(false); // non-real time thread
             _thread_jointable=true;
         } catch ( std::exception &e ) {
