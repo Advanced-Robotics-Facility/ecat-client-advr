@@ -305,42 +305,29 @@ void EcZmqCmd::send_pdo()
 
 void EcZmqCmd::feed_motors()
 {
-   auto start_cmd_all= std::chrono::steady_clock::now();
     if(!_client_alive){
         _consoleLog->error("Client not alive, please stop the main process!");
         return;
     }
     else{
-            
-        pthread_mutex_lock(&_mutex_motor_reference);
         if(_motor_ref_flags!=RefFlags::FLAG_NONE){
-            if(!_motors_references.empty()){
-                auto start_cmd= std::chrono::steady_clock::now();
-                auto fault=_ec_repl_cmd->Motors_PDO_cmd(_motors_references);
+
+            pthread_mutex_lock(&_mutex_motor_reference);
+            _motors_references_cmd=_motors_references;
+            _ec_logger->log_motors_ref(_motors_references_cmd);
+            pthread_mutex_unlock(&_mutex_motor_reference);
+            
+            if(!_motors_references_cmd.empty()){
+                auto fault=_ec_repl_cmd->Motors_PDO_cmd(_motors_references_cmd);
                 if(fault.get_type() == EC_REPL_CMD_STATUS::TIMEOUT){
                     _consoleLog->error("Client not alive, please stop the main process!");
                     _client_alive=false;
                 }
-                _ec_logger->log_motors_ref(_motors_references);
-                
-                auto end_cmd= std::chrono::steady_clock::now();
-                auto time_elapsed_us= std::chrono::duration_cast<std::chrono::microseconds>(end_cmd-start_cmd);
-                if(time_elapsed_us > std::chrono::microseconds(500)){
-                _consoleLog->info("commad executed: {}",time_elapsed_us.count());
-                }
-                
             }
             else{
                 _consoleLog->error("Got empty motors references structure");
             }
         }
-        pthread_mutex_unlock(&_mutex_motor_reference);
-    }
-    
-    auto end_cmd_all= std::chrono::steady_clock::now();
-    auto time_elapsed_all_us= std::chrono::duration_cast<std::chrono::microseconds>(end_cmd_all-start_cmd_all);
-    if(time_elapsed_all_us > std::chrono::microseconds(500)){
-    _consoleLog->info("all commad executed: {}",time_elapsed_all_us.count());
     }
 }
 
@@ -351,23 +338,24 @@ void EcZmqCmd::feed_valves()
         return;
     }
     else{
-            
-        pthread_mutex_lock(&_mutex_valve_reference);
         if(_valve_ref_flags!=RefFlags::FLAG_NONE){
-            if(!_valves_references.empty()){
+
+            pthread_mutex_lock(&_mutex_valve_reference);
+            _valves_references_cmd=_valves_references;
+            _ec_logger->log_valve_ref(_valves_references_cmd);   
+            pthread_mutex_unlock(&_mutex_valve_reference);
+
+            if(!_valves_references_cmd.empty()){
 //                 auto fault=_ec_repl_cmd->Motors_PDO_cmd(_motors_references);
 //                 if(fault.get_type() == EC_REPL_CMD_STATUS::TIMEOUT){
 //                     _consoleLog->error("Client not alive, please stop the main process!");
 //                     _client_alive=false;
 //                 }
-                _ec_logger->log_valve_ref(_valves_references);
-                
             }
             else{
                 _consoleLog->error("Got empty valves references structure");
             }
         }
-        pthread_mutex_unlock(&_mutex_valve_reference);
     }
 }
 
@@ -378,23 +366,22 @@ void EcZmqCmd::feed_pumps()
         return;
     }
     else{
-            
-        pthread_mutex_lock(&_mutex_pump_reference);
         if(_pump_ref_flags!=RefFlags::FLAG_NONE){
-            if(!_pumps_references.empty()){
+            pthread_mutex_lock(&_mutex_pump_reference);
+            _pumps_references_cmd=_pumps_references;
+            _ec_logger->log_pump_ref(_pumps_references_cmd); 
+            pthread_mutex_unlock(&_mutex_pump_reference);
+            if(!_pumps_references_cmd.empty()){
 //                 auto fault=_ec_repl_cmd->Motors_PDO_cmd(_motors_references);
 //                 if(fault.get_type() == EC_REPL_CMD_STATUS::TIMEOUT){
 //                     _consoleLog->error("Client not alive, please stop the main process!");
 //                     _client_alive=false;
 //                 }
-                _ec_logger->log_pump_ref(_pumps_references);
-                
             }
             else{
                 _consoleLog->error("Got empty pumps references structure");
             }
         }
-        pthread_mutex_unlock(&_mutex_pump_reference);
     }
 }
 

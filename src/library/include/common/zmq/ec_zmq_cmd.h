@@ -41,6 +41,10 @@ private:
     EcReplCmd::Ptr  _ec_repl_cmd;
     const int _max_cmd_attemps=3;
     SSI _slave_info;
+
+    MotorReferenceMap _motors_references_cmd;
+    ValveReferenceMap _valves_references_cmd;
+    PumpReferenceMap _pumps_references_cmd;
 };
 
 #endif
