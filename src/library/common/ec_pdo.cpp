@@ -125,11 +125,30 @@ void EcPdo<T>::write_pdo()
 }
 
 
+template <class T > 
+template <typename MapPdo,typename MapStatus>
+void EcPdo<T>::set_map_status(pthread_mutex_t &mutex_status,const MapPdo& pdo_map,MapStatus& map_status)
+{
+    pthread_mutex_lock(&mutex_status);
+    for (auto const &[id,pdo] : pdo_map )  {
+        map_status[id]=pdo->rx_pdo;
+    }
+    pthread_mutex_unlock(&mutex_status);
+}
+
+template <class T > 
+template <typename MapReference,typename MapPdo>
+void EcPdo<T>::get_map_reference(const MapReference& map_reference,
+                                 MapPdo& pdo_map)
+{
+    for ( const auto &[id,tx_pdo] : map_reference ) {
+        pdo_map[id]->tx_pdo=tx_pdo;
+    }
+}
 
 template < class T >
 void EcPdo<T>::read_motor_pdo()
 {
-    pthread_mutex_lock(&_mutex_motor_status);
     for (auto const &[id,motor_pdo] : _moto_pdo_map )  {
         try { 
             ///////////////////////////////////////////////////////////////
@@ -140,44 +159,42 @@ void EcPdo<T>::read_motor_pdo()
                 nbytes = motor_pdo->read();
             } while ( nbytes > 0);
             //////////////////////////////////////////////////////////////
-            
-            _motor_status_map[id] = motor_pdo->rx_pdo;
         }
         catch ( std::out_of_range ) {};   
     }
+
+    set_map_status(_mutex_motor_status,_moto_pdo_map,_motor_status_map);
     _ec_logger->log_motors_sts(_motor_status_map);
-    pthread_mutex_unlock(&_mutex_motor_status);
 }
 
 template < class T >
 void EcPdo<T>::write_motor_pdo()
 {
-    pthread_mutex_lock(&_mutex_motor_reference);
     if(_motor_ref_flags!=RefFlags::FLAG_NONE){
-        for ( const auto &[bId,motor_tx] : _motors_references ) {
-            auto ctrl_type=std::get<0>(motor_tx);
+
+        pthread_mutex_lock(&_mutex_motor_reference);
+        _ec_logger->log_motors_ref(_motors_references);
+        get_map_reference(_motors_references,_moto_pdo_map);
+        pthread_mutex_unlock(&_mutex_motor_reference);
+
+        for ( const auto &[id,motor_pdo] : _moto_pdo_map ) {
+            auto ctrl_type=std::get<0>(motor_pdo->tx_pdo);
             if(ctrl_type!=0x00){
                 if (iit::advr::Gains_Type_IsValid(ctrl_type) ) {
-                    auto motor_pdo = _moto_pdo_map[bId];
-                    motor_pdo->tx_pdo=motor_tx;
                     //write 
                     motor_pdo->write();
                 }
                 else{
-                    DPRINTF("Control mode not recognized for id 0x%04X \n", bId);
+                    DPRINTF("Control mode not recognized for id 0x%04X \n", id);
                 }
             }
         }
-        _ec_logger->log_motors_ref(_motors_references);
     }
-    
-    pthread_mutex_unlock(&_mutex_motor_reference);
 }
 
 template < class T >
 void EcPdo<T>::read_ft_pdo()
 {
-    pthread_mutex_lock(&_mutex_ft_status);
     for (auto const &[id,ft_pdo] : _ft_pdo_map )  {
         try { 
             ///////////////////////////////////////////////////////////////
@@ -188,17 +205,16 @@ void EcPdo<T>::read_ft_pdo()
                 nbytes = ft_pdo->read();
             } while ( nbytes > 0);
             //////////////////////////////////////////////////////////////
-            _ft_status_map[id]= ft_pdo->rx_pdo; 
         }
         catch ( std::out_of_range ) {};   
     }
+
+    set_map_status(_mutex_ft_status,_ft_pdo_map,_ft_status_map);
     _ec_logger->log_ft_sts(_ft_status_map);
-    pthread_mutex_unlock(&_mutex_ft_status);
 }
 template < class T >
 void EcPdo<T>::read_imu_pdo()
 {
-    pthread_mutex_lock(&_mutex_imu_status);
     for (auto const &[id,imu_pdo] : _imu_pdo_map )  {
         try { 
             ///////////////////////////////////////////////////////////////
@@ -209,18 +225,17 @@ void EcPdo<T>::read_imu_pdo()
                 nbytes = imu_pdo->read();
             } while ( nbytes > 0);
             //////////////////////////////////////////////////////////////
-            _imu_status_map[id]= imu_pdo->rx_pdo;
         }
         catch ( std::out_of_range ) {};   
     }
+
+    set_map_status(_mutex_imu_status,_imu_pdo_map,_imu_status_map);
     _ec_logger->log_imu_sts(_imu_status_map);
-    pthread_mutex_unlock(&_mutex_imu_status);
 }
 
 template < class T >
 void EcPdo<T>::read_pow_pdo()
 {
-    pthread_mutex_lock(&_mutex_pow_status);
     for (auto const &[id,pow_pdo] : _pow_pdo_map )  {
         try { 
             ///////////////////////////////////////////////////////////////
@@ -231,18 +246,17 @@ void EcPdo<T>::read_pow_pdo()
                 nbytes = pow_pdo->read();
             } while ( nbytes > 0);
             //////////////////////////////////////////////////////////////
-            _pow_status_map[id]= pow_pdo->rx_pdo;
         }
         catch ( std::out_of_range ) {};   
     }
+
+    set_map_status(_mutex_pow_status,_pow_pdo_map,_pow_status_map);
     _ec_logger->log_pow_sts(_pow_status_map);
-    pthread_mutex_unlock(&_mutex_pow_status);
 }
 
 template < class T >
 void EcPdo<T>::read_valve_pdo()
 {
-    pthread_mutex_lock(&_mutex_valve_status);
     for (auto const &[id,valve_pdo] : _valve_pdo_map )  {
         try { 
             ///////////////////////////////////////////////////////////////
@@ -253,34 +267,35 @@ void EcPdo<T>::read_valve_pdo()
                 nbytes = valve_pdo->read();
             } while ( nbytes > 0);
             //////////////////////////////////////////////////////////////
-            _valve_status_map[id]= valve_pdo->rx_pdo;
         }
         catch ( std::out_of_range ) {};   
     }
+
+    set_map_status(_mutex_valve_status,_valve_pdo_map,_valve_status_map);
     _ec_logger->log_valve_sts(_valve_status_map);
-    pthread_mutex_unlock(&_mutex_valve_status);
 }
+
 template < class T >
 void EcPdo<T>::write_valve_pdo()
 {
-    pthread_mutex_lock(&_mutex_valve_reference);
     if(_valve_ref_flags!=RefFlags::FLAG_NONE){
-        for ( const auto &[bId,valve_tx] : _valves_references ) {
-            auto valve_pdo=_valve_pdo_map[bId];    
-            valve_pdo->tx_pdo=valve_tx;
+
+
+        pthread_mutex_lock(&_mutex_valve_reference);
+        _ec_logger->log_valve_ref(_valves_references);
+        get_map_reference(_valves_references,_valve_pdo_map);
+        pthread_mutex_unlock(&_mutex_valve_reference);
+
+        for ( const auto &[bId,valve_pdo] : _valve_pdo_map ) {
             //write 
             valve_pdo->write();
         }
-        _ec_logger->log_valve_ref(_valves_references);
     }
-    
-    pthread_mutex_unlock(&_mutex_valve_reference);
 }
 
 template < class T >
 void EcPdo<T>::read_pump_pdo()
 {
-    pthread_mutex_lock(&_mutex_pump_status);
     for (auto const &[id,pump_pdo] : _pump_pdo_map )  {
         try { 
             ///////////////////////////////////////////////////////////////
@@ -291,27 +306,29 @@ void EcPdo<T>::read_pump_pdo()
                 nbytes = pump_pdo->read();
             } while ( nbytes > 0);
             //////////////////////////////////////////////////////////////
-            _pump_status_map[id]= pump_pdo->rx_pdo;
         }
         catch ( std::out_of_range ) {};   
     }
+
+    set_map_status(_mutex_pump_status,_pump_pdo_map,_pump_status_map);
     _ec_logger->log_pump_sts(_pump_status_map);
-    pthread_mutex_unlock(&_mutex_pump_status);
 }
+
 template < class T >
 void EcPdo<T>::write_pump_pdo()
 {
-    pthread_mutex_lock(&_mutex_pump_reference);
     if(_pump_ref_flags!=RefFlags::FLAG_NONE){
-        for (auto const &[id,pump_tx] : _pumps_references)  {
-            auto pump_pdo=_pump_pdo_map[id];    
-            pump_pdo->tx_pdo=pump_tx;
+
+        pthread_mutex_lock(&_mutex_pump_reference);
+        _ec_logger->log_pump_ref(_pumps_references);
+        get_map_reference(_pumps_references,_pump_pdo_map);
+        pthread_mutex_unlock(&_mutex_pump_reference);        
+        
+        for (auto const &[id,pump_pdo] : _pump_pdo_map)  {
             //write 
             //pump_pdo->write();
         }
-        _ec_logger->log_pump_ref(_pumps_references);
     }
-    pthread_mutex_unlock(&_mutex_pump_reference);
 }
 
 template class EcPdo<EcPipePdo>;

@@ -16,6 +16,12 @@ class EcPdo: public virtual EcIface
         void write_pdo();
         
     private:
+
+        template<typename MapPdo,typename MapStatus>
+        void set_map_status(pthread_mutex_t &mutex_status,const MapPdo& pdo_map,MapStatus& map_status);
+
+        template<typename MapReference,typename MapPdo>
+        void get_map_reference(const MapReference& map_reference,MapPdo& pdo_map);
         
         void read_motor_pdo();
         void write_motor_pdo();
