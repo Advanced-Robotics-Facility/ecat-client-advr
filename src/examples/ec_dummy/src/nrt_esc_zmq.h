@@ -13,6 +13,7 @@
 #include "pb/imu/imu_pb.h"
 #include "pb/ft/ft_pb.h"
 #include "pb/valve/valve_pb.h"
+#include "pb/pump/pump_pb.h"
 
 class EcPub{
 private:
@@ -138,7 +139,8 @@ public:
                     esc_pb[id]=std::static_pointer_cast<EscPb>(valve_pb);
                 }break;
                 case iit::ecat::HYQ_HPU:{
-
+                    auto pump_pb= std::make_shared<PumpPb>();
+                    esc_pb[id]=std::static_pointer_cast<EscPb>(pump_pb);
                 }break;
                 
                 default:
