@@ -11,7 +11,7 @@ private:
     std::uniform_real_distribution<float> encoder_position{0.0,100.0};
     std::uniform_real_distribution<float> torque{0.0,50.0};
     std::uniform_real_distribution<float> temp{30.0,40.0};
-    float press_demand;
+    uint32_t press_demand;
     uint32_t    hpu_demand;
     uint32_t    vesc1mode;
     uint32_t    vesc2mode;

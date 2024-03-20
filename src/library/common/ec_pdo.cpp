@@ -326,7 +326,7 @@ void EcPdo<T>::write_pump_pdo()
         
         for (auto const &[id,pump_pdo] : _pump_pdo_map)  {
             //write 
-            //pump_pdo->write();
+            pump_pdo->write();
         }
     }
 }
