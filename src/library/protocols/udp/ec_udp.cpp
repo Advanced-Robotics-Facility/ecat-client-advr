@@ -45,6 +45,13 @@ void EcUDP::start_client(uint32_t period_ms,bool logging)
         
     connect();
 
+    if(_ec_udp_thread == nullptr){
+        _ec_udp_thread = std::make_shared<std::thread>(std::thread{[&]{run();}});
+    }
+    else{
+        // leave the periodicActivity alive with a period changed
+    }
+
     _logging=logging;
     SSI slave_info;
     if(retrieve_slaves_info(slave_info)){
@@ -57,15 +64,6 @@ void EcUDP::start_client(uint32_t period_ms,bool logging)
             DPRINTF ( "Fatal Error: %s\n", e.what() );
             stop_client();
         }
-    }
-
-    if(_ec_udp_thread == nullptr)
-    {
-        _ec_udp_thread = std::make_shared<std::thread>(std::thread{[&]{run();}});
-    }
-    else
-    {
-        // leave the periodicActivity alive with a period changed
     }
 }
 
