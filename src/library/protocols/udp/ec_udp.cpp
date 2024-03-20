@@ -44,7 +44,7 @@ void EcUDP::start_client(uint32_t period_ms,bool logging)
     set_loop_time(period_ms);
         
     connect();
-
+    _client_alive_time = steady_clock::now();
     if(_ec_udp_thread == nullptr){
         _ec_udp_thread = std::make_shared<std::thread>(std::thread{[&]{run();}});
     }
