@@ -44,7 +44,6 @@ int main(int argc, char * const argv[])
         ec_common_step.autodetection();
         //sys_ctrl=ec_common_step.start_ec_motors(motor_id_vector);
         sys_ctrl &= ec_common_step.start_ec_valves(ec_cfg.valve_id);
-        sys_ctrl=true;
     }catch(std::exception &ex){
         DPRINTF("%s\n",ex.what());
         return 1;
@@ -52,10 +51,7 @@ int main(int argc, char * const argv[])
 
 
 #ifdef TEST_EXAMPLES
-    if(!motor_id_vector.empty())
-    {
-        sys_ctrl=true;
-    }
+    sys_ctrl=true;
 #endif 
 
     if(sys_ctrl)
