@@ -10,7 +10,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CATKIN_BUILD_BINARY_PACKAGE TRUE)
 set(ENABLE_XENO OFF CACHE BOOL "Enable real-time features")
 option(COMPILE_EXAMPLE "Enable to compile examples" ON)
-option(COMPILE_GUI "Enable to compile the GUI" ON)
+option(COMPILE_GUI "Enable to compile the GUI" OFF)
 option(COMPILE_MATLAB "Enable to compile the matlab" OFF)
 
 find_package(Boost REQUIRED system)
