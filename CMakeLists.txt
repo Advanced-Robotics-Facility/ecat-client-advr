@@ -63,7 +63,7 @@ include_directories(
     )
     
 #compile ec_library
-add_subdirectory(src/library)
+add_subdirectory(src/library/ec_library/)
 
 if(${COMPILE_EXAMPLE})
     # compile example
