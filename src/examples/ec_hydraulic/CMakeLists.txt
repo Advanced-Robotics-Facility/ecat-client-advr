@@ -1,6 +1,6 @@
 project(ec_hydraulic)
 
-# compile main
+# compile hydraulic
 add_executable(${PROJECT_NAME}
                src/ec_hydraulic.cpp)
      

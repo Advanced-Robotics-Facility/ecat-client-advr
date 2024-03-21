@@ -1,8 +1,8 @@
-project(ec_dummy)
+project(repl_dummy)
 
-# compile frequency test
+# compile repl dummy
 add_executable(${PROJECT_NAME}
-               src/ec_dummy.cpp)
+               src/repl_dummy.cpp)
                
 if ( Xenomai_FOUND )
     xenomai_target_bootstrap(${PROJECT_NAME} SKINS posix)

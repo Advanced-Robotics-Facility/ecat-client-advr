@@ -7,12 +7,12 @@
 #include <pb_utils.h>
 #include <esc_info.h>
 
-#include "pb/motor/motor_pb.h"
-#include "pb/pow/pow_pb.h"
-#include "pb/imu/imu_pb.h"
-#include "pb/ft/ft_pb.h"
-#include "pb/valve/valve_pb.h"
-#include "pb/pump/pump_pb.h"
+#include "protobuf/motor/motor_pb.h"
+#include "protobuf/pow/pow_pb.h"
+#include "protobuf/imu/imu_pb.h"
+#include "protobuf/ft/ft_pb.h"
+#include "protobuf/valve/valve_pb.h"
+#include "protobuf/pump/pump_pb.h"
 
 #define POOL_SIZE   4096
 #define MAX_WRK     64

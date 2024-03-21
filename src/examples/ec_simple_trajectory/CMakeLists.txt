@@ -1,6 +1,6 @@
 project(ec_simple_trajectory)
 
-# compile main
+# compile simple trajectory
 add_executable(${PROJECT_NAME}
                src/ec_simple_trajectory.cpp)
      
