@@ -64,11 +64,11 @@ include_directories(
     
 #compile ec_library
 add_subdirectory(src/library/ec_library/)
+add_subdirectory(src/simulator/repl_dummy)
 
 if(${COMPILE_EXAMPLE})
     # compile example
     add_subdirectory(src/examples)
-    add_subdirectory(src/simulator/repl_dummy)
 endif()
 
 
