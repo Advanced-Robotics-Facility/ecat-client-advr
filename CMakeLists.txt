@@ -8,7 +8,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # avoid installing catkin-related files
 set(CATKIN_BUILD_BINARY_PACKAGE TRUE)
-set(ENABLE_XENO OFF CACHE BOOL "Enable real-time features")
+set(ENABLE_XENO OFF CACHE BOOL "Enable xenomai real-time features")
+set(ENABLE_PREEMPT_RT OFF CACHE BOOL "Enable preempt-rt real-time features")
 option(COMPILE_EXAMPLE "Enable to compile examples" ON)
 option(COMPILE_GUI "Enable to compile the GUI" OFF)
 option(COMPILE_MATLAB "Enable to compile the matlab" OFF)
@@ -25,6 +26,10 @@ WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 
 set(EXTERNAL "${PROJECT_SOURCE_DIR}/external")
 
+if( ENABLE_XENO AND ENABLE_PREEMPT_RT)
+    message( FATAL_ERROR "Cannot setup both Xenomai and PREEMPT_RT Real-Time OS!")
+endif()
+
 if ( ${ENABLE_XENO} )
     option(CMAKE_USE_XENOMAI "Use Xenomai libraries" ON)
     find_package(Xenomai REQUIRED)
@@ -40,6 +45,10 @@ if ( Xenomai_FOUND )
 else ()
     set(LIB_TYPE _nrt)
 endif()
+
+if(ENABLE_PREEMPT_RT)
+    ADD_DEFINITIONS(-DPREEMPT_RT)
+endif(ENABLE_PREEMPT_RT)
 
 find_package(magic_enum)
 if(NOT ${magic_enum_FOUND})
