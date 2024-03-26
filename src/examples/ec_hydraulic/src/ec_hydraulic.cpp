@@ -64,11 +64,12 @@ int main(int argc, char * const argv[])
         double time_elapsed_ms;
         double hm_time_ms=ec_cfg.homing_time_sec*1000;
         double trj_time_ms=ec_cfg.trajectory_time_sec*1000;
+        double pressure_time_ms=1000; // 2minutes.
         double set_trj_time_ms=hm_time_ms;
         
         std::string STM_sts;
         bool run=true;
-        bool fisr_motor_RX=false;
+        bool first_motor_RX=false;
         
         std::map<int,double> q_set_trj=ec_cfg.homing_position;
         std::map<int,double> q_ref,q_start,qdot;
@@ -169,7 +170,7 @@ int main(int argc, char * const argv[])
 #endif
 
         pumps_set_trj=pumps_trj_1;
-        //valves references check
+        //pumps references check
         for ( const auto &[esc_id, press_ref] : pumps_set_trj){
             pumps_ref[esc_id]=std::make_tuple(press_ref,0,0,0,0,0,0,0,0);
         }
@@ -184,7 +185,7 @@ int main(int argc, char * const argv[])
         if(!q_ref.empty()){
             if(q_start.size() == q_set_trj.size()){
                 //Open Loop SENSE
-                fisr_motor_RX=true;
+                first_motor_RX=true;
             }
             else{
                 throw std::runtime_error("fatal error: different size of initial position and trajectory vectors");
@@ -222,13 +223,17 @@ int main(int argc, char * const argv[])
         
         if(!pumps_ref.empty()){
             STM_sts="Pressure";
+            set_trj_time_ms=pressure_time_ms;
         }
         else{
             STM_sts="Homing";
+            set_trj_time_ms=hm_time_ms;
         }
+
+        pumps_ref.clear();
+        motors_ref.clear();
         // memory allocation
-                
-        
+
         if(ec_cfg.protocol=="iddp"){
             DPRINTF("Real-time process....\n");
             // add SIGALRM
@@ -318,7 +323,7 @@ int main(int argc, char * const argv[])
                             //Closed Loop SENSE for motor velocity
                             qdot[esc_id] = motor_vel;
                             
-                            if(!fisr_motor_RX)
+                            if(!first_motor_RX)
                             {
                                 q_start[esc_id]=motor_pos; // get actual motor position at first time
                             }
@@ -369,7 +374,7 @@ int main(int argc, char * const argv[])
             
             
             // Motors references
-            if(!q_ref.empty()){
+            if(!motors_ref.empty()){
                 if(STM_sts!="Pressure"){
                     // interpolate
                     for(int i=0; i<q_set_trj.size();i++)
@@ -393,23 +398,36 @@ int main(int argc, char * const argv[])
             // get period ns
             time_ns = iit::ecat::get_time_ns();
             
-            if((time_elapsed_ms>=hm_time_ms)&&(STM_sts=="Pressure"))
+            if((time_elapsed_ms>=pressure_time_ms)&&(STM_sts=="Pressure"))
             {
                 if(trajectory_counter==ec_cfg.repeat_trj){
                     run=false;
                 }
                 else{
-                    STM_sts="Homing";
-                    start_time_ns=time_ns;
-                    set_trj_time_ms=hm_time_ms;
-                    
-                    q_set_trj=ec_cfg.homing_position;
-                    q_start=q_ref;
-        
-                    valves_set_trj=valves_trj_1;
-                    valves_start=valves_set_ref;
-                    
-                    tau=alpha=0;
+                    if(motors_ref.empty() && valves_ref.empty()){
+                        STM_sts="Pressure";
+                        start_time_ns=time_ns;
+                        set_trj_time_ms=pressure_time_ms;
+                        
+                        pumps_set_trj=pumps_set_zero;
+                        pumps_start=pumps_set_ref;
+                        
+                        tau=alpha=0;
+                        trajectory_counter=ec_cfg.repeat_trj; // exit
+                    }
+                    else{
+                        STM_sts="Homing";
+                        start_time_ns=time_ns;
+                        set_trj_time_ms=hm_time_ms;
+                        
+                        q_set_trj=ec_cfg.homing_position;
+                        q_start=q_ref;
+            
+                        valves_set_trj=valves_trj_1;
+                        valves_start=valves_set_ref;
+                        
+                        tau=alpha=0;
+                    }
                 }
             }
             else if((time_elapsed_ms>=hm_time_ms)&&(STM_sts=="Homing"))
@@ -437,14 +455,19 @@ int main(int argc, char * const argv[])
             {
                 if(trajectory_counter==ec_cfg.repeat_trj)
                 {
-                    STM_sts="Pressure";
-                    start_time_ns=time_ns;
-                    set_trj_time_ms=hm_time_ms;
-                    
-                    pumps_set_trj=pumps_set_zero;
-                    pumps_start=pumps_set_ref;
-                    
-                    tau=alpha=0;
+                    if(!pumps_ref.empty()){
+                        STM_sts="Pressure";
+                        start_time_ns=time_ns;
+                        set_trj_time_ms=pressure_time_ms;
+                        
+                        pumps_set_trj=pumps_set_zero;
+                        pumps_start=pumps_set_ref;
+                        
+                        tau=alpha=0;
+                    }
+                    else{
+                        run=false; // only homing or trajectory on valves/motors
+                    }
                 }
                 else
                 {
