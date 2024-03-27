@@ -46,10 +46,9 @@ public slots:
     void OnPeriodChanged();
     void send();
     void receive();
-    void warnig_level_batt();
     void start_receive();
     void stop_receive();
-    void stat_record();
+    void start_record();
     void stop_record();
 private:
   
@@ -63,7 +62,6 @@ private:
   EcGuiCmd::Ptr _ec_gui_cmd;
 
   int _time_ms;
-  int _hysteresis_battery_level;
 
   float _ctrl_cmd;
   bool _send_ref;
@@ -71,11 +69,6 @@ private:
 
   QComboBox * _period_combobox;
   QPushButton *_send_stop_btn;
-
-  QLCDNumber *_battery_level;
-  QTimer *_timer_change_color;
-  bool _flashing,_first_detection;
-  int _count_warning,_count_not_warning;
 
   QTimer *_send_timer,*_receive_timer;
   QAction *_receive_action,*_stop_receive_action;

@@ -44,6 +44,12 @@ _ec_gui_slider(ec_gui_slider)
     _imu_rx_v.resize(ImuPdoRx::pdo_size);
     _valve_rx_v.resize(ValvePdoRx::pdo_size);
     _pump_rx_v.resize(PumpPdoRx::pdo_size);
+
+    _battery_level = parent->findChild<QLCDNumber *>("BatteryLevel");
+    _battery_level->setDigitCount(6);
+    _battery_level->display(888888);
+    _battery_level->setStyleSheet("background: red; color: #00FF00");
+    _v_batt=0.0;
 }
       
 EcGuiPdo::~EcGuiPdo(){}
@@ -196,10 +202,9 @@ void EcGuiPdo::read()
 
 void EcGuiPdo::read_motor_status()
 {
-    MotorStatusMap motors_status_map;
-    _client->get_motors_status(motors_status_map);
-    if(!motors_status_map.empty()){
-        for ( const auto &[esc_id, motor_rx_pdo] : motors_status_map){
+    _client->get_motors_status(_motor_status_map);
+    if(!_motor_status_map.empty()){
+        for ( const auto &[esc_id, motor_rx_pdo] : _motor_status_map){
             std::string esc_id_name="motor_id_"+std::to_string(esc_id);
             QTreeWidgetItem *topLevel=nullptr;
 
@@ -226,11 +231,10 @@ void EcGuiPdo::read_motor_status()
 
 void EcGuiPdo::read_ft_status()
 {
-    FtStatusMap ft_status_map;
-    _client->get_ft_status(ft_status_map);
+    _client->get_ft_status(_ft_status_map);
     /*************************************FT*****************************************************************/
-     if(!ft_status_map.empty()){
-        for ( const auto &[esc_id, ft_rx_pdo] : ft_status_map){
+     if(!_ft_status_map.empty()){
+        for ( const auto &[esc_id, ft_rx_pdo] : _ft_status_map){
             std::string esc_id_name="ft_id_"+std::to_string(esc_id);
             QTreeWidgetItem *topLevel=nullptr;
 
@@ -250,11 +254,11 @@ void EcGuiPdo::read_ft_status()
 
 inline void EcGuiPdo::read_pow_status()
 {
-    PwrStatusMap pow_status_map;
-    _client->get_pow_status(pow_status_map);
+    _client->get_pow_status(_pow_status_map);
     /*************************************Power Board*****************************************************************/
-     if(!pow_status_map.empty()){
-        for ( const auto &[esc_id, pow_rx_pdo] : pow_status_map){
+     if(!_pow_status_map.empty()){
+        for ( const auto &[esc_id, pow_rx_pdo] : _pow_status_map){
+            _battery_level->display(std::get<0>(pow_rx_pdo));
             std::string esc_id_name="pow_id_"+std::to_string(esc_id);
             QTreeWidgetItem *topLevel=nullptr;
 
@@ -273,11 +277,10 @@ inline void EcGuiPdo::read_pow_status()
 
 void EcGuiPdo::read_imu_status()
 {
-    ImuStatusMap imu_status_map;
-    _client->get_imu_status(imu_status_map);
+    _client->get_imu_status(_imu_status_map);
     /*************************************IMU*****************************************************************/
-     if(!imu_status_map.empty()){
-        for ( const auto &[esc_id, imu_rx_pdo] : imu_status_map){
+     if(!_imu_status_map.empty()){
+        for ( const auto &[esc_id, imu_rx_pdo] : _imu_status_map){
             std::string esc_id_name="imu_id_"+std::to_string(esc_id);
             QTreeWidgetItem *topLevel=nullptr;
 
@@ -295,11 +298,10 @@ void EcGuiPdo::read_imu_status()
 }
 void EcGuiPdo::read_valve_status()
 {
-     ValveStatusMap valve_status_map;
-    _client->get_valve_status(valve_status_map);
+    _client->get_valve_status(_valve_status_map);
     /*************************************VALVE*****************************************************************/
-     if(!valve_status_map.empty()){
-        for ( const auto &[esc_id, valve_rx_pdo] : valve_status_map){
+     if(!_valve_status_map.empty()){
+        for ( const auto &[esc_id, valve_rx_pdo] : _valve_status_map){
             std::string esc_id_name="valve_id_"+std::to_string(esc_id);
             QTreeWidgetItem *topLevel=nullptr;
 
@@ -318,11 +320,10 @@ void EcGuiPdo::read_valve_status()
 
 void EcGuiPdo::read_pump_status()
 {
-     PumpStatusMap pump_status_map;
-    _client->get_pump_status(pump_status_map);
+    _client->get_pump_status(_pump_status_map);
     /*************************************VALVE*****************************************************************/
-     if(!pump_status_map.empty()){
-        for ( const auto &[esc_id, pump_rx_pdo] : pump_status_map){
+     if(!_pump_status_map.empty()){
+        for ( const auto &[esc_id, pump_rx_pdo] : _pump_status_map){
             std::string esc_id_name="pump_id_"+std::to_string(esc_id);
             QTreeWidgetItem *topLevel=nullptr;
 
