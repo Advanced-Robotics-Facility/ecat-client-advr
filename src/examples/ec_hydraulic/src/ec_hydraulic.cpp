@@ -76,7 +76,7 @@ int main(int argc, char * const argv[])
         
         bool first_pump_RX=false;
         uint8_t pump_pressure_ref=180; //bar
-        std::map<int,uint8_t> pumps_trj_1,pumps_set_zero,pumps_set_trj;
+        std::map<int,uint8_t> pumps_trj_1,pumps_set_trj;
         std::map<int,uint8_t> pumps_set_ref,pumps_start;
         
         double valve_curr_ref=2.5; //mA
@@ -124,7 +124,6 @@ int main(int argc, char * const argv[])
         
         for ( const auto &[esc_id, pump_rx_pdo] : pump_status_map){
             pumps_trj_1[esc_id]=pump_pressure_ref;
-            pumps_set_zero[esc_id]=0.0;
             pumps_set_ref[esc_id]=pumps_start[esc_id]=std::get<0>(pump_rx_pdo);
         }
         
@@ -140,39 +139,11 @@ int main(int argc, char * const argv[])
             qdot[esc_id] = std::get<3>(motor_status); //motor vel
             q_ref[esc_id]=q_start[esc_id];
         }
-#ifdef TEST_EXAMPLES
-        if(q_ref.empty()){
-            for(int i=0; i<q_set_trj.size();i++){
-                int id=motor_id_vector[i];
-                q_start[id] = 0.0;
-                qdot[id]    = 0.0;
-                q_ref[id]   = 0.0;
-            }
-        }
-        
-        if(valves_set_ref.empty()){
-            for(int i=0; i<ec_cfg.valve_id.size();i++){
-                int valve_id=ec_cfg.valve_id[i];
-                valves_trj_1[valve_id]=valve_curr_ref;
-                valves_trj_2[valve_id]=-valve_curr_ref;
-                valves_set_zero[valve_id]=0.0;
-                valves_set_ref[valve_id]=valves_start[valve_id]=valves_set_zero[valve_id];
-            }
-        }
-        if(pumps_set_ref.empty()){
-            for(int i=0; i<ec_cfg.pump_id.size();i++){
-                int pump_id=ec_cfg.pump_id[i];
-                pumps_trj_1[pump_id]=pump_pressure_ref;
-                pumps_set_zero[pump_id]=0.0;
-                pumps_set_ref[pump_id]=pumps_start[pump_id]=pumps_set_zero[pump_id];
-            }
-        }
-#endif
 
         pumps_set_trj=pumps_trj_1;
         //pumps references check
         for ( const auto &[esc_id, press_ref] : pumps_set_trj){
-            pumps_ref[esc_id]=std::make_tuple(press_ref,0,0,0,0,0,0,0,0);
+            pumps_ref[esc_id]=std::make_tuple(press_ref,0,0,0,0,0,0,0,0x08); //0x08 means operative
         }
 
         valves_set_trj=valves_trj_1;
@@ -229,9 +200,6 @@ int main(int argc, char * const argv[])
             STM_sts="Homing";
             set_trj_time_ms=hm_time_ms;
         }
-
-        pumps_ref.clear();
-        motors_ref.clear();
         // memory allocation
 
         if(ec_cfg.protocol=="iddp"){
@@ -409,7 +377,7 @@ int main(int argc, char * const argv[])
                         start_time_ns=time_ns;
                         set_trj_time_ms=pressure_time_ms;
                         
-                        pumps_set_trj=pumps_set_zero;
+                        pumps_set_trj=pumps_start;
                         pumps_start=pumps_set_ref;
                         
                         tau=alpha=0;
@@ -460,7 +428,7 @@ int main(int argc, char * const argv[])
                         start_time_ns=time_ns;
                         set_trj_time_ms=pressure_time_ms;
                         
-                        pumps_set_trj=pumps_set_zero;
+                        pumps_set_trj=pumps_start;
                         pumps_start=pumps_set_ref;
                         
                         tau=alpha=0;
@@ -484,6 +452,15 @@ int main(int argc, char * const argv[])
                     tau=alpha=0;
                 }
             } 
+
+            if(!run){
+                if(!pumps_ref.empty()){            
+                    for ( auto &[esc_id, pump_tx] : pumps_ref){
+                        std::get<8>(pump_tx) = 0x02; // means pre-operational
+                    }
+                    client->set_pumps_references(RefFlags::FLAG_MULTI_REF, pumps_ref);    
+                }   
+            }
             
             clock_nanosleep(CLOCK_MONOTONIC, 0, &ts, NULL); 
         }
