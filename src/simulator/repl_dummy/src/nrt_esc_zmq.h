@@ -40,6 +40,9 @@ public:
         _publisher->setsockopt ( ZMQ_SNDHWM, &opt_hwm, sizeof ( opt_hwm ) );
         _publisher->bind(_zmq_uri);
     } 
+    ~EcPub(){
+        _publisher->disconnect(_zmq_uri);
+    }
 
     std::string get_zmq_pub_uri()
     {
