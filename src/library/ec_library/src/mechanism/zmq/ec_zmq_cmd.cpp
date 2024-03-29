@@ -38,7 +38,7 @@ bool EcZmqCmd::cmd_error_status(EcReplFault fault, std::string op, std::string &
     
     if(fault.get_type() != EC_REPL_CMD_STATUS::OK){
         msg = "commad: " + op + 
-              " failed: " +  fault.get_info() + 
+              " failed, " +  fault.get_info() + 
               " recovery: " + fault.get_recovery_info();
         cmd_error=true;
         
@@ -318,11 +318,11 @@ void EcZmqCmd::feed_motors()
             pthread_mutex_unlock(&_mutex_motor_reference);
             
             if(!_motors_references_cmd.empty()){
+                std::string msg="";
                 auto fault=_ec_repl_cmd->Motors_PDO_cmd(_motors_references_cmd);
-                if(fault.get_type() == EC_REPL_CMD_STATUS::TIMEOUT){
-                    _consoleLog->error("Client not alive, please stop the main process!");
-                    _client_alive=false;
-                }
+/*                 if(!cmd_error_status(fault, "feed_motors",msg)){
+                    // ...continue if not in timeout
+                } */
             }
             else{
                 _consoleLog->error("Got empty motors references structure");

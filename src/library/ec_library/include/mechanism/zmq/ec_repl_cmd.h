@@ -204,33 +204,7 @@ public:
     * 
     */
     ~EcReplCmd();
-    
-        /**
-    * @brief set timeout of ZMQ communication.
-    * 
-    * @param timeout p_timeout:...
-    */
-    void set_new_timeout(int timeout);
-    
-    /**
-    * @brief This method is responsible to wait the reply of ZMQ EtherCAT Server, 
-    * finding communication errors and and filling the EcReplFault class. 
-    * 
-    * @param msg p_msg: return feedback message from ZMQ communication.
-    * @param cmd_sent p_cmd_sent: Checking of the command reply with the command sent. 
-    */
-    void zmq_cmd_recv(std::string& msg,
-                      iit::advr::CmdType cmd_sent,
-                      EcReplFault &fault);
-    
-    void zmq_cmd_recv_no_block(EcReplFault &fault);
-    
-    /**
-    * @brief This method is responsible to send the ZMQ commad to EtherCAT Server
-    */
-    void zmq_cmd_send(std::string m_cmd,
-                      iit::advr::Repl_cmd  pb_cmd);
-    
+
     
     /**
     * @brief EtherCAT Master command for stopping, starting the EtherCAT Master Server 
@@ -401,12 +375,37 @@ private:
     std::string _zmq_uri;
     int _timeout;
     std::shared_ptr<zmq::context_t> _context;
-    std::shared_ptr<zmq::socket_t>  _publisher;
-    
     std::map<int32_t,std::string> _hhcm_motor_map;
     std::map<int32_t,std::string> _circulo9_motor_map;
     std::map<int32_t,std::string> _amc_flexpro_motor_map;
     void check_hhcm_motor_gains(iit::advr::Gains_Type ctrl_type,std::vector<float> &gains);
+
+
+    /** 
+    * @brief This method is responsible to perform the ZMQ commad to EtherCAT Server
+    * @param pb_cmd protobuf command
+    * @param msg return feedback message from ZMQ communication.
+    * @param timeout timeout
+    * @param fault fault detected. 
+    */
+
+    void zmq_do_cmd(iit::advr::Repl_cmd  pb_cmd,
+                    std::string& msg,
+                    int timeout,
+                    EcReplFault &fault);
+
+
+    void zmq_cmd_recv(std::string& msg,
+                      iit::advr::CmdType cmd_sent,
+                      zmq::socket_t& socket,
+                      EcReplFault &fault);
+
+
+
+    bool zmq_cmd_send(iit::advr::Repl_cmd  pb_cmd,
+                      zmq::socket_t& socket,
+                      EcReplFault &fault
+                     );
 };
 
 #endif

@@ -9,13 +9,6 @@ EcReplCmd::EcReplCmd(string zmq_uri,int timeout) :
 _zmq_uri(zmq_uri),_timeout(timeout)
 {   
     _context = std::make_shared<context_t>(1);
-    
-    _publisher = std::make_shared<socket_t>(*_context, ZMQ_REQ);
-
-   _publisher->setsockopt(ZMQ_LINGER, 0);
-   _publisher->setsockopt(ZMQ_RCVTIMEO, timeout);
-   _publisher->setsockopt(ZMQ_CONNECT_TIMEOUT, 1);
-   _publisher->connect(zmq_uri);
 };
 
 std::string EcReplCmd::get_zmq_uri()
@@ -33,57 +26,93 @@ void EcReplCmd::set_zmq_timeout(int timeout)
     _timeout=timeout;
 }
 
-void EcReplCmd::set_new_timeout(int timeout)
+void EcReplCmd::zmq_do_cmd(iit::advr::Repl_cmd  pb_cmd,
+                           std::string& msg,
+                           int timeout,
+                           EcReplFault &fault)
 {
-    _publisher->setsockopt(ZMQ_RCVTIMEO, timeout);
+    try{
+        zmq::socket_t req_sock(*_context, ZMQ_REQ);
+        req_sock.setsockopt(ZMQ_LINGER,0);
+        req_sock.setsockopt(ZMQ_RCVTIMEO, timeout);
+        req_sock.setsockopt(ZMQ_CONNECT_TIMEOUT, 1);
+        req_sock.connect(_zmq_uri);
+
+        if(!zmq_cmd_send(pb_cmd,req_sock,fault)){
+            return;
+        }
+        else{
+            zmq_cmd_recv(msg,pb_cmd.type(),req_sock,fault);
+        }
+
+    }catch (zmq::error_t err){
+        std::string zmq_exception=zmq_strerror(err.num());
+        fault.set_type(EC_REPL_CMD_STATUS::WRONG_FB_MSG);
+        fault.set_info("Bad communication: " + zmq_exception);
+        fault.set_recovery_info("Retry command");
+    }
 }
 
-void EcReplCmd::zmq_cmd_send(std::string m_cmd,
-                         iit::advr::Repl_cmd  pb_cmd)
+bool EcReplCmd::zmq_cmd_send(iit::advr::Repl_cmd  pb_cmd,
+                             zmq::socket_t& socket,
+                             EcReplFault &fault
+                             )
 {
     std::string pb_msg_serialized;
-    zmq::multipart_t multipart;
-    try{
-        /***** Protocol buffer Serialization */////
-        pb_cmd.SerializeToString(&pb_msg_serialized);
-        /***** ZMQ MECHANISM */////
-        multipart.push(message_t(pb_msg_serialized.c_str(), pb_msg_serialized.length()));
-        multipart.push(message_t(m_cmd.c_str(), m_cmd.length()));
-        multipart.send((*_publisher),ZMQ_NOBLOCK);
-    } catch(exception e){
-        
-    }
-}
+    zmq::multipart_t msg_send;
+    std::string m_cmd="";
 
-void EcReplCmd::zmq_cmd_recv_no_block(EcReplFault &fault)
-{
-    message_t update;
-    fault.set_type(EC_REPL_CMD_STATUS::OK);
-    fault.set_info("No fault: Good communication");
-    fault.set_recovery_info("None");
-    
+    if ( ! pb_cmd.IsInitialized() ) {
+        fault.set_type(EC_REPL_CMD_STATUS::WRONG_FB_MSG);
+        fault.set_info("Bad communication: Wrong message");
+        fault.set_recovery_info("Retry command");
+        return false;
+    }
+
+    if ( pb_cmd.type() == iit::advr::CmdType::ECAT_MASTER_CMD || 
+         pb_cmd.type() == iit::advr::CmdType::FOE_MASTER ) {
+            m_cmd="MASTER_CMD";
+    } else {
+            m_cmd="ESC_CMD";   
+    }
+
+    /***** Protocol buffer Serialization */////
+    pb_cmd.SerializeToString(&pb_msg_serialized);
+    /***** ZMQ MECHANISM */////
+    msg_send.push(message_t(pb_msg_serialized.c_str(), pb_msg_serialized.length()));
+    msg_send.push(message_t(m_cmd.c_str(), m_cmd.length()));
+
     try{
-        if(_publisher->recv(&update,ZMQ_NOBLOCK)){
-            
+        if(!msg_send.send(socket,ZMQ_NOBLOCK)){
+            fault.set_type(EC_REPL_CMD_STATUS::NACK);
+            fault.set_info("Bad communication: Error to send message");
+            fault.set_recovery_info("Retry command");
+            return false;
         }
+    }catch (zmq::error_t err){
+        std::string zmq_exception=zmq_strerror(err.num());
+        fault.set_type(EC_REPL_CMD_STATUS::NACK);
+        fault.set_info("Bad communication: " + zmq_exception);
+        fault.set_recovery_info("Retry command");
+        return false;
     }
-    catch(exception e){
-        
-    }
+
+    return true;
 }
 
 void EcReplCmd::zmq_cmd_recv(string& msg,
                              iit::advr::CmdType cmd_sent,
+                             zmq::socket_t& socket,
                              EcReplFault &fault)
 {
     msg.clear();
     
-    message_t update;
+    message_t msg_recv;
     iit::advr::Cmd_reply pb_reply;
     try{
-        if(_publisher->recv(&update))
+        if(socket.recv(&msg_recv))
         {
-            pb_reply.ParseFromArray(update.data(),update.size());
+            pb_reply.ParseFromArray(msg_recv.data(),msg_recv.size());
 
             msg=pb_reply.msg();
             
@@ -127,8 +156,11 @@ void EcReplCmd::zmq_cmd_recv(string& msg,
             fault.set_recovery_info("Restart the master or verify its status");
         }
     }
-    catch(exception e){
-        
+    catch (zmq::error_t err){
+        std::string zmq_exception=zmq_strerror(err.num());
+        fault.set_type(EC_REPL_CMD_STATUS::NACK);
+        fault.set_info("Bad communication: " + zmq_exception);
+        fault.set_recovery_info("Retry command");
     }
 }
 
@@ -139,19 +171,18 @@ EcReplFault EcReplCmd::Ecat_Master_cmd(Ecat_Master_cmd_Type type,
 
     iit::advr::Repl_cmd  pb_cmd;
     EcReplFault fault;
+    int new_timeout=_timeout;
          
      /***** set protocol buffer command */////
     pb_cmd.set_type(CmdType::ECAT_MASTER_CMD);
     pb_cmd.mutable_ecat_master_cmd()->set_type(type);    // REQUIRED VALUE
-    
-    set_new_timeout(_timeout);
     if(type!= Ecat_Master_cmd_Type::Ecat_Master_cmd_Type_GET_SLAVES_DESCR)
     {
-        set_new_timeout(60000);// 1 minutes
+        new_timeout=60000;// 1 minutes
         if(type==Ecat_Master_cmd_Type::Ecat_Master_cmd_Type_START_MASTER)
         {
             /***** Key VALUE MECHANISM */////
-            set_new_timeout(_timeout);
+            new_timeout=_timeout;
             for (std::map<std::string,std::string>::iterator it=args.begin(); it!=args.end(); ++it)   // OPTIONAL VALUE
             {
                 KeyValStr *args=pb_cmd.mutable_ecat_master_cmd()->add_args();
@@ -160,13 +191,8 @@ EcReplFault EcReplCmd::Ecat_Master_cmd(Ecat_Master_cmd_Type type,
             }
         }
     }
-    
-     
-    /***** ZMQ Send and protocol buffer Serialization */////
-    zmq_cmd_send("MASTER_CMD",pb_cmd);
-    
-    /***** ZMQ Received and protocol buffer De-Serialization */////
-    zmq_cmd_recv(msg,CmdType::ECAT_MASTER_CMD,fault);
+
+    zmq_do_cmd(pb_cmd,msg,new_timeout,fault);
     
     return fault;
 
@@ -211,14 +237,8 @@ EcReplFault EcReplCmd::FOE_Master(std::string filename,
         pb_cmd.mutable_foe_master()->set_allocated_mcu_type(&mcu_type); // OPTIONAL VALUE
     }
     
-    
-    set_new_timeout(5*60000);// 5 minutes
-    
-    /***** ZMQ Send and protocol buffer Serialization */////
-    zmq_cmd_send("MASTER_CMD",pb_cmd);
-    
-    /***** ZMQ Received and protocol buffer De-Serialization */////
-    zmq_cmd_recv(msg,CmdType::FOE_MASTER,fault);
+    int new_timeout=5*60000;// 5 minutes
+    zmq_do_cmd(pb_cmd,msg,new_timeout,fault);
     
     return fault;
 }
@@ -236,13 +256,7 @@ EcReplFault EcReplCmd::Slave_SDO_info(Slave_SDO_info_Type type,
     pb_cmd.mutable_slave_sdo_info()->set_type(type);     // REQUIRED VALUE
     pb_cmd.mutable_slave_sdo_info()->set_board_id(board_id); // REQUIRED VALUE
     
-    
-    set_new_timeout(_timeout);
-    /***** ZMQ Send and protocol buffer Serialization */////
-    zmq_cmd_send("ESC_CMD",pb_cmd);
-    
-    /***** ZMQ Received and protocol buffer De-Serialization */////
-    zmq_cmd_recv(msg,CmdType::SLAVE_SDO_INFO,fault);
+    zmq_do_cmd(pb_cmd,msg,_timeout,fault);
     
     return fault;
 }
@@ -299,12 +313,7 @@ EcReplFault EcReplCmd::Slave_SDO_cmd(long int board_id,
        }
     }
     
-    set_new_timeout(_timeout);
-    /***** ZMQ Send and protocol buffer Serialization */////
-    zmq_cmd_send("ESC_CMD",pb_cmd);
-    
-    /***** ZMQ Received and protocol buffer De-Serialization */////
-    zmq_cmd_recv(msg,CmdType::SLAVE_SDO_CMD,fault);
+    zmq_do_cmd(pb_cmd,msg,_timeout,fault);
     
     return fault;
     
@@ -322,13 +331,7 @@ EcReplFault EcReplCmd::Flash_cmd(Flash_cmd_Type type,
     pb_cmd.mutable_flash_cmd()->set_type(type);    //REQUIRED VALUE 
     pb_cmd.mutable_flash_cmd()->set_board_id(board_id); //REQUIRED VALUE 
     
-    
-    set_new_timeout(_timeout);
-    /***** ZMQ Send and protocol buffer Serialization */////
-    zmq_cmd_send("ESC_CMD",pb_cmd);
-    
-    /***** ZMQ Received and protocol buffer De-Serialization */////
-    zmq_cmd_recv(msg,CmdType::FLASH_CMD,fault);
+    zmq_do_cmd(pb_cmd,msg,_timeout,fault);
     
     return fault;
 }
@@ -397,12 +400,7 @@ EcReplFault EcReplCmd::Ctrl_cmd(Ctrl_cmd_Type type,
     }
     
     
-    set_new_timeout(_timeout);
-    /***** ZMQ Send and protocol buffer Serialization */////
-    zmq_cmd_send("ESC_CMD",pb_cmd);
-    
-    /***** ZMQ Received and protocol buffer De-Serialization */////
-    zmq_cmd_recv(msg,CmdType::CTRL_CMD,fault);
+    zmq_do_cmd(pb_cmd,msg,_timeout,fault);
     
     return fault;
 }
@@ -488,13 +486,7 @@ EcReplFault EcReplCmd::Trajectory_Cmd(Trajectory_cmd_Type type,
         }
     }
     
-    set_new_timeout(_timeout);
-
-    /***** ZMQ Send and protocol buffer Serialization */////
-    zmq_cmd_send("ESC_CMD",pb_cmd);
-    
-    /***** ZMQ Received and protocol buffer De-Serialization */////
-    zmq_cmd_recv(msg,CmdType::TRJ_CMD,fault);
+    zmq_do_cmd(pb_cmd,msg,_timeout,fault);
     
     return fault;
 }
@@ -527,12 +519,7 @@ EcReplFault EcReplCmd::Trj_queue_cmd(Trj_queue_cmd_Type type,
         return fault;
     }
     
-    set_new_timeout(_timeout);
-    /***** ZMQ Send and protocol buffer Serialization */////
-    zmq_cmd_send("ESC_CMD",pb_cmd);
-    
-    /***** ZMQ Received and protocol buffer De-Serialization */////
-    zmq_cmd_recv(msg,CmdType::TRJ_QUEUE_CMD,fault);
+    zmq_do_cmd(pb_cmd,msg,_timeout,fault);
     
     return fault;
 }
@@ -567,13 +554,8 @@ EcReplFault EcReplCmd::PDOs_aux_cmd(std::vector<aux_cmd_message_t> aux_cmds,
         aux_cmd_send->set_type(aux_cmd.type); //REQUIRED VALUE 
     }
     
-    set_new_timeout(_timeout);
-    /***** ZMQ Send and protocol buffer Serialization */////
-    zmq_cmd_send("ESC_CMD",pb_cmd);
-    
-    /***** ZMQ Received and protocol buffer De-Serialization */////
-    zmq_cmd_recv(msg,CmdType::PDO_AUX_CMD,fault);
-    
+    zmq_do_cmd(pb_cmd,msg,_timeout,fault);
+
     return fault;
 }
 
@@ -625,15 +607,9 @@ EcReplFault EcReplCmd::Motors_PDO_cmd(motors_ref_map motors_references)
             motor_pdo_cmd->mutable_aux_pdo()->set_value(aux);
         }
     }
-    
- 
-    set_new_timeout(_timeout);
-    /***** ZMQ Send and protocol buffer Serialization */////
-    zmq_cmd_send("ESC_CMD",pb_cmd);
-    
-    /***** ZMQ Received and protocol buffer De-Serialization */////
-    zmq_cmd_recv_no_block(fault);
-   
+    std::string msg;
+    zmq_do_cmd(pb_cmd,msg,_timeout,fault);
+
     return fault;
 }
 
