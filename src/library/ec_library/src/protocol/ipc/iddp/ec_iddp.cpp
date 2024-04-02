@@ -48,7 +48,15 @@ void EcIDDP::th_init ( void * )
     tNow = tPre = start_time;
     loop_cnt = 0;
 
-    read_pdo();
+    // [read pdo] avoid context switch
+    struct timespec delay = { 0, 10000000UL }; //10ms
+    int count=0;
+    while(count<5){
+        read_pdo(); //
+        count++;
+        nanosleep(&delay, NULL);
+    }
+
     if(_logging){
         start_logging();
     }
