@@ -12,6 +12,7 @@ class EcPdo: public virtual EcIface
         ~EcPdo();
         
         void esc_factory(SSI slave_descr);
+        bool init_read_pdo();
         void read_pdo();
         void write_pdo();
         
@@ -22,6 +23,9 @@ class EcPdo: public virtual EcIface
 
         template<typename MapReference,typename MapPdo>
         void get_map_reference(const MapReference& map_reference,MapPdo& pdo_map);
+
+        template<typename MapPdo>
+        void get_init_rx_pdo(const MapPdo& pdo_map);
         
         void read_motor_pdo();
         void write_motor_pdo();
@@ -49,7 +53,8 @@ class EcPdo: public virtual EcIface
         
         std::string _robot_name;
         std::string _ec_pdo_start;
-        
+        bool _init_read_pdo,_init_rx_pdo;
+        int id_err_read;
 };
 
 #endif

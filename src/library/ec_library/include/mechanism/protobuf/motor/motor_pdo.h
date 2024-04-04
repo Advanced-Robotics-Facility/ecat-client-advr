@@ -74,6 +74,7 @@ public:
     
     MotorPdoRx::pdo_t rx_pdo={0,0,0,0,0,0,0,0,0,0,0,0};
     float read_pos_ref,read_vel_ref,read_torque_ref,read_curr_ref; // should be added in rx_pdo
+    bool init_rx_pdo=false;
 
     MotorPdoRx::pdo_t tx_pdo={0,0,0,0,0,0,0,0,0,0,0,0};
     float curr_ref; // should be added in tx_pdo

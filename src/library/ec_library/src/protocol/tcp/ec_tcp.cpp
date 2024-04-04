@@ -38,11 +38,10 @@ void EcTCP::th_init ( void * )
     tNow = tPre = start_time;
     loop_cnt = 0;
 
-    read_pdo();
-
     if(_logging){
         start_logging();
     }
+  
 }
 
 void EcTCP::set_loop_time(uint32_t period_ms)
@@ -66,8 +65,13 @@ void EcTCP::start_client(uint32_t period_ms,bool logging)
     if(retrieve_slaves_info(slave_info)){
         try{
             esc_factory(slave_info);
-            create(false); // non-real time thread
-            _thread_jointable=true;
+            if(init_read_pdo()){
+                create(false); // non-real time thread
+                _thread_jointable=true;
+            }
+            else{
+                _client_alive=false;
+            }
         } catch ( std::exception &e ) {
             DPRINTF ( "Fatal Error: %s\n", e.what() );
             stop_client();
@@ -85,6 +89,8 @@ void EcTCP::stop_client()
         join();
         _thread_jointable=false;
     }
+
+    _client_alive=false;
 }
 
 

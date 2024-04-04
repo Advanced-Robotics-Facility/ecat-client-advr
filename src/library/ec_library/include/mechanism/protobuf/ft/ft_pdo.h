@@ -38,7 +38,7 @@ public:
     void set_to_pb();
     
     FtPdoRx::pdo_t rx_pdo={0,0,0,0,0,0,0,0};
-
+    bool init_rx_pdo=false;
 };
 
 template < class T >
@@ -66,6 +66,10 @@ inline void FtPdo<T>::get_from_pb()
     std::get<5>(rx_pdo)= T::pb_rx_pdos.mutable_ft6_rx_pdo()->torque_z(); 
     std::get<6>(rx_pdo)= T::pb_rx_pdos.mutable_ft6_rx_pdo()->fault();
     std::get<7>(rx_pdo)= T::pb_rx_pdos.mutable_ft6_rx_pdo()->rtt();
+    
+    if(!init_rx_pdo){
+        init_rx_pdo=true;   
+    }
 }
 
 template < class T >

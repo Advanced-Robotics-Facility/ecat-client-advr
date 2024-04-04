@@ -62,6 +62,7 @@ public:
     
     ValvePdoRx::pdo_t rx_pdo={0,0,0,0,0,0,0,0,0};
     ValvePdoTx::pdo_t tx_pdo={0,0,0,0,0,0,0,0};
+    bool init_rx_pdo=false;
 };
 
 template < class T >
@@ -90,6 +91,10 @@ inline void ValvePdo<T>::get_from_pb()
     std::get<6>(rx_pdo)   = T::pb_rx_pdos.mutable_hyqknee_rx_pdo()->rtt();
     std::get<7>(rx_pdo)   = T::pb_rx_pdos.mutable_hyqknee_rx_pdo()->op_idx_ack();
     std::get<8>(rx_pdo)   = T::pb_rx_pdos.mutable_hyqknee_rx_pdo()->aux();
+
+    if(!init_rx_pdo){
+        init_rx_pdo=true;
+    }
 }
 
 template < class T >

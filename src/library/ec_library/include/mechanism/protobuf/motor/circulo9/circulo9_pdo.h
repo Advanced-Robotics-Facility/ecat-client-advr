@@ -58,6 +58,10 @@ inline void Circulo9Pdo<T>::get_from_pb()
     MotorPdo<T>::read_vel_ref           = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->demanded_vel();
     MotorPdo<T>::read_torque_ref        = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->demanded_torque();
     MotorPdo<T>::read_curr_ref          = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->demanded_current();
+
+    if(!MotorPdo<T>::init_rx_pdo){
+        MotorPdo<T>::init_rx_pdo=true;   
+    }
 }
 
 template < class T >

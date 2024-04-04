@@ -48,15 +48,6 @@ void EcIDDP::th_init ( void * )
     tNow = tPre = start_time;
     loop_cnt = 0;
 
-    // [read pdo] avoid context switch
-    struct timespec delay = { 0, 10000000UL }; //10ms
-    int count=0;
-    while(count<5){
-        read_pdo(); //
-        count++;
-        nanosleep(&delay, NULL);
-    }
-
     if(_logging){
         start_logging();
     }
@@ -83,8 +74,13 @@ void EcIDDP::start_client(uint32_t period_ms,bool logging)
     if(retrieve_slaves_info(slave_info)){
         try{
             esc_factory(slave_info);
-            create(true); // real time thread
-            _thread_jointable=true;
+            if(init_read_pdo()){
+                create(true); // real time thread
+                _thread_jointable=true;
+            }
+            else{
+                _client_alive=false;
+            }
         } catch ( std::exception &e ) {
             DPRINTF ( "Fatal Error: %s\n", e.what() );
             stop_client();
@@ -102,6 +98,8 @@ void EcIDDP::stop_client()
         join();
         _thread_jointable=false;
     }
+
+    _client_alive=false;
 }
 
 

@@ -58,6 +58,10 @@ inline void FlexproPdo<T>::get_from_pb()
     MotorPdo<T>::read_vel_ref               = 0;
     MotorPdo<T>::read_torque_ref            = 0;
     MotorPdo<T>::read_curr_ref              = 0;
+
+    if(!MotorPdo<T>::init_rx_pdo){
+        MotorPdo<T>::init_rx_pdo=true;   
+    }
 }
 
 template < class T >

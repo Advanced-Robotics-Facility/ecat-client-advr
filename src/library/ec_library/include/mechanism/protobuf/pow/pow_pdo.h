@@ -42,6 +42,7 @@ public:
     void set_to_pb();
     
     PowPdoRx::pdo_t rx_pdo={0,0,0,0,0,0,0,0,0,0};
+    bool init_rx_pdo=false;
 };
 
 template < class T >
@@ -71,6 +72,10 @@ inline void PowPdo<T>::get_from_pb()
     std::get<7>(rx_pdo)= T::pb_rx_pdos.mutable_powf28m36_rx_pdo()->fault();
     std::get<8>(rx_pdo)= T::pb_rx_pdos.mutable_powf28m36_rx_pdo()->op_idx_ack();
     std::get<9>(rx_pdo)= T::pb_rx_pdos.mutable_powf28m36_rx_pdo()->aux();
+
+    if(!init_rx_pdo){
+        init_rx_pdo=true;   
+    }
 }
 
 template < class T >

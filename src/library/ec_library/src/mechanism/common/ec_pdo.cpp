@@ -15,6 +15,7 @@ _host_port(host_port)
     
     _host_port=host_port+4000; // to be verified in the configuration file
     _ec_pdo_start="";
+    _init_read_pdo=_init_rx_pdo=false;
     
 }
 template < class T >
@@ -23,6 +24,7 @@ _robot_name(robot_name)
 {
      _ec_pdo_start=_robot_name;
      _protocol="pipe";
+    _init_read_pdo=_init_rx_pdo=false;
 }
 
 template < class T >
@@ -99,8 +101,28 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
 } 
 
 template < class T >
+bool EcPdo<T>::init_read_pdo()
+{
+    struct timespec delay = { 0, 10000000UL }; //10ms
+    int count=0;
+    while(!_init_read_pdo && count<5){
+        read_pdo(); // read for 5 times.
+        count++;
+        nanosleep(&delay, NULL);
+    }
+    if(!_init_read_pdo){
+        DPRINTF("Fatal Error on read PDO: Id [%d] is not initialized\n",id_err_read);
+    }
+    return _init_read_pdo;
+}
+
+template < class T >
 void EcPdo<T>::read_pdo()
 {
+    if(!_init_read_pdo){
+        _init_rx_pdo=true; // start all bits from true
+    }
+
     read_motor_pdo();
     
     read_ft_pdo();
@@ -112,6 +134,8 @@ void EcPdo<T>::read_pdo()
     read_valve_pdo();
     
     read_pump_pdo();
+
+    _init_read_pdo=_init_rx_pdo;
 }
 
 template < class T >
@@ -124,6 +148,23 @@ void EcPdo<T>::write_pdo()
     write_pump_pdo();
 }
 
+template <class T > 
+template <typename MapPdo>
+void EcPdo<T>::get_init_rx_pdo(const MapPdo& pdo_map)
+{
+    if(!_init_read_pdo){
+        for (auto const &[id,pdo] : pdo_map ){
+            if(!_init_rx_pdo){
+                return;
+            }
+            _init_rx_pdo&= pdo->init_rx_pdo; // and all bits.
+            if(!pdo->init_rx_pdo){
+                id_err_read=id;
+            }
+        }
+    }
+}
+
 
 template <class T > 
 template <typename MapPdo,typename MapStatus>
@@ -134,6 +175,7 @@ void EcPdo<T>::set_map_status(pthread_mutex_t &mutex_status,const MapPdo& pdo_ma
         map_status[id]=pdo->rx_pdo;
     }
     pthread_mutex_unlock(&mutex_status);
+    get_init_rx_pdo(pdo_map);
 }
 
 template <class T > 
@@ -160,6 +202,7 @@ void EcPdo<T>::read_motor_pdo()
             } while ( nbytes > 0);
             //////////////////////////////////////////////////////////////
         }
+        
         catch ( std::out_of_range ) {};   
     }
 

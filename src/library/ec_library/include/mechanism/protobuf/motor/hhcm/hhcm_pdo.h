@@ -57,6 +57,10 @@ inline void HhcmPdo<T>::get_from_pb()
     MotorPdo<T>::read_pos_ref           = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->pos_ref();
     MotorPdo<T>::read_vel_ref           = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->vel_ref();
     MotorPdo<T>::read_torque_ref        = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->tor_ref();
+
+    if(!MotorPdo<T>::init_rx_pdo){
+        MotorPdo<T>::init_rx_pdo=true;   
+    }
 }
 
 template < class T >

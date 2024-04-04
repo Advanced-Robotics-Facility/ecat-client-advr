@@ -48,6 +48,7 @@ public:
     void set_to_pb();
 
     ImuPdoRx::pdo_t rx_pdo={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    bool init_rx_pdo=false;
 };
 
 template < class T >
@@ -88,6 +89,10 @@ inline void ImuPdo<T>::get_from_pb()
     std::get<12>(rx_pdo)    = T::pb_rx_pdos.mutable_imuvn_rx_pdo()->digital_in();
     std::get<13>(rx_pdo)    = T::pb_rx_pdos.mutable_imuvn_rx_pdo()->fault();
     std::get<14>(rx_pdo)    = T::pb_rx_pdos.mutable_imuvn_rx_pdo()->rtt();
+
+    if(!init_rx_pdo){
+        init_rx_pdo=true;   
+    }
 }
 
 template < class T >

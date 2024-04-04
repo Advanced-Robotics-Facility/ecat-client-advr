@@ -75,14 +75,14 @@ public:
 
     PumpPdo(const std::string,int id);
     ~PumpPdo();
-    
+
     void get_from_pb();
 
     void set_to_pb();
-    
-   PumpPdoRx::pdo_t  rx_pdo={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-   PumpPdoTx::pdo_t tx_pdo={0,0,0,0,0,0,0,0,0};
 
+    PumpPdoRx::pdo_t rx_pdo={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    PumpPdoTx::pdo_t tx_pdo={0,0,0,0,0,0,0,0,0};
+    bool init_rx_pdo=false;
 };
 
 template < class T >
@@ -124,6 +124,10 @@ inline void PumpPdo<T>::get_from_pb()
     std::get<18>(rx_pdo) = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->vesc2demand();
     std::get<19>(rx_pdo) = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->pwm1dutycycle();
     std::get<20>(rx_pdo) = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->pwm2dutycycle();
+
+    if(!init_rx_pdo){
+        init_rx_pdo=true;   
+    }
 }
 
 template < class T >
