@@ -6,6 +6,8 @@
 
 #include "utils/ec_common_step.h"
 #include <test_common.h>
+#define PUMP_PRE_OP 0x01
+#define PUMP_OP 0x02
 
 using namespace std::chrono;
 
@@ -78,6 +80,8 @@ int main(int argc, char * const argv[])
         uint8_t pump_pressure_ref=180; //bar
         std::map<int,uint8_t> pumps_trj_1,pumps_set_trj;
         std::map<int,uint8_t> pumps_set_ref,pumps_start;
+        uint16_t pump_status_word;
+        int pump_req_op=PUMP_PRE_OP;
         
         double valve_curr_ref=2.5; //mA
         std::map<int,double> valves_trj_1,valves_trj_2,valves_set_zero,valves_set_trj;
@@ -142,8 +146,8 @@ int main(int argc, char * const argv[])
 
         pumps_set_trj=pumps_trj_1;
         //pumps references check
-        for ( const auto &[esc_id, press_ref] : pumps_set_trj){
-            pumps_ref[esc_id]=std::make_tuple(press_ref,0,0,0,0,0,0,0,0x08); //0x08 means operative
+        for ( const auto &[esc_id, press_ref] : pumps_set_ref){
+            pumps_ref[esc_id]=std::make_tuple(press_ref,0,0,0,0,0,0,0,pump_req_op);
         }
 
         valves_set_trj=valves_trj_1;
@@ -193,8 +197,7 @@ int main(int argc, char * const argv[])
         }
         
         if(!pumps_ref.empty()){
-            STM_sts="Pressure";
-            set_trj_time_ms=pressure_time_ms;
+            STM_sts="PumpPreOp";
         }
         else{
             STM_sts="Homing";
@@ -253,6 +256,7 @@ int main(int argc, char * const argv[])
             client->get_pump_status(pump_status_map);
             for ( const auto &[esc_id, pump_rx_pdo] : pump_status_map){
                 //DPRINTF("PUMP ID: [%d], Pressure: [%hhu] \n",esc_id,std::get<0>(pump_rx_pdo));
+                pump_status_word=std::get<1>(pump_rx_pdo);
                 if(!first_pump_RX){
                     pumps_start[esc_id]=std::get<0>(pump_rx_pdo);
                     first_pump_RX=true;
@@ -318,6 +322,7 @@ int main(int argc, char * const argv[])
                 // ************************* SEND ALWAYS REFERENCES***********************************//
                 for ( const auto &[esc_id, press_ref] : pumps_set_ref){
                     std::get<0>(pumps_ref[esc_id]) = press_ref;
+                    std::get<8>(pumps_ref[esc_id]) = pump_req_op;
                 }
                 client->set_pumps_references(RefFlags::FLAG_MULTI_REF, pumps_ref);
                 // ************************* SEND ALWAYS REFERENCES***********************************//
@@ -325,7 +330,7 @@ int main(int argc, char * const argv[])
             
             // Valves references
             if(!valves_ref.empty()){
-                if(STM_sts!="Pressure"){
+                if(STM_sts=="Homing" || STM_sts=="Trajectory"){
                     // interpolate
                     for ( const auto &[esc_id, target] : valves_set_trj){
                         valves_set_ref[esc_id] = valves_start[esc_id] + alpha * (target - valves_start[esc_id]);
@@ -343,7 +348,7 @@ int main(int argc, char * const argv[])
             
             // Motors references
             if(!motors_ref.empty()){
-                if(STM_sts!="Pressure"){
+                if(STM_sts=="Homing" || STM_sts=="Trajectory"){
                     // interpolate
                     for(int i=0; i<q_set_trj.size();i++)
                     {
@@ -366,10 +371,45 @@ int main(int argc, char * const argv[])
             // get period ns
             time_ns = iit::ecat::get_time_ns();
             
-            if((time_elapsed_ms>=pressure_time_ms)&&(STM_sts=="Pressure"))
-            {
+            if(STM_sts=="PumpPreOp"){
+                if(pump_status_word==PUMP_PRE_OP){
+                    if(trajectory_counter==ec_cfg.repeat_trj){
+                        run=false;
+                    }
+                    else{
+                        STM_sts="PumpOp";
+                        pump_req_op=PUMP_OP;
+                        start_time_ns=time_ns;
+                        tau=alpha=0;
+                    }
+                } 
+                else{
+                    if(time_elapsed_ms>=500) { // 500ms
+                        DPRINTF("Cannot setup the pump in pre-operational mode\n");
+                        run=false;
+                    }
+                }
+            }
+            else if(STM_sts=="PumpOp"){
+                if(pump_status_word==PUMP_OP){
+                    STM_sts="Pressure";
+                    start_time_ns=time_ns;
+                    set_trj_time_ms=pressure_time_ms;
+                    tau=alpha=0;
+                } 
+                else{
+                    if(time_elapsed_ms>=500) { // 500ms
+                        DPRINTF("Cannot setup the pump in operational mode\n");
+                        run=false;
+                    }
+                }
+            }
+            else if((time_elapsed_ms>=pressure_time_ms)&&(STM_sts=="Pressure")){
                 if(trajectory_counter==ec_cfg.repeat_trj){
-                    run=false;
+                    STM_sts="PumpPreOp";
+                    pump_req_op=PUMP_PRE_OP;
+                    start_time_ns=time_ns;
+                    tau=alpha=0;
                 }
                 else{
                     if(motors_ref.empty() && valves_ref.empty()){
@@ -398,8 +438,7 @@ int main(int argc, char * const argv[])
                     }
                 }
             }
-            else if((time_elapsed_ms>=hm_time_ms)&&(STM_sts=="Homing"))
-            {
+            else if((time_elapsed_ms>=hm_time_ms)&&(STM_sts=="Homing")){
                 STM_sts="Trajectory";
                 start_time_ns=time_ns;
                 set_trj_time_ms=trj_time_ms;
@@ -419,8 +458,7 @@ int main(int argc, char * const argv[])
                 tau=alpha=0;
                 trajectory_counter=trajectory_counter+1;
             }
-            else if((time_elapsed_ms>=trj_time_ms)&&(STM_sts=="Trajectory"))
-            {
+            else if((time_elapsed_ms>=trj_time_ms)&&(STM_sts=="Trajectory")){
                 if(trajectory_counter==ec_cfg.repeat_trj)
                 {
                     if(!pumps_ref.empty()){
@@ -437,8 +475,7 @@ int main(int argc, char * const argv[])
                         run=false; // only homing or trajectory on valves/motors
                     }
                 }
-                else
-                {
+                else{
                     STM_sts="Homing";
                     start_time_ns=time_ns;
                     set_trj_time_ms=hm_time_ms;
@@ -452,16 +489,6 @@ int main(int argc, char * const argv[])
                     tau=alpha=0;
                 }
             } 
-
-            if(!run){
-                if(!pumps_ref.empty()){            
-                    for ( auto &[esc_id, pump_tx] : pumps_ref){
-                        std::get<8>(pump_tx) = 0x02; // means pre-operational
-                    }
-                    client->set_pumps_references(RefFlags::FLAG_MULTI_REF, pumps_ref);    
-                }   
-            }
-            
             clock_nanosleep(CLOCK_MONOTONIC, 0, &ts, NULL); 
         }
     }

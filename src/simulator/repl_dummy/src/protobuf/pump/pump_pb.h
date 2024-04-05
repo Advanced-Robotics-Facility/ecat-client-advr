@@ -18,6 +18,7 @@ private:
     uint32_t    fan1_speed;
     uint32_t    fan2_speed;
     uint16_t    dout;
+    uint8_t     sysstatecmd;
 public:
    
     virtual void pbDeserialize(iit::advr::Ec_slave_pdo pb)
@@ -32,6 +33,7 @@ public:
         vesc2mode=      pb.mutable_hyqhpu_tx_pdo()->vesc2mode();
         fan1_speed=     pb.mutable_hyqhpu_tx_pdo()->fan1spd();
         fan2_speed=     pb.mutable_hyqhpu_tx_pdo()->fan2spd();
+        sysstatecmd=    pb.mutable_hyqhpu_tx_pdo()->sysstatecmd();
     }
     
     virtual void  pbSerialize(iit::advr::Ec_slave_pdo& pb)
@@ -46,7 +48,7 @@ public:
         // HPU_rx_pdo
         pb.mutable_hyqhpu_rx_pdo()->set_pressure(press_demand);
         //tempExpansionBoard miss
-        pb.mutable_hyqhpu_rx_pdo()->set_statusword(0);
+        pb.mutable_hyqhpu_rx_pdo()->set_statusword(sysstatecmd);
         pb.mutable_hyqhpu_rx_pdo()->set_vesc1boardtemp(temp(gen));
         pb.mutable_hyqhpu_rx_pdo()->set_vesc1mottemp(temp(gen));
         pb.mutable_hyqhpu_rx_pdo()->set_vesc2boardtemp(temp(gen));
