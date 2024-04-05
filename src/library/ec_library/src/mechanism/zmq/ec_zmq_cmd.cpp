@@ -194,7 +194,7 @@ bool EcZmqCmd::set_wr_sdo(uint32_t esc_id,
                                               wr_sdo_map,
                                               wd_sdo_msg);
         
-        if(!cmd_error_status(fault, "retrieve_rr_sdo",msg)){
+        if(!cmd_error_status(fault, "set_wr_sdo",msg)){
             return true;
         }
         else{
