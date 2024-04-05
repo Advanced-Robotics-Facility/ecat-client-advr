@@ -126,6 +126,25 @@ bool EcZmqCmd::retrieve_slaves_info(SSI &slave_info)
 
 bool EcZmqCmd::retrieve_all_sdo(uint32_t esc_id,RR_SDO &rr_sdo)
 {
+    int attemps_cnt = 0; 
+    while(_client_alive && attemps_cnt < _max_cmd_attemps){
+        std::string msg,rd_all_sdo_name;
+        auto fault=_ec_repl_cmd->Slave_SDO_info(iit::advr::Slave_SDO_info_Type::Slave_SDO_info_Type_SDO_NAME, 
+                                                esc_id,
+                                                rd_all_sdo_name);
+        
+        if(!cmd_error_status(fault, "retrieve_all_sdo",msg)){
+            auto rd_sdo_name_read = YAML::Load(rd_all_sdo_name);
+            RD_SDO rd_sdo = rd_sdo_name_read.as<std::vector<std::string>>();
+            WR_SDO wr_sdo;
+            bool ret=retrieve_rr_sdo(esc_id,rd_sdo,wr_sdo,rr_sdo);
+            return ret;
+        }
+        else{
+            attemps_cnt++;
+        }
+        
+    }
     return false;
 }
 
@@ -139,9 +158,9 @@ bool EcZmqCmd::retrieve_rr_sdo(uint32_t esc_id,
     while(_client_alive && attemps_cnt < _max_cmd_attemps){
         std::string msg,rd_sdo_msg;
         auto fault=_ec_repl_cmd->Slave_SDO_cmd(esc_id, 
-                                              rd_sdo,
-                                              {},  // ignored
-                                              rd_sdo_msg);
+                                               rd_sdo,
+                                               {},  // ignored
+                                               rd_sdo_msg);
         
         if(!cmd_error_status(fault, "retrieve_rr_sdo",msg)){
             auto rd_sdo_read = YAML::Load(rd_sdo_msg);
