@@ -3,10 +3,11 @@
 EcGuiSlider::EcGuiSlider(QWidget *parent) :
     QWidget(parent)
 {
-    // find position, velocity and torque tab for adding the sliders for every slave.
+    // find position, velocity, torque and current tab for adding the sliders for every slave.
     _sliders_poslayout  = parent->findChild<QVBoxLayout *>("positionSliders");
     _sliders_vellayout  = parent->findChild<QVBoxLayout *>("velocitySliders");
     _sliders_torqlayout = parent->findChild<QVBoxLayout *>("torqueSliders");
+    _sliders_currlayout = parent->findChild<QVBoxLayout *>("currentSliders");
 }
 
 void EcGuiSlider::create_sliders(std::map<int ,joint_info_t > joint_info_map)
@@ -29,7 +30,6 @@ void EcGuiSlider::create_sliders(std::map<int ,joint_info_t > joint_info_map)
         auto wid_p = new SliderWidget(jname,joint_info_s.actual_pos,QString::number(joint_info_s.min_pos),QString::number(joint_info_s.max_pos),"[rad]",0x3B,pid_string,gains_pos,this);
         wid_p->setMaximumHeight(300);
         wid_p->disable_slider();
-        bool is_slave_led=false;
         
         _slider_map.position_sw_map[slave_id]=wid_p;
 
@@ -59,16 +59,6 @@ void EcGuiSlider::create_sliders(std::map<int ,joint_info_t > joint_info_map)
 
         auto wid_t = new SliderWidget("",0.0,QString::number(-joint_info_s.max_torq/100),QString::number(joint_info_s.max_torq/100),"[Nm]",0xD4,pid_string,gains_tor,this);
         wid_t->setMaximumHeight(300);
-    
-        if(!is_slave_led)
-        {
-        wid_t->setContentsMargins(2*jname.size(),0,0,0); 
-        }
-        else
-        {
-        wid_t->setContentsMargins(2*jname.size(),0,85,0);
-        }
-        
         wid_t->disable_slider();
         wid_t->hide_joint_enabled();
 //         auto wid_t_calib=wid_t->get_wid_calibration();
@@ -79,10 +69,20 @@ void EcGuiSlider::create_sliders(std::map<int ,joint_info_t > joint_info_map)
 
         _slider_map.torque_sw_map[slave_id]=wid_t;
 
+        pid_string={"P","I","D"};
+        std::vector<double> gains_curr={0.0,0.0,0.0};
+
+        auto wid_cc = new SliderWidget(jname,0.0,QString::number(-2.0),QString::number(2.0),"[A]",0xCC,pid_string,gains_curr,this);
+        wid_cc->setMaximumHeight(300);
+        wid_cc->disable_slider();
+        
+        _slider_map.velocity_sw_map[slave_id]=wid_v;
+
         _sliders_poslayout->addWidget(wid_p,0, Qt::AlignTop);
         _sliders_vellayout->addWidget(wid_v,0, Qt::AlignTop);
         _sliders_torqlayout->addWidget(wid_p_t,0, Qt::AlignTop);
         _sliders_torqlayout->addWidget(wid_t,0, Qt::AlignTop);
+        _sliders_currlayout->addWidget(wid_cc,0, Qt::AlignTop);
     }
 }
 
@@ -101,6 +101,9 @@ void EcGuiSlider::delete_sliders()
     delete_items(_sliders_torqlayout->layout());
     _slider_map.position_t_sw_map.clear();
     _slider_map.torque_sw_map.clear();
+
+    delete_items(_sliders_currlayout->layout());
+    _slider_map.current_sw_map.clear();
     
     _joint_info_map.clear();
     
@@ -114,6 +117,7 @@ void EcGuiSlider::reset_sliders()
         _slider_map.position_t_sw_map[slave_id]->align_spinbox();
         _slider_map.velocity_sw_map[slave_id]->align_spinbox(0.0);
         _slider_map.torque_sw_map[slave_id]->align_spinbox(0.0);
+        _slider_map.current_sw_map[slave_id]->align_spinbox(0.0);
     }
 }
 void EcGuiSlider::enable_sliders()
@@ -126,6 +130,7 @@ void EcGuiSlider::enable_sliders()
             _slider_map.position_t_sw_map[slave_id]->enable_slider();
             _slider_map.velocity_sw_map[slave_id]->enable_slider();
             _slider_map.torque_sw_map[slave_id]->enable_slider();
+            _slider_map.current_sw_map[slave_id]->enable_slider();
         }
     }
 }
@@ -137,6 +142,7 @@ void EcGuiSlider::disable_sliders()
         _slider_map.position_t_sw_map[slave_id]->disable_slider();
         _slider_map.velocity_sw_map[slave_id]->disable_slider();
         _slider_map.torque_sw_map[slave_id]->disable_slider();
+        _slider_map.current_sw_map[slave_id]->disable_slider();
     }
 }
 

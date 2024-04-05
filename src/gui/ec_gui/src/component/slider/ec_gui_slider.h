@@ -32,6 +32,7 @@ public:
     std::map<int, SliderWidget*> position_sw_map;
     std::map<int, SliderWidget*> velocity_sw_map;
     std::map<int, SliderWidget*> position_t_sw_map;
+    std::map<int, SliderWidget*> current_sw_map;
     std::map<int, SliderWidget*> torque_sw_map;
     std::map<int, SliderWidget*> actual_sw_map_selected;
     
@@ -59,7 +60,7 @@ private:
 
   float _control_mode;
 
-  QVBoxLayout *_sliders_poslayout,*_sliders_vellayout,*_sliders_torqlayout;
+  QVBoxLayout *_sliders_poslayout,*_sliders_vellayout,*_sliders_torqlayout,*_sliders_currlayout;
   void delete_items(QLayout * layout);
 
 };

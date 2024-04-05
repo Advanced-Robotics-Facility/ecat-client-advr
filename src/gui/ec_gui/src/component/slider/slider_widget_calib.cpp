@@ -120,6 +120,13 @@ SliderWidgetCalib::SliderWidgetCalib (const QString&  joint_name,
                     _valuebox[i]->setDecimals(0);
                     _valuebox[i]->setSingleStep(1);
                 }
+                else if(ctrl_type == 0xCC)
+                {
+                    _valuebox[i]->setMaximum(200);
+                    _valuebox[i]->setMinimum(0);
+                    _valuebox[i]->setDecimals(0);
+                    _valuebox[i]->setSingleStep(1);
+                }
                 else
                 {
                     throw std::runtime_error("Error: Control mode not recognized");
@@ -150,6 +157,13 @@ SliderWidgetCalib::SliderWidgetCalib (const QString&  joint_name,
                     _valuebox[i]->setDecimals(0);
                     _valuebox[i]->setSingleStep(1);
                 }
+                else if(ctrl_type == 0xCC)
+                {
+                    _valuebox[i]->setMaximum(200);
+                    _valuebox[i]->setMinimum(0);
+                    _valuebox[i]->setDecimals(0);
+                    _valuebox[i]->setSingleStep(1);
+                }
                 else
                 {
                     throw std::runtime_error("Error: Control mode not recognized");
@@ -176,6 +190,13 @@ SliderWidgetCalib::SliderWidgetCalib (const QString&  joint_name,
                 else if(ctrl_type == 0xD4)
                 {
                     _valuebox[i]->setMaximum(35);
+                    _valuebox[i]->setMinimum(0);
+                    _valuebox[i]->setDecimals(0);
+                    _valuebox[i]->setSingleStep(1);
+                }
+                else if(ctrl_type == 0xCC)
+                {
+                    _valuebox[i]->setMaximum(200);
                     _valuebox[i]->setMinimum(0);
                     _valuebox[i]->setDecimals(0);
                     _valuebox[i]->setSingleStep(1);

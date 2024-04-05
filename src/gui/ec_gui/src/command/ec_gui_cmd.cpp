@@ -23,8 +23,10 @@ EcGuiCmd::EcGuiCmd(EcGuiSlider::Ptr ec_gui_slider,
         SLOT(readModeType())
     );
 
-    // find position, velocity and torque tab.
+    // find devices
+    _devicecontrol=parent->findChild<QTabWidget *>("deviceControl");
 
+    // find position, velocity and torque tab.
     _tabcontrol = parent->findChild<QTabWidget *>("tabControl");
 
     /* Getting command manager (Apply) */
@@ -65,28 +67,6 @@ EcGuiCmd::EcGuiCmd(EcGuiSlider::Ptr ec_gui_slider,
     _ctrl_cmd=0;
     
     readCommand();
-    
-    for(int led_index=0; led_index < _slave_id_led.size() ;led_index++)
-    {
-        auto slave_id = _slave_id_led[led_index];
-        if(_slider_map.position_sw_map.count(slave_id)>0)
-        {
-            _slider_map.position_sw_map[slave_id]->unhide_led_on_off_btn();
-            auto pos_led_on_off_btn= _slider_map.position_sw_map[slave_id]->get_led_on_off_btn();
-            pos_led_on_off_btn->setStyleSheet("background: red; color: #00FF00");
-            connect(pos_led_on_off_btn, &QPushButton::released,this, &EcGuiCmd::onLED_ON_OFF_Released); 
-
-            _slider_map.velocity_sw_map[slave_id]->unhide_led_on_off_btn();
-            auto vel_led_on_off_btn= _slider_map.velocity_sw_map[slave_id]->get_led_on_off_btn();
-            vel_led_on_off_btn->setStyleSheet("background: red; color: #00FF00");
-            connect(vel_led_on_off_btn, &QPushButton::released,this, &EcGuiCmd::onLED_ON_OFF_Released); 
-
-            _slider_map.position_t_sw_map[slave_id]->unhide_led_on_off_btn();
-            auto pos_t_led_on_off_btn= _slider_map.position_t_sw_map[slave_id]->get_led_on_off_btn();
-            pos_t_led_on_off_btn->setStyleSheet("background: red; color: #00FF00");
-            connect(pos_t_led_on_off_btn, &QPushButton::released,this, &EcGuiCmd::onLED_ON_OFF_Released); 
-        }    
-    }
 }
 
 void EcGuiCmd::restart_ec_gui_cmd(EcIface::Ptr client)
@@ -110,6 +90,11 @@ void EcGuiCmd::readCommand()
 {
     if(getFieldType() == "Start motors")
     {
+        _devicecontrol->setTabEnabled(0,true);
+        _devicecontrol->setTabEnabled(1,false);
+        _devicecontrol->setTabEnabled(2,false);
+        _devicecontrol->setCurrentIndex(0);
+
         _ctrl_cmd_type=ClientCmdType::START;
         _tabcontrol->setEnabled(true);
         _mode_type_combobox->setEnabled(true);
@@ -119,11 +104,29 @@ void EcGuiCmd::readCommand()
     }
     else if(getFieldType() == "Stop motors")
     {
+
+        _devicecontrol->setTabEnabled(0,true);
+        _devicecontrol->setTabEnabled(1,false);
+        _devicecontrol->setTabEnabled(2,false);
+        _devicecontrol->setCurrentIndex(0);
+
         _ctrl_cmd_type=ClientCmdType::STOP;
         _mode_type_combobox->setEnabled(false);
         _tabcontrol->setEnabled(false);
         _notallbtn->setEnabled(false);
         _allbtn->setEnabled(false);
+    }
+    else if(getFieldType() == "Start valves"){
+        _devicecontrol->setTabEnabled(0,false);
+        _devicecontrol->setTabEnabled(1,true);
+        _devicecontrol->setTabEnabled(2,false);
+        _devicecontrol->setCurrentIndex(1);
+    }
+    else if(getFieldType() == "Stop valves"){
+        _devicecontrol->setTabEnabled(0,false);
+        _devicecontrol->setTabEnabled(1,true);
+        _devicecontrol->setTabEnabled(2,false);
+        _devicecontrol->setCurrentIndex(1);
     }
     else
     {
@@ -172,6 +175,7 @@ void EcGuiCmd::readModeType()
             _tabcontrol->setTabEnabled(0,true);
             _tabcontrol->setTabEnabled(1,false);
             _tabcontrol->setTabEnabled(2,false);
+            _tabcontrol->setTabEnabled(3,false);
             _tabcontrol->setCurrentIndex(0);
             
             _ctrl_cmd=0x3B;
@@ -182,6 +186,7 @@ void EcGuiCmd::readModeType()
             _tabcontrol->setTabEnabled(0,false);
             _tabcontrol->setTabEnabled(1,true);
             _tabcontrol->setTabEnabled(2,false);
+            _tabcontrol->setTabEnabled(3,false);
             _tabcontrol->setCurrentIndex(1);
             
             _ctrl_cmd=0x71;
@@ -192,10 +197,22 @@ void EcGuiCmd::readModeType()
             _tabcontrol->setTabEnabled(0,false);
             _tabcontrol->setTabEnabled(1,false);
             _tabcontrol->setTabEnabled(2,true);
+            _tabcontrol->setTabEnabled(3,false);
             _tabcontrol->setCurrentIndex(2);
             
             _ctrl_cmd=0xD4;
             _actual_sw_map_selected=_slider_map.position_t_sw_map;
+        }
+        else if(getModeType() == "Current")
+        {
+            _tabcontrol->setTabEnabled(0,false);
+            _tabcontrol->setTabEnabled(1,false);
+            _tabcontrol->setTabEnabled(2,false);
+            _tabcontrol->setTabEnabled(3,true);
+            _tabcontrol->setCurrentIndex(3);
+            
+            _ctrl_cmd=0xCC;
+            _actual_sw_map_selected=_slider_map.current_sw_map;
         }
         else
         {
@@ -252,72 +269,6 @@ void EcGuiCmd::launch_cmd_message(QString message)
    QMessageBox msgBox;
    msgBox.setText(message);
    msgBox.exec();
-}
-
-void EcGuiCmd::onLED_ON_OFF_Released()
-{
-    PAC led_cmds = {};
-    QPushButton* led_on_off_btn = qobject_cast<QPushButton*>(sender());
-    for (auto& [slave_id, slider_wid]:_actual_sw_map_selected)
-    {
-        auto actual_led_on_off_btn = slider_wid->get_led_on_off_btn();
-        bool led_on_off_cmd_result=false;
-        if(actual_led_on_off_btn == led_on_off_btn)
-        {
-            QString led_text,led_style;
-            if(led_on_off_btn->text()=="LED OFF")
-            {
-                led_cmds.push_back(std::make_tuple(slave_id,to_underlying(PdoAuxCmdType::LED_ON)));     
-                if(_client->pdo_aux_cmd(led_cmds))
-                {
-                    std::this_thread::sleep_for(100ms);
-                    if(_client->pdo_aux_cmd_sts(led_cmds))
-                    {
-                        led_on_off_cmd_result=true;
-                        led_text="LED ON";
-                        led_style="background: green; color: #00FF00";
-                    }
-                }
-            }
-            else
-            {
-                led_cmds.push_back(std::make_tuple(slave_id,to_underlying(PdoAuxCmdType::LED_OFF)));
-                if(_client->pdo_aux_cmd(led_cmds))
-                {
-                    std::this_thread::sleep_for(100ms);
-                    if(_client->pdo_aux_cmd_sts(led_cmds))
-                    {
-                        led_on_off_cmd_result=true;
-                        led_text="LED OFF";
-                        led_style="background: red; color: #00FF00";
-                    }
-                }
-            }
-            
-            if(!led_on_off_cmd_result)
-            {
-                QMessageBox msgBox;
-                msgBox.setText("Cannot perform LED switching on/off command on the motors requested");
-                msgBox.exec();
-            }
-            else
-            {
-                
-                auto pos_led_on_off_btn= _slider_map.position_sw_map[slave_id]->get_led_on_off_btn();
-                pos_led_on_off_btn->setText(led_text);
-                pos_led_on_off_btn->setStyleSheet(led_style);
-                auto vel_led_on_off_btn= _slider_map.velocity_sw_map[slave_id]->get_led_on_off_btn();
-                vel_led_on_off_btn->setText(led_text);
-                vel_led_on_off_btn->setStyleSheet(led_style);
-                auto pos_t_led_on_off_btn= _slider_map.position_t_sw_map[slave_id]->get_led_on_off_btn();
-                pos_t_led_on_off_btn->setText(led_text);
-                pos_t_led_on_off_btn->setStyleSheet(led_style);
-            }
-            
-            break;
-        }
-    }
-
 }
 
 void EcGuiCmd::fill_start_stop_cmd()

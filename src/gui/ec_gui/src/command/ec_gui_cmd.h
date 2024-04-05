@@ -24,7 +24,6 @@ public:
     void onAllCmdReleased();
     void onNotAllBrakeReleased();
     void onAllBrakeReleased();
-    void onLED_ON_OFF_Released();
     void restart_ec_gui_cmd(EcIface::Ptr client);
     
 public slots:
@@ -52,6 +51,7 @@ private:
 
   QComboBox * _fieldtype_combobox;
   QComboBox * _mode_type_combobox;
+  QTabWidget *_devicecontrol;
   QTabWidget *_tabcontrol;
 
   QDialogButtonBox  * _cmd_manager;
