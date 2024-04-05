@@ -82,6 +82,7 @@ int main(int argc, char * const argv[])
         std::map<int,uint8_t> pumps_set_ref,pumps_start;
         uint16_t pump_status_word;
         int pump_req_op=PUMP_PRE_OP;
+        bool pump_req_sts;
         
         double valve_curr_ref=2.5; //mA
         std::map<int,double> valves_trj_1,valves_trj_2,valves_set_zero,valves_set_trj;
@@ -254,9 +255,20 @@ int main(int argc, char * const argv[])
             
             //******************* Pump Telemetry ********
             client->get_pump_status(pump_status_map);
+            pump_req_sts=true;
             for ( const auto &[esc_id, pump_rx_pdo] : pump_status_map){
                 //DPRINTF("PUMP ID: [%d], Pressure: [%hhu] \n",esc_id,std::get<0>(pump_rx_pdo));
+
                 pump_status_word=std::get<1>(pump_rx_pdo);
+                if(pump_status_word!=pump_req_op){
+                    pump_req_sts &=false;
+                }
+                
+#ifdef TEST_EXAMPLES
+                if(ec_cfg.protocol!="iddp"){
+                    pump_req_sts=true;
+                }
+#endif 
                 if(!first_pump_RX){
                     pumps_start[esc_id]=std::get<0>(pump_rx_pdo);
                     first_pump_RX=true;
@@ -372,7 +384,7 @@ int main(int argc, char * const argv[])
             time_ns = iit::ecat::get_time_ns();
             
             if(STM_sts=="PumpPreOp"){
-                if(pump_status_word==PUMP_PRE_OP){
+                if(pump_req_sts){
                     if(trajectory_counter==ec_cfg.repeat_trj){
                         run=false;
                     }
@@ -391,7 +403,7 @@ int main(int argc, char * const argv[])
                 }
             }
             else if(STM_sts=="PumpOp"){
-                if(pump_status_word==PUMP_OP){
+                if(pump_req_sts){
                     STM_sts="Pressure";
                     start_time_ns=time_ns;
                     set_trj_time_ms=pressure_time_ms;
