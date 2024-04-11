@@ -38,7 +38,7 @@ It's possible to generate the doxygen documentation to read the code of the Ethe
 
    doxygen Doxyfile
 
-`Link to the documentation <https://advrhumanoids.github.io/ec_xbot2_client/doxygen/>`__ 
+`Link to the documentation <https://advanced-robotics-facility.github.io/ecat-client-advr/doxygen/>`__ 
 
 ZMQ Topics and Services Description
 --------------------------------------------
