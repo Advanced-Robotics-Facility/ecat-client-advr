@@ -1,6 +1,8 @@
 name: documentation
-
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -14,10 +16,12 @@ jobs:
       - name: Install dependencies
         run: |
           pip install sphinx sphinx_rtd_theme sphinx-copybutton
-      - name: Sphinx build
+      - name: Sphinx and Doxygen build
         run: |
           make -C docs clean
           make -C docs html
+          doxygen docs Doxyfile
+          cp -r docs/html/* docs/build/html/doxygen/
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
