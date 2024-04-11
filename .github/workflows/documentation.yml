@@ -17,6 +17,7 @@ jobs:
         run: |
           pip install sphinx sphinx_rtd_theme sphinx-copybutton
           sudo apt-get install doxygen
+          sudo apt -y install graphviz
       - name: Sphinx and Doxygen build
         run: |
           make -C docs clean
