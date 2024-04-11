@@ -1,5 +1,5 @@
 # ecat-client-advr
-EtherCAT Client for the the communication with the master.
+EtherCAT Client for the the communication with the master: https://advanced-robotics-facility.github.io/ecat-client-advr/
 
 ## Installation
 
