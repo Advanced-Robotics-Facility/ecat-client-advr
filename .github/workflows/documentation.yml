@@ -21,7 +21,11 @@ jobs:
         run: |
           make -C docs clean
           make -C docs html
-          doxygen docs Doxyfile
+          cd docs
+          doxygen Doxyfile
+          cd ..
+          mkdir docs/build/html/doxygen
+          cp -r docs/html/* docs/build/html/doxygen/
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
