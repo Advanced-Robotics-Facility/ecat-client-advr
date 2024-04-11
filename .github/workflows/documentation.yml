@@ -16,6 +16,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install sphinx sphinx_rtd_theme sphinx-copybutton
+          sudo apt-get install doxygen
       - name: Sphinx and Doxygen build
         run: |
           make -C docs clean
