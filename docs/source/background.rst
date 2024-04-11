@@ -19,6 +19,20 @@ Protocol Buffer Mechanism
 
 `Protocol buffers <https://developers.google.com/protocol-buffers>`_ are a flexible, efficient, automated mechanism for serializing structured data – think XML, but smaller, faster, and simpler. You define how you want your data to be structured once, then you can use special generated source code to easily write and read your structured data to and from a variety of data streams and using a variety of languages. You can even update your data structure without breaking deployed programs that are compiled against the "old" format.
 
+.. _Message_Pack:
+
+Message Pack Mechanism
+=============================
+
+`Message Pack <https://msgpack.org/>`_ is an efficient binary serialization format. It lets you exchange data among multiple languages like JSON. But it's faster and smaller. Small integers are encoded into a single byte, and typical short strings require only one extra byte in addition to the strings themselves.
+
+.. _Boost_ASIO:
+
+Boost ASIO Mechanism
+=============================
+
+`Boost ASIO <https://www.boost.org/doc/libs/1_84_0/doc/html/boost_asio/overview/basics.html>`_ may be used to perform both synchronous and asynchronous operations on I/O objects such as sockets. 
+
 
 .. _EtherCAT:
 
@@ -149,6 +163,8 @@ EtherCAT Libraries
 
 EtherCAT Master Server
 =============================
+
+.. image:: _static/EtherCAT_Master_Img/EtherCAT_Master_Img_00.png
 
 EtherCAT Master Command Request and Reply
 -----------------------------------------

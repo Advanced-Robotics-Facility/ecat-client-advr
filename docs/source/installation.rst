@@ -5,122 +5,108 @@
 Installation
 ***************
 
-.. _ROS:
+.. _Git and CMake:
 
-ROS
+Git and CMake
 =============================
 
-Follow ROS website steps to install ROS, i.e `ROS Melodic <http://wiki.ros.org/melodic/Installation/Ubuntu>`__.
+Install git package::
 
-Install full package::
+   sudo apt update
+   sudo apt install -y git gitg git-gui
+   git --version
+   sudo apt install -y file build-essential curl cmake cmake-curses-gui
 
-   sudo apt install ros-melodic-desktop-full
+.. _MatLogger:
 
-Source into .bashrc ROS packages::
-
-   source /opt/ros/"melodic"/setup.bash
-
-
-ZMQ
+MatLogger
 =============================
 
-Install zmq library::
+Install matlogger library::
 
-   wget https://github.com/zeromq/libzmq/archive/v4.2.5.zip
-   unzip v4.2.5.zip
-   cd libzmq-4.2.5
-   ./autogen.sh
-   ./configure
-   make -j8
-   sudo make install
+   sudo apt install -y libmatio-dev libfmt-dev libgtest-dev python3-pip python3-pybind11
+   git clone https://github.com/ADVRHumanoids/MatLogger2  (actual branch: v1.5.0)
 
-Install cppzmq library::
+.. _Zmq, Protobuf, Msgpack, Boost:
 
-   wget https://github.com/zeromq/cppzmq/archive/v4.2.3.zip
-   unzip v4.2.3.zip
-   cd cppzmq-4.2.3
-   mkdir build
-   cd build
-   cmake ..
-   make
-   sudo make install
-
-XBotCore FULL Development
+Zmq, Protobuf, Msgpack, Boost
 =============================
 
-Install xbotcore full development (choose OS, i.e bionic)::
+Install mechanism protocols::
 
-   wget http://54.73.207.169/nightly/xbot2-full-devel/bionic-nightly.tar.gz
-   tar -zxvf bionic-nightly.tar.gz
-   cd bionic-18.04-2021_04_13_18_27_38/
-   ./install.sh 
+   sudo apt-get install -y libzmq3-dev
+   sudo apt install protobuf-compiler
+   sudo apt install libmsgpack-dev
+   sudo apt-get install libboost-system-dev
+   
+.. _YAML:
 
-Source into .bashrc XBOT packages::
-
-   source /opt/xbot/setup.sh
-
-
-EtherCAT Dependency Libraries
+YAML
 ================================
 
-Install these libraries for the Robot GUI::
+Install yaml utils::
 
-   sudo add-apt-repository universe
-   sudo apt update
-   sudo apt install libfmt-dev
-   sudo apt install libqt5charts5-dev
+   sudo apt install libyaml-cpp-dev
 
-EtherCAT Client Downloading and Buiding
+.. _QT and GUI Tools:
+
+QT and GUI Tools
 ========================================
 
-Prepare a new workspace::
+Install GUI tools::
 
-  mkdir "name_workspace"
-  cd "name_workspace"
-  mkdir src
-  cd src
-  catkin_init_workspace
-  mkdir external
-  cd ..
-  catkin_make
+  sudo apt install -y  qttools5-dev libqt5charts5-dev qtdeclarative5-dev libtiff-dev uuid-dev libcurl4-openssl-dev
+  
+.. _Matlab and Simulink:  
+  
+Matlab and Simulink
+========================================
 
+Install Matlab/Simulink tools::
+
+  sudo dpkg --install ecat-client-advr/src/matlab/ec_block/external/blockfactory/(OS)/blockfactory_package-0.8.3-r0.0.1-amd64.deb
+
+
+.. _Build and install the EtherCAT Client Library from sorce:  
+
+Build and install the EtherCAT Client Library from sorce
+==========================================================
+
+Prepare the workspace::
+  ecat-client-advr/scripts/.create_ws.sh [name_ws] [dir_ws, default=HOME]
+  
 Source into .bashrc the new workspace::
 
-  source ~/name_workspace/devel/setup.bash 
+  source ~/name_workspace/setup.bash 
 
-
-Download and compile dependency repositories::
-  
-  cd src/external
-
-  git clone git@github.com:alessiomargan/SOEM.git
-  cd SOEM
-  git checkout xeno3
-
-  cd ..
-  git clone git@github.com:ADVRHumanoids/protobuf.git
-  cd protobuf
-  git checkout xbot2
-
-  cd ..
-  git clone git@gitlab.advr.iit.it:xeno-ecat/ecat_master_advr.git
-  cd ecat_master_advr
-  git checkout xbot2_fixed
 
 Download and compile EtherCAT Client::
 
-  cd src/external
+  cd src/
 
-  git clone git@github.com:ADVRHumanoids/ec_xbot2_client.git
+  git clone https://github.com/Advanced-Robotics-Facility/ecat-client-advr
+  
+  cd ../build 
+  mkdir -p ecat-client-advr && cd ecat-client-advr
+  (compile and build the client)
 
 
-Note: Select the variable to compile (EtherCAT Client, the Real Time Devices for XBotCore2.0 and Robot GUI):
+Note: Select the variable to compile (EtherCAT Client Examples an Gravity compensation, the EtherCAT Client GUI and EtherCAT client block [Matlab/Simulink]):
 
 .. image:: _static/EtherCAT_Installation_Img/EtherCAT_Installation_Img_0.png
 
+**Note: It's possible to compile the EtherCAT Client Library with Xenomai Real-Time OS or Preempt-RT Real Times OS.**
 
 
+.. _Install the EtherCAT Client Library from debian package:  
 
+Install the EtherCAT Client Library from debian package
+==========================================================
 
+Download from this site the last version of EtherCAT Client Debian Package and install it::
 
+   https://github.com/Advanced-Robotics-Facility/ecat-client-advr/releases
 
+Install EtherCAT Client Librarys::
+
+  sudo dpkg --install ecat-client-advr_nrt_package-0.0.1-r0.0.1-amd64.deb
