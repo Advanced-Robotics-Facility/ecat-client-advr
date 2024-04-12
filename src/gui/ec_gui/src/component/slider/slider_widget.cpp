@@ -32,7 +32,6 @@ SliderWidget::SliderWidget (const QString&  joint_name,
                             const QString&  min,
                             const QString&  max,
                             const QString& unit,
-                            float ctrl_type,
                             std::vector<std::string> pid_string,
                             std::vector<double> gains,
                             QWidget *parent) :
@@ -100,7 +99,6 @@ SliderWidget::SliderWidget (const QString&  joint_name,
         _valuebox->setValue(init_value);
     }
 
-
     _valuebox->setDecimals(6);
 
     _valuebox->setSingleStep(1/((double)_slider_spinbox_fct));
@@ -120,18 +118,19 @@ SliderWidget::SliderWidget (const QString&  joint_name,
 
     _joint_enabled = findChild<QCheckBox *>("JointEnabled");
     _joint_is_braked = findChild<QCheckBox *>("joint_is_braked");
-    _led_on_off = findChild<QPushButton *>("LED_ON_OFF");
-    _led_on_off->hide();
 
     _slider_filtered=std::make_shared<SecondOrderFilter<double>>(12.0,1.0,1.0,init_value);
 
     _pid_layout=findChild<QHBoxLayout *>("PID_Layout");
 
-    _wid_calib= new SliderWidgetCalib("",ctrl_type,gains,pid_string);
+    _wid_calib= new SliderWidgetCalib("",gains,pid_string);
 
     _pid_layout->addWidget(_wid_calib,0, Qt::AlignTop);
 
     _actual_slider_value=init_value;
+
+
+    disable_slider();
 
 }
 
@@ -244,22 +243,6 @@ void SliderWidget::check_joint_braked()
 void SliderWidget::uncheck_joint_braked()
 {
     _joint_is_braked->setChecked(false);
-}
-
-
-void SliderWidget::hide_led_on_off_btn()
-{
-   _led_on_off->setHidden(true);
-}
-
-void SliderWidget::unhide_led_on_off_btn()
-{
-    _led_on_off->setHidden(false);
-}
-
-QPushButton* SliderWidget::get_led_on_off_btn()
-{
-    return _led_on_off;
 }
 
 double SliderWidget::get_spinbox_value()

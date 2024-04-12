@@ -174,13 +174,6 @@
        </property>
       </widget>
      </item>
-     <item>
-      <widget class="QPushButton" name="LED_ON_OFF">
-       <property name="text">
-        <string>LED OFF</string>
-       </property>
-      </widget>
-     </item>
     </layout>
    </item>
   </layout>

@@ -17,7 +17,6 @@ Q_OBJECT
 public:
 
     explicit SliderWidgetCalib (const QString& joint_name,
-                                float ctrl_type,
                                 std::vector<double> init_value,
                                 std::vector<std::string> sliders_type,
                                 QWidget * parent = 0);

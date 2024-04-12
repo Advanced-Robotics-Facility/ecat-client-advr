@@ -30,7 +30,6 @@ QWidget * LoadUiFile(QWidget * parent)
 }
 
 SliderWidgetCalib::SliderWidgetCalib (const QString&  joint_name,
-                                      float ctrl_type,
                                       std::vector<double> init_value,
                                       std::vector<std::string> sliders_type,
                                       QWidget *parent) :
@@ -68,27 +67,22 @@ SliderWidgetCalib::SliderWidgetCalib (const QString&  joint_name,
     _valuebox.push_back(findChild<QDoubleSpinBox *>("ValueBox7"));
     _valuebox.push_back(findChild<QDoubleSpinBox *>("ValueBox8"));
 
-
-
     for(int i=0; i < _valuebox.size();i++)
     {
+        _slidertype[i]->hide();
         _valuebox[i]->setKeyboardTracking(false);
+        _valuebox[i]->hide();
     }
 
     if(sliders_type.size()>_slidertype.size())
     {
-        throw std::runtime_error("Error _slidertype");
+        throw std::runtime_error("Error valuebox requested greater than 8!");
         return;
     }
     else
     {
-        int i=0,k=0;
-        bool set_init_value=false;
-
-        if((!init_value.empty())&&(init_value.size()==sliders_type.size()))
-            set_init_value=true;
-
-        for(i;i<sliders_type.size();i++)
+        _slider_numb=sliders_type.size();        
+        for(int i=0;i<_slider_numb;i++)
         {
             _slidertype[i]->setText(QString::fromStdString(sliders_type[i]));
 
@@ -97,154 +91,15 @@ SliderWidgetCalib::SliderWidgetCalib (const QString&  joint_name,
                    std::bind(&SliderWidgetCalib::on_spinbox_changed, this, i)
                    );
 
-            if(_slidertype[i]->text().toStdString()=="P")
-            {
-                if(ctrl_type == 0x3B)
-                {
-                    _valuebox[i]->setMaximum(250);
-                    _valuebox[i]->setMinimum(0);
-                    _valuebox[i]->setDecimals(0);
-                    _valuebox[i]->setSingleStep(1);
-                }
-                else if(ctrl_type == 0x71)
-                {
-                    _valuebox[i]->setMaximum(50);
-                    _valuebox[i]->setMinimum(0);
-                    _valuebox[i]->setDecimals(0);
-                    _valuebox[i]->setSingleStep(1);
-                }
-                else if(ctrl_type == 0xD4)
-                {
-                    _valuebox[i]->setMaximum(3000);
-                    _valuebox[i]->setMinimum(0);
-                    _valuebox[i]->setDecimals(0);
-                    _valuebox[i]->setSingleStep(1);
-                }
-                else if(ctrl_type == 0xCC)
-                {
-                    _valuebox[i]->setMaximum(200);
-                    _valuebox[i]->setMinimum(0);
-                    _valuebox[i]->setDecimals(0);
-                    _valuebox[i]->setSingleStep(1);
-                }
-                else
-                {
-                    throw std::runtime_error("Error: Control mode not recognized");
-                }
-                    
-            }
-            
-            else if(_slidertype[i]->text().toStdString()=="I")
-            {
-                if(ctrl_type == 0x3B)
-                {
-                    _valuebox[i]->setMaximum(0);
-                    _valuebox[i]->setMinimum(0);
-                    _valuebox[i]->setDecimals(0);
-                    _valuebox[i]->setSingleStep(1);
-                }
-                else if(ctrl_type == 0x71)
-                {
-                    _valuebox[i]->setMaximum(0);
-                    _valuebox[i]->setMinimum(0);
-                    _valuebox[i]->setDecimals(0);
-                    _valuebox[i]->setSingleStep(1);
-                }
-                else if(ctrl_type == 0xD4)
-                {
-                    _valuebox[i]->setMaximum(0);
-                    _valuebox[i]->setMinimum(0);
-                    _valuebox[i]->setDecimals(0);
-                    _valuebox[i]->setSingleStep(1);
-                }
-                else if(ctrl_type == 0xCC)
-                {
-                    _valuebox[i]->setMaximum(200);
-                    _valuebox[i]->setMinimum(0);
-                    _valuebox[i]->setDecimals(0);
-                    _valuebox[i]->setSingleStep(1);
-                }
-                else
-                {
-                    throw std::runtime_error("Error: Control mode not recognized");
-                }
-                    
-            }
-            
-            else if(_slidertype[i]->text().toStdString()=="D")
-            {
-                if(ctrl_type == 0x3B)
-                {
-                    _valuebox[i]->setMaximum(40);
-                    _valuebox[i]->setMinimum(0);
-                    _valuebox[i]->setDecimals(0);
-                    _valuebox[i]->setSingleStep(1);
-                }
-                else if(ctrl_type == 0x71)
-                {
-                    _valuebox[i]->setMaximum(0);
-                    _valuebox[i]->setMinimum(0);
-                    _valuebox[i]->setDecimals(0);
-                    _valuebox[i]->setSingleStep(1);
-                }
-                else if(ctrl_type == 0xD4)
-                {
-                    _valuebox[i]->setMaximum(35);
-                    _valuebox[i]->setMinimum(0);
-                    _valuebox[i]->setDecimals(0);
-                    _valuebox[i]->setSingleStep(1);
-                }
-                else if(ctrl_type == 0xCC)
-                {
-                    _valuebox[i]->setMaximum(200);
-                    _valuebox[i]->setMinimum(0);
-                    _valuebox[i]->setDecimals(0);
-                    _valuebox[i]->setSingleStep(1);
-                }
-                else
-                {
-                    throw std::runtime_error("Error: Control mode not recognized");
-                }
-                    
-            }
-          
-            else if(_slidertype[i]->text().toStdString()=="Tau_p")
-            {
-                _valuebox[i]->setMaximum(1.5);
-                _valuebox[i]->setMinimum(1);
-                _valuebox[i]->setDecimals(1);
-                _valuebox[i]->setSingleStep(0.1);
-            }
-            else if(_slidertype[i]->text().toStdString()=="Tau_d")
-            {
-                _valuebox[i]->setMaximum(0.008);
-                _valuebox[i]->setMinimum(0.005);
-                _valuebox[i]->setDecimals(3);
-                _valuebox[i]->setSingleStep(0.001);
-            }
-            else if(_slidertype[i]->text().toStdString()=="Tau_fc")
-            {
-                _valuebox[i]->setMaximum(0.85);
-                _valuebox[i]->setMinimum(0);
-                _valuebox[i]->setDecimals(2);
-                _valuebox[i]->setSingleStep(0.01);
-            }
-
-           
-            if(set_init_value)
-            {
-                _valuebox[i]->setValue(init_value[i]);
-                _valuebox_filtered.push_back(std::make_shared<SecondOrderFilter<double>>(12.0,1.0,1.0,init_value[i]));
-            }
-
+            _slidertype[i]->show();
+            _valuebox[i]->show();
+            _valuebox[i]->setMaximum(1000);
+            _valuebox[i]->setMinimum(0);
+            _valuebox[i]->setDecimals(3);
+            _valuebox[i]->setSingleStep(0.001);
+            _valuebox[i]->setValue(init_value[i]);
+            _valuebox_filtered.push_back(std::make_shared<SecondOrderFilter<double>>(12.0,1.0,1.0,init_value[i]));
         }
-        for(k=i;k<_slidertype.size();k++)
-        {
-            _slidertype[k]->hide();
-            _valuebox[k]->hide();
-        }
-
-        _slider_numb=sliders_type.size();
     }
 
 }

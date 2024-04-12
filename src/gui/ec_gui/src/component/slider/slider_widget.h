@@ -18,7 +18,6 @@ public:
                            const QString& min,
                            const QString& max,
                            const QString& unit,
-                           float ctrl_type,
                            std::vector<std::string> pid_string,
                            std::vector<double> gains,
                            QWidget * parent = 0);
@@ -46,10 +45,7 @@ public:
     bool is_joint_braked();
     void check_joint_braked();
     void uncheck_joint_braked();
-    void hide_led_on_off_btn();
-    void unhide_led_on_off_btn();
     std::string get_joint_name();
-    QPushButton* get_led_on_off_btn();
     SliderWidgetCalib *get_wid_calibration();
 
     SecondOrderFilter<double>::Ptr get_filer();
@@ -74,7 +70,6 @@ private:
     QDoubleSpinBox *   _valuebox;
     QCheckBox* _joint_enabled;
     QCheckBox* _joint_is_braked;
-    QPushButton* _led_on_off;
     int _slider_spinbox_fct;
 
     double _actual_slider_value;

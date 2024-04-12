@@ -88,13 +88,8 @@ std::string EcGuiCmd::getFieldType() const
 
 void EcGuiCmd::readCommand()
 {
-    if(getFieldType() == "Start motors")
+    if(getFieldType() == "Start devices")
     {
-        _devicecontrol->setTabEnabled(0,true);
-        _devicecontrol->setTabEnabled(1,false);
-        _devicecontrol->setTabEnabled(2,false);
-        _devicecontrol->setCurrentIndex(0);
-
         _ctrl_cmd_type=ClientCmdType::START;
         _tabcontrol->setEnabled(true);
         _mode_type_combobox->setEnabled(true);
@@ -102,31 +97,13 @@ void EcGuiCmd::readCommand()
         _notallbtn->setEnabled(!_motor_start_req); // motors already started.
         _allbtn->setEnabled(!_motor_start_req); // motors already started.
     }
-    else if(getFieldType() == "Stop motors")
+    else if(getFieldType() == "Stop devices")
     {
-
-        _devicecontrol->setTabEnabled(0,true);
-        _devicecontrol->setTabEnabled(1,false);
-        _devicecontrol->setTabEnabled(2,false);
-        _devicecontrol->setCurrentIndex(0);
-
         _ctrl_cmd_type=ClientCmdType::STOP;
         _mode_type_combobox->setEnabled(false);
         _tabcontrol->setEnabled(false);
         _notallbtn->setEnabled(false);
         _allbtn->setEnabled(false);
-    }
-    else if(getFieldType() == "Start valves"){
-        _devicecontrol->setTabEnabled(0,false);
-        _devicecontrol->setTabEnabled(1,true);
-        _devicecontrol->setTabEnabled(2,false);
-        _devicecontrol->setCurrentIndex(1);
-    }
-    else if(getFieldType() == "Stop valves"){
-        _devicecontrol->setTabEnabled(0,false);
-        _devicecontrol->setTabEnabled(1,true);
-        _devicecontrol->setTabEnabled(2,false);
-        _devicecontrol->setCurrentIndex(1);
     }
     else
     {
