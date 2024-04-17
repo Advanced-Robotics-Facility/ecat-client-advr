@@ -27,7 +27,7 @@ QWidget * LoadUiFile(QWidget * parent)
 }
 }
 
-SliderWidget::SliderWidget (const QString&  joint_name,
+SliderWidget::SliderWidget (const QString&  name,
                             double init_value,
                             const QString&  min,
                             const QString&  max,
@@ -46,65 +46,60 @@ SliderWidget::SliderWidget (const QString&  joint_name,
 
     setLayout(layout);
 
-    _jname = findChild<QLabel *>("JointLabel");
-    _jname->installEventFilter(this);
-    _jname->setText(joint_name);
-    _joint_name = joint_name.toStdString();
-    
-    _min = findChild<QLabel *>("Min");
-    _min->setText(min+"   "+unit+"       ");
+    auto name_label = findChild<QLabel *>("SliderLabel");
+    name_label->installEventFilter(this);
+    name_label->setText(name);
+    _slider_name = name.toStdString();
 
-    _max = findChild<QLabel *>("Max");
-    _max->setText(max+"   "+unit+"       ");
-
-    _unit = findChild<QLabel *>("Unit");
-    _unit->setText(unit);
+    _slider_enabled = findChild<QCheckBox *>("SliderEnabled");
 
     _slider_spinbox_fct=100;
+    
+    auto min_label = findChild<QLabel *>("Min");
+    min_label->setText(min+"   "+unit+"       ");
+
+    auto max_label = findChild<QLabel *>("Max");
+    max_label->setText(max+"   "+unit+"       ");
+
+    auto unit_label = findChild<QLabel *>("Unit");
+    unit_label->setText(unit);
 
     _valueslider=findChild<QSlider *>("ValueSlider");
     _valueslider->setMaximum(_slider_spinbox_fct*max.toDouble());
     _valueslider->setMinimum(_slider_spinbox_fct*min.toDouble());
     _valueslider->setTickInterval(1);
 
-    if(init_value>max.toDouble())
-    {
+    if(init_value>max.toDouble()){
         _valueslider->setValue(max.toDouble());
     }
-    else if(init_value<min.toDouble())
-    {
+    else if(init_value<min.toDouble()){
         _valueslider->setValue(min.toDouble());
     }
-    else
-    {
+    else{
         _valueslider->setValue(init_value);
     }
+
+    // connect slider to spinbox
+    connect(_valueslider, &QSlider::valueChanged,
+             std::bind(&SliderWidget::on_slider_changed, this));
+
 
     _valuebox=findChild<QDoubleSpinBox *>("ValueBox");
     _valuebox->setMaximum(max.toDouble());
     _valuebox->setMinimum(min.toDouble());
 
-    if(init_value>max.toDouble())
-    {
+    if(init_value>max.toDouble()){
         _valuebox->setValue(max.toDouble());
     }
-    else if(init_value<min.toDouble())
-    {
+    else if(init_value<min.toDouble()){
         _valuebox->setValue(min.toDouble());
     }
-    else
-    {
+    else{
         _valuebox->setValue(init_value);
     }
 
     _valuebox->setDecimals(6);
-
     _valuebox->setSingleStep(1/((double)_slider_spinbox_fct));
-
-    // connect slider to spinbox
-     connect(_valueslider, &QSlider::valueChanged,
-            std::bind(&SliderWidget::on_slider_changed, this)
-            );
 
      // connect spinbox to slider
 
@@ -114,7 +109,6 @@ SliderWidget::SliderWidget (const QString&  joint_name,
            std::bind(&SliderWidget::on_spinbox_changed, this)
            );
 
-    _joint_enabled = findChild<QCheckBox *>("JointEnabled");
 
     _slider_filtered=std::make_shared<SecondOrderFilter<double>>(12.0,1.0,1.0,init_value);
 
@@ -186,27 +180,27 @@ void SliderWidget::enable_slider()
 
 void SliderWidget::enable_joint_enabled()
 {
-    _joint_enabled->setEnabled(true);
+    _slider_enabled->setEnabled(true);
 }
 void SliderWidget::disable_joint_enabled()
 {
-    _joint_enabled->setEnabled(false);
+    _slider_enabled->setEnabled(false);
 }
 
 
 bool SliderWidget::is_joint_enabled()
 {
-    return _joint_enabled->isChecked();
+    return _slider_enabled->isChecked();
 }
 
 void SliderWidget::check_joint_enabled()
 {
-     _joint_enabled->setChecked(true);
+     _slider_enabled->setChecked(true);
 }
 
 void SliderWidget::uncheck_joint_enabled()
 {
-    _joint_enabled->setChecked(false);
+    _slider_enabled->setChecked(false);
 }
 
 double SliderWidget::get_spinbox_value()
@@ -224,9 +218,9 @@ void SliderWidget::set_actual_slider_value(double actual_slider_value)
     _actual_slider_value=actual_slider_value;
 }
 
-std::string SliderWidget::get_joint_name()
+std::string SliderWidget::get_slider_name()
 {
-    return _joint_name;
+    return _slider_name;
 }
 
 SecondOrderFilter<double>::Ptr SliderWidget::get_filer()

@@ -13,7 +13,7 @@ class SliderWidget : public QWidget
 Q_OBJECT
 public:
 
-    explicit SliderWidget (const QString& joint_name,
+    explicit SliderWidget (const QString& name,
                            double init_value,
                            const QString& min,
                            const QString& max,
@@ -37,7 +37,7 @@ public:
     bool is_joint_enabled();
     void check_joint_enabled();
     void uncheck_joint_enabled();
-    std::string get_joint_name();
+    std::string get_slider_name();
     SliderWidgetCalib *get_wid_calibration();
 
     SecondOrderFilter<double>::Ptr get_filer();
@@ -50,24 +50,20 @@ private:
     void on_spinbox_changed();
 
     bool _callback_enabled;
-    QLabel *_jname;
-    QLabel *_min;
-    QLabel *_max;
-    QLabel *_unit;
 
     QHBoxLayout* _pid_layout;
 
 
     QSlider *          _valueslider;
     QDoubleSpinBox *   _valuebox;
-    QCheckBox* _joint_enabled;
+    QCheckBox* _slider_enabled;
     int _slider_spinbox_fct;
 
     double _actual_slider_value;
 
     SecondOrderFilter<double>::Ptr _slider_filtered;
     SliderWidgetCalib *_wid_calib;
-    std::string _joint_name;
+    std::string _slider_name;
     
 };
 
