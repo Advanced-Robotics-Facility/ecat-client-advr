@@ -22,13 +22,9 @@ public:
                            std::vector<double> gains,
                            QWidget * parent = 0);
 
-    void setRange(std::vector<double> min,
-                  std::vector<double> max);
 
-    void setInitialValue(std::vector<double> x_0);
 
     double get_spinbox_value();
-
     double get_actual_slider_value();
     void   set_actual_slider_value(double actual_slider_value);
     void align_spinbox(double value);
@@ -37,14 +33,10 @@ public:
     void enable_slider();
     void enable_joint_enabled();
     void disable_joint_enabled();
-    void hide_joint_enabled();
-    void unhide_joint_enabled();
+
     bool is_joint_enabled();
     void check_joint_enabled();
     void uncheck_joint_enabled();
-    bool is_joint_braked();
-    void check_joint_braked();
-    void uncheck_joint_braked();
     std::string get_joint_name();
     SliderWidgetCalib *get_wid_calibration();
 
@@ -58,7 +50,7 @@ private:
     void on_spinbox_changed();
 
     bool _callback_enabled;
-    QLabel *_jname,*_j_braked;
+    QLabel *_jname;
     QLabel *_min;
     QLabel *_max;
     QLabel *_unit;
@@ -69,7 +61,6 @@ private:
     QSlider *          _valueslider;
     QDoubleSpinBox *   _valuebox;
     QCheckBox* _joint_enabled;
-    QCheckBox* _joint_is_braked;
     int _slider_spinbox_fct;
 
     double _actual_slider_value;

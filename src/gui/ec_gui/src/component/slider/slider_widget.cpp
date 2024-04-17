@@ -51,8 +51,6 @@ SliderWidget::SliderWidget (const QString&  joint_name,
     _jname->setText(joint_name);
     _joint_name = joint_name.toStdString();
     
-    _j_braked = findChild<QLabel *>("joint_braked");
-
     _min = findChild<QLabel *>("Min");
     _min->setText(min+"   "+unit+"       ");
 
@@ -117,7 +115,6 @@ SliderWidget::SliderWidget (const QString&  joint_name,
            );
 
     _joint_enabled = findChild<QCheckBox *>("JointEnabled");
-    _joint_is_braked = findChild<QCheckBox *>("joint_is_braked");
 
     _slider_filtered=std::make_shared<SecondOrderFilter<double>>(12.0,1.0,1.0,init_value);
 
@@ -137,24 +134,22 @@ SliderWidget::SliderWidget (const QString&  joint_name,
 void SliderWidget::on_slider_changed()
 {
 
-double value = _valueslider->value();
-    
-// update spinbox
-_valuebox->setValue(value/((double)_slider_spinbox_fct));
+    double value = _valueslider->value();
+        
+    // update spinbox
+    _valuebox->setValue(value/((double)_slider_spinbox_fct));
 
 }
 
 void SliderWidget::on_spinbox_changed()
 {
+    double value = _valuebox->value();
+    _valuebox->setValue(value);
 
-double value = _valuebox->value();
-_valuebox->setValue(value);
-
-// update slider
-_valueslider->blockSignals(true);
-_valueslider->setValue(int(_slider_spinbox_fct*value));
-_valueslider->blockSignals(false);
-    
+    // update slider
+    _valueslider->blockSignals(true);
+    _valueslider->setValue(int(_slider_spinbox_fct*value));
+    _valueslider->blockSignals(false);   
 }
 void SliderWidget::align_spinbox(double value)
 {
@@ -192,28 +187,12 @@ void SliderWidget::enable_slider()
 void SliderWidget::enable_joint_enabled()
 {
     _joint_enabled->setEnabled(true);
-    _joint_is_braked->setEnabled(true);
 }
 void SliderWidget::disable_joint_enabled()
 {
     _joint_enabled->setEnabled(false);
-    _joint_is_braked->setEnabled(false);
 }
 
-
-void SliderWidget::hide_joint_enabled()
-{
-    _joint_enabled->setHidden(true);
-    _joint_is_braked->setHidden(true);
-    _j_braked->setText("                   ");
-}
-
-void SliderWidget::unhide_joint_enabled()
-{
-    _joint_enabled->setHidden(false);
-    _joint_is_braked->setHidden(false);
-    _j_braked->setText("braked");
-}
 
 bool SliderWidget::is_joint_enabled()
 {
@@ -228,21 +207,6 @@ void SliderWidget::check_joint_enabled()
 void SliderWidget::uncheck_joint_enabled()
 {
     _joint_enabled->setChecked(false);
-}
-
-bool SliderWidget::is_joint_braked()
-{
-    return _joint_is_braked->isChecked();
-}
-
-void SliderWidget::check_joint_braked()
-{
-     _joint_is_braked->setChecked(true);
-}
-
-void SliderWidget::uncheck_joint_braked()
-{
-    _joint_is_braked->setChecked(false);
 }
 
 double SliderWidget::get_spinbox_value()
@@ -270,66 +234,6 @@ SecondOrderFilter<double>::Ptr SliderWidget::get_filer()
    return _slider_filtered;
 }
 
-void SliderWidget::setRange(std::vector<double> min, std::vector<double> max)
-{
-//    if(min.size() != _widget_vec.size())
-//    {
-//        throw std::invalid_argument("min.size() != joint num");
-//    }
-
-//    if(max.size() != _widget_vec.size())
-//    {
-//        throw std::invalid_argument("max.size() != joint num");
-//    }
-
-//    double global_max = -1.;
-
-//    for(int i = 0; i < _widget_vec.size(); i++)
-//    {
-//        _widget_vec[i].min = min[i];
-//        _widget_vec[i].max = max[i];
-
-//        global_max = std::max(global_max, std::fabs(min[i]));
-//        global_max = std::max(global_max, std::fabs(max[i]));
-//    }
-
-//    _max_stiffness_spinbox->setValue(global_max);
-//    on_max_stiffness_changed();
-}
-
-void SliderWidget::setInitialValue(std::vector<double> x_0)
-{
-//    _callback_enabled = false;
-    
-//    if(x_0.size() != _widget_vec.size())
-//    {
-//        throw std::invalid_argument("x_0.size() != joint num");
-//    }
-    
-//    on_unlockall_pressed();
-
-//    auto compare_abs = [](double a, double b)
-//    {
-//        return std::fabs(a) < std::fabs(b);
-//    };
-    
-//    double max_val = *(std::max_element(x_0.begin(), x_0.end(), compare_abs));
-//    double curr_max = _max_stiffness_spinbox->value();
-    
-//    if(curr_max < max_val)
-//    {
-//        _max_stiffness_spinbox->setValue(max_val);
-//        on_max_stiffness_changed();
-//    }
-
-//    for(int i = 0; i < _widget_vec.size(); i++)
-//    {
-//        _widget_vec[i].spinbox->setValue(x_0[i]);
-//        on_spinbox_changed(i);
-//    }
-    
-//    _callback_enabled = true;
-}
 
 SliderWidgetCalib* SliderWidget::get_wid_calibration()
 {

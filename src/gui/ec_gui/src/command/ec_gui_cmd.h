@@ -57,7 +57,6 @@ private:
   QDialogButtonBox  * _cmd_manager;
   QPushButton * _applybtn;
   QPushButton *_notallbtn,*_allbtn;
-  QPushButton *_notallbtn_brake,*_allbtn_brake;
 
   EcIface::Ptr _client;
   EcGuiSlider::Ptr _ec_gui_slider;
