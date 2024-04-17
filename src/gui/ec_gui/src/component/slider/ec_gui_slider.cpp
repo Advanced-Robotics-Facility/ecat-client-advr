@@ -28,28 +28,25 @@ void EcGuiSlider::create_sliders(std::map<int ,joint_info_t > joint_info_map)
         std::vector<std::string> pid_string={"gain_0","gain_1","gain_2","gain_3","gain_4"};
 
         auto wid_p = new SliderWidget(jname,joint_info_s.actual_pos,QString::number(joint_info_s.min_pos),QString::number(joint_info_s.max_pos),"[rad]",pid_string,gains,this);
-        wid_p->setMaximumHeight(300);
         _slider_map.position_sw_map[slave_id]=wid_p;
 
+        auto wid_calib= new SliderWidgetCalib("",gains,pid_string);
+
         auto wid_v = new SliderWidget(jname,0.0,QString::number(-joint_info_s.max_vel),QString::number(joint_info_s.max_vel),"[rad/s]",pid_string,gains,this);
-        wid_v->setMaximumHeight(300);
         _slider_map.velocity_sw_map[slave_id]=wid_v;
 
         std::vector<double> gains_pt={0,0};
         std::vector<std::string> pid_string_pt={"gain_0","gain_1"};
         auto wid_p_t = new SliderWidget(jname,joint_info_s.actual_pos,QString::number(joint_info_s.min_pos),QString::number(joint_info_s.max_pos),"[rad]",pid_string_pt,gains_pt,this);
-        wid_p_t->setMaximumHeight(300);
         _slider_map.position_t_sw_map[slave_id]=wid_p_t;
 
         std::vector<double> gains_t={0,0,0};
         std::vector<std::string> pid_string_t={"gain_2","gain_3","gain_4"};
         auto wid_t = new SliderWidget("",0.0,QString::number(-joint_info_s.max_torq/100),QString::number(joint_info_s.max_torq/100),"[Nm]",pid_string_t,gains_t,this);
-        wid_t->setMaximumHeight(300);
         _slider_map.torque_sw_map[slave_id]=wid_t;
 
 
         auto wid_cc = new SliderWidget(jname,0.0,QString::number(-2.0),QString::number(2.0),"[A]",pid_string,gains,this);
-        wid_cc->setMaximumHeight(300);
         _slider_map.current_sw_map[slave_id]=wid_cc;
 
         _sliders_poslayout->addWidget(wid_p,0, Qt::AlignTop);
