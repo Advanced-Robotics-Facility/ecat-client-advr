@@ -178,27 +178,32 @@ void SliderWidget::enable_slider()
     _valuebox->setEnabled(true);
 }
 
-void SliderWidget::enable_joint_enabled()
+void SliderWidget::hide_slider_enabled()
+{
+    _slider_enabled->hide();
+}
+
+void SliderWidget::enable_slider_enabled()
 {
     _slider_enabled->setEnabled(true);
 }
-void SliderWidget::disable_joint_enabled()
+void SliderWidget::disable_slider_enabled()
 {
     _slider_enabled->setEnabled(false);
 }
 
 
-bool SliderWidget::is_joint_enabled()
+bool SliderWidget::is_slider_enabled()
 {
     return _slider_enabled->isChecked();
 }
 
-void SliderWidget::check_joint_enabled()
+void SliderWidget::check_slider_enabled()
 {
      _slider_enabled->setChecked(true);
 }
 
-void SliderWidget::uncheck_joint_enabled()
+void SliderWidget::uncheck_slider_enabled()
 {
     _slider_enabled->setChecked(false);
 }

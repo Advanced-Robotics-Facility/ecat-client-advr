@@ -192,7 +192,7 @@ void EcGuiCmd::onNotAllCmdReleased()
     /* Uncheck all checkboxes of Joint WID */
     for (auto& [slave_id, slider_wid]:_actual_sw_map_selected)
     {
-        slider_wid->uncheck_joint_enabled();
+        slider_wid->uncheck_slider_enabled();
     }
 
 }
@@ -202,7 +202,7 @@ void EcGuiCmd::onAllCmdReleased()
     /* Check all checkboxes of Slider WID */
     for (auto& [slave_id, slider_wid]:_actual_sw_map_selected)
     {
-        slider_wid->check_joint_enabled();
+        slider_wid->check_slider_enabled();
     }
 
 }
@@ -221,7 +221,7 @@ void EcGuiCmd::fill_start_stop_cmd()
     _motors_selected = false;
     for (auto& [slave_id, slider_wid]:_actual_sw_map_selected)
     {
-        if(slider_wid->is_joint_enabled())
+        if(slider_wid->is_slider_enabled())
         {
             _motors_selected |= true;
             if(_ctrl_cmd_type==ClientCmdType::STOP)
@@ -381,7 +381,7 @@ void EcGuiCmd::onApplyCmdReleased()
 
                 for (auto& [slave_id, slider_wid]:_actual_sw_map_selected)
                 {
-                    slider_wid->disable_joint_enabled();
+                    slider_wid->disable_slider_enabled();
                 }
             }
         }

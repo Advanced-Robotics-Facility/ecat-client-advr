@@ -301,7 +301,7 @@ void EcGuiStart::scan_device()
                 { "motor_vel", 0.0},
                 { "Max_vel",   2.0},
                 { "torque",    0.0},
-                { "Max_tor",   5.0}
+                { "Max_tor",   200.0}
             };
             for ( auto &[esc_id, type, pos] : _ec_wrapper_info.device_info )
             {

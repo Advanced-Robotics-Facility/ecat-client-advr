@@ -31,12 +31,13 @@ public:
     void align_spinbox();
     void disable_slider();
     void enable_slider();
-    void enable_joint_enabled();
-    void disable_joint_enabled();
+    void hide_slider_enabled();
+    void enable_slider_enabled();
+    void disable_slider_enabled();
 
-    bool is_joint_enabled();
-    void check_joint_enabled();
-    void uncheck_joint_enabled();
+    bool is_slider_enabled();
+    void check_slider_enabled();
+    void uncheck_slider_enabled();
     std::string get_slider_name();
     SliderWidgetCalib *get_wid_calibration();
 
