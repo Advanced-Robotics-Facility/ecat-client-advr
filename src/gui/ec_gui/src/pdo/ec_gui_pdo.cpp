@@ -39,6 +39,7 @@ _ec_gui_slider(ec_gui_slider)
     _slider_map=_ec_gui_slider->get_sliders();
     
     _motor_rx_v.resize(MotorPdoRx::pdo_size);
+    _motor_tx_v.resize(MotorPdoTx::pdo_size);
     _pow_rx_v.resize(PowPdoRx::pdo_size);
     _ft_rx_v.resize(FtPdoRx::pdo_size);
     _imu_rx_v.resize(ImuPdoRx::pdo_size);
@@ -198,6 +199,8 @@ void EcGuiPdo::read()
     read_valve_status();
     read_pump_status();
     /************************************* READ PDOs  ********************************************/
+
+    read_motor_ref();
 }
 
 void EcGuiPdo::read_motor_status()
@@ -418,57 +421,83 @@ double  EcGuiPdo::filtering(SecondOrderFilter<double>::Ptr filter,double actual_
 
     return value_filtered;
 }
-
-
 void EcGuiPdo::write()
 {
-    _motors_ref.clear();
+    write_motor_pdo();
+    write_valve_pdo();
+    write_pump_pdo();
+}
+
+void EcGuiPdo::write_motor_pdo()
+{
     _motor_ref_flags = RefFlags::FLAG_MULTI_REF;
     
     for (auto& [slave_id, slider_wid]:_slider_map.actual_sw_map_selected)
     {
-        _gains.clear();
-        auto gains_calib_selected=_slider_map.actual_sw_map_selected[slave_id]->get_wid_calibration();
+        if(slider_wid->is_slider_enabled()){
+            _gains.clear();
+            auto gains_calib_selected=_slider_map.actual_sw_map_selected[slave_id]->get_wid_calibration();
 
-        for(int calib_index=0; calib_index < gains_calib_selected->get_slider_numb(); calib_index++)
-        {
-            double gain_filtered=filtering(gains_calib_selected->get_slider_filter(calib_index),gains_calib_selected->get_slider_value(calib_index));
-            _gains.push_back(gain_filtered);
-        }
-        if(_ctrl_cmd==0xD4)
-        {
-            _gains.erase(_gains.begin()+1);
-            auto gains_t_calib= _slider_map.torque_sw_map[slave_id]->get_wid_calibration();
-            for(int calib_index=0; calib_index < gains_t_calib->get_slider_numb(); calib_index++)
+            for(int calib_index=0; calib_index < gains_calib_selected->get_slider_numb(); calib_index++)
             {
-                double gain_t_filtered=filtering(gains_t_calib->get_slider_filter(calib_index),gains_t_calib->get_slider_value(calib_index));
-                _gains.push_back(gain_t_filtered);
+                double gain_filtered=filtering(gains_calib_selected->get_slider_filter(calib_index),gains_calib_selected->get_slider_value(calib_index));
+                _gains.push_back(gain_filtered);
             }
-        }
-        else
-        {
-            _gains.push_back(0);
-            _gains.push_back(0);
-        }
+            if(_ctrl_cmd==0xD4)
+            {
+                auto gains_t_calib= _slider_map.torque_sw_map[slave_id]->get_wid_calibration();
+                for(int calib_index=0; calib_index < gains_t_calib->get_slider_numb(); calib_index++)
+                {
+                    double gain_t_filtered=filtering(gains_t_calib->get_slider_filter(calib_index),gains_t_calib->get_slider_value(calib_index));
+                    _gains.push_back(gain_t_filtered);
+                }
+            }
 
-        double pos_ref= filtering(_slider_map.position_sw_map[slave_id]->get_filer(),_slider_map.position_sw_map[slave_id]->get_spinbox_value());
-        if(_ctrl_cmd==0xD4)
-        {
-            pos_ref= filtering(_slider_map.position_t_sw_map[slave_id]->get_filer(),_slider_map.position_t_sw_map[slave_id]->get_spinbox_value());
+            double pos_ref= filtering(_slider_map.position_sw_map[slave_id]->get_filer(),_slider_map.position_sw_map[slave_id]->get_spinbox_value());
+            if(_ctrl_cmd==0xD4)
+            {
+                pos_ref= filtering(_slider_map.position_t_sw_map[slave_id]->get_filer(),_slider_map.position_t_sw_map[slave_id]->get_spinbox_value());
+            }
+
+            double vel_ref= filtering(_slider_map.velocity_sw_map[slave_id]->get_filer(),_slider_map.velocity_sw_map[slave_id]->get_spinbox_value());
+            double tor_ref= filtering(_slider_map.torque_sw_map[slave_id]->get_filer(),_slider_map.torque_sw_map[slave_id]->get_spinbox_value());
+                                    
+            MotorPdoTx::pdo_t   references{_ctrl_cmd, pos_ref, vel_ref, tor_ref, _gains[0], _gains[1],_gains[2], _gains[3], _gains[4],1,0,0};
+            //            ID      CTRL_MODE, POS_REF, VEL_RF, TOR_REF,  GAIN_1,    GAIN_2,   GAIN_3,   GAIN_4,    GAIN_5, OP, IDX,AUX  OP->1 means NO_OP
+            _motors_ref[slave_id]=references;
+
+            _first_send=false; // Note: not remove from here, used for all filters.
         }
-
-        double vel_ref= filtering(_slider_map.velocity_sw_map[slave_id]->get_filer(),_slider_map.velocity_sw_map[slave_id]->get_spinbox_value());
-        double tor_ref= filtering(_slider_map.torque_sw_map[slave_id]->get_filer(),_slider_map.torque_sw_map[slave_id]->get_spinbox_value());
-                                   
-        MotorPdoTx::pdo_t   references{_ctrl_cmd, pos_ref, vel_ref, tor_ref, _gains[0], _gains[1],_gains[2], _gains[3], _gains[4],1,0,0};
-        //            ID      CTRL_MODE, POS_REF, VEL_RF, TOR_REF,  GAIN_1,    GAIN_2,   GAIN_3,   GAIN_4,    GAIN_5, OP, IDX,AUX  OP->1 means NO_OP
-        _motors_ref[slave_id]=references;
-
-        _first_send=false; // Note: not remove from here, used for all filters.
     }
     if(!_motors_ref.empty())
     {
        _client->set_motors_references(_motor_ref_flags, _motors_ref);
     }
+}
+
+void EcGuiPdo::read_motor_ref()
+{
+    for ( const auto &[esc_id, references] : _motors_ref){
+        std::string esc_id_name="motor_id_ref_"+std::to_string(esc_id);
+        QTreeWidgetItem *topLevel=nullptr;
+
+        topLevel=search_slave_into_treewid(esc_id_name);
+        if(!topLevel){
+             _motor_ref_pdo_fields=get_pdo_fields(MotorPdoTx::name);
+            topLevel= initial_setup(esc_id_name,_motor_ref_pdo_fields);
+        }
+        if(MotorPdoTx::make_vector_from_tuple(references,_motor_tx_v)){
+            fill_data(esc_id_name,topLevel,_motor_ref_pdo_fields,_motor_tx_v);
+        }
+    }
+}
+
+void EcGuiPdo::write_valve_pdo()
+{
+
+}
+void EcGuiPdo::write_pump_pdo()
+{
+
 }
 /********************************************************* WRITE PDO***********************************************************************************************/

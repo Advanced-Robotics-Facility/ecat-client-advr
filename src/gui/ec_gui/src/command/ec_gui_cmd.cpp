@@ -243,7 +243,6 @@ void EcGuiCmd::fill_start_stop_cmd()
                     }
                     if(_ctrl_cmd==0xD4)
                     {
-                        _gains.erase(_gains.begin()+1);
                         joint_calib_selected=_slider_map.torque_sw_map[slave_id]->get_wid_calibration();
                         for(int calib_index=0; calib_index < joint_calib_selected->get_slider_numb(); calib_index++)
                         {

@@ -190,6 +190,11 @@ void EcGuiWrapper::onSendStopBtnReleased()
     _ec_gui_slider->reset_sliders();
 
     _send_ref = _ec_gui_cmd->get_cmd_sts(_ctrl_cmd);
+
+#ifdef TEST_GUI 
+    _send_ref = true;
+#endif   
+
     _ec_gui_pdo->set_ctrl_mode(_ctrl_cmd);
     
     if((_send_stop_btn->text()=="Send")&&(_send_ref)){
@@ -228,7 +233,8 @@ void EcGuiWrapper::onSendStopBtnReleased()
 
 void EcGuiWrapper::send()
 {
-    if(_ec_gui_cmd->get_cmd_sts(_ctrl_cmd)){ // stop motors command
+    //if(_ec_gui_cmd->get_cmd_sts(_ctrl_cmd)){ // stop motors command
+    if(_send_ref){
         _ec_gui_pdo->write();
     }
     else{

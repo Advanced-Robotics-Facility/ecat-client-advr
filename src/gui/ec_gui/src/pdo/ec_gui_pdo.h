@@ -47,7 +47,7 @@ private:
       double _s_receive_time;
       float _currentHue = 0.0;
       
-      QList<QString> _motor_pdo_fields;
+      QList<QString> _motor_pdo_fields,_motor_ref_pdo_fields;
       QList<QString> _pow_pdo_fields;
       QList<QString> _ft6_pdo_fields;
       QList<QString> _imu_pdo_fields;                                         
@@ -66,7 +66,7 @@ private:
       // last received pump data
       PumpStatusMap _pump_status_map;
     
-      std::vector<float> _motor_rx_v;
+      std::vector<float> _motor_rx_v,_motor_tx_v;
       std::vector<float> _pow_rx_v;
       std::vector<float> _ft_rx_v;
       std::vector<float> _imu_rx_v;
@@ -100,6 +100,11 @@ private:
       RefFlags _motor_ref_flags;
       std::vector<float> _gains;
       float _ctrl_cmd;
+
+      void write_motor_pdo();
+      void read_motor_ref();
+      void write_valve_pdo();
+      void write_pump_pdo();
     //************************ WRITE PDO ******************************
 
 };
