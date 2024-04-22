@@ -109,6 +109,9 @@ void EcIface::set_motors_references(const RefFlags motor_ref_flags,const MotorRe
         else if(ret==-2){
             DPRINTF("Got an empy motors references map\n");
         }
+        else if(ret==-3){
+            DPRINTF("Got an different motors references size\n");
+        }
         else{
             DPRINTF("Esc id [%d] is not a motor\n",ret);
         }
@@ -160,6 +163,9 @@ void EcIface::set_valves_references(const RefFlags valve_ref_flags,const ValveRe
         else if(ret==-2){
             DPRINTF("Got an empy valves references map\n");
         }
+        else if(ret==-3){
+            DPRINTF("Got an different valves references size\n");
+        }
         else{
             DPRINTF("Esc id [%d] is not a valve\n",ret);
         }
@@ -188,6 +194,9 @@ void EcIface::set_pumps_references(const RefFlags pump_ref_flags,const PumpRefer
         }
         else if(ret==-2){
             DPRINTF("Got an empy pumps references map\n");
+        }
+        else if(ret==-3){
+            DPRINTF("Got an different pumps references size\n");
         }
         else{
             DPRINTF("Esc id [%d] is not a pump\n",ret);
@@ -258,6 +267,8 @@ int32_t EcIface::check_maps(const std::map<int32_t,T>& map1,const std::map<int32
         return -1;
     else if(map2.size()==0)
         return -2;
+    else if(map1.size()!=map2.size())
+        return -3;
     else{
         for ( const auto &[esc_id,tx_pdo] : map2) {
             if(map1.count(esc_id)==0){

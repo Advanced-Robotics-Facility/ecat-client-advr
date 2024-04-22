@@ -202,9 +202,8 @@ void EcGuiWrapper::onSendStopBtnReleased()
         _period_combobox->setEnabled(false);
         _send_stop_btn->setText("Stop");
         _first_send=true;
-
         _ec_gui_slider->enable_sliders();
-
+        _ec_gui_pdo->clear_write();
     }
     else{
         _send_timer->stop();
@@ -227,6 +226,7 @@ void EcGuiWrapper::onSendStopBtnReleased()
     }
     
     _ec_gui_pdo->set_filter(_first_send,_time_ms);
+
 }
 
 

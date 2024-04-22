@@ -428,49 +428,58 @@ void EcGuiPdo::write()
     write_pump_pdo();
 }
 
+void EcGuiPdo::clear_write()
+ {
+    clear_motor_ref();
+ }
+
 void EcGuiPdo::write_motor_pdo()
 {
     _motor_ref_flags = RefFlags::FLAG_MULTI_REF;
     
     for (auto& [slave_id, slider_wid]:_slider_map.actual_sw_map_selected)
     {
+        int ctrl_cmd_ref=0x00;
         if(slider_wid->is_slider_enabled()){
-            _gains.clear();
-            auto gains_calib_selected=_slider_map.actual_sw_map_selected[slave_id]->get_wid_calibration();
-
-            for(int calib_index=0; calib_index < gains_calib_selected->get_slider_numb(); calib_index++)
-            {
-                double gain_filtered=filtering(gains_calib_selected->get_slider_filter(calib_index),gains_calib_selected->get_slider_value(calib_index));
-                _gains.push_back(gain_filtered);
-            }
-            if(_ctrl_cmd==0xD4)
-            {
-                auto gains_t_calib= _slider_map.torque_sw_map[slave_id]->get_wid_calibration();
-                for(int calib_index=0; calib_index < gains_t_calib->get_slider_numb(); calib_index++)
-                {
-                    double gain_t_filtered=filtering(gains_t_calib->get_slider_filter(calib_index),gains_t_calib->get_slider_value(calib_index));
-                    _gains.push_back(gain_t_filtered);
-                }
-            }
-
-            double pos_ref= filtering(_slider_map.position_sw_map[slave_id]->get_filer(),_slider_map.position_sw_map[slave_id]->get_spinbox_value());
-            if(_ctrl_cmd==0xD4)
-            {
-                pos_ref= filtering(_slider_map.position_t_sw_map[slave_id]->get_filer(),_slider_map.position_t_sw_map[slave_id]->get_spinbox_value());
-            }
-
-            double vel_ref= filtering(_slider_map.velocity_sw_map[slave_id]->get_filer(),_slider_map.velocity_sw_map[slave_id]->get_spinbox_value());
-            double tor_ref= filtering(_slider_map.torque_sw_map[slave_id]->get_filer(),_slider_map.torque_sw_map[slave_id]->get_spinbox_value());
-                                    
-            MotorPdoTx::pdo_t   references{_ctrl_cmd, pos_ref, vel_ref, tor_ref, _gains[0], _gains[1],_gains[2], _gains[3], _gains[4],1,0,0};
-            //            ID      CTRL_MODE, POS_REF, VEL_RF, TOR_REF,  GAIN_1,    GAIN_2,   GAIN_3,   GAIN_4,    GAIN_5, OP, IDX,AUX  OP->1 means NO_OP
-            _motors_ref[slave_id]=references;
-
-            _first_send=false; // Note: not remove from here, used for all filters.
+            ctrl_cmd_ref=_ctrl_cmd;
         }
+
+        _gains.clear();
+        auto gains_calib_selected=_slider_map.actual_sw_map_selected[slave_id]->get_wid_calibration();
+
+        for(int calib_index=0; calib_index < gains_calib_selected->get_slider_numb(); calib_index++)
+        {
+            double gain_filtered=filtering(gains_calib_selected->get_slider_filter(calib_index),gains_calib_selected->get_slider_value(calib_index));
+            _gains.push_back(gain_filtered);
+        }
+        if(_ctrl_cmd==0xD4)
+        {
+            auto gains_t_calib= _slider_map.torque_sw_map[slave_id]->get_wid_calibration();
+            for(int calib_index=0; calib_index < gains_t_calib->get_slider_numb(); calib_index++)
+            {
+                double gain_t_filtered=filtering(gains_t_calib->get_slider_filter(calib_index),gains_t_calib->get_slider_value(calib_index));
+                _gains.push_back(gain_t_filtered);
+            }
+        }
+
+        double pos_ref= filtering(_slider_map.position_sw_map[slave_id]->get_filer(),_slider_map.position_sw_map[slave_id]->get_spinbox_value());
+        if(_ctrl_cmd==0xD4)
+        {
+            pos_ref= filtering(_slider_map.position_t_sw_map[slave_id]->get_filer(),_slider_map.position_t_sw_map[slave_id]->get_spinbox_value());
+        }
+
+        double vel_ref= filtering(_slider_map.velocity_sw_map[slave_id]->get_filer(),_slider_map.velocity_sw_map[slave_id]->get_spinbox_value());
+        double tor_ref= filtering(_slider_map.torque_sw_map[slave_id]->get_filer(),_slider_map.torque_sw_map[slave_id]->get_spinbox_value());
+                  
+        MotorPdoTx::pdo_t   references{ctrl_cmd_ref, pos_ref, vel_ref, tor_ref, _gains[0], _gains[1],_gains[2], _gains[3], _gains[4],1,0,0};
+        //            ID      CTRL_MODE, POS_REF, VEL_RF, TOR_REF,  GAIN_1,    GAIN_2,   GAIN_3,   GAIN_4,    GAIN_5, OP, IDX,AUX  OP->1 means NO_OP
+        _motors_ref[slave_id]=references;
     }
     if(!_motors_ref.empty())
     {
+        if(_first_send){
+            _first_send=false; // Note: not remove from here, used for all filters.
+        }
        _client->set_motors_references(_motor_ref_flags, _motors_ref);
     }
 }
@@ -478,18 +487,34 @@ void EcGuiPdo::write_motor_pdo()
 void EcGuiPdo::read_motor_ref()
 {
     for ( const auto &[esc_id, references] : _motors_ref){
-        std::string esc_id_name="motor_id_ref_"+std::to_string(esc_id);
-        QTreeWidgetItem *topLevel=nullptr;
+        if(_slider_map.actual_sw_map_selected[esc_id]->is_slider_enabled()){
+            std::string esc_id_name="motor_id_ref_"+std::to_string(esc_id);
+            QTreeWidgetItem *topLevel=nullptr;
 
-        topLevel=search_slave_into_treewid(esc_id_name);
-        if(!topLevel){
-             _motor_ref_pdo_fields=get_pdo_fields(MotorPdoTx::name);
-            topLevel= initial_setup(esc_id_name,_motor_ref_pdo_fields);
-        }
-        if(MotorPdoTx::make_vector_from_tuple(references,_motor_tx_v)){
-            fill_data(esc_id_name,topLevel,_motor_ref_pdo_fields,_motor_tx_v);
+            topLevel=search_slave_into_treewid(esc_id_name);
+            if(!topLevel){
+                _motor_ref_pdo_fields=get_pdo_fields(MotorPdoTx::name);
+                topLevel= initial_setup(esc_id_name,_motor_ref_pdo_fields);
+            }
+            if(MotorPdoTx::make_vector_from_tuple(references,_motor_tx_v)){
+                fill_data(esc_id_name,topLevel,_motor_ref_pdo_fields,_motor_tx_v);
+            }
         }
     }
+}
+
+void EcGuiPdo::clear_motor_ref()
+{
+    for ( const auto &[esc_id, references] : _motors_ref){
+        std::string esc_id_name="motor_id_ref_"+std::to_string(esc_id);
+        QTreeWidgetItem *topLevel=search_slave_into_treewid(esc_id_name);
+        if(topLevel){
+            delete topLevel;
+        }
+    }
+
+    _motor_ref_flags = RefFlags::FLAG_NONE;
+    _motors_ref.clear();
 }
 
 void EcGuiPdo::write_valve_pdo()

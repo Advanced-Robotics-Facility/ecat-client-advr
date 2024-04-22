@@ -28,6 +28,7 @@ public:
       void set_filter(bool first_send, int time_ms);
       void set_ctrl_mode(float ctrl_cmd);
       void write();
+      void clear_write();
 
 private:
       EcIface::Ptr _client;
@@ -103,6 +104,7 @@ private:
 
       void write_motor_pdo();
       void read_motor_ref();
+      void clear_motor_ref();
       void write_valve_pdo();
       void write_pump_pdo();
     //************************ WRITE PDO ******************************
