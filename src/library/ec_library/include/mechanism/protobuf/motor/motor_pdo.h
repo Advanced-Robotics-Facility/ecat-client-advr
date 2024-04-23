@@ -52,7 +52,7 @@ namespace MotorPdoTx{
         pdo_vector[6]= std::get<6>(pdo_tuple);
         pdo_vector[7]= std::get<7>(pdo_tuple);
         pdo_vector[8]= std::get<8>(pdo_tuple);
-        pdo_vector[9]= std::get<7>(pdo_tuple);
+        pdo_vector[9]= std::get<9>(pdo_tuple);
         pdo_vector[10]= std::get<10>(pdo_tuple);
         pdo_vector[11]= std::get<11>(pdo_tuple);
         return true;
