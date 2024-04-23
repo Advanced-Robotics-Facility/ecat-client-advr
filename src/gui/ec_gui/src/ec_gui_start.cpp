@@ -251,7 +251,6 @@ void EcGuiStart::clear_device()
     _ec_wrapper_info.joint_info_map.clear();
 
     _ec_wrapper_info.sdo_map.clear();
-    _ec_wrapper_info.internal_sdo_map.clear();
 }
 
 void EcGuiStart::scan_device()
@@ -287,6 +286,12 @@ void EcGuiStart::scan_device()
                             motor_info_map[esc_id]=rr_sdo_info;
                         }
                     }
+                }
+                else if(type==iit::ecat::HYQ_KNEE){
+                    _ec_wrapper_info.valve_info_map[esc_id]=5.0; //max current
+                }
+                else if(type==iit::ecat::HYQ_HPU){
+                    _ec_wrapper_info.pump_info_map[esc_id]=180.0; //max bar
                 }
                 /********************* RETRIEVE ALL SDO */////////////
                 rr_sdo_info.clear();

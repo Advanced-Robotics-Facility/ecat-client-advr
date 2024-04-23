@@ -28,14 +28,14 @@ public:
     };
     
     struct slider_map_t{
-        
     std::map<int, SliderWidget*> position_sw_map;
     std::map<int, SliderWidget*> velocity_sw_map;
     std::map<int, SliderWidget*> position_t_sw_map;
     std::map<int, SliderWidget*> current_sw_map;
     std::map<int, SliderWidget*> torque_sw_map;
+    std::map<int, SliderWidget*> valve_sw_map;
+    std::map<int, SliderWidget*> pump_sw_map;
     std::map<int, SliderWidget*> actual_sw_map_selected;
-    
     };
 
     typedef std::shared_ptr<EcGuiSlider> Ptr;
@@ -47,7 +47,9 @@ public:
     slider_map_t get_sliders();
     void set_actual_sliders(std::map<int, SliderWidget*> actual_sw_map_selected);
     
-    void create_sliders(std::map<int ,joint_info_t > joint_info_map);
+    void create_sliders(std::map<int ,joint_info_t > joint_info_map,
+                        std::map<int ,int > valve_info_map,
+                        std::map<int ,int > pump_info_map);
     void delete_sliders();
     void reset_sliders();
     void enable_sliders();
@@ -61,6 +63,7 @@ private:
   float _control_mode;
 
   QVBoxLayout *_sliders_poslayout,*_sliders_vellayout,*_sliders_torqlayout,*_sliders_currlayout;
+  QVBoxLayout *_sliders_valvelayout,*_sliders_pumplayout;
   void delete_items(QLayout * layout);
 
 };

@@ -119,13 +119,14 @@ void EcGuiWrapper::restart_gui_wrapper(ec_wrapper_info_t ec_wrapper_info)
     
     _ec_wrapper_info = ec_wrapper_info;
     
-    _ec_gui_slider->create_sliders(_ec_wrapper_info.joint_info_map);
+    _ec_gui_slider->create_sliders(_ec_wrapper_info.joint_info_map,
+                                   _ec_wrapper_info.valve_info_map,
+                                   _ec_wrapper_info.pump_info_map);
     
     _ec_gui_cmd->restart_ec_gui_cmd(_ec_wrapper_info.client);
     
     _ec_gui_pdo->restart_ec_gui_pdo(_ec_wrapper_info.client);
     
-    _ec_gui_sdo->set_internal_sdo_map(_ec_wrapper_info.internal_sdo_map);
     _ec_gui_sdo->restart_ec_gui_sdo(_ec_wrapper_info.client,
                                     _ec_wrapper_info.sdo_map);
 }

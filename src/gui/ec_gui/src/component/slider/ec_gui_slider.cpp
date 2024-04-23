@@ -8,9 +8,13 @@ EcGuiSlider::EcGuiSlider(QWidget *parent) :
     _sliders_vellayout  = parent->findChild<QVBoxLayout *>("velocitySliders");
     _sliders_torqlayout = parent->findChild<QVBoxLayout *>("torqueSliders");
     _sliders_currlayout = parent->findChild<QVBoxLayout *>("currentSliders");
+    _sliders_valvelayout = parent->findChild<QVBoxLayout *>("valveSliders");
+    _sliders_pumplayout = parent->findChild<QVBoxLayout *>("pumpSliders");
 }
 
-void EcGuiSlider::create_sliders(std::map<int ,joint_info_t > joint_info_map)
+void EcGuiSlider::create_sliders(std::map<int ,joint_info_t > joint_info_map,
+                                 std::map<int ,int > valve_info_map,
+                                 std::map<int ,int > pump_info_map)
 {
     
     delete_sliders();
@@ -54,6 +58,29 @@ void EcGuiSlider::create_sliders(std::map<int ,joint_info_t > joint_info_map)
         _sliders_torqlayout->addWidget(wid_t,0, Qt::AlignTop);
         _sliders_currlayout->addWidget(wid_cc,0, Qt::AlignTop);
     }
+
+    for (auto& [slave_id, max_current]:valve_info_map){
+
+        std::string valve_name_s="valve_"+std::to_string(slave_id);
+        QString valve_name = QString::fromStdString(valve_name_s);
+
+        auto wid_valve = new SliderWidget(valve_name,0.0,QString::number(-max_current),QString::number(max_current),"[mA]",{},{},this);
+        _slider_map.valve_sw_map[slave_id]=wid_valve;
+
+        _sliders_valvelayout->addWidget(wid_valve,0, Qt::AlignTop);
+    }
+    
+    for (auto& [slave_id, max_pressure]:pump_info_map){
+
+        std::string pump_name_s="pump_"+std::to_string(slave_id);
+        QString pump_name = QString::fromStdString(pump_name_s);
+
+        auto wid_pump = new SliderWidget(pump_name,0.0,QString::number(0.0),QString::number(max_pressure),"[bar]",{},{},this);
+        _slider_map.pump_sw_map[slave_id]=wid_pump;
+
+        _sliders_pumplayout->addWidget(wid_pump,0, Qt::AlignTop);
+    }
+    
 }
 
 void EcGuiSlider::delete_sliders()
@@ -74,14 +101,20 @@ void EcGuiSlider::delete_sliders()
 
     delete_items(_sliders_currlayout->layout());
     _slider_map.current_sw_map.clear();
-    
+
+    delete_items(_sliders_valvelayout->layout());
+    _slider_map.valve_sw_map.clear();
+
+    delete_items(_sliders_pumplayout->layout());
+    _slider_map.pump_sw_map.clear();
+
     _joint_info_map.clear();
     
 }
 
 void EcGuiSlider::reset_sliders()
 {
-    for (auto& [slave_id, slider_wid]:_slider_map.position_sw_map)
+    for (auto& [slave_id, slider_wid]:_slider_map.actual_sw_map_selected)
     {
         slider_wid->align_spinbox();
         _slider_map.position_t_sw_map[slave_id]->align_spinbox();
@@ -89,13 +122,18 @@ void EcGuiSlider::reset_sliders()
         _slider_map.torque_sw_map[slave_id]->align_spinbox(0.0);
         _slider_map.current_sw_map[slave_id]->align_spinbox(0.0);
     }
+    for (auto& [slave_id, slider_wid]:_slider_map.valve_sw_map){
+        _slider_map.valve_sw_map[slave_id]->align_spinbox(0.0);
+    }
+    for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
+            _slider_map.pump_sw_map[slave_id]->align_spinbox(0.0);
+    }
 }
 void EcGuiSlider::enable_sliders()
 {
     for (auto& [slave_id, slider_wid]:_slider_map.actual_sw_map_selected)
     {
-        if(slider_wid->is_slider_enabled())
-        {
+        if(slider_wid->is_slider_enabled()){
             _slider_map.position_sw_map[slave_id]->enable_slider();
             _slider_map.position_t_sw_map[slave_id]->enable_slider();
             _slider_map.velocity_sw_map[slave_id]->enable_slider();
@@ -103,16 +141,36 @@ void EcGuiSlider::enable_sliders()
             _slider_map.current_sw_map[slave_id]->enable_slider();
         }
     }
+    for (auto& [slave_id, slider_wid]:_slider_map.valve_sw_map){
+        if(slider_wid->is_slider_enabled()){
+            _slider_map.valve_sw_map[slave_id]->enable_slider();
+        }
+    }
+    for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
+        if(slider_wid->is_slider_enabled()){
+             _slider_map.pump_sw_map[slave_id]->enable_slider();
+        }
+    }
 }
 void EcGuiSlider::disable_sliders()
 {
-    for (auto& [slave_id, slider_wid]:_slider_map.position_sw_map)
+    for (auto& [slave_id, slider_wid]:_slider_map.actual_sw_map_selected)
     {
         slider_wid->disable_slider();
+        _slider_map.position_sw_map[slave_id]->disable_slider();
         _slider_map.position_t_sw_map[slave_id]->disable_slider();
         _slider_map.velocity_sw_map[slave_id]->disable_slider();
         _slider_map.torque_sw_map[slave_id]->disable_slider();
         _slider_map.current_sw_map[slave_id]->disable_slider();
+    }
+
+    for (auto& [slave_id, slider_wid]:_slider_map.valve_sw_map){
+         slider_wid->disable_slider();
+        _slider_map.valve_sw_map[slave_id]->disable_slider();
+    }
+    for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
+         slider_wid->disable_slider();
+        _slider_map.pump_sw_map[slave_id]->disable_slider();
     }
 }
 

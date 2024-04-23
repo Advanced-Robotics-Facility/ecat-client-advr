@@ -19,7 +19,6 @@ public:
         ~EcGuiSdo();
         
         void restart_ec_gui_sdo(EcIface::Ptr client,SRD_SDO sdo_map);
-        void set_internal_sdo_map(SRD_SDO internal_sdo_map);
  
 public slots:
         void OnMouseClicked(QTreeWidgetItem* item, int column);

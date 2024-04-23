@@ -102,12 +102,6 @@ void EcGuiSdo::restart_ec_gui_sdo(EcIface::Ptr client,SRD_SDO sdo_map)
     add_esc_sdo();
 }
 
-void EcGuiSdo::set_internal_sdo_map(SRD_SDO internal_sdo_map)
-{
-    _internal_sdo_map.clear();
-    _internal_sdo_map=internal_sdo_map;
-}
-
 void EcGuiSdo::add_esc_sdo()
 {
     if(_sdo_map.empty())

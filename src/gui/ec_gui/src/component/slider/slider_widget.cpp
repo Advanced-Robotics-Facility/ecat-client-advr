@@ -112,11 +112,13 @@ SliderWidget::SliderWidget (const QString&  name,
 
     _slider_filtered=std::make_shared<SecondOrderFilter<double>>(12.0,1.0,1.0,init_value);
 
-    _pid_layout=findChild<QHBoxLayout *>("PID_Layout");
+    if(!gains.empty()){
+        _pid_layout=findChild<QHBoxLayout *>("PID_Layout");
 
-    _wid_calib= new SliderWidgetCalib("",gains,pid_string);
+        _wid_calib= new SliderWidgetCalib("",gains,pid_string);
 
-    _pid_layout->addWidget(_wid_calib,0, Qt::AlignTop);
+        _pid_layout->addWidget(_wid_calib,0, Qt::AlignTop);
+    }
 
     _actual_slider_value=init_value;
 
