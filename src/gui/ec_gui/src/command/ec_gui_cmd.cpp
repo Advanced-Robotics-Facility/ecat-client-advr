@@ -80,6 +80,11 @@ void EcGuiCmd::readCommand()
         _tabcontrol->setEnabled(true);
         _mode_type_combobox->setEnabled(true);
         readModeType();
+        if(!_motor_start_req){
+            for (auto& [slave_id, slider_wid]:_actual_sw_map_selected){
+                    slider_wid->enable_slider_enabled();
+            }
+        }
         _notallbtn->setEnabled(!_motor_start_req); // motors already started.
         _allbtn->setEnabled(!_motor_start_req); // motors already started.
     }
