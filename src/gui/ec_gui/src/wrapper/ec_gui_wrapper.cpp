@@ -64,7 +64,7 @@ EcGuiWrapper::EcGuiWrapper(QWidget *parent) :
     _ec_gui_cmd = std::make_shared<EcGuiCmd>(_ec_gui_slider,
                                              parent);
 
-    _send_ref=_first_send=false;
+    _send_ref=false;
         
     // Get Send and Stop button
     _send_stop_btn = parent->findChild<QPushButton *>("SendStopBtn");
@@ -190,55 +190,59 @@ void EcGuiWrapper::onSendStopBtnReleased()
     _ec_gui_slider->reset_sliders();
 
     _send_ref = _ec_gui_cmd->get_cmd_sts(_ctrl_cmd);
-
-#ifdef TEST_GUI 
-    _send_ref = true;
-#endif   
-
     _ec_gui_pdo->set_ctrl_mode(_ctrl_cmd);
+    count_reset_ref=0;
     
     if((_send_stop_btn->text()=="Send")&&(_send_ref)){
-        _send_timer->start(_time_ms);
         _period_combobox->setEnabled(false);
         _send_stop_btn->setText("Stop");
-        _first_send=true;
         _ec_gui_slider->enable_sliders();
-        _ec_gui_pdo->clear_write();
+
+        _ec_gui_pdo->set_filter(_time_ms);
+        _send_timer->start(_time_ms);
     }
     else{
-        _send_timer->stop();
+        _send_ref=false;
         _period_combobox->setEnabled(true);        
         _ec_gui_slider->disable_sliders();
 
         if(_send_stop_btn->text()=="Send"){
             QMessageBox msgBox;
-            msgBox.setText("Cannot send references without starting the motors"
+            msgBox.setText("Cannot send references without starting the devices"
                            ", please launch START EtherCAT command ");
             msgBox.exec();
         }
         else{
             _send_stop_btn->setText("Send");
-            _first_send=true;
-            _ec_gui_pdo->set_filter(_first_send,_time_ms);
-            send();  //STOP the motors using the actual position of the motor and zero feedforward torque (in impedance) or zero velocity.
+            _ec_gui_pdo->set_filter(_time_ms);//STOP align all references to zero or with the actual position for the motors
         }
-        _first_send=false;
     }
-    
-    _ec_gui_pdo->set_filter(_first_send,_time_ms);
-
 }
 
 
 
 void EcGuiWrapper::send()
 {
-    //if(_ec_gui_cmd->get_cmd_sts(_ctrl_cmd)){ // stop motors command
-    if(_send_ref){
+    if(_ec_wrapper_info.client->is_client_alive()){
         _ec_gui_pdo->write();
     }
     else{
-        onSendStopBtnReleased(); // stop sending references
+        
+    }
+
+    if(!_ec_gui_cmd->get_cmd_sts(_ctrl_cmd)){
+        if(count_reset_ref==0){
+            onSendStopBtnReleased(); // stop sending references
+        }
+    } // stop motors command
+ 
+
+    if(!_send_ref){
+        count_reset_ref++;
+        if(count_reset_ref>3){ 
+            _ec_gui_pdo->clear_write();
+            _send_timer->stop(); //delay stop
+        }
     }
 }
 

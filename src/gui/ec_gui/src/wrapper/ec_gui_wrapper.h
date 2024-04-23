@@ -65,8 +65,7 @@ private:
 
   float _ctrl_cmd;
   bool _send_ref;
-  bool _first_send;
-
+  
   QComboBox * _period_combobox;
   QPushButton *_send_stop_btn;
 
@@ -78,6 +77,7 @@ private:
   bool _record_started;
   
   bool check_client_setup();
+  int count_reset_ref=0;
 };
 
 #endif // EC_GUI_WRAPPER_H

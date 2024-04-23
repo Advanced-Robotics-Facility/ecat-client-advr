@@ -394,9 +394,9 @@ void EcGuiPdo::onStopPlotting()
 
 
 /********************************************************* WRITE PDO***********************************************************************************************/
-void EcGuiPdo::set_filter(bool first_send, int time_ms)
+void EcGuiPdo::set_filter(int time_ms)
 {
-    _first_send = first_send;
+    _first_send = true;
     _time_ms = time_ms;
 }
 
@@ -475,8 +475,8 @@ void EcGuiPdo::write_motor_pdo()
         //            ID      CTRL_MODE, POS_REF, VEL_RF, TOR_REF,  GAIN_1,    GAIN_2,   GAIN_3,   GAIN_4,    GAIN_5, OP, IDX,AUX  OP->1 means NO_OP
         _motors_ref[slave_id]=references;
     }
-    if(!_motors_ref.empty())
-    {
+
+    if(!_motors_ref.empty()){
         if(_first_send){
             _first_send=false; // Note: not remove from here, used for all filters.
         }
@@ -514,6 +514,9 @@ void EcGuiPdo::clear_motor_ref()
     }
 
     _motor_ref_flags = RefFlags::FLAG_NONE;
+    if(!_motors_ref.empty()){
+       _client->set_motors_references(_motor_ref_flags, _motors_ref);
+    }
     _motors_ref.clear();
 }
 

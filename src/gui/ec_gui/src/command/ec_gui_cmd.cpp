@@ -330,6 +330,9 @@ void EcGuiCmd::onApplyCmdReleased()
             if(!_motors_start.empty())
             {
                 _motor_start_req=_client->start_motors(_motors_start);
+#ifdef TEST_GUI 
+                _motor_start_req=true;
+#endif 
                 if(!_motor_start_req)
                 {
                     cmd_message="Cannot perform the start command on the motor(s) requested";

@@ -25,7 +25,7 @@ public:
       void restart_ec_gui_pdo(EcIface::Ptr client);
       void restart_receive_timer();
       void read();
-      void set_filter(bool first_send, int time_ms);
+      void set_filter(int time_ms);
       void set_ctrl_mode(float ctrl_cmd);
       void write();
       void clear_write();
