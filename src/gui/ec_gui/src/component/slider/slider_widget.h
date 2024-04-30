@@ -40,7 +40,7 @@ public:
     void uncheck_slider_enabled();
     std::string get_slider_name();
     SliderWidgetCalib *get_wid_calibration();
-
+    void remove_calibration();
     SecondOrderFilter<double>::Ptr get_filer();
 
     ~SliderWidget();
@@ -52,8 +52,8 @@ private:
 
     bool _callback_enabled;
 
+    QVBoxLayout* _calibration_layout;
     QHBoxLayout* _pid_layout;
-
 
     QSlider *          _valueslider;
     QDoubleSpinBox *   _valuebox;

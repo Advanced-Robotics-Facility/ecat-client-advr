@@ -447,19 +447,9 @@ void EcGuiPdo::write_motor_pdo()
         _gains.clear();
         auto gains_calib_selected=_slider_map.actual_sw_map_selected[slave_id]->get_wid_calibration();
 
-        for(int calib_index=0; calib_index < gains_calib_selected->get_slider_numb(); calib_index++)
-        {
+        for(int calib_index=0; calib_index < gains_calib_selected->get_slider_numb(); calib_index++){
             double gain_filtered=filtering(gains_calib_selected->get_slider_filter(calib_index),gains_calib_selected->get_slider_value(calib_index));
             _gains.push_back(gain_filtered);
-        }
-        if(_ctrl_cmd==0xD4)
-        {
-            auto gains_t_calib= _slider_map.torque_sw_map[slave_id]->get_wid_calibration();
-            for(int calib_index=0; calib_index < gains_t_calib->get_slider_numb(); calib_index++)
-            {
-                double gain_t_filtered=filtering(gains_t_calib->get_slider_filter(calib_index),gains_t_calib->get_slider_value(calib_index));
-                _gains.push_back(gain_t_filtered);
-            }
         }
 
         double pos_ref= filtering(_slider_map.position_sw_map[slave_id]->get_filer(),_slider_map.position_sw_map[slave_id]->get_spinbox_value());

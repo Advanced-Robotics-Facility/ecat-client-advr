@@ -37,14 +37,10 @@ void EcGuiSlider::create_sliders(std::map<int ,joint_info_t > joint_info_map,
         auto wid_v = new SliderWidget(jname,0.0,QString::number(-joint_info_s.max_vel),QString::number(joint_info_s.max_vel),"[rad/s]",pid_string,gains,this);
         _slider_map.velocity_sw_map[slave_id]=wid_v;
 
-        std::vector<double> gains_pt={0,0};
-        std::vector<std::string> pid_string_pt={"gain_0","gain_1"};
-        auto wid_p_t = new SliderWidget(jname,joint_info_s.actual_pos,QString::number(joint_info_s.min_pos),QString::number(joint_info_s.max_pos),"[rad]",pid_string_pt,gains_pt,this);
+        auto wid_p_t = new SliderWidget(jname,joint_info_s.actual_pos,QString::number(joint_info_s.min_pos),QString::number(joint_info_s.max_pos),"[rad]",pid_string,gains,this);
         _slider_map.position_t_sw_map[slave_id]=wid_p_t;
 
-        std::vector<double> gains_t={0,0,0};
-        std::vector<std::string> pid_string_t={"gain_2","gain_3","gain_4"};
-        auto wid_t = new SliderWidget("",0.0,QString::number(-joint_info_s.max_torq/100),QString::number(joint_info_s.max_torq/100),"[Nm]",pid_string_t,gains_t,this);
+        auto wid_t = new SliderWidget("",0.0,QString::number(-joint_info_s.max_torq/100),QString::number(joint_info_s.max_torq/100),"[Nm]",{},{},this);
         _slider_map.torque_sw_map[slave_id]=wid_t;
         wid_t->hide_slider_enabled();
 
@@ -65,6 +61,7 @@ void EcGuiSlider::create_sliders(std::map<int ,joint_info_t > joint_info_map,
         QString valve_name = QString::fromStdString(valve_name_s);
 
         auto wid_valve = new SliderWidget(valve_name,0.0,QString::number(-max_current),QString::number(max_current),"[mA]",{},{},this);
+        wid_valve->remove_calibration();
         _slider_map.valve_sw_map[slave_id]=wid_valve;
 
         _sliders_valvelayout->addWidget(wid_valve,0, Qt::AlignTop);
@@ -76,6 +73,7 @@ void EcGuiSlider::create_sliders(std::map<int ,joint_info_t > joint_info_map,
         QString pump_name = QString::fromStdString(pump_name_s);
 
         auto wid_pump = new SliderWidget(pump_name,0.0,QString::number(0.0),QString::number(max_pressure),"[bar]",{},{},this);
+        wid_pump->remove_calibration();
         _slider_map.pump_sw_map[slave_id]=wid_pump;
 
         _sliders_pumplayout->addWidget(wid_pump,0, Qt::AlignTop);

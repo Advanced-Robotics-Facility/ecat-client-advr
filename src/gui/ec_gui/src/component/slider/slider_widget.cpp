@@ -112,6 +112,7 @@ SliderWidget::SliderWidget (const QString&  name,
 
     _slider_filtered=std::make_shared<SecondOrderFilter<double>>(12.0,1.0,1.0,init_value);
 
+    _calibration_layout= findChild<QVBoxLayout *>("calibrationLayout");
     if(!gains.empty()){
         _pid_layout=findChild<QHBoxLayout *>("PID_Layout");
 
@@ -241,6 +242,10 @@ SliderWidgetCalib* SliderWidget::get_wid_calibration()
     return _wid_calib;
 }
 
+void SliderWidget::remove_calibration()
+{
+    delete _calibration_layout;
+}
 
 SliderWidget::~SliderWidget()
 {

@@ -117,18 +117,10 @@ void EcGuiCmd::enable_disable_pid()
             if(getModeType() == "Idle")
             {
                 joint_calib_selected->disable_slider_calib(calib_index);
-                if(_ctrl_cmd == 0xD4)
-                {
-                    _slider_map.torque_sw_map[slave_id]->get_wid_calibration()->disable_slider_calib(calib_index);
-                }
             }
             else
             {
                 joint_calib_selected->enable_slider_calib(calib_index);
-                if(_ctrl_cmd == 0xD4)
-                {
-                    _slider_map.torque_sw_map[slave_id]->get_wid_calibration()->enable_slider_calib(calib_index);
-                }
             }
         }
     }
@@ -224,46 +216,25 @@ void EcGuiCmd::fill_start_stop_cmd()
     _motors_start.clear();
     _brake_cmds.clear();
     _motors_selected = false;
-    for (auto& [slave_id, slider_wid]:_actual_sw_map_selected)
-    {
-        if(slider_wid->is_slider_enabled())
-        {
+    for (auto& [slave_id, slider_wid]:_actual_sw_map_selected){
+        if(slider_wid->is_slider_enabled()){
             _motors_selected |= true;
-            if(_ctrl_cmd_type==ClientCmdType::STOP)
-            {
-                if(false)
-                {
+            if(_ctrl_cmd_type==ClientCmdType::STOP){
+                if(false){
                     _brake_cmds.push_back(std::make_tuple(slave_id,to_underlying(PdoAuxCmdType::BRAKE_ENGAGE)));
                 }
             }
-            else
-            {
-                if(getModeType() != "Idle")
-                {
+            else{
+                if(getModeType() != "Idle"){
                     _gains.clear();
                     auto joint_calib_selected=slider_wid->get_wid_calibration();
-                    for(int calib_index=0; calib_index < joint_calib_selected->get_slider_numb(); calib_index++)
-                    {
+                    for(int calib_index=0; calib_index < joint_calib_selected->get_slider_numb(); calib_index++){
                         _gains.push_back(joint_calib_selected->get_slider_value(calib_index));
-                    }
-                    if(_ctrl_cmd==0xD4)
-                    {
-                        joint_calib_selected=_slider_map.torque_sw_map[slave_id]->get_wid_calibration();
-                        for(int calib_index=0; calib_index < joint_calib_selected->get_slider_numb(); calib_index++)
-                        {
-                            _gains.push_back(joint_calib_selected->get_slider_value(calib_index));
-                        }
-                    }
-                    else
-                    {
-                        _gains.push_back(0);
-                        _gains.push_back(0);
                     }
                     _motors_start.push_back(std::make_tuple(slave_id,_ctrl_cmd,_gains));
                 }
                 
-                if(false)
-                {
+                if(false){
                     _brake_cmds.push_back(std::make_tuple(slave_id,to_underlying(PdoAuxCmdType::BRAKE_RELEASE)));
                 }
             }
