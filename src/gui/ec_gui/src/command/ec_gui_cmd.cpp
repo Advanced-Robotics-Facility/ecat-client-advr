@@ -49,7 +49,7 @@ EcGuiCmd::EcGuiCmd(EcGuiSlider::Ptr ec_gui_slider,
     connect(_allbtn, &QPushButton::released,
             this, &EcGuiCmd::onAllCmdReleased);
     
-    _motor_start_req=_send_ref=false;
+    _motor_start_req=_valve_start_req=_send_ref=false;
     _ctrl_cmd=0;
     
     readCommand();
@@ -87,6 +87,16 @@ void EcGuiCmd::readCommand()
         }
         _notallbtn->setEnabled(!_motor_start_req); // motors already started.
         _allbtn->setEnabled(!_motor_start_req); // motors already started.
+        if(!_valve_start_req){
+            for (auto& [slave_id, slider_wid]:_slider_map.valve_sw_map){
+                    slider_wid->enable_slider_enabled();
+            }
+        }
+
+        for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
+            slider_wid->enable_slider_enabled();
+        }
+        
     }
     else if(getFieldType() == "Stop devices")
     {
@@ -211,7 +221,7 @@ void EcGuiCmd::launch_cmd_message(QString message)
    msgBox.exec();
 }
 
-void EcGuiCmd::fill_start_stop_cmd()
+void EcGuiCmd::fill_start_stop_motor()
 {
     _motors_start.clear();
     _brake_cmds.clear();
@@ -237,6 +247,23 @@ void EcGuiCmd::fill_start_stop_cmd()
                 if(false){
                     _brake_cmds.push_back(std::make_tuple(slave_id,to_underlying(PdoAuxCmdType::BRAKE_RELEASE)));
                 }
+            }
+        }
+    }
+}
+
+void EcGuiCmd::fill_start_stop_valve()
+{
+    _start_stop_valve.clear();
+    _valves_selected = false;
+    for (auto& [slave_id, slider_wid]:_slider_map.valve_sw_map){
+        if(slider_wid->is_slider_enabled()){
+            _valves_selected |= true;
+            if(_ctrl_cmd_type==ClientCmdType::STOP){
+                _start_stop_valve[slave_id]={std::make_tuple("ctrl_status_cmd","90")};
+            }
+            else{
+                _start_stop_valve[slave_id]={std::make_tuple("ctrl_status_cmd","165")};
             }
         }
     }
@@ -275,16 +302,82 @@ bool EcGuiCmd::braking_cmd_req()
     return braking_cmd_ack;
 }
 
+void EcGuiCmd::onApplyCmdMotors()
+{
+    if(_motors_selected){
+    //********** START MOTORS **********//
+        if(!_motors_start.empty())
+        {
+            _motor_start_req=_client->start_motors(_motors_start);
+#ifdef TEST_GUI 
+            _motor_start_req=true;
+#endif 
+            if(!_motor_start_req)
+            {
+                _cmd_message="Cannot perform the start command on the motor(s) requested";
+                launch_cmd_message(_cmd_message);
+                return;
+            }
+        }
+        
+        //********** RELEASE OR ENGAGE BRAKES WITH CHECKS **********//
+        if(!_brake_cmds.empty())
+        {
+            bool braking_cmd_fdb = braking_cmd_req(); // release or engage the brakes
+            if(braking_cmd_fdb)
+            {
+                std::this_thread::sleep_for(1000ms);
+                if(!_client->pdo_aux_cmd_sts(_brake_cmds)) // release or engage the brakes status
+                {
+                    _cmd_message="Wrong status of the brakes requested";
+                    launch_cmd_message(_cmd_message);
+                    return;
+                }
+            }
+            else
+            {
+                _cmd_message="Cannot perform the release or engage brake command on the motor(s) requested";
+                launch_cmd_message(_cmd_message);
+                return;
+            }
+        }
+
+        _cmd_message="All motor(s) requested have performed the command successfully";
+        
+        if(!_motor_start_req)
+        {
+            //********** STOP MOTORS **********//
+            if(!_client->stop_motors())
+            {
+                _cmd_message.clear();
+                _cmd_message="Cannot perform the stop command on the motor(s) requested";
+            }
+        }
+        else
+        {
+            _mode_type_combobox->setEnabled(false);
+            _send_ref=true;
+            _notallbtn->setEnabled(false);
+            _allbtn->setEnabled(false);
+
+            for (auto& [slave_id, slider_wid]:_actual_sw_map_selected)
+            {
+                slider_wid->disable_slider_enabled();
+            }
+        }
+    }
+}
+
 void EcGuiCmd::onApplyCmdReleased()
 {
-    QString cmd_message;
+    _cmd_message.clear();
     if((_motor_start_req)&&(_ctrl_cmd_type==ClientCmdType::START))
     {
-        cmd_message="Motor(s) already started, please launch STOP EtherCAT command";
+        _cmd_message="Device(s) already started, please launch STOP EtherCAT command";
     }
     else if((!_motor_start_req)&&(_ctrl_cmd_type==ClientCmdType::STOP))
     {
-        cmd_message="No motor was started, please launch START EtherCAT command";
+        _cmd_message="No device(s)  was started, please launch START EtherCAT command";
     }
     else
     {
@@ -294,78 +387,19 @@ void EcGuiCmd::onApplyCmdReleased()
         _motor_start_req=false;
         _send_ref=false;
         
-        fill_start_stop_cmd();
+        fill_start_stop_motor();
         
-        if(!_motors_selected)
+        if(!_motors_selected || _valves_selected)
         {
-            cmd_message="No Motor selected, please select at least one";
+            _cmd_message="No device selected, please select at least one";
         }
         else
         {
-            //********** START MOTORS **********//
-            if(!_motors_start.empty())
-            {
-                _motor_start_req=_client->start_motors(_motors_start);
-#ifdef TEST_GUI 
-                _motor_start_req=true;
-#endif 
-                if(!_motor_start_req)
-                {
-                    cmd_message="Cannot perform the start command on the motor(s) requested";
-                    launch_cmd_message(cmd_message);
-                    return;
-                }
-            }
-            
-            //********** RELEASE OR ENGAGE BRAKES WITH CHECKS **********//
-            if(!_brake_cmds.empty())
-            {
-                bool braking_cmd_fdb = braking_cmd_req(); // release or engage the brakes
-                if(braking_cmd_fdb)
-                {
-                    std::this_thread::sleep_for(1000ms);
-                    if(!_client->pdo_aux_cmd_sts(_brake_cmds)) // release or engage the brakes status
-                    {
-                        cmd_message="Wrong status of the brakes requested";
-                        launch_cmd_message(cmd_message);
-                        return;
-                    }
-                }
-                else
-                {
-                    cmd_message="Cannot perform the release or engage brake command on the motor(s) requested";
-                    launch_cmd_message(cmd_message);
-                    return;
-                }
-            }
-
-            cmd_message="All motor(s) requested have performed the command successfully";
-            
-            if(!_motor_start_req)
-            {
-                //********** STOP MOTORS **********//
-                if(!_client->stop_motors())
-                {
-                    cmd_message.clear();
-                    cmd_message="Cannot perform the stop command on the motor(s) requested";
-                }
-            }
-            else
-            {
-                _mode_type_combobox->setEnabled(false);
-                _send_ref=true;
-                _notallbtn->setEnabled(false);
-                _allbtn->setEnabled(false);
-
-                for (auto& [slave_id, slider_wid]:_actual_sw_map_selected)
-                {
-                    slider_wid->disable_slider_enabled();
-                }
-            }
+            onApplyCmdMotors();
         }
     }
     
-    launch_cmd_message(cmd_message);
+    launch_cmd_message(_cmd_message);
 }
 
 bool EcGuiCmd::get_cmd_sts(float &ctrl_cmd)
