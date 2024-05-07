@@ -44,7 +44,9 @@ _ec_gui_slider(ec_gui_slider)
     _ft_rx_v.resize(FtPdoRx::pdo_size);
     _imu_rx_v.resize(ImuPdoRx::pdo_size);
     _valve_rx_v.resize(ValvePdoRx::pdo_size);
+    _valve_tx_v.resize(ValvePdoTx::pdo_size);
     _pump_rx_v.resize(PumpPdoRx::pdo_size);
+    _pump_tx_v.resize(PumpPdoTx::pdo_size);
 
     _battery_level = parent->findChild<QLCDNumber *>("BatteryLevel");
     _battery_level->setDigitCount(6);
@@ -201,6 +203,7 @@ void EcGuiPdo::read()
     /************************************* READ PDOs  ********************************************/
 
     read_motor_ref();
+    read_valve_ref();
 }
 
 void EcGuiPdo::read_motor_status()
@@ -426,19 +429,35 @@ void EcGuiPdo::write()
     write_motor_pdo();
     write_valve_pdo();
     write_pump_pdo();
+    
+    if(!_motors_ref.empty()|| 
+       !_valves_ref.empty()){
+        if(_first_send){
+            _first_send=false; // Note: not remove from here, used for all filters.
+        }
+    }
 }
 
 void EcGuiPdo::clear_write()
  {
     clear_motor_ref();
+    clear_valve_ref();
  }
 
 void EcGuiPdo::write_motor_pdo()
 {
+    bool motors_selected=false;
+    for (auto& [slave_id, slider_wid]:_slider_map.actual_sw_map_selected){
+        motors_selected |=slider_wid->is_slider_enabled();
+        break;
+    }
+    if(!motors_selected){
+        return;
+    }
+
     _motor_ref_flags = RefFlags::FLAG_MULTI_REF;
     
-    for (auto& [slave_id, slider_wid]:_slider_map.actual_sw_map_selected)
-    {
+    for (auto& [slave_id, slider_wid]:_slider_map.actual_sw_map_selected){
         int ctrl_cmd_ref=0x00;
         if(slider_wid->is_slider_enabled()){
             ctrl_cmd_ref=_ctrl_cmd;
@@ -467,9 +486,6 @@ void EcGuiPdo::write_motor_pdo()
     }
 
     if(!_motors_ref.empty()){
-        if(_first_send){
-            _first_send=false; // Note: not remove from here, used for all filters.
-        }
        _client->set_motors_references(_motor_ref_flags, _motors_ref);
     }
 }
@@ -512,8 +528,69 @@ void EcGuiPdo::clear_motor_ref()
 
 void EcGuiPdo::write_valve_pdo()
 {
+    bool valves_selected=false;
+    for (auto& [slave_id, slider_wid]:_slider_map.valve_sw_map){
+        valves_selected |=slider_wid->is_slider_enabled();
+        break;
+    }
+    if(!valves_selected){
+        return;
+    }
 
+    _valves_ref_flags = RefFlags::FLAG_MULTI_REF;
+
+    for (auto& [slave_id, slider_wid]:_slider_map.valve_sw_map){
+        double curr_ref=0.0;
+        if(slider_wid->is_slider_enabled()){
+            curr_ref=0.0;
+        }
+
+        curr_ref = filtering(_slider_map.valve_sw_map[slave_id]->get_filer(),_slider_map.valve_sw_map[slave_id]->get_spinbox_value());
+        ValvePdoTx::pdo_t   references{curr_ref,0,0,0,0,0,0,0};
+        _valves_ref[slave_id]=references;
+    }
+
+    if(!_valves_ref.empty()){
+       _client->set_valves_references(_valves_ref_flags, _valves_ref);
+    }
 }
+
+void EcGuiPdo::read_valve_ref()
+{
+    for ( const auto &[esc_id, references] : _valves_ref){
+        if(_slider_map.valve_sw_map[esc_id]->is_slider_enabled()){
+            std::string esc_id_name="valve_id_ref_"+std::to_string(esc_id);
+            QTreeWidgetItem *topLevel=nullptr;
+
+            topLevel=search_slave_into_treewid(esc_id_name);
+            if(!topLevel){
+                _valve_ref_pdo_fields=get_pdo_fields(ValvePdoTx::name);
+                topLevel= initial_setup(esc_id_name,_valve_ref_pdo_fields);
+            }
+            if(ValvePdoTx::make_vector_from_tuple(references,_valve_tx_v)){
+                fill_data(esc_id_name,topLevel,_valve_ref_pdo_fields,_valve_tx_v);
+            }
+        }
+    }
+}
+
+void EcGuiPdo::clear_valve_ref()
+{
+    for ( const auto &[esc_id, references] : _valves_ref){
+        std::string esc_id_name="valve_id_ref_"+std::to_string(esc_id);
+        QTreeWidgetItem *topLevel=search_slave_into_treewid(esc_id_name);
+        if(topLevel){
+            delete topLevel;
+        }
+    }
+
+    _valves_ref_flags = RefFlags::FLAG_NONE;
+    if(!_valves_ref.empty()){
+       _client->set_valves_references(_valves_ref_flags, _valves_ref);
+    }
+    _valves_ref.clear();
+}
+
 void EcGuiPdo::write_pump_pdo()
 {
 

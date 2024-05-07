@@ -52,7 +52,7 @@ private:
       QList<QString> _pow_pdo_fields;
       QList<QString> _ft6_pdo_fields;
       QList<QString> _imu_pdo_fields;                                         
-      QList<QString> _valve_pdo_fields,_pump_pdo_fields;
+      QList<QString> _valve_pdo_fields,_valve_ref_pdo_fields,_pump_pdo_fields;
 
       // last received motor data
       MotorStatusMap _motor_status_map;
@@ -71,7 +71,7 @@ private:
       std::vector<float> _pow_rx_v;
       std::vector<float> _ft_rx_v;
       std::vector<float> _imu_rx_v;
-      std::vector<float> _valve_rx_v,_pump_rx_v;
+      std::vector<float> _valve_rx_v,_valve_tx_v,_pump_rx_v,_pump_tx_v;
 
       QLCDNumber *_battery_level;
       float _v_batt;
@@ -99,6 +99,10 @@ private:
       
       MotorReferenceMap _motors_ref;
       RefFlags _motor_ref_flags;
+
+      ValveReferenceMap _valves_ref;
+      RefFlags _valves_ref_flags;
+
       std::vector<float> _gains;
       float _ctrl_cmd;
 
@@ -106,6 +110,8 @@ private:
       void read_motor_ref();
       void clear_motor_ref();
       void write_valve_pdo();
+      void read_valve_ref();
+      void clear_valve_ref();
       void write_pump_pdo();
     //************************ WRITE PDO ******************************
 

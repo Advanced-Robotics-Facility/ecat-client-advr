@@ -271,6 +271,17 @@ void EcGuiCmd::fill_start_stop_valve()
     }
 }
 
+void EcGuiCmd::fill_start_stop_pump()
+{
+    _pumps_selected = false;
+    for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
+        if(slider_wid->is_slider_enabled()){
+            _pumps_selected |= true;
+        }
+    }
+}
+    
+
 bool EcGuiCmd::braking_cmd_req()
 {
     //********** USE SDO /***********
@@ -378,6 +389,16 @@ void EcGuiCmd::onApplyCmdValves()
     }
 }
 
+void EcGuiCmd::onApplyCmdPumps()
+{
+    if(_pumps_selected){
+    //********** START/STOP PUMPS **********//
+        _device_start_req |= true;
+        _cmd_message="All pumps(s) requested have performed the command successfully";
+        launch_cmd_message(_cmd_message);
+    }
+}
+
 void EcGuiCmd::onApplyCmdReleased()
 {
     _cmd_message.clear();
@@ -398,8 +419,11 @@ void EcGuiCmd::onApplyCmdReleased()
         
         fill_start_stop_motor();
         fill_start_stop_valve();
+        fill_start_stop_pump();
         
-        if(!_motors_selected && !_valves_selected){
+        if(!_motors_selected && 
+           !_valves_selected &&
+           !_pumps_selected){
             _cmd_message="No device selected, please select at least one";
             launch_cmd_message(_cmd_message);
         }
@@ -407,6 +431,7 @@ void EcGuiCmd::onApplyCmdReleased()
             
             onApplyCmdMotors();
             onApplyCmdValves();
+            onApplyCmdPumps();
 
             if(_device_start_req){
                 _mode_type_combobox->setEnabled(false);

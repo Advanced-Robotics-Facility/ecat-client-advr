@@ -21,6 +21,7 @@ public:
     bool get_cmd_sts(float &ctrl_cmd);
     void onApplyCmdMotors();
     void onApplyCmdValves();
+    void onApplyCmdPumps();
     void onApplyCmdReleased();
     void onNotAllCmdReleased();
     void onAllCmdReleased();
@@ -39,6 +40,7 @@ private:
   void launch_cmd_message(QString message);
   void fill_start_stop_motor();
   void fill_start_stop_valve();
+  void fill_start_stop_pump();
   bool braking_cmd_req();
 
   ClientCmdType _ctrl_cmd_type;
@@ -51,7 +53,7 @@ private:
 
   QString _cmd_message;
   bool _device_start_req,_send_ref;
-  bool _motors_selected,_valves_selected;
+  bool _motors_selected,_valves_selected,_pumps_selected;
   std::map<int,WR_SDO> _start_stop_valve;
 
   QComboBox * _fieldtype_combobox;
