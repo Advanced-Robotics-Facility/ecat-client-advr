@@ -72,8 +72,12 @@ void EcGuiSlider::create_sliders(std::map<int ,joint_info_t > joint_info_map,
         std::string pump_name_s="pump_"+std::to_string(slave_id);
         QString pump_name = QString::fromStdString(pump_name_s);
 
-        auto wid_pump = new SliderWidget(pump_name,0.0,QString::number(0.0),QString::number(max_pressure),"[bar]",{},{},this);
-        wid_pump->remove_calibration();
+        std::vector<double> pdo_value={0,0,0,0,0,0,0,0};
+        std::vector<std::string> pdo_string= {"singlePumpHighLt","singlePumpLowLt", "HPUDemandMode",
+                                              "vesc1Mode","vesc2Mode","fan1Spd","fan2Spd","sysStateCmd"};
+
+        auto wid_pump = new SliderWidget(pump_name,0.0,QString::number(0.0),QString::number(max_pressure),"[bar]",pdo_string,pdo_value,this);
+        //wid_pump->remove_calibration();
         _slider_map.pump_sw_map[slave_id]=wid_pump;
 
         _sliders_pumplayout->addWidget(wid_pump,0, Qt::AlignTop);

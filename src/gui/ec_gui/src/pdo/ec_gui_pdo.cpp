@@ -204,6 +204,7 @@ void EcGuiPdo::read()
 
     read_motor_ref();
     read_valve_ref();
+    read_pump_ref();
 }
 
 void EcGuiPdo::read_motor_status()
@@ -431,7 +432,8 @@ void EcGuiPdo::write()
     write_pump_pdo();
     
     if(!_motors_ref.empty()|| 
-       !_valves_ref.empty()){
+       !_valves_ref.empty()||
+       !_pumps_ref.empty()){
         if(_first_send){
             _first_send=false; // Note: not remove from here, used for all filters.
         }
@@ -442,6 +444,7 @@ void EcGuiPdo::clear_write()
  {
     clear_motor_ref();
     clear_valve_ref();
+    clear_pump_ref();
  }
 
 void EcGuiPdo::write_motor_pdo()
@@ -593,6 +596,68 @@ void EcGuiPdo::clear_valve_ref()
 
 void EcGuiPdo::write_pump_pdo()
 {
+    bool pumps_selected=false;
+    for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
+        pumps_selected |=slider_wid->is_slider_enabled();
+        break;
+    }
+    if(!pumps_selected){
+        return;
+    }
 
+    _pumps_ref_flags = RefFlags::FLAG_MULTI_REF;
+
+    for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
+        double press_ref=0.0;
+        if(slider_wid->is_slider_enabled()){
+            press_ref=0.0;
+        }
+
+        press_ref = filtering(_slider_map.pump_sw_map[slave_id]->get_filer(),_slider_map.pump_sw_map[slave_id]->get_spinbox_value());
+        PumpPdoTx::pdo_t   references{press_ref,0,0,0,0,0,0,0,0};
+
+        _pumps_ref[slave_id]=references;
+    }
+
+    if(!_pumps_ref.empty()){
+       _client->set_pumps_references(_pumps_ref_flags, _pumps_ref);
+    }
+}
+
+void EcGuiPdo::read_pump_ref()
+{
+    for ( const auto &[esc_id, references] : _pumps_ref){
+        if(_slider_map.pump_sw_map[esc_id]->is_slider_enabled()){
+            std::string esc_id_name="pump_id_ref_"+std::to_string(esc_id);
+            QTreeWidgetItem *topLevel=nullptr;
+
+            topLevel=search_slave_into_treewid(esc_id_name);
+            if(!topLevel){
+                _pump_ref_pdo_fields=get_pdo_fields(PumpPdoTx::name);
+                topLevel= initial_setup(esc_id_name,_pump_ref_pdo_fields);
+            }
+            if(PumpPdoTx::make_vector_from_tuple(references,_pump_tx_v)){
+                fill_data(esc_id_name,topLevel,_pump_ref_pdo_fields,_pump_tx_v);
+            }
+        }
+    }
+}
+
+
+void EcGuiPdo::clear_pump_ref()
+{
+    for ( const auto &[esc_id, references] : _pumps_ref){
+        std::string esc_id_name="pump_id_ref_"+std::to_string(esc_id);
+        QTreeWidgetItem *topLevel=search_slave_into_treewid(esc_id_name);
+        if(topLevel){
+            delete topLevel;
+        }
+    }
+
+    _pumps_ref_flags = RefFlags::FLAG_NONE;
+    if(!_pumps_ref.empty()){
+       _client->set_pumps_references(_pumps_ref_flags, _pumps_ref);
+    }
+    _pumps_ref.clear();
 }
 /********************************************************* WRITE PDO***********************************************************************************************/

@@ -393,7 +393,10 @@ void EcGuiCmd::onApplyCmdPumps()
 {
     if(_pumps_selected){
     //********** START/STOP PUMPS **********//
-        _device_start_req |= true;
+         if(_ctrl_cmd_type==ClientCmdType::START){
+            _device_start_req |= true;
+         }
+         
         _cmd_message="All pumps(s) requested have performed the command successfully";
         launch_cmd_message(_cmd_message);
     }
