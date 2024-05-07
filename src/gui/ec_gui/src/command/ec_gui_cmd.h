@@ -50,8 +50,8 @@ private:
 
 
   QString _cmd_message;
-  bool _motor_start_req,_send_ref,_motors_selected;
-  bool _valve_start_req,_valves_selected;
+  bool _device_start_req,_send_ref;
+  bool _motors_selected,_valves_selected;
   std::map<int,WR_SDO> _start_stop_valve;
 
   QComboBox * _fieldtype_combobox;
