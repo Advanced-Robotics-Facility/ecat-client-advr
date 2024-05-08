@@ -41,7 +41,7 @@ public:
     std::string get_slider_name();
     SliderWidgetCalib *get_wid_calibration();
     void remove_calibration();
-    SecondOrderFilter<double>::Ptr get_filer();
+    SecondOrderFilter<double>::Ptr get_filter();
 
     ~SliderWidget();
 

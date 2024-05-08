@@ -231,7 +231,7 @@ std::string SliderWidget::get_slider_name()
     return _slider_name;
 }
 
-SecondOrderFilter<double>::Ptr SliderWidget::get_filer()
+SecondOrderFilter<double>::Ptr SliderWidget::get_filter()
 {
    return _slider_filtered;
 }

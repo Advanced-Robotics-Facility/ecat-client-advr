@@ -474,14 +474,14 @@ void EcGuiPdo::write_motor_pdo()
             _gains.push_back(gain_filtered);
         }
 
-        double pos_ref= filtering(_slider_map.position_sw_map[slave_id]->get_filer(),_slider_map.position_sw_map[slave_id]->get_spinbox_value());
+        double pos_ref= filtering(_slider_map.position_sw_map[slave_id]->get_filter(),_slider_map.position_sw_map[slave_id]->get_spinbox_value());
         if(_ctrl_cmd==0xD4)
         {
-            pos_ref= filtering(_slider_map.position_t_sw_map[slave_id]->get_filer(),_slider_map.position_t_sw_map[slave_id]->get_spinbox_value());
+            pos_ref= filtering(_slider_map.position_t_sw_map[slave_id]->get_filter(),_slider_map.position_t_sw_map[slave_id]->get_spinbox_value());
         }
 
-        double vel_ref= filtering(_slider_map.velocity_sw_map[slave_id]->get_filer(),_slider_map.velocity_sw_map[slave_id]->get_spinbox_value());
-        double tor_ref= filtering(_slider_map.torque_sw_map[slave_id]->get_filer(),_slider_map.torque_sw_map[slave_id]->get_spinbox_value());
+        double vel_ref= filtering(_slider_map.velocity_sw_map[slave_id]->get_filter(),_slider_map.velocity_sw_map[slave_id]->get_spinbox_value());
+        double tor_ref= filtering(_slider_map.torque_sw_map[slave_id]->get_filter(),_slider_map.torque_sw_map[slave_id]->get_spinbox_value());
                   
         MotorPdoTx::pdo_t   references{ctrl_cmd_ref, pos_ref, vel_ref, tor_ref, _gains[0], _gains[1],_gains[2], _gains[3], _gains[4],1,0,0};
         //            ID      CTRL_MODE, POS_REF, VEL_RF, TOR_REF,  GAIN_1,    GAIN_2,   GAIN_3,   GAIN_4,    GAIN_5, OP, IDX,AUX  OP->1 means NO_OP
@@ -548,7 +548,7 @@ void EcGuiPdo::write_valve_pdo()
             curr_ref=0.0;
         }
 
-        curr_ref = filtering(_slider_map.valve_sw_map[slave_id]->get_filer(),_slider_map.valve_sw_map[slave_id]->get_spinbox_value());
+        curr_ref = filtering(_slider_map.valve_sw_map[slave_id]->get_filter(),_slider_map.valve_sw_map[slave_id]->get_spinbox_value());
         ValvePdoTx::pdo_t   references{curr_ref,0,0,0,0,0,0,0};
         _valves_ref[slave_id]=references;
     }
@@ -613,7 +613,7 @@ void EcGuiPdo::write_pump_pdo()
             press_ref=0.0;
         }
 
-        press_ref = filtering(_slider_map.pump_sw_map[slave_id]->get_filer(),_slider_map.pump_sw_map[slave_id]->get_spinbox_value());
+        press_ref = filtering(_slider_map.pump_sw_map[slave_id]->get_filter(),_slider_map.pump_sw_map[slave_id]->get_spinbox_value());
         PumpPdoTx::pdo_t   references{press_ref,0,0,0,0,0,0,0,0};
 
         _pumps_ref[slave_id]=references;

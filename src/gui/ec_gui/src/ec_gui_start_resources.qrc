@@ -30,5 +30,8 @@
         <file>icon/esc_icon.png</file>
         <file>component/terminal/ec_gui_terminal.ui</file>
         <file>icon/terminal.png</file>
+        <file>icon/SquareWave.png</file>
+        <file>icon/SineWave.png</file>
+        <file>icon/StepWave.png</file>
     </qresource>
 </RCC>
