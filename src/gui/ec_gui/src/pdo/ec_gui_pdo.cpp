@@ -1,5 +1,6 @@
 #include "ec_gui_pdo.h"
 #include "ec_gui_utils.h"
+#include <math.h>
 
 EcGuiPdo::EcGuiPdo(EcGuiSlider::Ptr ec_gui_slider, QWidget *parent):
 QWidget(parent),
@@ -8,6 +9,7 @@ _ec_gui_slider(ec_gui_slider)
     _tree_wid = parent->findChild<QTreeWidget *>("PDO");
     
     _receive_timer= new QElapsedTimer();
+    _send_timer= new QElapsedTimer();
     
     _custom_plot = new QCustomPlot();
 
@@ -425,8 +427,24 @@ double  EcGuiPdo::filtering(SecondOrderFilter<double>::Ptr filter,double actual_
 
     return value_filtered;
 }
+
+double  EcGuiPdo::sine_wave(double A,double F,double actual_value)
+{
+    double fx =  A * std::sin (2*M_PI*F*_s_send_time);
+    return fx;
+}
+
+void EcGuiPdo::restart_send_timer()
+{
+    _send_timer->restart();
+}
+
+
 void EcGuiPdo::write()
 {
+    _ms_send_time= _send_timer->elapsed();
+    _s_send_time=(double) _ms_send_time/1000;
+
     write_motor_pdo();
     write_valve_pdo();
     write_pump_pdo();
@@ -461,7 +479,7 @@ void EcGuiPdo::write_motor_pdo()
     _motor_ref_flags = RefFlags::FLAG_MULTI_REF;
     
     for (auto& [slave_id, slider_wid]:_slider_map.actual_sw_map_selected){
-        int ctrl_cmd_ref=0x00;
+        int ctrl_cmd_ref=0x00;   double f= 1/(((double) _time_ms)/1000);
         if(slider_wid->is_slider_enabled()){
             ctrl_cmd_ref=_ctrl_cmd;
         }
@@ -479,6 +497,7 @@ void EcGuiPdo::write_motor_pdo()
         {
             pos_ref= filtering(_slider_map.position_t_sw_map[slave_id]->get_filter(),_slider_map.position_t_sw_map[slave_id]->get_spinbox_value());
         }
+        pos_ref=sine_wave(1,1,_slider_map.position_sw_map[slave_id]->get_spinbox_value());
 
         double vel_ref= filtering(_slider_map.velocity_sw_map[slave_id]->get_filter(),_slider_map.velocity_sw_map[slave_id]->get_spinbox_value());
         double tor_ref= filtering(_slider_map.torque_sw_map[slave_id]->get_filter(),_slider_map.torque_sw_map[slave_id]->get_spinbox_value());

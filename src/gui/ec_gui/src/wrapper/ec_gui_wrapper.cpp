@@ -200,6 +200,7 @@ void EcGuiWrapper::onSendStopBtnReleased()
         _ec_gui_slider->enable_sliders();
 
         _ec_gui_pdo->set_filter(_time_ms);
+        _ec_gui_pdo->restart_send_timer();
         _send_timer->start(_time_ms);
     }
     else{

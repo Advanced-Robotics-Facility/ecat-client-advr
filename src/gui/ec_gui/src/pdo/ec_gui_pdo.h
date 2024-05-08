@@ -27,6 +27,7 @@ public:
       void read();
       void set_filter(int time_ms);
       void set_ctrl_mode(float ctrl_cmd);
+      void restart_send_timer();
       void write();
       void clear_write();
 
@@ -39,13 +40,14 @@ private:
       
       QTreeWidget *_tree_wid;
       QElapsedTimer *_receive_timer;
+      QElapsedTimer *_send_timer;
       QCustomPlot *_custom_plot;
       QPushButton * _stop_plotting_btn;
       std::map<std::string,QCPGraph *> _graph_pdo_map;
       std::map<std::string,QColor> _color_pdo_map;
       bool _update_plot,_first_update,_clear_plot;
-      qint64 _ms_receive_time;
-      double _s_receive_time;
+      qint64 _ms_receive_time,_ms_send_time;
+      double _s_receive_time,_s_send_time;
       float _currentHue = 0.0;
       
       QList<QString> _motor_pdo_fields,_motor_ref_pdo_fields;
@@ -96,6 +98,7 @@ private:
       int _time_ms;
       bool _first_send;
       double filtering(SecondOrderFilter<double>::Ptr filter,double actual_value);
+      double sine_wave(double A,double F,double actual_value);
       
       MotorReferenceMap _motors_ref;
       RefFlags _motor_ref_flags;
