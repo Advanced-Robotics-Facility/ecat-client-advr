@@ -99,6 +99,7 @@ private:
       bool _first_send;
       double filtering(SecondOrderFilter<double>::Ptr filter,double actual_value);
       double sine_wave(double A,double F,double actual_value);
+      double square_wave(double A,double F,double actual_value);
       
       MotorReferenceMap _motors_ref;
       RefFlags _motor_ref_flags;

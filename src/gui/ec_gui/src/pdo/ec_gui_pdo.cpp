@@ -434,6 +434,15 @@ double  EcGuiPdo::sine_wave(double A,double F,double actual_value)
     return fx;
 }
 
+double  EcGuiPdo::square_wave(double A,double F,double actual_value)
+{
+    double fx=-1*A;
+    if(std::signbit(std::sin (2*M_PI*F*_s_send_time))){
+        fx=1*A;
+    }
+    return fx;
+}
+
 void EcGuiPdo::restart_send_timer()
 {
     _send_timer->restart();
@@ -493,11 +502,11 @@ void EcGuiPdo::write_motor_pdo()
         }
 
         double pos_ref= filtering(_slider_map.position_sw_map[slave_id]->get_filter(),_slider_map.position_sw_map[slave_id]->get_spinbox_value());
-        if(_ctrl_cmd==0xD4)
-        {
+        if(_ctrl_cmd==0xD4){
             pos_ref= filtering(_slider_map.position_t_sw_map[slave_id]->get_filter(),_slider_map.position_t_sw_map[slave_id]->get_spinbox_value());
         }
-        pos_ref=sine_wave(1,1,_slider_map.position_sw_map[slave_id]->get_spinbox_value());
+
+        pos_ref=square_wave(1,1,_slider_map.position_sw_map[slave_id]->get_spinbox_value());
 
         double vel_ref= filtering(_slider_map.velocity_sw_map[slave_id]->get_filter(),_slider_map.velocity_sw_map[slave_id]->get_spinbox_value());
         double tor_ref= filtering(_slider_map.torque_sw_map[slave_id]->get_filter(),_slider_map.torque_sw_map[slave_id]->get_spinbox_value());
