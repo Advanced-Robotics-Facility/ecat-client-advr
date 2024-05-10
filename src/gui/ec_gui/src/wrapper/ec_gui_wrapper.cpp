@@ -217,6 +217,7 @@ void EcGuiWrapper::onSendStopBtnReleased()
         else{
             _send_stop_btn->setText("Send");
             _ec_gui_pdo->set_filter(_time_ms);//STOP align all references to zero or with the actual position for the motors
+            _ec_gui_pdo->restart_send_timer();
         }
     }
 }

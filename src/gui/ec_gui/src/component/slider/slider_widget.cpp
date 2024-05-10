@@ -282,12 +282,23 @@ double SliderWidget::compute_wave(double t)
         fx = _slider_filtered->process(_valuebox->value());
         break;
     case 1:
-        fx =  _sine_a->value() * std::sin (2*M_PI*_sine_f->value()*t + _sine_t->value());
+        if(t==0){
+            fx=_valuebox->value();
+        }
+        else{
+            fx = _valuebox->value() +_sine_a->value() * std::sin (2*M_PI*_sine_f->value()*t + _sine_t->value());
+        }
         break;
     case 2:
-        fx=-1*_square_a->value();
-        if(std::signbit(std::sin (2*M_PI*_square_f->value()*t + _square_t->value()))){
-            fx=1*_square_a->value();
+        if(t==0){
+            fx=_valuebox->value();
+        }
+        else{
+            fx=-1*_square_a->value();
+            if(std::signbit(std::sin (2*M_PI*_square_f->value()*t + _square_t->value()))){
+                fx=1*_square_a->value();
+            }
+            fx=_valuebox->value()+ fx;
         }
         break;
     
