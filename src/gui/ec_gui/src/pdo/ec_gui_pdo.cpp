@@ -429,21 +429,6 @@ double  EcGuiPdo::filtering(SecondOrderFilter<double>::Ptr filter,double actual_
     return value_filtered;
 }
 
-double  EcGuiPdo::sine_wave(double A,double F,double actual_value)
-{
-    double fx =  A * std::sin (2*M_PI*F*_s_send_time);
-    return fx;
-}
-
-double  EcGuiPdo::square_wave(double A,double F,double actual_value)
-{
-    double fx=-1*A;
-    if(std::signbit(std::sin (2*M_PI*F*_s_send_time))){
-        fx=1*A;
-    }
-    return fx;
-}
-
 void EcGuiPdo::restart_send_timer()
 {
     _send_timer->restart();
@@ -504,11 +489,11 @@ void EcGuiPdo::write_motor_pdo()
 
         double pos_ref= _slider_map.position_sw_map[slave_id]->compute_wave(_s_send_time);
         if(_ctrl_cmd==0xD4){
-            pos_ref= filtering(_slider_map.position_t_sw_map[slave_id]->get_filter(),_slider_map.position_t_sw_map[slave_id]->get_spinbox_value());
+            pos_ref= _slider_map.position_t_sw_map[slave_id]->compute_wave(_s_send_time);
         }
 
-        double vel_ref= filtering(_slider_map.velocity_sw_map[slave_id]->get_filter(),_slider_map.velocity_sw_map[slave_id]->get_spinbox_value());
-        double tor_ref= filtering(_slider_map.torque_sw_map[slave_id]->get_filter(),_slider_map.torque_sw_map[slave_id]->get_spinbox_value());
+        double vel_ref= _slider_map.velocity_sw_map[slave_id]->compute_wave(_s_send_time);
+        double tor_ref= _slider_map.torque_sw_map[slave_id]->compute_wave(_s_send_time);
                   
         MotorPdoTx::pdo_t   references{ctrl_cmd_ref, pos_ref, vel_ref, tor_ref, _gains[0], _gains[1],_gains[2], _gains[3], _gains[4],1,0,0};
         //            ID      CTRL_MODE, POS_REF, VEL_RF, TOR_REF,  GAIN_1,    GAIN_2,   GAIN_3,   GAIN_4,    GAIN_5, OP, IDX,AUX  OP->1 means NO_OP
@@ -575,7 +560,7 @@ void EcGuiPdo::write_valve_pdo()
             curr_ref=0.0;
         }
 
-        curr_ref = filtering(_slider_map.valve_sw_map[slave_id]->get_filter(),_slider_map.valve_sw_map[slave_id]->get_spinbox_value());
+        curr_ref = _slider_map.valve_sw_map[slave_id]->compute_wave(_s_send_time);
         ValvePdoTx::pdo_t   references{curr_ref,0,0,0,0,0,0,0};
         _valves_ref[slave_id]=references;
     }
@@ -640,7 +625,7 @@ void EcGuiPdo::write_pump_pdo()
             press_ref=0.0;
         }
 
-        press_ref = filtering(_slider_map.pump_sw_map[slave_id]->get_filter(),_slider_map.pump_sw_map[slave_id]->get_spinbox_value());
+        press_ref = _slider_map.pump_sw_map[slave_id]->compute_wave(_s_send_time);
         PumpPdoTx::pdo_t   references{press_ref,0,0,0,0,0,0,0,0};
 
         _pumps_ref[slave_id]=references;
