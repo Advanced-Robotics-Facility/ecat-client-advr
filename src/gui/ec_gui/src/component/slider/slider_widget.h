@@ -42,6 +42,7 @@ public:
     SliderWidgetCalib *get_wid_calibration();
     void remove_calibration();
     SecondOrderFilter<double>::Ptr get_filter();
+    double compute_wave(double t);
 
     ~SliderWidget();
 
@@ -50,6 +51,9 @@ private:
     void on_slider_changed();
     void on_spinbox_changed();
 
+    void enable_tab_wave();
+    void disable_tab_wave();
+
     bool _callback_enabled;
 
     QVBoxLayout* _calibration_layout;
@@ -57,6 +61,9 @@ private:
 
     QSlider *          _valueslider;
     QDoubleSpinBox *   _valuebox;
+    QTabWidget * _tab_wave;
+    QDoubleSpinBox *_sine_a,*_sine_f,*_sine_t;
+    QDoubleSpinBox *_square_a,*_square_f,*_square_t;
     QCheckBox* _slider_enabled;
     int _slider_spinbox_fct;
 

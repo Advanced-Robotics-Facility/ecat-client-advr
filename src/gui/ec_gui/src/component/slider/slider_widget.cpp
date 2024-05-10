@@ -1,4 +1,5 @@
 #include "slider_widget.h"
+#include <iostream>
 
 inline void initSlidersResource()
 {
@@ -123,6 +124,19 @@ SliderWidget::SliderWidget (const QString&  name,
 
     _actual_slider_value=init_value;
 
+    // find wave tab.
+    _tab_wave = parent->findChild<QTabWidget *>("tabWave");
+
+    _sine_a=findChild<QDoubleSpinBox *>("Sine_A");
+    _sine_a->setMaximum(max.toDouble());
+    _sine_f=findChild<QDoubleSpinBox *>("Sine_F");
+    _sine_t=findChild<QDoubleSpinBox *>("Sine_T");
+
+
+    _square_a=findChild<QDoubleSpinBox *>("Square_A");
+    _square_a->setMaximum(max.toDouble());
+    _square_f=findChild<QDoubleSpinBox *>("Square_F");
+    _square_t=findChild<QDoubleSpinBox *>("Square_T");
 
     disable_slider();
 
@@ -172,13 +186,19 @@ void SliderWidget::align_spinbox()
 
 void SliderWidget::disable_slider()
 {
+    enable_tab_wave();
+
     _valueslider->setEnabled(false);
     _valuebox->setEnabled(false);
 }
 void SliderWidget::enable_slider()
 {
-    _valueslider->setEnabled(true);
-    _valuebox->setEnabled(true);
+      disable_tab_wave();
+
+    if(_slider_enabled->isChecked()){
+        _valueslider->setEnabled(true);
+        _valuebox->setEnabled(true);
+    }
 }
 
 void SliderWidget::hide_slider_enabled()
@@ -245,6 +265,55 @@ SliderWidgetCalib* SliderWidget::get_wid_calibration()
 void SliderWidget::remove_calibration()
 {
     delete _calibration_layout;
+}
+
+double SliderWidget::compute_wave(double t)
+{
+    double fx=0;
+    switch (_tab_wave->currentIndex()){
+    case 0:
+        fx = _slider_filtered->process(_valuebox->value());
+        break;
+    case 1:
+        fx =  _sine_a->value() * std::sin (2*M_PI*_sine_f->value()*t + _sine_t->value());
+        break;
+    case 2:
+        fx=-1*_square_a->value();
+        if(std::signbit(std::sin (2*M_PI*_square_f->value()*t + _square_t->value()))){
+            fx=1*_square_a->value();
+        }
+        break;
+    
+    default:
+        break;
+    }
+    return fx;
+}
+
+void SliderWidget::enable_tab_wave()
+{
+    _tab_wave->setTabEnabled(0,true);
+    _tab_wave->setTabEnabled(1,true);
+    _tab_wave->setTabEnabled(2,true);
+}
+void SliderWidget::disable_tab_wave()
+{
+    int curr_tab= _tab_wave->currentIndex();
+    if(curr_tab==0){
+        _tab_wave->setTabEnabled(0,true);
+        _tab_wave->setTabEnabled(1,false);
+        _tab_wave->setTabEnabled(2,false);
+    }
+    else if(curr_tab==1){
+        _tab_wave->setTabEnabled(0,false);
+        _tab_wave->setTabEnabled(1,true);
+        _tab_wave->setTabEnabled(2,false);
+    }
+    else{
+        _tab_wave->setTabEnabled(0,false);
+        _tab_wave->setTabEnabled(1,false);
+        _tab_wave->setTabEnabled(2,true);
+    }
 }
 
 SliderWidget::~SliderWidget()
