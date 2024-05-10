@@ -53,6 +53,7 @@ private:
 
     void enable_tab_wave();
     void disable_tab_wave();
+    void tab_wave_selected();
 
     bool _callback_enabled;
 

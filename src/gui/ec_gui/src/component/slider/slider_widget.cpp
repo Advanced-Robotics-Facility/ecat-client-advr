@@ -183,19 +183,16 @@ void SliderWidget::align_spinbox()
 }
 
 
-
 void SliderWidget::disable_slider()
 {
     enable_tab_wave();
-
     _valueslider->setEnabled(false);
     _valuebox->setEnabled(false);
 }
 void SliderWidget::enable_slider()
 {
-      disable_tab_wave();
-
     if(_slider_enabled->isChecked()){
+        tab_wave_selected();
         _valueslider->setEnabled(true);
         _valuebox->setEnabled(true);
     }
@@ -209,10 +206,14 @@ void SliderWidget::hide_slider_enabled()
 void SliderWidget::enable_slider_enabled()
 {
     _slider_enabled->setEnabled(true);
+    _tab_wave->setEnabled(true);
 }
 void SliderWidget::disable_slider_enabled()
 {
     _slider_enabled->setEnabled(false);
+    if(!_slider_enabled->isChecked()){
+        _tab_wave->setEnabled(false);
+    }
 }
 
 
@@ -296,7 +297,15 @@ void SliderWidget::enable_tab_wave()
     _tab_wave->setTabEnabled(1,true);
     _tab_wave->setTabEnabled(2,true);
 }
+
 void SliderWidget::disable_tab_wave()
+{
+    _tab_wave->setTabEnabled(0,false);
+    _tab_wave->setTabEnabled(1,false);
+    _tab_wave->setTabEnabled(2,false);
+}
+
+void SliderWidget::tab_wave_selected()
 {
     int curr_tab= _tab_wave->currentIndex();
     if(curr_tab==0){
