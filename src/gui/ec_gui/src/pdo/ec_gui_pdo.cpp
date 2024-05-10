@@ -1,6 +1,5 @@
 #include "ec_gui_pdo.h"
 #include "ec_gui_utils.h"
-#include <math.h>
 
 EcGuiPdo::EcGuiPdo(EcGuiSlider::Ptr ec_gui_slider, QWidget *parent):
 QWidget(parent),
@@ -421,7 +420,6 @@ double  EcGuiPdo::filtering(SecondOrderFilter<double>::Ptr filter,double actual_
         filter->setTimeStep(ts);
     }
 
-    // Second Order Filtering
 
     double value_filtered=filter->process(actual_value);
 
@@ -488,7 +486,7 @@ void EcGuiPdo::write_motor_pdo()
     _motor_ref_flags = RefFlags::FLAG_MULTI_REF;
     
     for (auto& [slave_id, slider_wid]:_slider_map.actual_sw_map_selected){
-        int ctrl_cmd_ref=0x00;   double f= 1/(((double) _time_ms)/1000);
+        int ctrl_cmd_ref=0x00;
         if(slider_wid->is_slider_enabled()){
             ctrl_cmd_ref=_ctrl_cmd;
         }

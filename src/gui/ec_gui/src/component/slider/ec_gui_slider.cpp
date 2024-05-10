@@ -133,8 +133,7 @@ void EcGuiSlider::reset_sliders()
 }
 void EcGuiSlider::enable_sliders()
 {
-    for (auto& [slave_id, slider_wid]:_slider_map.actual_sw_map_selected)
-    {
+    for (auto& [slave_id, slider_wid]:_slider_map.actual_sw_map_selected){
         _slider_map.position_sw_map[slave_id]->enable_slider();
         _slider_map.position_t_sw_map[slave_id]->enable_slider();
         _slider_map.velocity_sw_map[slave_id]->enable_slider();
@@ -150,9 +149,7 @@ void EcGuiSlider::enable_sliders()
 }
 void EcGuiSlider::disable_sliders()
 {
-    for (auto& [slave_id, slider_wid]:_slider_map.actual_sw_map_selected)
-    {
-        slider_wid->disable_slider();
+    for (auto& [slave_id, slider_wid]:_slider_map.actual_sw_map_selected){
         _slider_map.position_sw_map[slave_id]->disable_slider();
         _slider_map.position_t_sw_map[slave_id]->disable_slider();
         _slider_map.velocity_sw_map[slave_id]->disable_slider();
