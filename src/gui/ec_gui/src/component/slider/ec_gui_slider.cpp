@@ -165,6 +165,24 @@ void EcGuiSlider::disable_sliders()
     }
 }
 
+void EcGuiSlider::set_sliders_filter(double st)
+{
+    for (auto& [slave_id, slider_wid]:_slider_map.actual_sw_map_selected){
+        _slider_map.position_sw_map[slave_id]->set_filter(st);
+        _slider_map.position_t_sw_map[slave_id]->set_filter(st);
+        _slider_map.velocity_sw_map[slave_id]->set_filter(st);
+        _slider_map.torque_sw_map[slave_id]->set_filter(st);
+        _slider_map.current_sw_map[slave_id]->set_filter(st);
+    }
+
+    for (auto& [slave_id, slider_wid]:_slider_map.valve_sw_map){
+         slider_wid->set_filter(st);
+    }
+    for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
+         slider_wid->set_filter(st);
+    }
+}
+
 void EcGuiSlider::delete_items(QLayout * layout)
 {
     if ( layout != NULL )

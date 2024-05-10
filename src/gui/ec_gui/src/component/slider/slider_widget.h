@@ -42,6 +42,7 @@ public:
     SliderWidgetCalib *get_wid_calibration();
     void remove_calibration();
     SecondOrderFilter<double>::Ptr get_filter();
+    void set_filter(double st);
     double compute_wave(double t);
 
     ~SliderWidget();

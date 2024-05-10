@@ -268,6 +268,12 @@ void SliderWidget::remove_calibration()
     delete _calibration_layout;
 }
 
+void SliderWidget::set_filter(double st)
+{
+    _slider_filtered->reset(_valuebox->value());
+    _slider_filtered->setTimeStep(st);
+}
+
 double SliderWidget::compute_wave(double t)
 {
     double fx=0;

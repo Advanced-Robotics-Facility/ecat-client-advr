@@ -54,6 +54,7 @@ public:
     void reset_sliders();
     void enable_sliders();
     void disable_sliders();
+    void set_sliders_filter(double st);
 
 private:
   

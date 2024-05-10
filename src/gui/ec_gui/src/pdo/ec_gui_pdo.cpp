@@ -403,6 +403,8 @@ void EcGuiPdo::set_filter(int time_ms)
 {
     _first_send = true;
     _time_ms = time_ms;
+    double ts=((double) _time_ms)/1000;
+    _ec_gui_slider->set_sliders_filter(ts);
 }
 
 void EcGuiPdo:: set_ctrl_mode(float ctrl_cmd)
@@ -420,6 +422,7 @@ double  EcGuiPdo::filtering(SecondOrderFilter<double>::Ptr filter,double actual_
         filter->setTimeStep(ts);
     }
 
+    // Second Order Filtering
 
     double value_filtered=filter->process(actual_value);
 
@@ -499,12 +502,10 @@ void EcGuiPdo::write_motor_pdo()
             _gains.push_back(gain_filtered);
         }
 
-        double pos_ref= filtering(_slider_map.position_sw_map[slave_id]->get_filter(),_slider_map.position_sw_map[slave_id]->get_spinbox_value());
+        double pos_ref= _slider_map.position_sw_map[slave_id]->compute_wave(_s_send_time);
         if(_ctrl_cmd==0xD4){
             pos_ref= filtering(_slider_map.position_t_sw_map[slave_id]->get_filter(),_slider_map.position_t_sw_map[slave_id]->get_spinbox_value());
         }
-
-        pos_ref=square_wave(1,1,_slider_map.position_sw_map[slave_id]->get_spinbox_value());
 
         double vel_ref= filtering(_slider_map.velocity_sw_map[slave_id]->get_filter(),_slider_map.velocity_sw_map[slave_id]->get_spinbox_value());
         double tor_ref= filtering(_slider_map.torque_sw_map[slave_id]->get_filter(),_slider_map.torque_sw_map[slave_id]->get_spinbox_value());
