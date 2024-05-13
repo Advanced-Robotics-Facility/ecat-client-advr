@@ -216,8 +216,6 @@ void EcGuiWrapper::onSendStopBtnReleased()
         }
         else{
             _send_stop_btn->setText("Start Motion");
-            _ec_gui_pdo->set_filter(_time_ms);//STOP align all references to zero or with the actual position for the motors
-            _ec_gui_pdo->restart_send_timer();
         }
     }
 }
@@ -226,6 +224,17 @@ void EcGuiWrapper::onSendStopBtnReleased()
 
 void EcGuiWrapper::send()
 {
+
+    if(!_send_ref){
+        count_reset_ref++;
+        _ec_gui_pdo->set_filter(_time_ms);//STOP align all references to zero or with the actual position for the motors
+        _ec_gui_pdo->restart_send_timer();
+        if(count_reset_ref>3){ 
+            _ec_gui_pdo->clear_write();
+            _send_timer->stop(); //delay stop
+        }
+    }
+
     if(_ec_wrapper_info.client->is_client_alive()){
         _ec_gui_pdo->write();
     }
@@ -238,15 +247,7 @@ void EcGuiWrapper::send()
             onSendStopBtnReleased(); // stop sending references
         }
     } // stop motors command
- 
 
-    if(!_send_ref){
-        count_reset_ref++;
-        if(count_reset_ref>3){ 
-            _ec_gui_pdo->clear_write();
-            _send_timer->stop(); //delay stop
-        }
-    }
 }
 
 void EcGuiWrapper::start_record()
