@@ -99,7 +99,7 @@ void EcIDDP::stop_client()
         _thread_jointable=false;
     }
 
-    _client_alive=false;
+    //_client_alive=false;
 }
 
 
