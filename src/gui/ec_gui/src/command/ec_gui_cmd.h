@@ -59,7 +59,9 @@ private:
   QComboBox * _fieldtype_combobox;
   QComboBox * _mode_type_combobox;
   QTabWidget *_devicecontrol;
-  QTabWidget *_tabcontrol;
+  QTabWidget *_tab_motor_control;
+  QTabWidget *_tab_valve_control;
+  QTabWidget *_tab_pump_control;
 
   QDialogButtonBox  * _cmd_manager;
   QPushButton * _applybtn;

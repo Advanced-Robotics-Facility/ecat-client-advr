@@ -27,7 +27,9 @@ EcGuiCmd::EcGuiCmd(EcGuiSlider::Ptr ec_gui_slider,
     _devicecontrol=parent->findChild<QTabWidget *>("deviceControl");
 
     // find position, velocity and torque tab.
-    _tabcontrol = parent->findChild<QTabWidget *>("tabControl");
+    _tab_motor_control = parent->findChild<QTabWidget *>("tabMotorControl");
+    _tab_valve_control = parent->findChild<QTabWidget *>("tabValveControl");
+    _tab_pump_control = parent->findChild<QTabWidget *>("tabPumpControl");
 
     /* Getting command manager (Apply) */
     _cmd_manager = parent->findChild<QDialogButtonBox *>("CmdManager");
@@ -77,7 +79,9 @@ void EcGuiCmd::readCommand()
     if(getFieldType() == "Start devices")
     {
         _ctrl_cmd_type=ClientCmdType::START;
-        _tabcontrol->setEnabled(true);
+        _tab_motor_control->setEnabled(true);
+        _tab_valve_control->setEnabled(true);
+        _tab_pump_control->setEnabled(true);
         _mode_type_combobox->setEnabled(true);
         readModeType();
         if(!_device_start_req){
@@ -104,7 +108,9 @@ void EcGuiCmd::readCommand()
     {
         _ctrl_cmd_type=ClientCmdType::STOP;
         _mode_type_combobox->setEnabled(false);
-        _tabcontrol->setEnabled(false);
+        _tab_motor_control->setEnabled(false);
+        _tab_valve_control->setEnabled(false);
+        _tab_pump_control->setEnabled(false);
         _notallbtn->setEnabled(false);
         _allbtn->setEnabled(false);
     }
@@ -144,44 +150,44 @@ void EcGuiCmd::readModeType()
         _actual_sw_map_selected.clear();
         if(getModeType() == "Position")
         {
-            _tabcontrol->setTabEnabled(0,true);
-            _tabcontrol->setTabEnabled(1,false);
-            _tabcontrol->setTabEnabled(2,false);
-            _tabcontrol->setTabEnabled(3,false);
-            _tabcontrol->setCurrentIndex(0);
+            _tab_motor_control->setTabEnabled(0,true);
+            _tab_motor_control->setTabEnabled(1,false);
+            _tab_motor_control->setTabEnabled(2,false);
+            _tab_motor_control->setTabEnabled(3,false);
+            _tab_motor_control->setCurrentIndex(0);
             
             _ctrl_cmd=0x3B;
             _actual_sw_map_selected=_slider_map.position_sw_map;
         }
         else if(getModeType() == "Velocity")
         {
-            _tabcontrol->setTabEnabled(0,false);
-            _tabcontrol->setTabEnabled(1,true);
-            _tabcontrol->setTabEnabled(2,false);
-            _tabcontrol->setTabEnabled(3,false);
-            _tabcontrol->setCurrentIndex(1);
+            _tab_motor_control->setTabEnabled(0,false);
+            _tab_motor_control->setTabEnabled(1,true);
+            _tab_motor_control->setTabEnabled(2,false);
+            _tab_motor_control->setTabEnabled(3,false);
+            _tab_motor_control->setCurrentIndex(1);
             
             _ctrl_cmd=0x71;
             _actual_sw_map_selected=_slider_map.velocity_sw_map;
         }
         else if(getModeType() == "Impedance")
         {
-            _tabcontrol->setTabEnabled(0,false);
-            _tabcontrol->setTabEnabled(1,false);
-            _tabcontrol->setTabEnabled(2,true);
-            _tabcontrol->setTabEnabled(3,false);
-            _tabcontrol->setCurrentIndex(2);
+            _tab_motor_control->setTabEnabled(0,false);
+            _tab_motor_control->setTabEnabled(1,false);
+            _tab_motor_control->setTabEnabled(2,true);
+            _tab_motor_control->setTabEnabled(3,false);
+            _tab_motor_control->setCurrentIndex(2);
             
             _ctrl_cmd=0xD4;
             _actual_sw_map_selected=_slider_map.position_t_sw_map;
         }
         else if(getModeType() == "Current")
         {
-            _tabcontrol->setTabEnabled(0,false);
-            _tabcontrol->setTabEnabled(1,false);
-            _tabcontrol->setTabEnabled(2,false);
-            _tabcontrol->setTabEnabled(3,true);
-            _tabcontrol->setCurrentIndex(3);
+            _tab_motor_control->setTabEnabled(0,false);
+            _tab_motor_control->setTabEnabled(1,false);
+            _tab_motor_control->setTabEnabled(2,false);
+            _tab_motor_control->setTabEnabled(3,true);
+            _tab_motor_control->setCurrentIndex(3);
             
             _ctrl_cmd=0xCC;
             _actual_sw_map_selected=_slider_map.current_sw_map;

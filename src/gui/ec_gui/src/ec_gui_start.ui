@@ -422,7 +422,7 @@
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_5">
          <item>
-          <widget class="QTabWidget" name="tabControl">
+          <widget class="QTabWidget" name="tabMotorControl">
            <property name="minimumSize">
             <size>
              <width>0</width>
@@ -658,22 +658,36 @@
         </attribute>
         <layout class="QHBoxLayout" name="horizontalLayout_16">
          <item>
-          <widget class="QScrollArea" name="scrollArea_6">
-           <property name="widgetResizable">
-            <bool>true</bool>
+          <widget class="QTabWidget" name="tabValveControl">
+           <property name="currentIndex">
+            <number>0</number>
            </property>
-           <widget class="QWidget" name="scrollAreaWidgetContents_6">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>0</y>
-              <width>1016</width>
-              <height>213</height>
-             </rect>
-            </property>
-            <layout class="QHBoxLayout" name="horizontalLayout_18">
+           <widget class="QWidget" name="tab_3">
+            <attribute name="title">
+             <string>Current</string>
+            </attribute>
+            <layout class="QVBoxLayout" name="verticalLayout_7">
              <item>
-              <layout class="QVBoxLayout" name="valveSliders"/>
+              <widget class="QScrollArea" name="scrollArea_6">
+               <property name="widgetResizable">
+                <bool>true</bool>
+               </property>
+               <widget class="QWidget" name="scrollAreaWidgetContents_6">
+                <property name="geometry">
+                 <rect>
+                  <x>0</x>
+                  <y>0</y>
+                  <width>994</width>
+                  <height>166</height>
+                 </rect>
+                </property>
+                <layout class="QHBoxLayout" name="horizontalLayout_18">
+                 <item>
+                  <layout class="QVBoxLayout" name="valveSliders"/>
+                 </item>
+                </layout>
+               </widget>
+              </widget>
              </item>
             </layout>
            </widget>
@@ -687,22 +701,36 @@
         </attribute>
         <layout class="QHBoxLayout" name="horizontalLayout_17">
          <item>
-          <widget class="QScrollArea" name="scrollArea_7">
-           <property name="widgetResizable">
-            <bool>true</bool>
+          <widget class="QTabWidget" name="tabPumpControl">
+           <property name="currentIndex">
+            <number>0</number>
            </property>
-           <widget class="QWidget" name="scrollAreaWidgetContents_7">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>0</y>
-              <width>1016</width>
-              <height>213</height>
-             </rect>
-            </property>
-            <layout class="QHBoxLayout" name="horizontalLayout_20">
+           <widget class="QWidget" name="tab_6">
+            <attribute name="title">
+             <string>Pressure</string>
+            </attribute>
+            <layout class="QVBoxLayout" name="verticalLayout_8">
              <item>
-              <layout class="QVBoxLayout" name="pumpSliders"/>
+              <widget class="QScrollArea" name="scrollArea_7">
+               <property name="widgetResizable">
+                <bool>true</bool>
+               </property>
+               <widget class="QWidget" name="scrollAreaWidgetContents_7">
+                <property name="geometry">
+                 <rect>
+                  <x>0</x>
+                  <y>0</y>
+                  <width>994</width>
+                  <height>166</height>
+                 </rect>
+                </property>
+                <layout class="QHBoxLayout" name="horizontalLayout_20">
+                 <item>
+                  <layout class="QVBoxLayout" name="pumpSliders"/>
+                 </item>
+                </layout>
+               </widget>
+              </widget>
              </item>
             </layout>
            </widget>
