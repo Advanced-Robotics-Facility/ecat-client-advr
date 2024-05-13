@@ -537,7 +537,14 @@ void EcGuiPdo::write_valve_pdo()
         }
 
         curr_ref = _slider_map.valve_sw_map[slave_id]->compute_wave(_s_send_time);
-        ValvePdoTx::pdo_t   references{curr_ref,0,0,0,0,0,0,0};
+        ValvePdoTx::pdo_t   references{curr_ref,
+                                       slider_wid->get_wid_calibration()->get_slider_value(0),
+                                       slider_wid->get_wid_calibration()->get_slider_value(1),
+                                       slider_wid->get_wid_calibration()->get_slider_value(2),
+                                       slider_wid->get_wid_calibration()->get_slider_value(3),
+                                       slider_wid->get_wid_calibration()->get_slider_value(4),
+                                       slider_wid->get_wid_calibration()->get_slider_value(5),
+                                       slider_wid->get_wid_calibration()->get_slider_value(6)};
         _valves_ref[slave_id]=references;
     }
 
@@ -602,16 +609,16 @@ void EcGuiPdo::write_pump_pdo()
         }
 
         press_ref = _slider_map.pump_sw_map[slave_id]->compute_wave(_s_send_time);
-        
+
         PumpPdoTx::pdo_t   references{press_ref,
-                                     _slider_map.pump_sw_map[slave_id]->get_wid_calibration()->get_slider_value(0),
-                                     _slider_map.pump_sw_map[slave_id]->get_wid_calibration()->get_slider_value(1),
-                                     _slider_map.pump_sw_map[slave_id]->get_wid_calibration()->get_slider_value(2),
-                                     _slider_map.pump_sw_map[slave_id]->get_wid_calibration()->get_slider_value(3),
-                                     _slider_map.pump_sw_map[slave_id]->get_wid_calibration()->get_slider_value(4),
-                                     _slider_map.pump_sw_map[slave_id]->get_wid_calibration()->get_slider_value(5),
-                                     _slider_map.pump_sw_map[slave_id]->get_wid_calibration()->get_slider_value(6),
-                                     _slider_map.pump_sw_map[slave_id]->get_wid_calibration()->get_slider_value(7),
+                                      slider_wid->get_wid_calibration()->get_slider_value(0),
+                                      slider_wid->get_wid_calibration()->get_slider_value(1),
+                                      slider_wid->get_wid_calibration()->get_slider_value(2),
+                                      slider_wid->get_wid_calibration()->get_slider_value(3),
+                                      slider_wid->get_wid_calibration()->get_slider_value(4),
+                                      slider_wid->get_wid_calibration()->get_slider_value(5),
+                                      slider_wid->get_wid_calibration()->get_slider_value(6),
+                                      slider_wid->get_wid_calibration()->get_slider_value(7),
                                      };
 
         _pumps_ref[slave_id]=references;
