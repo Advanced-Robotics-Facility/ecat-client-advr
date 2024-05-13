@@ -343,6 +343,13 @@ void EcGuiPdo::read_pump_status()
             if(PumpPdoRx::make_vector_from_tuple(pump_rx_pdo,_pump_rx_v)){
                 fill_data(esc_id_name,topLevel,_pump_pdo_fields,_pump_rx_v);
             }
+
+            /************************************* ALIGN PUMP SLIDERS with the actual pressure********************************************/
+            double pressure=std::get<0>(pump_rx_pdo);
+            if(_slider_map.pump_sw_map.count(esc_id)>0){
+                _slider_map.pump_sw_map[esc_id]->set_actual_slider_value(pressure);
+            }
+            /************************************* ALIGN PUMP SLIDERS with the actual pressure********************************************/
         }
      }
     /*************************************VALVE*****************************************************************/
