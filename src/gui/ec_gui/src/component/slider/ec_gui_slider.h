@@ -5,6 +5,7 @@
 #include <QWidget>
 
 #include "slider_widget.h"
+#include "utils/ec_utils.h"
 
 class EcGuiSlider : public QWidget
 {
