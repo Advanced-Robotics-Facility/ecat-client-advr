@@ -194,9 +194,9 @@ void EcGuiWrapper::onSendStopBtnReleased()
     _ec_gui_pdo->set_ctrl_mode(_ctrl_cmd);
     count_reset_ref=0;
     
-    if((_send_stop_btn->text()=="Send")&&(_send_ref)){
+    if((_send_stop_btn->text()=="Start Motion")&&(_send_ref)){
         _period_combobox->setEnabled(false);
-        _send_stop_btn->setText("Stop");
+        _send_stop_btn->setText("Stop Motion");
         _ec_gui_slider->enable_sliders();
 
         _ec_gui_pdo->set_filter(_time_ms);
@@ -208,14 +208,14 @@ void EcGuiWrapper::onSendStopBtnReleased()
         _period_combobox->setEnabled(true);        
         _ec_gui_slider->disable_sliders();
 
-        if(_send_stop_btn->text()=="Send"){
+        if(_send_stop_btn->text()=="Start Motion"){
             QMessageBox msgBox;
-            msgBox.setText("Cannot send references without starting the devices"
+            msgBox.setText("Cannot start motion without starting the devices"
                            ", please launch START EtherCAT command ");
             msgBox.exec();
         }
         else{
-            _send_stop_btn->setText("Send");
+            _send_stop_btn->setText("Start Motion");
             _ec_gui_pdo->set_filter(_time_ms);//STOP align all references to zero or with the actual position for the motors
             _ec_gui_pdo->restart_send_timer();
         }

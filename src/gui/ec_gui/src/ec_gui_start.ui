@@ -716,7 +716,7 @@
       <widget class="QPushButton" name="SendStopBtn">
        <property name="maximumSize">
         <size>
-         <width>80</width>
+         <width>100</width>
          <height>16777215</height>
         </size>
        </property>
@@ -724,7 +724,7 @@
         <enum>Qt::RightToLeft</enum>
        </property>
        <property name="text">
-        <string>Send</string>
+        <string>Start Motion</string>
        </property>
       </widget>
      </item>
