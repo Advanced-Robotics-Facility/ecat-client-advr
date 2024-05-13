@@ -401,7 +401,6 @@ void EcGuiPdo::onStopPlotting()
 /********************************************************* WRITE PDO***********************************************************************************************/
 void EcGuiPdo::set_filter(int time_ms)
 {
-    _first_send = true;
     _time_ms = time_ms;
     double ts=((double) _time_ms)/1000;
     _ec_gui_slider->set_sliders_filter(ts);
@@ -411,22 +410,6 @@ void EcGuiPdo:: set_ctrl_mode(float ctrl_cmd)
 {
     _ctrl_cmd = ctrl_cmd;
     _slider_map=_ec_gui_slider->get_sliders(); // read only actual slider widget map.
-}
-
-double  EcGuiPdo::filtering(SecondOrderFilter<double>::Ptr filter,double actual_value)
-{
-    if(_first_send)
-    {
-        filter->reset(actual_value);
-        double ts=((double) _time_ms)/1000;
-        filter->setTimeStep(ts);
-    }
-
-    // Second Order Filtering
-
-    double value_filtered=filter->process(actual_value);
-
-    return value_filtered;
 }
 
 void EcGuiPdo::restart_send_timer()
@@ -443,14 +426,6 @@ void EcGuiPdo::write()
     write_motor_pdo();
     write_valve_pdo();
     write_pump_pdo();
-    
-    if(!_motors_ref.empty()|| 
-       !_valves_ref.empty()||
-       !_pumps_ref.empty()){
-        if(_first_send){
-            _first_send=false; // Note: not remove from here, used for all filters.
-        }
-    }
 }
 
 void EcGuiPdo::clear_write()
@@ -479,13 +454,7 @@ void EcGuiPdo::write_motor_pdo()
             ctrl_cmd_ref=_ctrl_cmd;
         }
 
-        _gains.clear();
-        auto gains_calib_selected=_slider_map.actual_sw_map_selected[slave_id]->get_wid_calibration();
-
-        for(int calib_index=0; calib_index < gains_calib_selected->get_slider_numb(); calib_index++){
-            double gain_filtered=filtering(gains_calib_selected->get_slider_filter(calib_index),gains_calib_selected->get_slider_value(calib_index));
-            _gains.push_back(gain_filtered);
-        }
+        _slider_map.actual_sw_map_selected[slave_id]->get_wid_calibration()->filtering(_gains);
 
         double pos_ref= _slider_map.position_sw_map[slave_id]->compute_wave(_s_send_time);
         if(_ctrl_cmd==0xD4){

@@ -114,6 +114,7 @@ SliderWidget::SliderWidget (const QString&  name,
     _slider_filtered=std::make_shared<SecondOrderFilter<double>>(12.0,1.0,1.0,init_value);
 
     _calibration_layout= findChild<QVBoxLayout *>("calibrationLayout");
+    _wid_calib=nullptr;
     if(!gains.empty()){
         _pid_layout=findChild<QHBoxLayout *>("PID_Layout");
 
@@ -272,6 +273,9 @@ void SliderWidget::set_filter(double st)
 {
     _slider_filtered->reset(_valuebox->value());
     _slider_filtered->setTimeStep(st);
+    if(_wid_calib != nullptr){
+        _wid_calib->set_filter(st);
+    }
 }
 
 double SliderWidget::compute_wave(double t)

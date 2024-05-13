@@ -26,6 +26,8 @@ public:
     void disable_slider_calib(int index);
     void enable_slider_calib(int index);
     void hide_slider_calib(int index);
+    void set_filter(double st);
+    void filtering(std::vector<float>& );
     SecondOrderFilter<double>::Ptr get_slider_filter(int index);
 
     

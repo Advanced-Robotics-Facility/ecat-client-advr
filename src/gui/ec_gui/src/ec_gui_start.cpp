@@ -199,6 +199,7 @@ void EcGuiStart::restart_gui()
 {
     add_device();
     _ec_gui_wrapper->restart_gui_wrapper(_ec_wrapper_info);
+    _ec_gui_wrapper->start_receive(); // auto-start of receiving 
 }
 
 
@@ -337,11 +338,10 @@ void EcGuiStart::scan_device()
                         joint_info_s.actual_pos    =slaves_sdo_data.at("motor_pos");
                         joint_info_s.min_pos       =slaves_sdo_data.at("Min_pos");
                         joint_info_s.max_pos       =slaves_sdo_data.at("Max_pos");
-                        if(joint_info_s.max_pos<joint_info_s.min_pos)
-                        {
-                        double aux_value=joint_info_s.min_pos;
-                        joint_info_s.min_pos=joint_info_s.max_pos;
-                        joint_info_s.max_pos=aux_value;
+                        if(joint_info_s.max_pos<joint_info_s.min_pos){
+                            double aux_value=joint_info_s.min_pos;
+                            joint_info_s.min_pos=joint_info_s.max_pos;
+                            joint_info_s.max_pos=aux_value;
                         }
                         joint_info_s.actual_vel    =slaves_sdo_data.at("motor_vel");
                         joint_info_s.max_vel       =slaves_sdo_data.at("Max_vel");

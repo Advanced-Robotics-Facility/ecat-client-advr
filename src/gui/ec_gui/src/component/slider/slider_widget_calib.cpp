@@ -149,3 +149,19 @@ void SliderWidgetCalib::hide_slider_calib(int index)
     _valuebox[index]->hide();
 }
 
+
+void SliderWidgetCalib::set_filter(double st)
+{
+    for(int i=0;i<_slider_numb;i++){
+        _valuebox_filtered[i]->reset(_valuebox[i]->value());
+        _valuebox_filtered[i]->setTimeStep(st);
+    }
+}
+
+void SliderWidgetCalib::filtering(std::vector<float>& calib_filtered)
+{
+    calib_filtered.clear();
+    for(int i=0;i<_slider_numb;i++){
+        calib_filtered.push_back(_valuebox_filtered[i]->process(_valuebox[i]->value()));
+    }
+}

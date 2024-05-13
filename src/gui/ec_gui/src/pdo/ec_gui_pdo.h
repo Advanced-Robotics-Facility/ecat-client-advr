@@ -96,8 +96,6 @@ private:
     
     //************************ WRITE PDO ******************************
       int _time_ms;
-      bool _first_send;
-      double filtering(SecondOrderFilter<double>::Ptr filter,double actual_value);
       
       MotorReferenceMap _motors_ref;
       RefFlags _motor_ref_flags;
