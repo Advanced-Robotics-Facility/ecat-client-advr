@@ -39,7 +39,6 @@ void EcLogger::start_mat_logger()
                 
                 if(_log_motor_sts_map.count(esc_id)==0){
                     std::string motor_sts_id="motor_sts_id_"+std::to_string(esc_id);
-                    std::cout << "mot_sts_id: " << motor_sts_id << std::endl;
                     _log_motor_sts_map[esc_id]=motor_sts_id;
                     _motors_status_logger->create(motor_sts_id,MotorPdoRx::pdo_size);
                 }
