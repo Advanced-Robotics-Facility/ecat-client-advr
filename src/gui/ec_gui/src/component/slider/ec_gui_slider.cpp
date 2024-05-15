@@ -28,24 +28,23 @@ void EcGuiSlider::create_sliders(std::map<int ,joint_info_t > joint_info_map,
 
         QString jname = QString::fromStdString(joint_info_s.joint_name);
 
-        std::vector<double> gains={0,0,0,0,0};
         std::vector<std::string> pid_string={"gain_0","gain_1","gain_2","gain_3","gain_4"};
 
-        auto wid_p = new SliderWidget(jname,joint_info_s.actual_pos,QString::number(joint_info_s.min_pos),QString::number(joint_info_s.max_pos),"[rad]",pid_string,gains,this);
+        auto wid_p = new SliderWidget(jname,joint_info_s.actual_pos,QString::number(joint_info_s.min_pos),QString::number(joint_info_s.max_pos),"[rad]",pid_string,this);
         _slider_map.position_sw_map[slave_id]=wid_p;
 
-        auto wid_v = new SliderWidget(jname,0.0,QString::number(-joint_info_s.max_vel),QString::number(joint_info_s.max_vel),"[rad/s]",pid_string,gains,this);
+        auto wid_v = new SliderWidget(jname,0.0,QString::number(-joint_info_s.max_vel),QString::number(joint_info_s.max_vel),"[rad/s]",pid_string,this);
         _slider_map.velocity_sw_map[slave_id]=wid_v;
 
-        auto wid_p_t = new SliderWidget(jname,joint_info_s.actual_pos,QString::number(joint_info_s.min_pos),QString::number(joint_info_s.max_pos),"[rad]",pid_string,gains,this);
+        auto wid_p_t = new SliderWidget(jname,joint_info_s.actual_pos,QString::number(joint_info_s.min_pos),QString::number(joint_info_s.max_pos),"[rad]",pid_string,this);
         _slider_map.position_t_sw_map[slave_id]=wid_p_t;
 
-        auto wid_t = new SliderWidget("",0.0,QString::number(-joint_info_s.max_torq/100),QString::number(joint_info_s.max_torq/100),"[Nm]",{},{},this);
+        auto wid_t = new SliderWidget("",0.0,QString::number(-joint_info_s.max_torq/100),QString::number(joint_info_s.max_torq/100),"[Nm]",{},this);
         _slider_map.torque_sw_map[slave_id]=wid_t;
         wid_t->hide_slider_enabled();
 
 
-        auto wid_cc = new SliderWidget(jname,0.0,QString::number(-2.0),QString::number(2.0),"[A]",pid_string,gains,this);
+        auto wid_cc = new SliderWidget(jname,0.0,QString::number(-2.0),QString::number(2.0),"[A]",pid_string,this);
         _slider_map.current_sw_map[slave_id]=wid_cc;
 
         _sliders_poslayout->addWidget(wid_p,0, Qt::AlignTop);
@@ -60,11 +59,10 @@ void EcGuiSlider::create_sliders(std::map<int ,joint_info_t > joint_info_map,
         std::string valve_name_s="valve_"+std::to_string(slave_id);
         QString valve_name = QString::fromStdString(valve_name_s);
 
-        std::vector<double> pdo_value={0,0,0,0,0,0,0};
         std::vector<std::string> pdo_string= ValvePdoTx::name;
         pdo_string.erase(pdo_string.begin());
 
-        auto wid_valve = new SliderWidget(valve_name,0.0,QString::number(-max_current),QString::number(max_current),"[mA]",pdo_string,pdo_value,this);
+        auto wid_valve = new SliderWidget(valve_name,0.0,QString::number(-max_current),QString::number(max_current),"[mA]",pdo_string,this);
         _slider_map.valve_sw_map[slave_id]=wid_valve;
 
         _sliders_valvelayout->addWidget(wid_valve,0, Qt::AlignTop);
@@ -75,11 +73,10 @@ void EcGuiSlider::create_sliders(std::map<int ,joint_info_t > joint_info_map,
         std::string pump_name_s="pump_"+std::to_string(slave_id);
         QString pump_name = QString::fromStdString(pump_name_s);
 
-        std::vector<double> pdo_value={0,0,0,0,0,0,0,0};
         std::vector<std::string> pdo_string= PumpPdoTx::name;
         pdo_string.erase(pdo_string.begin());
 
-        auto wid_pump = new SliderWidget(pump_name,0.0,QString::number(0.0),QString::number(max_pressure),"[bar]",pdo_string,pdo_value,this);
+        auto wid_pump = new SliderWidget(pump_name,0.0,QString::number(0.0),QString::number(max_pressure),"[bar]",pdo_string,this);
         _slider_map.pump_sw_map[slave_id]=wid_pump;
 
         _sliders_pumplayout->addWidget(wid_pump,0, Qt::AlignTop);

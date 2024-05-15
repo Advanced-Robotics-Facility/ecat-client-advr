@@ -34,7 +34,6 @@ SliderWidget::SliderWidget (const QString&  name,
                             const QString&  max,
                             const QString& unit,
                             std::vector<std::string> pid_string,
-                            std::vector<double> gains,
                             QWidget *parent) :
     QWidget(parent),
     _callback_enabled(true)
@@ -115,10 +114,10 @@ SliderWidget::SliderWidget (const QString&  name,
 
     _calibration_layout= findChild<QVBoxLayout *>("calibrationLayout");
     _wid_calib=nullptr;
-    if(!gains.empty()){
+    if(!pid_string.empty()){
         _pid_layout=findChild<QHBoxLayout *>("PID_Layout");
 
-        _wid_calib= new SliderWidgetCalib("",gains,pid_string);
+        _wid_calib= new SliderWidgetCalib("",pid_string);
 
         _pid_layout->addWidget(_wid_calib,0, Qt::AlignTop);
     }

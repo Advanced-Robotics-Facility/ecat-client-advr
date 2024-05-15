@@ -19,7 +19,6 @@ public:
                            const QString& max,
                            const QString& unit,
                            std::vector<std::string> pid_string,
-                           std::vector<double> gains,
                            QWidget * parent = 0);
 
 

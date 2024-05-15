@@ -30,7 +30,6 @@ QWidget * LoadUiFile(QWidget * parent)
 }
 
 SliderWidgetCalib::SliderWidgetCalib (const QString&  joint_name,
-                                      std::vector<double> init_value,
                                       std::vector<std::string> sliders_type,
                                       QWidget *parent) :
     QWidget(parent),
@@ -49,58 +48,39 @@ SliderWidgetCalib::SliderWidgetCalib (const QString&  joint_name,
     _jname->setText(joint_name);
     _jname->hide();
 
-    _slidertype.push_back(findChild<QLabel *>("SliderType1"));
-    _slidertype.push_back(findChild<QLabel *>("SliderType2"));
-    _slidertype.push_back(findChild<QLabel *>("SliderType3"));
-    _slidertype.push_back(findChild<QLabel *>("SliderType4"));
-    _slidertype.push_back(findChild<QLabel *>("SliderType5"));
-    _slidertype.push_back(findChild<QLabel *>("SliderType6"));
-    _slidertype.push_back(findChild<QLabel *>("SliderType7"));
-    _slidertype.push_back(findChild<QLabel *>("SliderType8"));
+    auto slider_name_layout = findChild<QVBoxLayout *>("sliderNameLayout");
+    auto valuebox_name_layout = findChild<QVBoxLayout *>("valueboxNameLayout");
 
-    _valuebox.push_back(findChild<QDoubleSpinBox *>("ValueBox1"));
-    _valuebox.push_back(findChild<QDoubleSpinBox *>("ValueBox2"));
-    _valuebox.push_back(findChild<QDoubleSpinBox *>("ValueBox3"));
-    _valuebox.push_back(findChild<QDoubleSpinBox *>("ValueBox4"));
-    _valuebox.push_back(findChild<QDoubleSpinBox *>("ValueBox5"));
-    _valuebox.push_back(findChild<QDoubleSpinBox *>("ValueBox6"));
-    _valuebox.push_back(findChild<QDoubleSpinBox *>("ValueBox7"));
-    _valuebox.push_back(findChild<QDoubleSpinBox *>("ValueBox8"));
+    _slider_numb=sliders_type.size();        
+    for(int i=0;i<_slider_numb;i++){
+        QLabel *slider_label = new QLabel(this);
+        QDoubleSpinBox *value_box = new QDoubleSpinBox(this);
 
-    for(int i=0; i < _valuebox.size();i++)
-    {
-        _slidertype[i]->hide();
-        _valuebox[i]->setKeyboardTracking(false);
-        _valuebox[i]->hide();
+        slider_label->setText(QString::fromStdString(sliders_type[i]));
+        slider_label->setMaximumWidth(150);
+        slider_label->setMaximumHeight(25);
+        slider_name_layout->addWidget(slider_label,0, Qt::AlignTop);
+
+        // connect spinbox to slider
+        connect(value_box, &QDoubleSpinBox::editingFinished,
+                std::bind(&SliderWidgetCalib::on_spinbox_changed, this, i)
+                );
+
+        value_box->setMaximum(1000);
+        value_box->setMinimum(0);
+        value_box->setDecimals(3);
+        value_box->setSingleStep(0.001);
+        value_box->setValue(0.0);
+        value_box->setKeyboardTracking(false);
+        value_box->setMaximumWidth(150);
+        value_box->setMaximumHeight(28);
+        valuebox_name_layout->addWidget(value_box,0, Qt::AlignTop);
+
+        _slidertype.push_back(slider_label);
+        _valuebox.push_back(value_box);
+        _valuebox_filtered.push_back(std::make_shared<SecondOrderFilter<double>>(12.0,1.0,1.0,0.0));
     }
-
-    if(sliders_type.size()>_slidertype.size())
-    {
-        throw std::runtime_error("Error valuebox requested greater than 8!");
-        return;
-    }
-    else
-    {
-        _slider_numb=sliders_type.size();        
-        for(int i=0;i<_slider_numb;i++)
-        {
-            _slidertype[i]->setText(QString::fromStdString(sliders_type[i]));
-
-            // connect spinbox to slider
-            connect(_valuebox[i], &QDoubleSpinBox::editingFinished,
-                   std::bind(&SliderWidgetCalib::on_spinbox_changed, this, i)
-                   );
-
-            _slidertype[i]->show();
-            _valuebox[i]->show();
-            _valuebox[i]->setMaximum(1000);
-            _valuebox[i]->setMinimum(0);
-            _valuebox[i]->setDecimals(3);
-            _valuebox[i]->setSingleStep(0.001);
-            _valuebox[i]->setValue(init_value[i]);
-            _valuebox_filtered.push_back(std::make_shared<SecondOrderFilter<double>>(12.0,1.0,1.0,init_value[i]));
-        }
-    }
+    
 
 }
 
