@@ -125,7 +125,7 @@ SliderWidget::SliderWidget (const QString&  name,
     _actual_slider_value=init_value;
 
     // find wave tab.
-    auto tab_name_wid = findChild<QTabWidget *>("tabNameWidget");
+    _tab_name_wid = findChild<QTabWidget *>("tabNameWidget");
     _tab_wave = findChild<QTabWidget *>("tabWave");
 
     auto slider_name_layout = findChild<QVBoxLayout *>("sliderNameLayout");
@@ -136,8 +136,12 @@ SliderWidget::SliderWidget (const QString&  name,
         auto page_wid = new QWidget();
         //tab_layout->addWidget(_tab_wave,0, Qt::AlignTop);
         page_wid->setLayout(tab_layout);
-        tab_name_wid->insertTab(i+1,page_wid, QString::fromStdString(pid_string[i]));
-
+        if(i==0){
+            _tab_name_wid->setTabText(0,QString::fromStdString(pid_string[i]));
+        }
+        else{
+            _tab_name_wid->insertTab(i,page_wid, QString::fromStdString(pid_string[i]));
+        }
 
         QLabel *slider_label = new QLabel(this);
         QDoubleSpinBox *value_box = new QDoubleSpinBox(this);
@@ -148,10 +152,9 @@ SliderWidget::SliderWidget (const QString&  name,
         slider_label->setMaximumHeight(25);
         slider_name_layout->addWidget(slider_label,0, Qt::AlignTop);
 
-        // connect spinbox to slider
-        //connect(value_box, &QDoubleSpinBox::editingFinished,
-        //        std::bind(&SliderWidgetCalib::on_spinbox_changed, this, i)
-        //        );
+        connect(value_box, &QDoubleSpinBox::editingFinished,
+                std::bind(&SliderWidget::on_spinbox_clicked, this, i)
+                );
 
         value_box->setMaximum(1000);
         value_box->setMinimum(0);
@@ -204,6 +207,11 @@ void SliderWidget::on_spinbox_changed()
     _valueslider->blockSignals(true);
     _valueslider->setValue(int(_slider_spinbox_fct*value));
     _valueslider->blockSignals(false);   
+}
+
+void SliderWidget::on_spinbox_clicked(int i)
+{
+    _tab_name_wid->setCurrentIndex(i);
 }
 void SliderWidget::align_spinbox(double value)
 {
