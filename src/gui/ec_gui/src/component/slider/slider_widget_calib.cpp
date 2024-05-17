@@ -53,6 +53,7 @@ SliderWidgetCalib::SliderWidgetCalib (const QString&  joint_name,
 
     _slider_numb=sliders_type.size();        
     for(int i=0;i<_slider_numb;i++){
+
         QLabel *slider_label = new QLabel(this);
         QDoubleSpinBox *value_box = new QDoubleSpinBox(this);
 
@@ -80,8 +81,6 @@ SliderWidgetCalib::SliderWidgetCalib (const QString&  joint_name,
         _valuebox.push_back(value_box);
         _valuebox_filtered.push_back(std::make_shared<SecondOrderFilter<double>>(12.0,1.0,1.0,0.0));
     }
-    
-
 }
 
 void SliderWidgetCalib::on_spinbox_changed(int i)

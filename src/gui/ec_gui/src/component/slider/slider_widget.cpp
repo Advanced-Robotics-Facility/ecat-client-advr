@@ -115,17 +115,60 @@ SliderWidget::SliderWidget (const QString&  name,
     _calibration_layout= findChild<QVBoxLayout *>("calibrationLayout");
     _wid_calib=nullptr;
     if(!pid_string.empty()){
-        _pid_layout=findChild<QHBoxLayout *>("PID_Layout");
+        //_pid_layout=findChild<QHBoxLayout *>("PID_Layout");
 
         _wid_calib= new SliderWidgetCalib("",pid_string);
 
-        _pid_layout->addWidget(_wid_calib,0, Qt::AlignTop);
+        //_pid_layout->addWidget(_wid_calib,0, Qt::AlignTop);
     }
 
     _actual_slider_value=init_value;
 
     // find wave tab.
-    _tab_wave = parent->findChild<QTabWidget *>("tabWave");
+    auto tab_name_wid = findChild<QTabWidget *>("tabNameWidget");
+    _tab_wave = findChild<QTabWidget *>("tabWave");
+
+    auto slider_name_layout = findChild<QVBoxLayout *>("sliderNameLayout");
+    auto valuebox_name_layout = findChild<QVBoxLayout *>("valueboxNameLayout");
+
+    for(int i=0;i<pid_string.size();i++){
+        auto tab_layout = new QVBoxLayout();
+        auto page_wid = new QWidget();
+        //tab_layout->addWidget(_tab_wave,0, Qt::AlignTop);
+        page_wid->setLayout(tab_layout);
+        tab_name_wid->insertTab(i+1,page_wid, QString::fromStdString(pid_string[i]));
+
+
+        QLabel *slider_label = new QLabel(this);
+        QDoubleSpinBox *value_box = new QDoubleSpinBox(this);
+
+        slider_label->setText(QString::fromStdString(pid_string[i]));
+        slider_label->setMaximumWidth(150);
+        slider_label->setMinimumHeight(25);
+        slider_label->setMaximumHeight(25);
+        slider_name_layout->addWidget(slider_label,0, Qt::AlignTop);
+
+        // connect spinbox to slider
+        //connect(value_box, &QDoubleSpinBox::editingFinished,
+        //        std::bind(&SliderWidgetCalib::on_spinbox_changed, this, i)
+        //        );
+
+        value_box->setMaximum(1000);
+        value_box->setMinimum(0);
+        value_box->setDecimals(3);
+        value_box->setSingleStep(0.001);
+        value_box->setValue(0.0);
+        value_box->setKeyboardTracking(false);
+        value_box->setMaximumWidth(150);
+        value_box->setMinimumHeight(25);
+        value_box->setMaximumHeight(25);
+        valuebox_name_layout->addWidget(value_box,0, Qt::AlignTop);
+
+        _slidertype_v.push_back(slider_label);
+        _valuebox_v.push_back(value_box);
+        _valuebox_filtered.push_back(std::make_shared<SecondOrderFilter<double>>(12.0,1.0,1.0,0.0));
+
+    }
 
     _sine_a=findChild<QDoubleSpinBox *>("Sine_A");
     _sine_a->setMaximum(max.toDouble());

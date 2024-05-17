@@ -73,6 +73,11 @@ private:
     SecondOrderFilter<double>::Ptr _slider_filtered;
     SliderWidgetCalib *_wid_calib;
     std::string _slider_name;
+
+    std::vector<QLabel *>           _slidertype_v;
+    std::vector<QDoubleSpinBox *>   _valuebox_v;
+    std::vector<SecondOrderFilter<double>::Ptr> _valuebox_filtered;
+    int _slider_numb;
     
 };
 

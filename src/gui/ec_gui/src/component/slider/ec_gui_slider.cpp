@@ -28,7 +28,9 @@ void EcGuiSlider::create_sliders(std::map<int ,joint_info_t > joint_info_map,
 
         QString jname = QString::fromStdString(joint_info_s.joint_name);
 
-        std::vector<std::string> pid_string={"gain_0","gain_1","gain_2","gain_3","gain_4"};
+        //std::vector<std::string> pid_string={"gain_0","gain_1","gain_2","gain_3","gain_4"};
+        std::vector<std::string> pid_string=MotorPdoTx::name;
+        pid_string.erase(pid_string.begin());
 
         auto wid_p = new SliderWidget(jname,joint_info_s.actual_pos,QString::number(joint_info_s.min_pos),QString::number(joint_info_s.max_pos),"[rad]",pid_string,this);
         _slider_map.position_sw_map[slave_id]=wid_p;
