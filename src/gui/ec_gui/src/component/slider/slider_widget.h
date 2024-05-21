@@ -18,7 +18,7 @@ public:
                            const QString& min,
                            const QString& max,
                            const QString& unit,
-                           std::vector<std::string> pid_string,
+                           std::vector<std::string> slider_name,
                            QWidget * parent = 0);
 
 
@@ -50,7 +50,6 @@ private:
     
     bool _callback_enabled;
 
-    QTabWidget * _tab_wave;
     QTabWidget *_tab_name_wid;
     QCheckBox* _slider_enabled;
 

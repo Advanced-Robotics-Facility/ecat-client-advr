@@ -33,7 +33,7 @@ SliderWidget::SliderWidget (const QString&  name,
                             const QString&  min,
                             const QString&  max,
                             const QString& unit,
-                            std::vector<std::string> pid_string,
+                            std::vector<std::string> slider_name,
                             QWidget *parent) :
     QWidget(parent),
     _callback_enabled(true)
@@ -52,19 +52,19 @@ SliderWidget::SliderWidget (const QString&  name,
     _slider_name = name.toStdString();
 
     _slider_enabled = findChild<QCheckBox *>("SliderEnabled");
-    // find wave tab.
-    _tab_name_wid = findChild<QTabWidget *>("tabNameWidget");
-    _tab_wave = findChild<QTabWidget *>("tabWave");
 
     auto slider_name_layout = findChild<QVBoxLayout *>("sliderNameLayout");
     auto valuebox_name_layout = findChild<QVBoxLayout *>("valueboxNameLayout");
+    auto wave_layout = findChild<QVBoxLayout *>("waveLayout");
 
-    for(int i=0;i<pid_string.size();i++){
+    _tab_name_wid = new QTabWidget();
+    
+    for(int i=0;i<slider_name.size();i++){
 
         QLabel *slider_label = new QLabel(this);
         QDoubleSpinBox *value_box = new QDoubleSpinBox(this);
 
-        slider_label->setText(QString::fromStdString(pid_string[i]));
+        slider_label->setText(QString::fromStdString(slider_name[i]));
         slider_label->setMaximumWidth(150);
         slider_label->setMinimumHeight(25);
         slider_label->setMaximumHeight(25);
@@ -79,22 +79,18 @@ SliderWidget::SliderWidget (const QString&  name,
         value_box->setMaximumHeight(25);
         valuebox_name_layout->addWidget(value_box,0, Qt::AlignTop);
 
-        auto tab_layout = new QHBoxLayout();
+        auto tab_layout = new QVBoxLayout();
         auto page_wid = new QWidget();
         auto wave_wid = new WaveWidget(init_value,value_box,min,max,unit);
         _wave_v.push_back(wave_wid);
         tab_layout->addWidget(wave_wid);
         page_wid->setLayout(tab_layout);
         
-        if(i==0){
-            _tab_name_wid->setTabText(0,QString::fromStdString(pid_string[i]));
-        }
-        else{
-            _tab_name_wid->insertTab(i,page_wid, QString::fromStdString(pid_string[i]));
-        }
-
+ 
+        _tab_name_wid->insertTab(i,page_wid, QString::fromStdString(slider_name[i]));
     }
-
+    
+    wave_layout->addWidget(_tab_name_wid);
     disable_slider();
 }
 
@@ -111,7 +107,7 @@ void SliderWidget::align_spinbox(double value)
 
 void SliderWidget::align_spinbox()
 {
-    
+
 }
 
 
