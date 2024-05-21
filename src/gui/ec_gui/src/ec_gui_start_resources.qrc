@@ -1,7 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>ec_gui_start.ui</file>
-        <file>component/slider/slider_widget_calib.ui</file>
         <file>component/slider/slider_widget.ui</file>
         <file>icon/48px-Document-open.png</file>
         <file>icon/48px-Document-save-as.png</file>
@@ -33,5 +32,6 @@
         <file>icon/SquareWave.png</file>
         <file>icon/SineWave.png</file>
         <file>icon/StepWave.png</file>
+        <file>component/slider/wave_widget.ui</file>
     </qresource>
 </RCC>

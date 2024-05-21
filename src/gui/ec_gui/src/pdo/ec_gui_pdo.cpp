@@ -461,18 +461,29 @@ void EcGuiPdo::write_motor_pdo()
             ctrl_cmd_ref=_ctrl_cmd;
         }
 
-        _slider_map.actual_sw_map_selected[slave_id]->get_wid_calibration()->filtering(_gains);
+        double pos_ref= _slider_map.position_sw_map[slave_id]->compute_wave(0,_s_send_time);
+        double vel_ref= _slider_map.position_sw_map[slave_id]->compute_wave(1,_s_send_time);
+        double tor_ref= _slider_map.position_sw_map[slave_id]->compute_wave(2,_s_send_time);
 
-        double pos_ref= _slider_map.position_sw_map[slave_id]->compute_wave(_s_send_time);
-        if(_ctrl_cmd==0xD4){
-            pos_ref= _slider_map.position_t_sw_map[slave_id]->compute_wave(_s_send_time);
-        }
-
-        double vel_ref= _slider_map.velocity_sw_map[slave_id]->compute_wave(_s_send_time);
-        double tor_ref= _slider_map.torque_sw_map[slave_id]->compute_wave(_s_send_time);
+        double gain_0= _slider_map.position_sw_map[slave_id]->compute_wave(3,_s_send_time);
+        double gain_1= _slider_map.position_sw_map[slave_id]->compute_wave(4,_s_send_time);
+        double gain_2= _slider_map.position_sw_map[slave_id]->compute_wave(5,_s_send_time);
+        double gain_3= _slider_map.position_sw_map[slave_id]->compute_wave(6,_s_send_time);
+        double gain_4= _slider_map.position_sw_map[slave_id]->compute_wave(7,_s_send_time);
                   
-        MotorPdoTx::pdo_t   references{ctrl_cmd_ref, pos_ref, vel_ref, tor_ref, _gains[0], _gains[1],_gains[2], _gains[3], _gains[4],1,0,0};
-        //            ID      CTRL_MODE, POS_REF, VEL_RF, TOR_REF,  GAIN_1,    GAIN_2,   GAIN_3,   GAIN_4,    GAIN_5, OP, IDX,AUX  OP->1 means NO_OP
+        MotorPdoTx::pdo_t   references{ctrl_cmd_ref,
+                                       pos_ref, 
+                                       vel_ref, 
+                                       tor_ref, 
+                                       gain_0, 
+                                       gain_1,
+                                       gain_2, 
+                                       gain_3, 
+                                       gain_4,
+                                       1,//(uint32_t)_slider_map.position_sw_map[slave_id]->get_spinbox_value(8),
+                                       0,//(uint32_t)_slider_map.position_sw_map[slave_id]->get_spinbox_value(9),
+                                       _slider_map.position_sw_map[slave_id]->get_spinbox_value(10)};
+
         _motors_ref[slave_id]=references;
     }
 
@@ -536,15 +547,15 @@ void EcGuiPdo::write_valve_pdo()
             curr_ref=0.0;
         }
 
-        curr_ref = _slider_map.valve_sw_map[slave_id]->compute_wave(_s_send_time);
+        curr_ref = _slider_map.valve_sw_map[slave_id]->compute_wave(0,_s_send_time);
         ValvePdoTx::pdo_t   references{curr_ref,
-                                       slider_wid->get_wid_calibration()->get_slider_value(0),
-                                       slider_wid->get_wid_calibration()->get_slider_value(1),
-                                       slider_wid->get_wid_calibration()->get_slider_value(2),
-                                       slider_wid->get_wid_calibration()->get_slider_value(3),
-                                       slider_wid->get_wid_calibration()->get_slider_value(4),
-                                       slider_wid->get_wid_calibration()->get_slider_value(5),
-                                       slider_wid->get_wid_calibration()->get_slider_value(6)};
+                                       _slider_map.valve_sw_map[slave_id]->get_spinbox_value(1),
+                                       _slider_map.valve_sw_map[slave_id]->get_spinbox_value(2),
+                                       _slider_map.valve_sw_map[slave_id]->get_spinbox_value(3),
+                                       _slider_map.valve_sw_map[slave_id]->get_spinbox_value(4),
+                                       _slider_map.valve_sw_map[slave_id]->get_spinbox_value(5),
+                                       _slider_map.valve_sw_map[slave_id]->get_spinbox_value(6),
+                                       _slider_map.valve_sw_map[slave_id]->get_spinbox_value(7)};
         _valves_ref[slave_id]=references;
     }
 
@@ -608,17 +619,17 @@ void EcGuiPdo::write_pump_pdo()
             press_ref=0.0;
         }
 
-        press_ref = _slider_map.pump_sw_map[slave_id]->compute_wave(_s_send_time);
+        press_ref = _slider_map.pump_sw_map[slave_id]->compute_wave(0,_s_send_time);
 
         PumpPdoTx::pdo_t   references{press_ref,
-                                      slider_wid->get_wid_calibration()->get_slider_value(0),
-                                      slider_wid->get_wid_calibration()->get_slider_value(1),
-                                      slider_wid->get_wid_calibration()->get_slider_value(2),
-                                      slider_wid->get_wid_calibration()->get_slider_value(3),
-                                      slider_wid->get_wid_calibration()->get_slider_value(4),
-                                      slider_wid->get_wid_calibration()->get_slider_value(5),
-                                      slider_wid->get_wid_calibration()->get_slider_value(6),
-                                      slider_wid->get_wid_calibration()->get_slider_value(7),
+                                      _slider_map.pump_sw_map[slave_id]->get_spinbox_value(1),
+                                      _slider_map.pump_sw_map[slave_id]->get_spinbox_value(2),
+                                      _slider_map.pump_sw_map[slave_id]->get_spinbox_value(3),
+                                      _slider_map.pump_sw_map[slave_id]->get_spinbox_value(4),
+                                      _slider_map.pump_sw_map[slave_id]->get_spinbox_value(5),
+                                      _slider_map.pump_sw_map[slave_id]->get_spinbox_value(6),
+                                      _slider_map.pump_sw_map[slave_id]->get_spinbox_value(7),
+                                      _slider_map.pump_sw_map[slave_id]->get_spinbox_value(8),
                                      };
 
         _pumps_ref[slave_id]=references;

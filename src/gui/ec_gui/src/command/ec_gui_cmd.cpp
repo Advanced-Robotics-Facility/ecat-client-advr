@@ -129,18 +129,17 @@ void EcGuiCmd::enable_disable_pid()
 {
     for (auto& [slave_id, slider_wid]:_actual_sw_map_selected)
     {
-        auto joint_calib_selected=slider_wid->get_wid_calibration();
-        for(int calib_index=0; calib_index < joint_calib_selected->get_slider_numb(); calib_index++)
-        {   
-            if(getModeType() == "Idle")
-            {
-                joint_calib_selected->disable_slider_calib(calib_index);
-            }
-            else
-            {
-                joint_calib_selected->enable_slider_calib(calib_index);
-            }
-        }
+        //auto joint_calib_selected=slider_wid->get_wid_calibration();
+        //for(int calib_index=0; calib_index < joint_calib_selected->get_slider_numb(); calib_index++){   
+        //    if(getModeType() == "Idle")
+        //    {
+        //        joint_calib_selected->disable_slider_calib(calib_index);
+        //    }
+        //    else
+        //    {
+        //        joint_calib_selected->enable_slider_calib(calib_index);
+        //    }
+        //}
     }
 }
 void EcGuiCmd::readModeType()
@@ -245,10 +244,11 @@ void EcGuiCmd::fill_start_stop_motor()
             else{
                 if(getModeType() != "Idle"){
                     _gains.clear();
-                    auto joint_calib_selected=slider_wid->get_wid_calibration();
-                    for(int calib_index=0; calib_index < joint_calib_selected->get_slider_numb(); calib_index++){
-                        _gains.push_back(joint_calib_selected->get_slider_value(calib_index));
-                    }
+                    _gains.push_back(_slider_map.position_sw_map[slave_id]->get_spinbox_value(3));
+                    _gains.push_back(_slider_map.position_sw_map[slave_id]->get_spinbox_value(4));
+                    _gains.push_back(_slider_map.position_sw_map[slave_id]->get_spinbox_value(5));
+                    _gains.push_back(_slider_map.position_sw_map[slave_id]->get_spinbox_value(6));
+                    _gains.push_back(_slider_map.position_sw_map[slave_id]->get_spinbox_value(7));
                     _motors_start.push_back(std::make_tuple(slave_id,_ctrl_cmd,_gains));
                 }
                 

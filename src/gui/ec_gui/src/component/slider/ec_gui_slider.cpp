@@ -61,10 +61,7 @@ void EcGuiSlider::create_sliders(std::map<int ,joint_info_t > joint_info_map,
         std::string valve_name_s="valve_"+std::to_string(slave_id);
         QString valve_name = QString::fromStdString(valve_name_s);
 
-        std::vector<std::string> pdo_string= ValvePdoTx::name;
-        pdo_string.erase(pdo_string.begin());
-
-        auto wid_valve = new SliderWidget(valve_name,0.0,QString::number(-max_current),QString::number(max_current),"[mA]",pdo_string,this);
+        auto wid_valve = new SliderWidget(valve_name,0.0,QString::number(-max_current),QString::number(max_current),"[mA]",ValvePdoTx::name,this);
         _slider_map.valve_sw_map[slave_id]=wid_valve;
 
         _sliders_valvelayout->addWidget(wid_valve,0, Qt::AlignTop);
@@ -75,10 +72,7 @@ void EcGuiSlider::create_sliders(std::map<int ,joint_info_t > joint_info_map,
         std::string pump_name_s="pump_"+std::to_string(slave_id);
         QString pump_name = QString::fromStdString(pump_name_s);
 
-        std::vector<std::string> pdo_string= PumpPdoTx::name;
-        pdo_string.erase(pdo_string.begin());
-
-        auto wid_pump = new SliderWidget(pump_name,0.0,QString::number(0.0),QString::number(max_pressure),"[bar]",pdo_string,this);
+        auto wid_pump = new SliderWidget(pump_name,0.0,QString::number(0.0),QString::number(max_pressure),"[bar]",PumpPdoTx::name,this);
         _slider_map.pump_sw_map[slave_id]=wid_pump;
 
         _sliders_pumplayout->addWidget(wid_pump,0, Qt::AlignTop);

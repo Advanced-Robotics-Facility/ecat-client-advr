@@ -34,7 +34,7 @@ add_library(ec_gui_lib STATIC
     src/ec_gui_start_resources.qrc
     src/component/slider/ec_gui_slider.cpp
     src/component/slider/slider_widget.cpp
-    src/component/slider/slider_widget_calib.cpp
+    src/component/slider/wave_widget.cpp
     src/component/plot/qcustomplot.cpp
     src/component/terminal/ec_gui_terminal.cpp
     src/command/ec_gui_cmd.cpp
