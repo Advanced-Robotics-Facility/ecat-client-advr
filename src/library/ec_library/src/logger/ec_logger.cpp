@@ -30,7 +30,8 @@ void EcLogger::start_mat_logger()
         {
             case iit::ecat::CENT_AC :
             case iit::ecat::LO_PWR_DC_MC :
-            case iit::ecat::CIRCULO9:
+            case iit::ecat::SYNAPTICON_v5_0:
+            case iit::ecat::SYNAPTICON_v5_1:
             case iit::ecat::AMC_FLEXPRO:{
                 if(_motors_status_logger==nullptr){
                     _motors_status_logger = XBot::MatLogger2::MakeLogger("/tmp/motors_status_logger", opt);

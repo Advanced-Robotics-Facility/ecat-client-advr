@@ -15,10 +15,11 @@
 #include "mechanism/protobuf/valve/valve_pdo.h"
 #include "mechanism/protobuf/pump/pump_pdo.h"
 
-static std::map<uint32_t,std::string>ec_motors={{iit::ecat::CENT_AC,"Motor_HP"},
-                                                {iit::ecat::LO_PWR_DC_MC,"Motor_LP"},
-                                                {iit::ecat::CIRCULO9,"Circulo9"},
-                                                {iit::ecat::AMC_FLEXPRO,"AMC flex pro"}};
+static std::map<uint32_t,std::string>ec_motors={{iit::ecat::CENT_AC,"HHCM_HP_Motor"},
+                                                {iit::ecat::LO_PWR_DC_MC,"HHCM_LP_Motor"},
+                                                {iit::ecat::SYNAPTICON_v5_0,"Synapticon_Motor"},
+                                                {iit::ecat::SYNAPTICON_v5_1,"Synapticon_Motor"},
+                                                {iit::ecat::AMC_FLEXPRO,"AMC_flex_pro_Motor"}};
                                             
 using MotorStatusMap =   std::map<int32_t, MotorPdoRx::pdo_t>;
 using MotorReferenceMap= std::map<int32_t, MotorPdoTx::pdo_t>; 

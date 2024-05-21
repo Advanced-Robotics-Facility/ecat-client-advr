@@ -67,7 +67,8 @@ public:
                     auto hhcm_motor_pb= std::make_shared<HhcmMotor>();
                     esc_pb[id]=std::static_pointer_cast<EscPb>(hhcm_motor_pb);
                 }break;
-                case iit::ecat::CIRCULO9:{
+                case iit::ecat::SYNAPTICON_v5_0:
+                case iit::ecat::SYNAPTICON_v5_1:{
                     auto circulo_motor_pb= std::make_shared<CirculoMotor>();
                     esc_pb[id]=std::static_pointer_cast<EscPb>(circulo_motor_pb);
                 }break;

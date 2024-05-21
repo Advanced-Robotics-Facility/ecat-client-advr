@@ -327,8 +327,11 @@ std::map<int,EcUtils::MOTOR_CONFIG> EcUtils::get_motor_config_map(const YAML::No
                     if(type_str=="HHCM"){
                         motor_config_map[esc_id].type=iit::ecat::CENT_AC;
                     }
-                    else if(type_str=="Circulo"){
-                        motor_config_map[esc_id].type=iit::ecat::CIRCULO9;
+                    else if(type_str=="Synapticon_v5_0"){
+                        motor_config_map[esc_id].type=iit::ecat::SYNAPTICON_v5_0;
+                    }
+                    else if(type_str=="Synapticon_v5_1"){
+                        motor_config_map[esc_id].type=iit::ecat::SYNAPTICON_v5_1;
                     }
                     else if(type_str=="FlexPro"){
                         motor_config_map[esc_id].type=iit::ecat::AMC_FLEXPRO;

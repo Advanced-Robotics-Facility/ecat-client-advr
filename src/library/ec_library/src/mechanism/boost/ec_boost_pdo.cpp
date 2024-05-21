@@ -7,7 +7,8 @@ void EcBoostPdo::esc_factory(SSI slave_descr)
         {
                 case iit::ecat::CENT_AC :
                 case iit::ecat::LO_PWR_DC_MC:
-                case iit::ecat::CIRCULO9:
+                case iit::ecat::SYNAPTICON_v5_0:
+                case iit::ecat::SYNAPTICON_v5_1:
                 case iit::ecat::AMC_FLEXPRO:{
                     _motor_status_map[id]={0,0,0,0,0,0,0,0,0,0,0,0};
                     _motors_references[id]={0,0,0,0,0,0,0,0,0,0,0,0};

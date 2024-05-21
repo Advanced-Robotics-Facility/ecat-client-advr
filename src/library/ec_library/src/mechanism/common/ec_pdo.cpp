@@ -54,7 +54,8 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                     _motor_status_map[id]=  hhcm_pdo->rx_pdo;
                     _motors_references[id]= hhcm_pdo->tx_pdo;
                 }break;
-                case iit::ecat::CIRCULO9:{
+                case iit::ecat::SYNAPTICON_v5_0:
+                case iit::ecat::SYNAPTICON_v5_1:{
                     auto circulo9_pdo = std::make_shared<Circulo9Pdo<T>>(_ec_pdo_start, id, esc_type);
                     _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(circulo9_pdo);
                     _motor_status_map[id]=  circulo9_pdo->rx_pdo;
