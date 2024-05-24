@@ -26,11 +26,6 @@ EcGuiCmd::EcGuiCmd(EcGuiSlider::Ptr ec_gui_slider,
     // find devices
     _devicecontrol=parent->findChild<QTabWidget *>("deviceControl");
 
-    // find position, velocity and torque tab.
-    _tab_motor_control = parent->findChild<QTabWidget *>("tabMotorControl");
-    _tab_valve_control = parent->findChild<QTabWidget *>("tabValveControl");
-    _tab_pump_control = parent->findChild<QTabWidget *>("tabPumpControl");
-
     /* Getting command manager (Apply) */
     _cmd_manager = parent->findChild<QDialogButtonBox *>("CmdManager");
     _applybtn = _cmd_manager->button(QDialogButtonBox::Apply);
@@ -79,14 +74,11 @@ void EcGuiCmd::readCommand()
     if(getFieldType() == "Start devices")
     {
         _ctrl_cmd_type=ClientCmdType::START;
-        _tab_motor_control->setEnabled(true);
-        _tab_valve_control->setEnabled(true);
-        _tab_pump_control->setEnabled(true);
         _mode_type_combobox->setEnabled(true);
         readModeType();
         if(!_device_start_req){
             
-            for (auto& [slave_id, slider_wid]:_actual_sw_map_selected){
+            for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
                     slider_wid->enable_slider_enabled();
             }
                     
@@ -108,9 +100,6 @@ void EcGuiCmd::readCommand()
     {
         _ctrl_cmd_type=ClientCmdType::STOP;
         _mode_type_combobox->setEnabled(false);
-        _tab_motor_control->setEnabled(false);
-        _tab_valve_control->setEnabled(false);
-        _tab_pump_control->setEnabled(false);
         _notallbtn->setEnabled(false);
         _allbtn->setEnabled(false);
     }
@@ -127,85 +116,16 @@ std::string EcGuiCmd::getModeType() const
 
 void EcGuiCmd::enable_disable_pid()
 {
-    for (auto& [slave_id, slider_wid]:_actual_sw_map_selected)
-    {
-        //auto joint_calib_selected=slider_wid->get_wid_calibration();
-        //for(int calib_index=0; calib_index < joint_calib_selected->get_slider_numb(); calib_index++){   
-        //    if(getModeType() == "Idle")
-        //    {
-        //        joint_calib_selected->disable_slider_calib(calib_index);
-        //    }
-        //    else
-        //    {
-        //        joint_calib_selected->enable_slider_calib(calib_index);
-        //    }
-        //}
-    }
 }
 void EcGuiCmd::readModeType()
 {
-    if(getModeType() != "Idle")
-    {
-        _actual_sw_map_selected.clear();
-        if(getModeType() == "Position")
-        {
-            _tab_motor_control->setTabEnabled(0,true);
-            _tab_motor_control->setTabEnabled(1,false);
-            _tab_motor_control->setTabEnabled(2,false);
-            _tab_motor_control->setTabEnabled(3,false);
-            _tab_motor_control->setCurrentIndex(0);
-            
-            _ctrl_cmd=0x3B;
-            _actual_sw_map_selected=_slider_map.position_sw_map;
-        }
-        else if(getModeType() == "Velocity")
-        {
-            _tab_motor_control->setTabEnabled(0,false);
-            _tab_motor_control->setTabEnabled(1,true);
-            _tab_motor_control->setTabEnabled(2,false);
-            _tab_motor_control->setTabEnabled(3,false);
-            _tab_motor_control->setCurrentIndex(1);
-            
-            _ctrl_cmd=0x71;
-            _actual_sw_map_selected=_slider_map.velocity_sw_map;
-        }
-        else if(getModeType() == "Impedance")
-        {
-            _tab_motor_control->setTabEnabled(0,false);
-            _tab_motor_control->setTabEnabled(1,false);
-            _tab_motor_control->setTabEnabled(2,true);
-            _tab_motor_control->setTabEnabled(3,false);
-            _tab_motor_control->setCurrentIndex(2);
-            
-            _ctrl_cmd=0xD4;
-            _actual_sw_map_selected=_slider_map.position_t_sw_map;
-        }
-        else if(getModeType() == "Current")
-        {
-            _tab_motor_control->setTabEnabled(0,false);
-            _tab_motor_control->setTabEnabled(1,false);
-            _tab_motor_control->setTabEnabled(2,false);
-            _tab_motor_control->setTabEnabled(3,true);
-            _tab_motor_control->setCurrentIndex(3);
-            
-            _ctrl_cmd=0xCC;
-            _actual_sw_map_selected=_slider_map.current_sw_map;
-        }
-        else
-        {
-            throw std::runtime_error("Error: Found not valid starting mode");
-        }
-    }
-    
-    _ec_gui_slider->set_actual_sliders(_actual_sw_map_selected);
     enable_disable_pid();  
 }
 
 void EcGuiCmd::onNotAllCmdReleased()
 {
     /* Uncheck all checkboxes of Joint WID */
-    for (auto& [slave_id, slider_wid]:_actual_sw_map_selected)
-    {
+    for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
         slider_wid->uncheck_slider_enabled();
     }
 
@@ -214,8 +134,7 @@ void EcGuiCmd::onNotAllCmdReleased()
 void EcGuiCmd::onAllCmdReleased()
 {
     /* Check all checkboxes of Slider WID */
-    for (auto& [slave_id, slider_wid]:_actual_sw_map_selected)
-    {
+    for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map) {
         slider_wid->check_slider_enabled();
     }
 
@@ -233,7 +152,7 @@ void EcGuiCmd::fill_start_stop_motor()
     _motors_start.clear();
     _brake_cmds.clear();
     _motors_selected = false;
-    for (auto& [slave_id, slider_wid]:_actual_sw_map_selected){
+    for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
         if(slider_wid->is_slider_enabled()){
             _motors_selected |= true;
             if(_ctrl_cmd_type==ClientCmdType::STOP){
@@ -244,11 +163,11 @@ void EcGuiCmd::fill_start_stop_motor()
             else{
                 if(getModeType() != "Idle"){
                     _gains.clear();
-                    _gains.push_back(_slider_map.position_sw_map[slave_id]->get_spinbox_value(3));
-                    _gains.push_back(_slider_map.position_sw_map[slave_id]->get_spinbox_value(4));
-                    _gains.push_back(_slider_map.position_sw_map[slave_id]->get_spinbox_value(5));
-                    _gains.push_back(_slider_map.position_sw_map[slave_id]->get_spinbox_value(6));
-                    _gains.push_back(_slider_map.position_sw_map[slave_id]->get_spinbox_value(7));
+                    _gains.push_back(_slider_map.motor_sw_map[slave_id]->get_spinbox_value(3));
+                    _gains.push_back(_slider_map.motor_sw_map[slave_id]->get_spinbox_value(4));
+                    _gains.push_back(_slider_map.motor_sw_map[slave_id]->get_spinbox_value(5));
+                    _gains.push_back(_slider_map.motor_sw_map[slave_id]->get_spinbox_value(6));
+                    _gains.push_back(_slider_map.motor_sw_map[slave_id]->get_spinbox_value(7));
                     _motors_start.push_back(std::make_tuple(slave_id,_ctrl_cmd,_gains));
                 }
                 
@@ -448,7 +367,7 @@ void EcGuiCmd::onApplyCmdReleased()
                 _notallbtn->setEnabled(false);
                 _allbtn->setEnabled(false);
 
-                for (auto& [slave_id, slider_wid]:_actual_sw_map_selected){
+                for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
                     slider_wid->disable_slider_enabled();
                 }
 

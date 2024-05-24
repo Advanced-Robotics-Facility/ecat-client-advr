@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1000</width>
-    <height>242</height>
+    <height>254</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -142,6 +142,9 @@
          </item>
          <item>
           <layout class="QVBoxLayout" name="valueboxNameLayout"/>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="unitLayout"/>
          </item>
         </layout>
        </item>

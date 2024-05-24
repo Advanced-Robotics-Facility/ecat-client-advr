@@ -13,8 +13,7 @@ class WaveWidget : public QWidget
 Q_OBJECT
 public:
 
-    explicit WaveWidget (double init_value,
-                         QDoubleSpinBox *valuebox,
+    explicit WaveWidget (QDoubleSpinBox *valuebox,
                          const QString& min,
                          const QString& max,
                          const QString& unit,

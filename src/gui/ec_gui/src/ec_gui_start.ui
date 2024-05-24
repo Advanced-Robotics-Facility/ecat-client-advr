@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1367</width>
-    <height>1001</height>
+    <height>1015</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -272,7 +272,7 @@
    <property name="minimumSize">
     <size>
      <width>816</width>
-     <height>400</height>
+     <height>428</height>
     </size>
    </property>
    <property name="maximumSize">
@@ -422,135 +422,22 @@
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_5">
          <item>
-          <widget class="QTabWidget" name="tabMotorControl">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>0</height>
-            </size>
+          <widget class="QScrollArea" name="scrollArea">
+           <property name="widgetResizable">
+            <bool>true</bool>
            </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="currentIndex">
-            <number>0</number>
-           </property>
-           <widget class="QWidget" name="PositionTab">
-            <attribute name="title">
-             <string>Position</string>
-            </attribute>
-            <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <widget class="QWidget" name="scrollAreaWidgetContents">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>774</width>
+              <height>195</height>
+             </rect>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout_6">
              <item>
-              <widget class="QScrollArea" name="scrollArea">
-               <property name="widgetResizable">
-                <bool>true</bool>
-               </property>
-               <widget class="QWidget" name="scrollAreaWidgetContents">
-                <property name="geometry">
-                 <rect>
-                  <x>0</x>
-                  <y>0</y>
-                  <width>752</width>
-                  <height>134</height>
-                 </rect>
-                </property>
-                <layout class="QHBoxLayout" name="horizontalLayout_6">
-                 <item>
-                  <layout class="QVBoxLayout" name="positionSliders"/>
-                 </item>
-                </layout>
-               </widget>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-           <widget class="QWidget" name="VelocityTab">
-            <attribute name="title">
-             <string>Velocity</string>
-            </attribute>
-            <layout class="QHBoxLayout" name="horizontalLayout_3">
-             <item>
-              <widget class="QScrollArea" name="scrollArea_2">
-               <property name="widgetResizable">
-                <bool>true</bool>
-               </property>
-               <widget class="QWidget" name="scrollAreaWidgetContents_2">
-                <property name="geometry">
-                 <rect>
-                  <x>0</x>
-                  <y>0</y>
-                  <width>752</width>
-                  <height>134</height>
-                 </rect>
-                </property>
-                <layout class="QHBoxLayout" name="horizontalLayout_10">
-                 <item>
-                  <layout class="QVBoxLayout" name="velocitySliders"/>
-                 </item>
-                </layout>
-               </widget>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-           <widget class="QWidget" name="TorqueTab">
-            <attribute name="title">
-             <string>Impedance</string>
-            </attribute>
-            <layout class="QHBoxLayout" name="horizontalLayout_5">
-             <item>
-              <widget class="QScrollArea" name="scrollArea_3">
-               <property name="widgetResizable">
-                <bool>true</bool>
-               </property>
-               <widget class="QWidget" name="scrollAreaWidgetContents_3">
-                <property name="geometry">
-                 <rect>
-                  <x>0</x>
-                  <y>0</y>
-                  <width>752</width>
-                  <height>134</height>
-                 </rect>
-                </property>
-                <layout class="QHBoxLayout" name="horizontalLayout_13">
-                 <item>
-                  <layout class="QVBoxLayout" name="torqueSliders"/>
-                 </item>
-                </layout>
-               </widget>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-           <widget class="QWidget" name="CurrentTab">
-            <attribute name="title">
-             <string>Current</string>
-            </attribute>
-            <layout class="QHBoxLayout" name="horizontalLayout_8">
-             <item>
-              <widget class="QScrollArea" name="scrollArea_5">
-               <property name="widgetResizable">
-                <bool>true</bool>
-               </property>
-               <widget class="QWidget" name="scrollAreaWidgetContents_5">
-                <property name="geometry">
-                 <rect>
-                  <x>0</x>
-                  <y>0</y>
-                  <width>752</width>
-                  <height>134</height>
-                 </rect>
-                </property>
-                <layout class="QHBoxLayout" name="horizontalLayout_15">
-                 <item>
-                  <layout class="QVBoxLayout" name="currentSliders"/>
-                 </item>
-                </layout>
-               </widget>
-              </widget>
+              <layout class="QVBoxLayout" name="motorSliders"/>
              </item>
             </layout>
            </widget>
@@ -658,36 +545,22 @@
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_9">
          <item>
-          <widget class="QTabWidget" name="tabValveControl">
-           <property name="currentIndex">
-            <number>0</number>
+          <widget class="QScrollArea" name="scrollArea_6">
+           <property name="widgetResizable">
+            <bool>true</bool>
            </property>
-           <widget class="QWidget" name="tab_3">
-            <attribute name="title">
-             <string>Current</string>
-            </attribute>
-            <layout class="QVBoxLayout" name="verticalLayout_7">
+           <widget class="QWidget" name="scrollAreaWidgetContents_6">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>774</width>
+              <height>195</height>
+             </rect>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout_18">
              <item>
-              <widget class="QScrollArea" name="scrollArea_6">
-               <property name="widgetResizable">
-                <bool>true</bool>
-               </property>
-               <widget class="QWidget" name="scrollAreaWidgetContents_6">
-                <property name="geometry">
-                 <rect>
-                  <x>0</x>
-                  <y>0</y>
-                  <width>752</width>
-                  <height>134</height>
-                 </rect>
-                </property>
-                <layout class="QHBoxLayout" name="horizontalLayout_18">
-                 <item>
-                  <layout class="QVBoxLayout" name="valveSliders"/>
-                 </item>
-                </layout>
-               </widget>
-              </widget>
+              <layout class="QVBoxLayout" name="valveSliders"/>
              </item>
             </layout>
            </widget>
@@ -775,36 +648,22 @@
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_10">
          <item>
-          <widget class="QTabWidget" name="tabPumpControl">
-           <property name="currentIndex">
-            <number>0</number>
+          <widget class="QScrollArea" name="scrollArea_7">
+           <property name="widgetResizable">
+            <bool>true</bool>
            </property>
-           <widget class="QWidget" name="tab_6">
-            <attribute name="title">
-             <string>Pressure</string>
-            </attribute>
-            <layout class="QVBoxLayout" name="verticalLayout_8">
+           <widget class="QWidget" name="scrollAreaWidgetContents_7">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>774</width>
+              <height>195</height>
+             </rect>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout_20">
              <item>
-              <widget class="QScrollArea" name="scrollArea_7">
-               <property name="widgetResizable">
-                <bool>true</bool>
-               </property>
-               <widget class="QWidget" name="scrollAreaWidgetContents_7">
-                <property name="geometry">
-                 <rect>
-                  <x>0</x>
-                  <y>0</y>
-                  <width>752</width>
-                  <height>134</height>
-                 </rect>
-                </property>
-                <layout class="QHBoxLayout" name="horizontalLayout_20">
-                 <item>
-                  <layout class="QVBoxLayout" name="pumpSliders"/>
-                 </item>
-                </layout>
-               </widget>
-              </widget>
+              <layout class="QVBoxLayout" name="pumpSliders"/>
              </item>
             </layout>
            </widget>
@@ -945,7 +804,7 @@
           <x>0</x>
           <y>0</y>
           <width>519</width>
-          <height>375</height>
+          <height>389</height>
          </rect>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_4">

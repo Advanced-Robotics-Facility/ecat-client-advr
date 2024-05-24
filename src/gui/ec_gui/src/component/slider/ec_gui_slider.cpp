@@ -3,11 +3,7 @@
 EcGuiSlider::EcGuiSlider(QWidget *parent) :
     QWidget(parent)
 {
-    // find position, velocity, torque and current tab for adding the sliders for every slave.
-    _sliders_poslayout  = parent->findChild<QVBoxLayout *>("positionSliders");
-    _sliders_vellayout  = parent->findChild<QVBoxLayout *>("velocitySliders");
-    _sliders_torqlayout = parent->findChild<QVBoxLayout *>("torqueSliders");
-    _sliders_currlayout = parent->findChild<QVBoxLayout *>("currentSliders");
+    _sliders_motorlayout  = parent->findChild<QVBoxLayout *>("motorSliders");
     _sliders_valvelayout = parent->findChild<QVBoxLayout *>("valveSliders");
     _sliders_pumplayout = parent->findChild<QVBoxLayout *>("pumpSliders");
 }
@@ -22,38 +18,19 @@ void EcGuiSlider::create_sliders(std::map<int ,joint_info_t > joint_info_map,
     _joint_info_map= joint_info_map;
     
     // Create the sliders for every tabs
+    std::vector<std::string> pdo_string=MotorPdoTx::name;
+    pdo_string.erase(pdo_string.begin());
+
+    std::vector<std::string> pdo_unit=MotorPdoTx::unit;
+    pdo_unit.erase(pdo_unit.begin());
 
     for (auto& [slave_id, joint_info_s]:_joint_info_map)
     {
-
         QString jname = QString::fromStdString(joint_info_s.joint_name);
+        auto wid_motor = new SliderWidget(jname,QString::number(joint_info_s.min_pos),QString::number(joint_info_s.max_pos),pdo_unit,pdo_string,this);
+        _slider_map.motor_sw_map[slave_id]=wid_motor;
 
-        //std::vector<std::string> pid_string={"gain_0","gain_1","gain_2","gain_3","gain_4"};
-        std::vector<std::string> pid_string=MotorPdoTx::name;
-        pid_string.erase(pid_string.begin());
-
-        auto wid_p = new SliderWidget(jname,joint_info_s.actual_pos,QString::number(joint_info_s.min_pos),QString::number(joint_info_s.max_pos),"[rad]",pid_string,this);
-        _slider_map.position_sw_map[slave_id]=wid_p;
-
-        auto wid_v = new SliderWidget(jname,0.0,QString::number(-joint_info_s.max_vel),QString::number(joint_info_s.max_vel),"[rad/s]",pid_string,this);
-        _slider_map.velocity_sw_map[slave_id]=wid_v;
-
-        auto wid_p_t = new SliderWidget(jname,joint_info_s.actual_pos,QString::number(joint_info_s.min_pos),QString::number(joint_info_s.max_pos),"[rad]",pid_string,this);
-        _slider_map.position_t_sw_map[slave_id]=wid_p_t;
-
-        auto wid_t = new SliderWidget("",0.0,QString::number(-joint_info_s.max_torq/100),QString::number(joint_info_s.max_torq/100),"[Nm]",{},this);
-        _slider_map.torque_sw_map[slave_id]=wid_t;
-        wid_t->hide_slider_enabled();
-
-
-        auto wid_cc = new SliderWidget(jname,0.0,QString::number(-2.0),QString::number(2.0),"[A]",pid_string,this);
-        _slider_map.current_sw_map[slave_id]=wid_cc;
-
-        _sliders_poslayout->addWidget(wid_p,0, Qt::AlignTop);
-        _sliders_vellayout->addWidget(wid_v,0, Qt::AlignTop);
-        _sliders_torqlayout->addWidget(wid_p_t,0, Qt::AlignTop);
-        _sliders_torqlayout->addWidget(wid_t,0, Qt::AlignTop);
-        _sliders_currlayout->addWidget(wid_cc,0, Qt::AlignTop);
+        _sliders_motorlayout->addWidget(wid_motor,0, Qt::AlignTop);
     }
 
     for (auto& [slave_id, max_current]:valve_info_map){
@@ -61,7 +38,7 @@ void EcGuiSlider::create_sliders(std::map<int ,joint_info_t > joint_info_map,
         std::string valve_name_s="valve_"+std::to_string(slave_id);
         QString valve_name = QString::fromStdString(valve_name_s);
 
-        auto wid_valve = new SliderWidget(valve_name,0.0,QString::number(-max_current),QString::number(max_current),"[mA]",ValvePdoTx::name,this);
+        auto wid_valve = new SliderWidget(valve_name,QString::number(-max_current),QString::number(max_current),ValvePdoTx::unit,ValvePdoTx::name,this);
         _slider_map.valve_sw_map[slave_id]=wid_valve;
 
         _sliders_valvelayout->addWidget(wid_valve,0, Qt::AlignTop);
@@ -72,7 +49,7 @@ void EcGuiSlider::create_sliders(std::map<int ,joint_info_t > joint_info_map,
         std::string pump_name_s="pump_"+std::to_string(slave_id);
         QString pump_name = QString::fromStdString(pump_name_s);
 
-        auto wid_pump = new SliderWidget(pump_name,0.0,QString::number(0.0),QString::number(max_pressure),"[bar]",PumpPdoTx::name,this);
+        auto wid_pump = new SliderWidget(pump_name,QString::number(0.0),QString::number(max_pressure),PumpPdoTx::unit,PumpPdoTx::name,this);
         _slider_map.pump_sw_map[slave_id]=wid_pump;
 
         _sliders_pumplayout->addWidget(wid_pump,0, Qt::AlignTop);
@@ -82,22 +59,8 @@ void EcGuiSlider::create_sliders(std::map<int ,joint_info_t > joint_info_map,
 
 void EcGuiSlider::delete_sliders()
 {
-    _slider_map.actual_sw_map_selected.clear();
-    
-
-    delete_items(_sliders_poslayout->layout());
-    _slider_map.position_sw_map.clear();
-    
-
-    delete_items(_sliders_vellayout->layout());
-    _slider_map.velocity_sw_map.clear();
-    
-    delete_items(_sliders_torqlayout->layout());
-    _slider_map.position_t_sw_map.clear();
-    _slider_map.torque_sw_map.clear();
-
-    delete_items(_sliders_currlayout->layout());
-    _slider_map.current_sw_map.clear();
+    delete_items(_sliders_motorlayout->layout());
+    _slider_map.motor_sw_map.clear();
 
     delete_items(_sliders_valvelayout->layout());
     _slider_map.valve_sw_map.clear();
@@ -111,29 +74,21 @@ void EcGuiSlider::delete_sliders()
 
 void EcGuiSlider::reset_sliders()
 {
-    for (auto& [slave_id, slider_wid]:_slider_map.actual_sw_map_selected)
+    for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map)
     {
         slider_wid->align_spinbox();
-        _slider_map.position_t_sw_map[slave_id]->align_spinbox();
-        _slider_map.velocity_sw_map[slave_id]->align_spinbox(0.0);
-        _slider_map.torque_sw_map[slave_id]->align_spinbox(0.0);
-        _slider_map.current_sw_map[slave_id]->align_spinbox(0.0);
     }
     for (auto& [slave_id, slider_wid]:_slider_map.valve_sw_map){
-        _slider_map.valve_sw_map[slave_id]->align_spinbox(0.0);
+        slider_wid->align_spinbox(0.0);
     }
     for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
-            _slider_map.pump_sw_map[slave_id]->align_spinbox(0.0);
+        slider_wid->align_spinbox(0.0);
     }
 }
 void EcGuiSlider::enable_sliders()
 {
-    for (auto& [slave_id, slider_wid]:_slider_map.actual_sw_map_selected){
-        _slider_map.position_sw_map[slave_id]->enable_slider();
-        _slider_map.position_t_sw_map[slave_id]->enable_slider();
-        _slider_map.velocity_sw_map[slave_id]->enable_slider();
-        _slider_map.torque_sw_map[slave_id]->enable_slider();
-        _slider_map.current_sw_map[slave_id]->enable_slider();
+    for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
+        slider_wid->enable_slider();
     }
     for (auto& [slave_id, slider_wid]:_slider_map.valve_sw_map){
         slider_wid->enable_slider();
@@ -144,12 +99,8 @@ void EcGuiSlider::enable_sliders()
 }
 void EcGuiSlider::disable_sliders()
 {
-    for (auto& [slave_id, slider_wid]:_slider_map.actual_sw_map_selected){
-        _slider_map.position_sw_map[slave_id]->disable_slider();
-        _slider_map.position_t_sw_map[slave_id]->disable_slider();
-        _slider_map.velocity_sw_map[slave_id]->disable_slider();
-        _slider_map.torque_sw_map[slave_id]->disable_slider();
-        _slider_map.current_sw_map[slave_id]->disable_slider();
+    for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
+        slider_wid->disable_slider();
     }
 
     for (auto& [slave_id, slider_wid]:_slider_map.valve_sw_map){
@@ -162,12 +113,8 @@ void EcGuiSlider::disable_sliders()
 
 void EcGuiSlider::set_sliders_filter(double st)
 {
-    for (auto& [slave_id, slider_wid]:_slider_map.actual_sw_map_selected){
-        _slider_map.position_sw_map[slave_id]->set_filter(st);
-        _slider_map.position_t_sw_map[slave_id]->set_filter(st);
-        _slider_map.velocity_sw_map[slave_id]->set_filter(st);
-        _slider_map.torque_sw_map[slave_id]->set_filter(st);
-        _slider_map.current_sw_map[slave_id]->set_filter(st);
+    for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
+         slider_wid->set_filter(st);
     }
 
     for (auto& [slave_id, slider_wid]:_slider_map.valve_sw_map){
@@ -194,12 +141,6 @@ void EcGuiSlider::delete_items(QLayout * layout)
 EcGuiSlider::slider_map_t EcGuiSlider::get_sliders()
 {
     return _slider_map;
-}
-
-void EcGuiSlider::set_actual_sliders(std::map<int, SliderWidget*> actual_sw_map_selected)
-{
-    _slider_map.actual_sw_map_selected.clear();
-    _slider_map.actual_sw_map_selected = actual_sw_map_selected;
 }
 
 EcGuiSlider::~EcGuiSlider()

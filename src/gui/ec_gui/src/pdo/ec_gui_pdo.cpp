@@ -227,9 +227,8 @@ void EcGuiPdo::read_motor_status()
             
             /************************************* ALIGN POSITION SLIDERS with the motor position ********************************************/
             double motor_pos=std::get<1>(motor_rx_pdo);
-            if(_slider_map.position_sw_map.count(esc_id)>0){
-                _slider_map.position_sw_map[esc_id]->set_actual_slider_value(motor_pos);
-                _slider_map.position_t_sw_map[esc_id]->set_actual_slider_value(motor_pos);
+            if(_slider_map.motor_sw_map.count(esc_id)>0){
+                _slider_map.motor_sw_map[esc_id]->set_actual_slider_value(0,motor_pos);
             }
             /************************************* ALIGN POSITION SLIDERS with the motor position ********************************************/
         }
@@ -347,7 +346,7 @@ void EcGuiPdo::read_pump_status()
             /************************************* ALIGN PUMP SLIDERS with the actual pressure********************************************/
             double pressure=std::get<0>(pump_rx_pdo);
             if(_slider_map.pump_sw_map.count(esc_id)>0){
-                _slider_map.pump_sw_map[esc_id]->set_actual_slider_value(pressure);
+                _slider_map.pump_sw_map[esc_id]->set_actual_slider_value(0,pressure);
             }
             /************************************* ALIGN PUMP SLIDERS with the actual pressure********************************************/
         }
@@ -445,7 +444,7 @@ void EcGuiPdo::clear_write()
 void EcGuiPdo::write_motor_pdo()
 {
     bool motors_selected=false;
-    for (auto& [slave_id, slider_wid]:_slider_map.actual_sw_map_selected){
+    for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
         motors_selected |=slider_wid->is_slider_enabled();
         break;
     }
@@ -455,21 +454,21 @@ void EcGuiPdo::write_motor_pdo()
 
     _motor_ref_flags = RefFlags::FLAG_MULTI_REF;
     
-    for (auto& [slave_id, slider_wid]:_slider_map.actual_sw_map_selected){
+    for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
         int ctrl_cmd_ref=0x00;
         if(slider_wid->is_slider_enabled()){
             ctrl_cmd_ref=_ctrl_cmd;
         }
 
-        double pos_ref= _slider_map.position_sw_map[slave_id]->compute_wave(0,_s_send_time);
-        double vel_ref= _slider_map.position_sw_map[slave_id]->compute_wave(1,_s_send_time);
-        double tor_ref= _slider_map.position_sw_map[slave_id]->compute_wave(2,_s_send_time);
+        double pos_ref= _slider_map.motor_sw_map[slave_id]->compute_wave(0,_s_send_time);
+        double vel_ref= _slider_map.motor_sw_map[slave_id]->compute_wave(1,_s_send_time);
+        double tor_ref= _slider_map.motor_sw_map[slave_id]->compute_wave(2,_s_send_time);
 
-        double gain_0= _slider_map.position_sw_map[slave_id]->compute_wave(3,_s_send_time);
-        double gain_1= _slider_map.position_sw_map[slave_id]->compute_wave(4,_s_send_time);
-        double gain_2= _slider_map.position_sw_map[slave_id]->compute_wave(5,_s_send_time);
-        double gain_3= _slider_map.position_sw_map[slave_id]->compute_wave(6,_s_send_time);
-        double gain_4= _slider_map.position_sw_map[slave_id]->compute_wave(7,_s_send_time);
+        double gain_0= _slider_map.motor_sw_map[slave_id]->compute_wave(3,_s_send_time);
+        double gain_1= _slider_map.motor_sw_map[slave_id]->compute_wave(4,_s_send_time);
+        double gain_2= _slider_map.motor_sw_map[slave_id]->compute_wave(5,_s_send_time);
+        double gain_3= _slider_map.motor_sw_map[slave_id]->compute_wave(6,_s_send_time);
+        double gain_4= _slider_map.motor_sw_map[slave_id]->compute_wave(7,_s_send_time);
                   
         MotorPdoTx::pdo_t   references{ctrl_cmd_ref,
                                        pos_ref, 
@@ -480,9 +479,9 @@ void EcGuiPdo::write_motor_pdo()
                                        gain_2, 
                                        gain_3, 
                                        gain_4,
-                                       1,//(uint32_t)_slider_map.position_sw_map[slave_id]->get_spinbox_value(8),
-                                       0,//(uint32_t)_slider_map.position_sw_map[slave_id]->get_spinbox_value(9),
-                                       _slider_map.position_sw_map[slave_id]->get_spinbox_value(10)};
+                                       1,//(uint32_t)_slider_map.motor_sw_map[slave_id]->get_spinbox_value(8),
+                                       0,//(uint32_t)_slider_map.motor_sw_map[slave_id]->get_spinbox_value(9),
+                                       _slider_map.motor_sw_map[slave_id]->get_spinbox_value(10)};
 
         _motors_ref[slave_id]=references;
     }
@@ -495,7 +494,7 @@ void EcGuiPdo::write_motor_pdo()
 void EcGuiPdo::read_motor_ref()
 {
     for ( const auto &[esc_id, references] : _motors_ref){
-        if(_slider_map.actual_sw_map_selected[esc_id]->is_slider_enabled()){
+        if(_slider_map.motor_sw_map[esc_id]->is_slider_enabled()){
             std::string esc_id_name="motor_id_ref_"+std::to_string(esc_id);
             QTreeWidgetItem *topLevel=nullptr;
 

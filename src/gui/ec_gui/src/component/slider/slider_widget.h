@@ -14,18 +14,17 @@ Q_OBJECT
 public:
 
     explicit SliderWidget (const QString& name,
-                           double init_value,
                            const QString& min,
                            const QString& max,
-                           const QString& unit,
-                           std::vector<std::string> slider_name,
+                           const std::vector<std::string> slider_unit,
+                           const std::vector<std::string> slider_name,
                            QWidget * parent = 0);
 
 
 
     double get_spinbox_value(int i);
-    double get_actual_slider_value();
-    void   set_actual_slider_value(double actual_slider_value);
+    double get_actual_slider_value(int i);
+    void   set_actual_slider_value(int i,double actual_slider_value);
     void align_spinbox(double value);
     void align_spinbox();
     void disable_slider();
@@ -52,9 +51,6 @@ private:
 
     QTabWidget *_tab_name_wid;
     QCheckBox* _slider_enabled;
-
-    double _actual_slider_value;
-
     std::string _slider_name;
     std::vector<WaveWidget *> _wave_v;
     

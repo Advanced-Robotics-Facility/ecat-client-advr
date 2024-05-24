@@ -48,6 +48,8 @@ namespace PumpPdoRx{
 namespace PumpPdoTx{
     static const std::vector<std::string>name = {"demandPressure", "singlePumpHighLt","singlePumpLowLt", "HPUDemandMode",
                                                  "vesc1Mode","vesc2Mode","fan1Spd","fan2Spd","sysStateCmd"};
+
+    static const std::vector<std::string>unit = {"[bar]", "[uless]", "[uless]","[uless]", "[uless]","[uless]","[uless]","[uless]","[uless]"};
     static const int pdo_size=9;
     using pdo_t=std::tuple<uint8_t, uint8_t, uint8_t, uint16_t, uint8_t,uint8_t,uint8_t,uint8_t,uint8_t>;
     template <typename T>

@@ -29,11 +29,10 @@ QWidget * LoadUiFile(QWidget * parent)
 }
 
 SliderWidget::SliderWidget (const QString&  name,
-                            double init_value,
                             const QString&  min,
                             const QString&  max,
-                            const QString& unit,
-                            std::vector<std::string> slider_name,
+                            const std::vector<std::string> slider_unit,
+                            const std::vector<std::string> slider_name,
                             QWidget *parent) :
     QWidget(parent),
     _callback_enabled(true)
@@ -55,6 +54,7 @@ SliderWidget::SliderWidget (const QString&  name,
 
     auto slider_name_layout = findChild<QVBoxLayout *>("sliderNameLayout");
     auto valuebox_name_layout = findChild<QVBoxLayout *>("valueboxNameLayout");
+    auto unit_layout = findChild<QVBoxLayout *>("unitLayout");
     auto wave_layout = findChild<QVBoxLayout *>("waveLayout");
 
     _tab_name_wid = new QTabWidget();
@@ -63,6 +63,7 @@ SliderWidget::SliderWidget (const QString&  name,
 
         QLabel *slider_label = new QLabel(this);
         QDoubleSpinBox *value_box = new QDoubleSpinBox(this);
+        QLabel *unit_label = new QLabel(this);
 
         slider_label->setText(QString::fromStdString(slider_name[i]));
         slider_label->setMaximumWidth(150);
@@ -79,9 +80,16 @@ SliderWidget::SliderWidget (const QString&  name,
         value_box->setMaximumHeight(25);
         valuebox_name_layout->addWidget(value_box,0, Qt::AlignTop);
 
+        unit_label->setText(QString::fromStdString(slider_unit[i]));
+        unit_label->setMinimumWidth(50);
+        unit_label->setMinimumHeight(25);
+        unit_label->setMaximumWidth(50);
+        unit_label->setMaximumHeight(25);
+        unit_layout->addWidget(unit_label,0, Qt::AlignTop);
+
         auto tab_layout = new QVBoxLayout();
         auto page_wid = new QWidget();
-        auto wave_wid = new WaveWidget(init_value,value_box,min,max,unit);
+        auto wave_wid = new WaveWidget(value_box,min,max,QString::fromStdString(slider_unit[i]));
         _wave_v.push_back(wave_wid);
         tab_layout->addWidget(wave_wid);
         page_wid->setLayout(tab_layout);
@@ -165,14 +173,14 @@ double SliderWidget::get_spinbox_value(int i)
     return _wave_v[i]->get_spinbox_value();
 }
 
-double SliderWidget::get_actual_slider_value()
+double SliderWidget::get_actual_slider_value(int i)
 {
-    return _actual_slider_value;
+    return _wave_v[i]->get_actual_slider_value();
 }
 
-void SliderWidget::set_actual_slider_value(double actual_slider_value)
+void SliderWidget::set_actual_slider_value(int i,double actual_slider_value)
 {
-    _actual_slider_value=actual_slider_value;
+    _wave_v[i]->set_actual_slider_value(actual_slider_value);
 }
 
 std::string SliderWidget::get_slider_name()

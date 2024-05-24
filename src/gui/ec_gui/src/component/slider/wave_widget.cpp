@@ -27,8 +27,7 @@ QWidget * LoadUiFile(QWidget * parent)
 }
 }
 
-WaveWidget::WaveWidget(double init_value,
-                       QDoubleSpinBox *valuebox,
+WaveWidget::WaveWidget(QDoubleSpinBox *valuebox,
                        const QString&  min,
                        const QString&  max,
                        const QString& unit,
@@ -58,14 +57,16 @@ WaveWidget::WaveWidget(double init_value,
     _valueslider->setMinimum(_slider_spinbox_fct*min.toDouble());
     _valueslider->setTickInterval(1);
 
-    if(init_value>max.toDouble()){
+    _actual_slider_value=0.0;
+
+    if(_actual_slider_value>max.toDouble()){
         _valueslider->setValue(max.toDouble());
     }
-    else if(init_value<min.toDouble()){
+    else if(_actual_slider_value<min.toDouble()){
         _valueslider->setValue(min.toDouble());
     }
     else{
-        _valueslider->setValue(init_value);
+        _valueslider->setValue(_actual_slider_value);
     }
 
     // connect slider to spinbox
@@ -75,14 +76,14 @@ WaveWidget::WaveWidget(double init_value,
     _valuebox->setMaximum(max.toDouble());
     _valuebox->setMinimum(min.toDouble());
 
-    if(init_value>max.toDouble()){
+    if(_actual_slider_value>max.toDouble()){
         _valuebox->setValue(max.toDouble());
     }
-    else if(init_value<min.toDouble()){
+    else if(_actual_slider_value<min.toDouble()){
         _valuebox->setValue(min.toDouble());
     }
     else{
-        _valuebox->setValue(init_value);
+        _valuebox->setValue(_actual_slider_value);
     }
 
     _valuebox->setDecimals(6);
@@ -97,10 +98,7 @@ WaveWidget::WaveWidget(double init_value,
            );
 
 
-    _slider_filtered=std::make_shared<SecondOrderFilter<double>>(12.0,1.0,1.0,init_value);
-
-   
-    _actual_slider_value=init_value;
+    _slider_filtered=std::make_shared<SecondOrderFilter<double>>(12.0,1.0,1.0,_actual_slider_value);
 
     // find wave tab.
     _tab_wave = findChild<QTabWidget *>("tabWave");

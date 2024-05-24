@@ -59,9 +59,6 @@ private:
   QComboBox * _fieldtype_combobox;
   QComboBox * _mode_type_combobox;
   QTabWidget *_devicecontrol;
-  QTabWidget *_tab_motor_control;
-  QTabWidget *_tab_valve_control;
-  QTabWidget *_tab_pump_control;
 
   QDialogButtonBox  * _cmd_manager;
   QPushButton * _applybtn;
@@ -70,7 +67,6 @@ private:
   EcIface::Ptr _client;
   EcGuiSlider::Ptr _ec_gui_slider;
   EcGuiSlider::slider_map_t _slider_map;
-  std::map<int, SliderWidget*> _actual_sw_map_selected;
   std::vector<int> _slave_id_led;
 };
 
