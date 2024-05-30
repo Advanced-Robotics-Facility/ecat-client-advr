@@ -32,7 +32,6 @@ private:
         QTreeWidgetItem* _sdo_item;
         int _sdo_column;
         SRD_SDO _sdo_map;
-        SRD_SDO _internal_sdo_map;
         std::string _old_sdo_value;
         
         void add_esc_sdo();

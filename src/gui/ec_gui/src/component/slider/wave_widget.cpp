@@ -30,6 +30,7 @@ QWidget * LoadUiFile(QWidget * parent)
 WaveWidget::WaveWidget(QDoubleSpinBox *valuebox,
                        const QString&  min,
                        const QString&  max,
+                       uint8_t decimal_value,
                        const QString& unit,
                        QWidget *parent) :
     _valuebox(valuebox),
@@ -43,8 +44,7 @@ WaveWidget::WaveWidget(QDoubleSpinBox *valuebox,
 
     setLayout(layout);
 
-   
-    _slider_spinbox_fct=100;
+    _slider_spinbox_fct=std::pow(10,decimal_value);
     
     auto min_label = findChild<QLabel *>("Min");
     min_label->setText(min+"   "+unit+"       ");
@@ -86,7 +86,7 @@ WaveWidget::WaveWidget(QDoubleSpinBox *valuebox,
         _valuebox->setValue(_actual_slider_value);
     }
 
-    _valuebox->setDecimals(6);
+    _valuebox->setDecimals(decimal_value);
     _valuebox->setSingleStep(1/((double)_slider_spinbox_fct));
 
      // connect spinbox to slider

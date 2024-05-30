@@ -7,31 +7,42 @@
 #include "slider_widget.h"
 #include "utils/ec_utils.h"
 
+static const SliderWidget::slider_info_s motor_info={
+  MotorPdoTx::name,
+  {"[uless]","[rad]","[rad/s]","[Nm]","[arbu]", "[arbu]","[arbu]","[arbu]","[arbu]","[uless]","[uless]","[arbu]"},
+  {0,2,2,2,6,6,6,6,6,0,0,2},
+  {"0","-3.14","-6.28","-10.0","0.0","0.0","0.0","0.0","0.0","0","0","-10000.0"},
+  {"500","3.14","6.28","10.0","10000","10000","10000","10000","10000","2","65535","10000.0"}
+};
+
+static const SliderWidget::slider_info_s valve_info= {
+  ValvePdoTx::name,
+  {"[mA]", "[uless]", "[uless]","[uless]", "[uless]","[s]","[uless]","[arbu]"},
+  {2,0,0,0,0,0,0,2},
+  {"-25.0","0","0","0","0","0","0","0.0"},
+  {"25.0","100.0","100.0","5.0","100","100","10","0.0"}
+};
+
+static const SliderWidget::slider_info_s pump_info= {
+  PumpPdoTx::name,
+  {"[bar]", "[uless]", "[uless]","[uless]", "[uless]","[uless]","[uless]","[uless]","[uless]"},
+  {0,0,0,0,0,0,0,0,0},
+  {"0","0","0","0","0","0","0","0","0"},
+  {"255","255","255","65535","255","255","255","255","255"}
+};
+
+
+
 class EcGuiSlider : public QWidget
 {
     Q_OBJECT
 
 public:
 
-    struct joint_info_t{
-
-    std::string joint_name;
-
-    double min_pos;
-    double max_pos;
-    double max_vel;
-    double max_torq;
-
-    double actual_pos;
-    double actual_vel;
-    double actual_torq;
-
-    };
-    
     struct slider_map_t{
-    std::map<int, SliderWidget*> motor_sw_map;
-    std::map<int, SliderWidget*> valve_sw_map;
-    std::map<int, SliderWidget*> pump_sw_map;
+      std::map<int, SliderWidget*> motor_sw_map;
+      std::map<int, SliderWidget*> valve_sw_map;
+      std::map<int, SliderWidget*> pump_sw_map;
     };
 
     typedef std::shared_ptr<EcGuiSlider> Ptr;
@@ -42,9 +53,7 @@ public:
 
     slider_map_t get_sliders();
     
-    void create_sliders(std::map<int ,joint_info_t > joint_info_map,
-                        std::map<int ,int > valve_info_map,
-                        std::map<int ,int > pump_info_map);
+    void create_sliders(SSI device_info);
     void delete_sliders();
     void reset_sliders();
     void enable_sliders();
@@ -53,7 +62,6 @@ public:
 
 private:
   
-  std::map<int ,joint_info_t > _joint_info_map;
   slider_map_t _slider_map;
 
   float _control_mode;

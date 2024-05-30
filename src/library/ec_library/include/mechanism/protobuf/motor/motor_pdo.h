@@ -36,9 +36,6 @@ namespace MotorPdoTx{
     static const std::vector<std::string>name = {"ctrl_type","pos_ref","vel_ref","tor_ref",
                                                  "gains_0", "gains_1","gains_2","gains_3","gains_4",
                                                  "op","idx","aux"};
-    static const std::vector<std::string>unit = {"[uless]","[rad]","[rad/s]","[Nm]",
-                                                 "[arbu]", "[arbu]","[arbu]","[arbu]","[arbu]",
-                                                 "[uless]","[uless]","[arbu]"};
     static const int pdo_size=12;
     using pdo_t= std::tuple<int32_t,float, float, float, float,float,float,float,float,uint32_t, uint32_t, float>;
     template <typename T>

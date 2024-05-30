@@ -16,6 +16,7 @@ public:
     explicit WaveWidget (QDoubleSpinBox *valuebox,
                          const QString& min,
                          const QString& max,
+                         uint8_t decimal_value,
                          const QString& unit,
                          QWidget * parent = 0);
 

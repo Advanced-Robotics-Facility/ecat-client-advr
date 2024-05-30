@@ -29,10 +29,7 @@ QWidget * LoadUiFile(QWidget * parent)
 }
 
 SliderWidget::SliderWidget (const QString&  name,
-                            const QString&  min,
-                            const QString&  max,
-                            const std::vector<std::string> slider_unit,
-                            const std::vector<std::string> slider_name,
+                            const slider_info_t slider_info_s,
                             QWidget *parent) :
     QWidget(parent),
     _callback_enabled(true)
@@ -59,13 +56,13 @@ SliderWidget::SliderWidget (const QString&  name,
 
     _tab_name_wid = new QTabWidget();
     
-    for(int i=0;i<slider_name.size();i++){
+    for(int i=0;i<slider_info_s.slider_name.size();i++){
 
         QLabel *slider_label = new QLabel(this);
         QDoubleSpinBox *value_box = new QDoubleSpinBox(this);
         QLabel *unit_label = new QLabel(this);
 
-        slider_label->setText(QString::fromStdString(slider_name[i]));
+        slider_label->setText(QString::fromStdString(slider_info_s.slider_name[i]));
         slider_label->setMaximumWidth(150);
         slider_label->setMinimumHeight(25);
         slider_label->setMaximumHeight(25);
@@ -80,7 +77,7 @@ SliderWidget::SliderWidget (const QString&  name,
         value_box->setMaximumHeight(25);
         valuebox_name_layout->addWidget(value_box,0, Qt::AlignTop);
 
-        unit_label->setText(QString::fromStdString(slider_unit[i]));
+        unit_label->setText(QString::fromStdString(slider_info_s.slider_unit[i]));
         unit_label->setMinimumWidth(50);
         unit_label->setMinimumHeight(25);
         unit_label->setMaximumWidth(50);
@@ -89,13 +86,17 @@ SliderWidget::SliderWidget (const QString&  name,
 
         auto tab_layout = new QVBoxLayout();
         auto page_wid = new QWidget();
-        auto wave_wid = new WaveWidget(value_box,min,max,QString::fromStdString(slider_unit[i]));
+        auto wave_wid = new WaveWidget(value_box,
+                                       QString::fromStdString(slider_info_s.slider_min[i]),
+                                       QString::fromStdString(slider_info_s.slider_max[i]),
+                                       slider_info_s.slider_decimal[i],
+                                       QString::fromStdString(slider_info_s.slider_unit[i]));
         _wave_v.push_back(wave_wid);
         tab_layout->addWidget(wave_wid);
         page_wid->setLayout(tab_layout);
         
  
-        _tab_name_wid->insertTab(i,page_wid, QString::fromStdString(slider_name[i]));
+        _tab_name_wid->insertTab(i,page_wid, QString::fromStdString(slider_info_s.slider_name[i]));
     }
     
     wave_layout->addWidget(_tab_name_wid);

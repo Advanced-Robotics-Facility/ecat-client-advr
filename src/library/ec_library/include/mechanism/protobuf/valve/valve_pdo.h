@@ -29,7 +29,6 @@ namespace ValvePdoRx{
 
 namespace ValvePdoTx{
     static const std::vector<std::string>name = {"current_ref", "pwm_1", "pwm_2","dout", "fault_ack","ts","op_idx_aux","aux"};
-    static const std::vector<std::string>unit = {"[mA]", "[uless]", "[uless]","[uless]", "[uless]","[s]","[uless]","[arbu]"};
     static const int pdo_size=8;
     using pdo_t=std::tuple<float, uint16_t, uint16_t, uint16_t, uint16_t,uint16_t,uint16_t,float>;
     template <typename T>

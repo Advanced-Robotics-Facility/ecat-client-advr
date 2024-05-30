@@ -13,11 +13,16 @@ class SliderWidget : public QWidget
 Q_OBJECT
 public:
 
+    typedef struct slider_info_t{
+        std::vector<std::string> slider_name;
+        std::vector<std::string> slider_unit;
+        std::vector<uint8_t> slider_decimal;
+        std::vector<std::string> slider_min;
+        std::vector<std::string> slider_max;
+    }slider_info_s;
+
     explicit SliderWidget (const QString& name,
-                           const QString& min,
-                           const QString& max,
-                           const std::vector<std::string> slider_unit,
-                           const std::vector<std::string> slider_name,
+                           const slider_info_t slider_info_s,
                            QWidget * parent = 0);
 
 

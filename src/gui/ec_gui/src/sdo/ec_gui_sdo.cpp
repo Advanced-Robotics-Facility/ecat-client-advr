@@ -104,11 +104,6 @@ void EcGuiSdo::restart_ec_gui_sdo(EcIface::Ptr client,SRD_SDO sdo_map)
 
 void EcGuiSdo::add_esc_sdo()
 {
-    if(_sdo_map.empty())
-    {
-        _sdo_map = _internal_sdo_map;
-    }
-
     for ( auto &[esc_id, rr_sdo] : _sdo_map )
     {
         QTreeWidgetItem * esc_item = new QTreeWidgetItem();
@@ -133,7 +128,6 @@ void EcGuiSdo::add_esc_sdo()
 
 void EcGuiSdo::rescan_esc_sdo()
 {
-    auto old_sdo_map = _sdo_map;
     _sdo_map.clear();
     
     for ( auto &[esc_id, rr_sdo] : _sdo_map )

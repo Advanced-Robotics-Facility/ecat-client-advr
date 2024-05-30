@@ -22,10 +22,6 @@ public:
     struct ec_wrapper_info_t{
         EcIface::Ptr client;
         SSI device_info;
-        
-        std::map<int ,EcGuiSlider::joint_info_t > joint_info_map;
-        std::map<int,int> valve_info_map;
-        std::map<int,int> pump_info_map;
         SRD_SDO sdo_map;
     };
 

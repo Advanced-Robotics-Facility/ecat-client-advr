@@ -119,9 +119,7 @@ void EcGuiWrapper::restart_gui_wrapper(ec_wrapper_info_t ec_wrapper_info)
     
     _ec_wrapper_info = ec_wrapper_info;
     
-    _ec_gui_slider->create_sliders(_ec_wrapper_info.joint_info_map,
-                                   _ec_wrapper_info.valve_info_map,
-                                   _ec_wrapper_info.pump_info_map);
+    _ec_gui_slider->create_sliders(_ec_wrapper_info.device_info);
     
     _ec_gui_cmd->restart_ec_gui_cmd(_ec_wrapper_info.client);
     

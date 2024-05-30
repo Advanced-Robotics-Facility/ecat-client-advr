@@ -249,157 +249,52 @@ void EcGuiStart::clear_device()
     }
     
     _ec_wrapper_info.device_info.clear();
-    _ec_wrapper_info.joint_info_map.clear();
-
     _ec_wrapper_info.sdo_map.clear();
 }
 
 void EcGuiStart::scan_device()
 {
-    if(_ec_wrapper_info.client->retrieve_slaves_info(_ec_wrapper_info.device_info))
-    {
-        if(_ec_wrapper_info.device_info.empty())
-        {
+    if(_ec_wrapper_info.client->retrieve_slaves_info(_ec_wrapper_info.device_info)){
+        if(_ec_wrapper_info.device_info.empty()){
             error_on_scannig();
         }
-        else
-        {
-
-            // *************** END AUTODETECTION *************** //
-
-            // GET Mechanical Limits
-            _ec_wrapper_info.joint_info_map.clear();
-            std::map<int,RR_SDO> motor_info_map;
-            RD_SDO rd_sdo = { "motor_pos","Min_pos","Max_pos","motor_vel","Max_vel","torque","Max_tor"};
-            WR_SDO wr_sdo = {};
-            int motors_counter=0;
-            
-            for ( auto &[esc_id, type, pos] : _ec_wrapper_info.device_info )
-            {
-                RR_SDO rr_sdo_info;
-                if(ec_motors.count(type)>0)
-                {
-                    motors_counter++;
-                    if(_ec_wrapper_info.client->retrieve_rr_sdo(esc_id,rd_sdo,wr_sdo,rr_sdo_info))
-                    {    
-                        if(!rr_sdo_info.empty())
-                        {
-                            motor_info_map[esc_id]=rr_sdo_info;
-                        }
-                    }
-                }
-                else if(type==iit::ecat::HYQ_KNEE){
-                    _ec_wrapper_info.valve_info_map[esc_id]=5.0; //max current
-                }
-                else if(type==iit::ecat::HYQ_HPU){
-                    _ec_wrapper_info.pump_info_map[esc_id]=180.0; //max bar
-                }
-                /********************* RETRIEVE ALL SDO */////////////
-                rr_sdo_info.clear();
-                _ec_wrapper_info.client->retrieve_all_sdo(esc_id,rr_sdo_info);
-                _ec_wrapper_info.sdo_map[esc_id] = rr_sdo_info;
-            }
-#ifdef TEST_GUI 
-            RR_SDO rr_sdo_info_motor = {
-                { "motor_pos", 0.0},
-                { "Min_pos",  -1.0},
-                { "Max_pos",   1.0},
-                { "motor_vel", 0.0},
-                { "Max_vel",   2.0},
-                { "torque",    0.0},
-                { "Max_tor",   200.0}
-            };
-            for ( auto &[esc_id, type, pos] : _ec_wrapper_info.device_info )
-            {
-                if(ec_motors.count(type)>0){
-                    motor_info_map[esc_id]=rr_sdo_info_motor;   
-                }
-            }
-#endif
-
-            if((motor_info_map.size()!=motors_counter)|| (motor_info_map.empty()))
-            {
-                QMessageBox msgBox;
-                msgBox.setText("Cannot find the SDO information requested, mechanical limits and actual position, velocity and torque for all motors"
-                            ", please control the EtherCAT Slave setup and restart the GUI");
-                msgBox.exec();
-            }
-            else
-            {
-                for ( auto &[slave_id, type, pos] : _ec_wrapper_info.device_info )
-                {
-                    if(motor_info_map.count(slave_id)>0)
-                    {
-                        std::map<std::string,float> slaves_sdo_data=motor_info_map[slave_id];
-
-                        EcGuiSlider::joint_info_t joint_info_s;
-
-                        joint_info_s.joint_name    ="motor_id_"+std::to_string(slave_id);
-                        joint_info_s.actual_pos    =slaves_sdo_data.at("motor_pos");
-                        joint_info_s.min_pos       =slaves_sdo_data.at("Min_pos");
-                        joint_info_s.max_pos       =slaves_sdo_data.at("Max_pos");
-                        if(joint_info_s.max_pos<joint_info_s.min_pos){
-                            double aux_value=joint_info_s.min_pos;
-                            joint_info_s.min_pos=joint_info_s.max_pos;
-                            joint_info_s.max_pos=aux_value;
-                        }
-                        joint_info_s.actual_vel    =slaves_sdo_data.at("motor_vel");
-                        joint_info_s.max_vel       =slaves_sdo_data.at("Max_vel");
-                        joint_info_s.actual_torq   =slaves_sdo_data.at("torque");
-                        joint_info_s.max_torq      =slaves_sdo_data.at("Max_tor");
-
-
-                        _ec_wrapper_info.joint_info_map[slave_id]=joint_info_s;
-                        // parse the message taking the information requested. Save it into the joint_info_map.
-                    }
-                }
-            }
-        }
     }
-    else
-    {
+    else{
         error_on_scannig();
     }
 }
 
 void EcGuiStart::onScanDeviceReleased()
 {
-    if(!_ec_wrapper_info.device_info.empty())
-    {
+    if(!_ec_wrapper_info.device_info.empty()){
         QMessageBox::StandardButton reply;
         QMessageBox msgBox;
         reply = msgBox.warning(this,msgBox.windowTitle(),tr("EtherCAT device(s) already scanned.\n"
                                "Do you want to rescan?"),
                                 QMessageBox::Yes|QMessageBox::No);
-        if(reply == QMessageBox::Yes)
-        {
-            if(!_ec_gui_wrapper->get_wrapper_send_sts())
-            {
+        if(reply == QMessageBox::Yes) {
+            if(!_ec_gui_wrapper->get_wrapper_send_sts()){
                 clear_device();
                 create_ec_iface();
                 scan_device();
             }
-            else
-            {
+            else{
                 msgBox.critical(this,msgBox.windowTitle(),
                                 tr("Cannot rescan EtherCAT device(s) already started or controlled.\n"));
                 return;
             }
         }
-        else
-        {
+        else{
             return;
         }
     }
-    else
-    {
+    else{
         create_ec_iface();
         scan_device();
     }
     
 
-    if(!_ec_wrapper_info.device_info.empty())
-    {
+    if(!_ec_wrapper_info.device_info.empty()){
         restart_gui();
     } 
 }
