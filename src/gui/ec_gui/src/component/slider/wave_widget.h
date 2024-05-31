@@ -52,6 +52,7 @@ private:
     int _slider_spinbox_fct;
 
     double _actual_slider_value;
+    double _min_slider_value,_max_slider_value;
 
     SecondOrderFilter<double>::Ptr _slider_filtered;
 };

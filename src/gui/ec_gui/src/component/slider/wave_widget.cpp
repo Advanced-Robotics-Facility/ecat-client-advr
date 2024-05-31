@@ -58,12 +58,14 @@ WaveWidget::WaveWidget(QDoubleSpinBox *valuebox,
     _valueslider->setTickInterval(_slider_spinbox_fct);
 
     _actual_slider_value=0.0;
+    _min_slider_value=min.toDouble();
+    _max_slider_value=max.toDouble();
 
-    if(_actual_slider_value>max.toDouble()){
-        _valueslider->setValue(max.toDouble());
+    if(_actual_slider_value>_max_slider_value){
+        _valueslider->setValue(_max_slider_value);
     }
-    else if(_actual_slider_value<min.toDouble()){
-        _valueslider->setValue(min.toDouble());
+    else if(_actual_slider_value<_min_slider_value){
+        _valueslider->setValue(_min_slider_value);
     }
     else{
         _valueslider->setValue(_actual_slider_value);
@@ -73,14 +75,14 @@ WaveWidget::WaveWidget(QDoubleSpinBox *valuebox,
     connect(_valueslider, &QSlider::valueChanged,
              std::bind(&WaveWidget::on_slider_changed, this));
 
-    _valuebox->setMaximum(max.toDouble());
-    _valuebox->setMinimum(min.toDouble());
+    _valuebox->setMaximum(_max_slider_value);
+    _valuebox->setMinimum(_min_slider_value);
 
-    if(_actual_slider_value>max.toDouble()){
-        _valuebox->setValue(max.toDouble());
+    if(_actual_slider_value>_max_slider_value){
+        _valuebox->setValue(_max_slider_value);
     }
-    else if(_actual_slider_value<min.toDouble()){
-        _valuebox->setValue(min.toDouble());
+    else if(_actual_slider_value<_min_slider_value){
+        _valuebox->setValue(_min_slider_value);
     }
     else{
         _valuebox->setValue(_actual_slider_value);
@@ -104,13 +106,16 @@ WaveWidget::WaveWidget(QDoubleSpinBox *valuebox,
     _tab_wave = findChild<QTabWidget *>("tabWave");
 
     _sine_a=findChild<QDoubleSpinBox *>("Sine_A");
-    _sine_a->setMaximum(max.toDouble());
+    _sine_a->setMaximum(_max_slider_value);
+    _sine_a->setMinimum(_min_slider_value);
+    
     _sine_f=findChild<QDoubleSpinBox *>("Sine_F");
     _sine_t=findChild<QDoubleSpinBox *>("Sine_T");
 
 
     _square_a=findChild<QDoubleSpinBox *>("Square_A");
-    _square_a->setMaximum(max.toDouble());
+    _square_a->setMaximum(_max_slider_value);
+    _square_a->setMinimum(_min_slider_value);
     _square_f=findChild<QDoubleSpinBox *>("Square_F");
     _square_t=findChild<QDoubleSpinBox *>("Square_T");
 
@@ -226,6 +231,14 @@ double WaveWidget::compute_wave(double t)
     default:
         break;
     }
+
+    if(fx > _max_slider_value){
+        fx=_max_slider_value;
+    }
+    else if(fx > _min_slider_value){
+        fx=_min_slider_value;
+    }
+
     return fx;
 }
 
