@@ -108,6 +108,8 @@ WaveWidget::WaveWidget(QDoubleSpinBox *valuebox,
     _sine_a=findChild<QDoubleSpinBox *>("Sine_A");
     _sine_a->setMaximum(_max_slider_value);
     _sine_a->setMinimum(_min_slider_value);
+    _sine_a->setDecimals(decimal_value);
+    _sine_a->setSingleStep(1/((double)_slider_spinbox_fct));
     
     _sine_f=findChild<QDoubleSpinBox *>("Sine_F");
     _sine_t=findChild<QDoubleSpinBox *>("Sine_T");
