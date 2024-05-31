@@ -55,7 +55,7 @@ WaveWidget::WaveWidget(QDoubleSpinBox *valuebox,
     _valueslider=findChild<QSlider *>("ValueSlider");
     _valueslider->setMaximum(_slider_spinbox_fct*max.toDouble());
     _valueslider->setMinimum(_slider_spinbox_fct*min.toDouble());
-    _valueslider->setTickInterval(1);
+    _valueslider->setTickInterval(_slider_spinbox_fct);
 
     _actual_slider_value=0.0;
 

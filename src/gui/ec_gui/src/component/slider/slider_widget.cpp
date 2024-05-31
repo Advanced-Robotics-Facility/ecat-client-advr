@@ -43,7 +43,6 @@ SliderWidget::SliderWidget (const QString&  name,
     setLayout(layout);
 
     auto name_label = findChild<QLabel *>("SliderLabel");
-    name_label->installEventFilter(this);
     name_label->setText(name);
     _slider_name = name.toStdString();
 
@@ -68,9 +67,9 @@ SliderWidget::SliderWidget (const QString&  name,
         slider_label->setMaximumHeight(25);
         slider_name_layout->addWidget(slider_label,0, Qt::AlignTop);
 
-        connect(value_box, &QDoubleSpinBox::editingFinished,
-                std::bind(&SliderWidget::on_spinbox_clicked, this, i)
-                );
+        //connect(value_box, &QDoubleSpinBox::editingFinished,
+        //        std::bind(&SliderWidget::on_spinbox_clicked, this, i)
+        //        );
 
         value_box->setMaximumWidth(150);
         value_box->setMinimumHeight(25);
