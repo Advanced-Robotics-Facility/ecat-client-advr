@@ -120,6 +120,8 @@ WaveWidget::WaveWidget(QDoubleSpinBox *valuebox,
     _square_a->setMinimum(_min_slider_value);
     _square_f=findChild<QDoubleSpinBox *>("Square_F");
     _square_t=findChild<QDoubleSpinBox *>("Square_T");
+    _square_a->setDecimals(decimal_value);
+    _square_a->setSingleStep(1/((double)_slider_spinbox_fct));
 
     //disable_slider();
 
