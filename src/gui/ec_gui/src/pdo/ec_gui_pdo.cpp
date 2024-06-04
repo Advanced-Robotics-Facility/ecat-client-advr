@@ -228,7 +228,7 @@ void EcGuiPdo::read_motor_status()
             /************************************* ALIGN POSITION SLIDERS with the motor position ********************************************/
             double motor_pos=std::get<1>(motor_rx_pdo);
             if(_slider_map.motor_sw_map.count(esc_id)>0){
-                _slider_map.motor_sw_map[esc_id]->set_actual_slider_value(0,motor_pos);
+                _slider_map.motor_sw_map[esc_id]->set_actual_slider_value(1,motor_pos);
             }
             /************************************* ALIGN POSITION SLIDERS with the motor position ********************************************/
         }
@@ -460,16 +460,18 @@ void EcGuiPdo::write_motor_pdo()
             ctrl_cmd_ref=_ctrl_cmd;
         }
 
-        double pos_ref= _slider_map.motor_sw_map[slave_id]->compute_wave(0,_s_send_time);
-        double vel_ref= _slider_map.motor_sw_map[slave_id]->compute_wave(1,_s_send_time);
-        double tor_ref= _slider_map.motor_sw_map[slave_id]->compute_wave(2,_s_send_time);
+        double pos_ref= _slider_map.motor_sw_map[slave_id]->compute_wave(1,_s_send_time);
+        double vel_ref= _slider_map.motor_sw_map[slave_id]->compute_wave(2,_s_send_time);
+        double tor_ref= _slider_map.motor_sw_map[slave_id]->compute_wave(3,_s_send_time);
+        double gain_0= _slider_map.motor_sw_map[slave_id]->compute_wave(4,_s_send_time);
+        double gain_1= _slider_map.motor_sw_map[slave_id]->compute_wave(5,_s_send_time);
+        double gain_2= _slider_map.motor_sw_map[slave_id]->compute_wave(6,_s_send_time);
+        double gain_3= _slider_map.motor_sw_map[slave_id]->compute_wave(7,_s_send_time);
+        double gain_4= _slider_map.motor_sw_map[slave_id]->compute_wave(8,_s_send_time);
+        uint32_t op= (uint32_t)_slider_map.motor_sw_map[slave_id]->get_spinbox_value(9);
+        uint32_t idx= (uint32_t)_slider_map.motor_sw_map[slave_id]->get_spinbox_value(10);
+        double aux= _slider_map.motor_sw_map[slave_id]->compute_wave(11,_s_send_time);
 
-        double gain_0= _slider_map.motor_sw_map[slave_id]->compute_wave(3,_s_send_time);
-        double gain_1= _slider_map.motor_sw_map[slave_id]->compute_wave(4,_s_send_time);
-        double gain_2= _slider_map.motor_sw_map[slave_id]->compute_wave(5,_s_send_time);
-        double gain_3= _slider_map.motor_sw_map[slave_id]->compute_wave(6,_s_send_time);
-        double gain_4= _slider_map.motor_sw_map[slave_id]->compute_wave(7,_s_send_time);
-                  
         MotorPdoTx::pdo_t   references{ctrl_cmd_ref,
                                        pos_ref, 
                                        vel_ref, 
@@ -479,9 +481,9 @@ void EcGuiPdo::write_motor_pdo()
                                        gain_2, 
                                        gain_3, 
                                        gain_4,
-                                       1,//(uint32_t)_slider_map.motor_sw_map[slave_id]->get_spinbox_value(8),
-                                       0,//(uint32_t)_slider_map.motor_sw_map[slave_id]->get_spinbox_value(9),
-                                       _slider_map.motor_sw_map[slave_id]->get_spinbox_value(10)};
+                                       op,
+                                       idx,
+                                       aux};
 
         _motors_ref[slave_id]=references;
     }
