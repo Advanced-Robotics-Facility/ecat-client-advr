@@ -104,24 +104,16 @@ WaveWidget::WaveWidget(QDoubleSpinBox *valuebox,
 
     // find wave tab.
     _tab_wave = findChild<QTabWidget *>("tabWave");
+    _tab_wave_type = findChild<QTabWidget *>("tabWaveType");
 
-    _sine_a=findChild<QDoubleSpinBox *>("Sine_A");
-    _sine_a->setMaximum(_max_slider_value);
-    _sine_a->setMinimum(_min_slider_value);
-    _sine_a->setDecimals(decimal_value);
-    _sine_a->setSingleStep(1/((double)_slider_spinbox_fct));
+    _wave_a=findChild<QDoubleSpinBox *>("Wave_A");
+    _wave_a->setMaximum(_max_slider_value);
+    _wave_a->setMinimum(_min_slider_value);
+    _wave_a->setDecimals(decimal_value);
+    _wave_a->setSingleStep(1/((double)_slider_spinbox_fct));
     
-    _sine_f=findChild<QDoubleSpinBox *>("Sine_F");
-    _sine_t=findChild<QDoubleSpinBox *>("Sine_T");
-
-
-    _square_a=findChild<QDoubleSpinBox *>("Square_A");
-    _square_a->setMaximum(_max_slider_value);
-    _square_a->setMinimum(_min_slider_value);
-    _square_f=findChild<QDoubleSpinBox *>("Square_F");
-    _square_t=findChild<QDoubleSpinBox *>("Square_T");
-    _square_a->setDecimals(decimal_value);
-    _square_a->setSingleStep(1/((double)_slider_spinbox_fct));
+    _wave_f=findChild<QDoubleSpinBox *>("Wave_F");
+    _wave_t=findChild<QDoubleSpinBox *>("Wave_T");
 
     //disable_slider();
 
@@ -207,39 +199,31 @@ void WaveWidget::set_filter(double st)
 double WaveWidget::compute_wave(double t)
 {
     double fx=0;
-    switch (_tab_wave->currentIndex()){
-    case 0:
+    if(_tab_wave->currentIndex()==0){
         fx = _slider_filtered->process(_valuebox->value());
-        break;
-    case 1:
+    }
+    else{
         if(t==0){
             fx=_valuebox->value();
         }
         else{
-            fx = _valuebox->value() +_sine_a->value() * std::sin (2*M_PI*_sine_f->value()*t + _sine_t->value());
-        }
-        break;
-    case 2:
-        if(t==0){
-            fx=_valuebox->value();
-        }
-        else{
-            fx=-1*_square_a->value();
-            if(std::signbit(std::sin (2*M_PI*_square_f->value()*t + _square_t->value()))){
-                fx=1*_square_a->value();
+            if(_tab_wave_type->currentIndex()==0){
+                fx = _valuebox->value() +_wave_a->value() * std::sin (2*M_PI*_wave_f->value()*t + _wave_t->value());
             }
-            fx=_valuebox->value()+ fx;
+            else{
+                fx=-1*_wave_a->value();
+                if(std::signbit(std::sin (2*M_PI*_wave_f->value()*t + _wave_t->value()))){
+                    fx=1*_wave_a->value();
+                }
+                fx=_valuebox->value()+ fx;  
+            }
         }
-        break;
-    
-    default:
-        break;
     }
 
-    if(fx > _max_slider_value){
+    if(fx >= _max_slider_value){
         fx=_max_slider_value;
     }
-    else if(fx > _min_slider_value){
+    else if (fx <= _min_slider_value){
         fx=_min_slider_value;
     }
 
@@ -251,7 +235,9 @@ void WaveWidget::enable_tab_wave()
     _tab_wave->setEnabled(true);
     _tab_wave->setTabEnabled(0,true);
     _tab_wave->setTabEnabled(1,true);
-    _tab_wave->setTabEnabled(2,true);
+
+    _tab_wave_type->setTabEnabled(0,true);
+    _tab_wave_type->setTabEnabled(1,true);
 }
 
 void WaveWidget::disable_tab_wave()
@@ -259,7 +245,9 @@ void WaveWidget::disable_tab_wave()
     _tab_wave->setEnabled(false);
     _tab_wave->setTabEnabled(0,false);
     _tab_wave->setTabEnabled(1,false);
-    _tab_wave->setTabEnabled(2,false);
+
+    _tab_wave_type->setTabEnabled(0,false);
+    _tab_wave_type->setTabEnabled(1,false);
 }
 
 void WaveWidget::tab_wave_selected()
@@ -268,17 +256,20 @@ void WaveWidget::tab_wave_selected()
     if(curr_tab==0){
         _tab_wave->setTabEnabled(0,true);
         _tab_wave->setTabEnabled(1,false);
-        _tab_wave->setTabEnabled(2,false);
-    }
-    else if(curr_tab==1){
-        _tab_wave->setTabEnabled(0,false);
-        _tab_wave->setTabEnabled(1,true);
-        _tab_wave->setTabEnabled(2,false);
     }
     else{
         _tab_wave->setTabEnabled(0,false);
-        _tab_wave->setTabEnabled(1,false);
-        _tab_wave->setTabEnabled(2,true);
+        _tab_wave->setTabEnabled(1,true);
+
+        int wave_type= _tab_wave_type->currentIndex();
+        if(wave_type==0){
+            _tab_wave_type->setTabEnabled(0,true);
+            _tab_wave_type->setTabEnabled(1,false);
+        }
+        else{
+            _tab_wave_type->setTabEnabled(0,false);
+            _tab_wave_type->setTabEnabled(1,true);
+        }
     }
 }
 

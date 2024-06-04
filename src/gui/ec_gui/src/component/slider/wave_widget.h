@@ -46,9 +46,8 @@ private:
 
     QSlider *          _valueslider;
     QDoubleSpinBox *   _valuebox;
-    QTabWidget * _tab_wave;
-    QDoubleSpinBox *_sine_a,*_sine_f,*_sine_t;
-    QDoubleSpinBox *_square_a,*_square_f,*_square_t;
+    QTabWidget * _tab_wave,*_tab_wave_type;
+    QDoubleSpinBox *_wave_a,*_wave_f,*_wave_t;
     int _slider_spinbox_fct;
 
     double _actual_slider_value;
