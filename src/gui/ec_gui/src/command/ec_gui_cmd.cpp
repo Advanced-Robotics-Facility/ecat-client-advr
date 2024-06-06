@@ -20,7 +20,7 @@ EcGuiCmd::EcGuiCmd(EcGuiSlider::Ptr ec_gui_slider,
 
     /* connection of read mode type function */
     connect(_mode_type_combobox, SIGNAL(currentIndexChanged(int)),this,
-        SLOT(readModeType())
+        SLOT(readMotorCtrlType())
     );
 
     // find devices
@@ -75,7 +75,7 @@ void EcGuiCmd::readCommand()
     {
         _ctrl_cmd_type=ClientCmdType::START;
         _mode_type_combobox->setEnabled(true);
-        readModeType();
+        readMotorCtrlType();
         if(!_device_start_req){
             
             for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
@@ -117,8 +117,25 @@ std::string EcGuiCmd::getModeType() const
 void EcGuiCmd::enable_disable_pid()
 {
 }
-void EcGuiCmd::readModeType()
+void EcGuiCmd::readMotorCtrlType()
 {
+    if(getModeType() != "Idle"){
+        if(getModeType() == "Position"){
+            _ctrl_cmd=0x3B;
+        }
+        else if(getModeType() == "Velocity"){
+            _ctrl_cmd=0x71;
+        }
+        else if(getModeType() == "Impedance"){
+            _ctrl_cmd=0xD4;
+        }
+        else if(getModeType() == "Current"){
+            _ctrl_cmd=0xCC;
+        }
+        else{
+            throw std::runtime_error("Error: Found not valid motor control mode");
+        }
+    }
     enable_disable_pid();  
 }
 
@@ -163,11 +180,11 @@ void EcGuiCmd::fill_start_stop_motor()
             else{
                 if(getModeType() != "Idle"){
                     _gains.clear();
-                    _gains.push_back(_slider_map.motor_sw_map[slave_id]->get_spinbox_value(3));
                     _gains.push_back(_slider_map.motor_sw_map[slave_id]->get_spinbox_value(4));
                     _gains.push_back(_slider_map.motor_sw_map[slave_id]->get_spinbox_value(5));
                     _gains.push_back(_slider_map.motor_sw_map[slave_id]->get_spinbox_value(6));
                     _gains.push_back(_slider_map.motor_sw_map[slave_id]->get_spinbox_value(7));
+                    _gains.push_back(_slider_map.motor_sw_map[slave_id]->get_spinbox_value(8));
                     _motors_start.push_back(std::make_tuple(slave_id,_ctrl_cmd,_gains));
                 }
                 

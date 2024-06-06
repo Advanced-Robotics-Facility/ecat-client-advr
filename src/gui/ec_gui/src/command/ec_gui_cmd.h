@@ -31,7 +31,7 @@ public:
     
 public slots:
     void readCommand();
-    void readModeType();
+    void readMotorCtrlType();
 private:
 
   std::string getFieldType() const;

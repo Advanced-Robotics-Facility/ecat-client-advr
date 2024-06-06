@@ -255,11 +255,12 @@ bool EcZmqCmd::stop_motors()
     while(_client_alive && attemps_cnt < _max_cmd_attemps){
         bool motors_stopped=true;
         for ( auto &[esc_id, type, pos] : _slave_info ) {
-            
+
             if(!_client_alive){
                 return false;
             }
-            if(ec_motors.count(esc_id)>0){
+            
+            if(ec_motors.count(type)>0){
                 std::string msg="";
                 auto fault=_ec_repl_cmd->Ctrl_cmd(iit::advr::Ctrl_cmd_Type::Ctrl_cmd_Type_CTRL_CMD_STOP,
                                                 esc_id,
