@@ -8,6 +8,7 @@
 #include <functional>
 #include "wave_widget.h"
 
+
 class SliderWidget : public QWidget
 {
 Q_OBJECT
@@ -19,6 +20,7 @@ public:
         std::vector<uint8_t> slider_decimal;
         std::vector<std::string> slider_min;
         std::vector<std::string> slider_max;
+        std::vector<uint8_t> slider_property;
     }slider_info_s;
 
     explicit SliderWidget (const QString& name,

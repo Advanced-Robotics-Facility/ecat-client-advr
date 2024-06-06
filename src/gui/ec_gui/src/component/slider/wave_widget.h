@@ -8,12 +8,22 @@
 #include <functional>
 #include "ec_gui_utils.h"
 
+
+enum SliderProperty : uint8_t
+{
+    NOT_AVAILABLE       = 0,        // slider not available for changing.
+    AVAILABLE           = 1,        // slider available for changing.
+    ALWAYS_AVAILABLE    = 2,        // slider always available.
+};
+
+
 class WaveWidget : public QWidget
 {
 Q_OBJECT
 public:
 
     explicit WaveWidget (QDoubleSpinBox *valuebox,
+                         uint8_t valuebox_property,
                          const QString& min,
                          const QString& max,
                          uint8_t decimal_value,
@@ -54,6 +64,7 @@ private:
     double _min_slider_value,_max_slider_value;
 
     SecondOrderFilter<double>::Ptr _slider_filtered;
+    uint8_t _valuebox_property;
 };
 
 #endif

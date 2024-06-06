@@ -28,12 +28,14 @@ QWidget * LoadUiFile(QWidget * parent)
 }
 
 WaveWidget::WaveWidget(QDoubleSpinBox *valuebox,
+                       uint8_t valuebox_property,
                        const QString&  min,
                        const QString&  max,
                        uint8_t decimal_value,
                        const QString& unit,
                        QWidget *parent) :
     _valuebox(valuebox),
+    _valuebox_property(valuebox_property),
     QWidget(parent)
 {
     /* Create GUI layout */
@@ -114,9 +116,6 @@ WaveWidget::WaveWidget(QDoubleSpinBox *valuebox,
     
     _wave_f=findChild<QDoubleSpinBox *>("Wave_F");
     _wave_t=findChild<QDoubleSpinBox *>("Wave_T");
-
-    //disable_slider();
-
 }
 
 void WaveWidget::on_slider_changed()
@@ -165,13 +164,17 @@ void WaveWidget::disable_slider()
 {
     enable_tab_wave();
     _valueslider->setEnabled(false);
-    _valuebox->setEnabled(false);
+    if(_valuebox_property!=SliderProperty::ALWAYS_AVAILABLE){
+        _valuebox->setEnabled(false);
+    }
 }
 void WaveWidget::enable_slider()
 {
     tab_wave_selected();
     _valueslider->setEnabled(true);
-    _valuebox->setEnabled(true);
+    if(_valuebox_property!=SliderProperty::NOT_AVAILABLE){
+        _valuebox->setEnabled(true);
+    }
 }
 
 double WaveWidget::get_spinbox_value()

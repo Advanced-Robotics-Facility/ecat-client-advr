@@ -62,40 +62,37 @@ SliderWidget::SliderWidget (const QString&  name,
         QLabel *unit_label = new QLabel(this);
 
         slider_label->setText(QString::fromStdString(slider_info_s.slider_name[i]));
-        slider_label->setMaximumWidth(150);
-        slider_label->setMinimumHeight(25);
-        slider_label->setMaximumHeight(25);
+        slider_label->setMinimumSize(0,25);
+        slider_label->setMaximumSize(150,25);
         slider_name_layout->addWidget(slider_label,0, Qt::AlignTop);
 
         //connect(value_box, &QDoubleSpinBox::editingFinished,
         //        std::bind(&SliderWidget::on_spinbox_clicked, this, i)
         //        );
 
-        value_box->setMaximumWidth(150);
-        value_box->setMinimumHeight(25);
-        value_box->setMaximumHeight(25);
+        value_box->setMinimumSize(0,25);
+        value_box->setMaximumSize(150,25);
         valuebox_name_layout->addWidget(value_box,0, Qt::AlignTop);
 
         unit_label->setText(QString::fromStdString(slider_info_s.slider_unit[i]));
-        unit_label->setMinimumWidth(50);
-        unit_label->setMinimumHeight(25);
-        unit_label->setMaximumWidth(50);
-        unit_label->setMaximumHeight(25);
+        unit_label->setMinimumSize(50,25);
+        unit_label->setMaximumSize(50,25);
         unit_layout->addWidget(unit_label,0, Qt::AlignTop);
 
         auto tab_layout = new QVBoxLayout();
         auto page_wid = new QWidget();
         auto wave_wid = new WaveWidget(value_box,
+                                       slider_info_s.slider_property[i],
                                        QString::fromStdString(slider_info_s.slider_min[i]),
                                        QString::fromStdString(slider_info_s.slider_max[i]),
                                        slider_info_s.slider_decimal[i],
                                        QString::fromStdString(slider_info_s.slider_unit[i]));
         _wave_v.push_back(wave_wid);
-        tab_layout->addWidget(wave_wid);
-        page_wid->setLayout(tab_layout);
-        
- 
-        _tab_name_wid->insertTab(i,page_wid, QString::fromStdString(slider_info_s.slider_name[i]));
+        if(slider_info_s.slider_property[i]!=SliderProperty::NOT_AVAILABLE){
+            tab_layout->addWidget(wave_wid);
+            page_wid->setLayout(tab_layout);
+            _tab_name_wid->insertTab(i,page_wid, QString::fromStdString(slider_info_s.slider_name[i]));
+        }
     }
     
     wave_layout->addWidget(_tab_name_wid);
