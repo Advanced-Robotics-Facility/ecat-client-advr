@@ -146,18 +146,46 @@ void EcGuiCmd::readMotorCtrlType()
 
 void EcGuiCmd::onNotAllCmdReleased()
 {
-    /* Uncheck all checkboxes of Joint WID */
-    for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
-        slider_wid->uncheck_slider_enabled();
+
+    int curr_tab= _devicecontrol->currentIndex();
+
+    if(curr_tab==0){
+        for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
+            slider_wid->uncheck_slider_enabled();
+        }
+    }
+    else if(curr_tab==1){
+        for (auto& [slave_id, slider_wid]:_slider_map.valve_sw_map){
+            slider_wid->uncheck_slider_enabled();
+        }
+    }
+    else{
+        for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
+            slider_wid->uncheck_slider_enabled();
+        }
     }
 
 }
 
 void EcGuiCmd::onAllCmdReleased()
 {
-    /* Check all checkboxes of Slider WID */
-    for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map) {
-        slider_wid->check_slider_enabled();
+
+    int curr_tab= _devicecontrol->currentIndex();
+
+    if(curr_tab==0){
+        for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
+            slider_wid->check_slider_enabled();
+        }
+    }
+    else if(curr_tab==1){
+        for (auto& [slave_id, slider_wid]:_slider_map.valve_sw_map){
+            slider_wid->check_slider_enabled();
+        }
+    }
+    else{
+        for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
+            slider_wid->check_slider_enabled();
+        }
     }
 
 }
