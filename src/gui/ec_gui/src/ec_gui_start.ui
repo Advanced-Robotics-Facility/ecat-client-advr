@@ -299,7 +299,7 @@
        </property>
        <property name="maximumSize">
         <size>
-         <width>600</width>
+         <width>650</width>
          <height>100</height>
         </size>
        </property>
@@ -324,6 +324,12 @@
         </property>
         <item>
          <widget class="QComboBox" name="SelectFieldComboBox">
+          <property name="minimumSize">
+           <size>
+            <width>180</width>
+            <height>0</height>
+           </size>
+          </property>
           <property name="font">
            <font>
             <pointsize>14</pointsize>
@@ -345,7 +351,7 @@
          <widget class="QDialogButtonBox" name="CmdManager">
           <property name="maximumSize">
            <size>
-            <width>80</width>
+            <width>85</width>
             <height>16777215</height>
            </size>
           </property>
