@@ -451,7 +451,7 @@
       <widget class="QTabWidget" name="deviceControl">
        <property name="font">
         <font>
-         <pointsize>12</pointsize>
+         <pointsize>10</pointsize>
         </font>
        </property>
        <property name="currentIndex">
@@ -538,7 +538,7 @@
               <x>0</x>
               <y>0</y>
               <width>774</width>
-              <height>184</height>
+              <height>186</height>
              </rect>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_6">
@@ -612,7 +612,7 @@
               <x>0</x>
               <y>0</y>
               <width>774</width>
-              <height>184</height>
+              <height>186</height>
              </rect>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_18">
@@ -686,7 +686,7 @@
               <x>0</x>
               <y>0</y>
               <width>774</width>
-              <height>184</height>
+              <height>186</height>
              </rect>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_20">
