@@ -30,10 +30,11 @@ public:
 
 
     double get_spinbox_value(int i);
-    double get_actual_slider_value(int i);
-    void   set_actual_slider_value(int i,double actual_slider_value);
-    void align_spinbox(double value);
-    void align_spinbox();
+    void   set_spinbox_value(int i,double actual_spinbox_value);
+    void align_spinbox(int i,double value);
+    void align_all_spinbox(double value);
+    void align_spinbox(int i);
+    void align_all_spinbox();
     void disable_slider();
     void enable_slider();
     void hide_slider_enabled();

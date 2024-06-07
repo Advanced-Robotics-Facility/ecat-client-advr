@@ -77,13 +77,13 @@ void EcGuiCmd::readCommand()
         _mode_type_combobox->setEnabled(true);
         readMotorCtrlType();
         if(!_device_start_req){
-            
+
             for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
-                    slider_wid->enable_slider_enabled();
+                slider_wid->enable_slider_enabled();
             }
                     
             for (auto& [slave_id, slider_wid]:_slider_map.valve_sw_map){
-                    slider_wid->enable_slider_enabled();
+                slider_wid->enable_slider_enabled();
             }
 
             for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
@@ -136,6 +136,11 @@ void EcGuiCmd::readMotorCtrlType()
             throw std::runtime_error("Error: Found not valid motor control mode");
         }
     }
+
+    for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
+        slider_wid->align_spinbox(0,_ctrl_cmd);
+    }
+
     enable_disable_pid();  
 }
 

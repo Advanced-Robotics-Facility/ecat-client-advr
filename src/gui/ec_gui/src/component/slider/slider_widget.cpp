@@ -88,7 +88,7 @@ SliderWidget::SliderWidget (const QString&  name,
                                        slider_info_s.slider_decimal[i],
                                        QString::fromStdString(slider_info_s.slider_unit[i]));
         _wave_v.push_back(wave_wid);
-        if(slider_info_s.slider_property[i]!=SliderProperty::NOT_AVAILABLE){
+        if(slider_info_s.slider_property[i]==SliderProperty::AVAILABLE){
             tab_layout->addWidget(wave_wid);
             page_wid->setLayout(tab_layout);
             _tab_name_wid->insertTab(i,page_wid, QString::fromStdString(slider_info_s.slider_name[i]));
@@ -105,14 +105,28 @@ void SliderWidget::on_spinbox_clicked(int i)
     _tab_name_wid->setCurrentIndex(i);
 }
 
-void SliderWidget::align_spinbox(double value)
+void SliderWidget::align_spinbox(int i,double value)
 {
-
+    _wave_v[i]->align_spinbox(value);
 }
 
-void SliderWidget::align_spinbox()
+void SliderWidget::align_all_spinbox(double value)
 {
+    for(int i=0;i<_wave_v.size();i++){
+        _wave_v[i]->align_spinbox(value);
+    }
+}
 
+void SliderWidget::align_spinbox(int i)
+{
+    _wave_v[i]->align_spinbox();
+}
+
+void SliderWidget::align_all_spinbox()
+{
+    for(int i=0;i<_wave_v.size();i++){
+        _wave_v[i]->align_spinbox();
+    }
 }
 
 
@@ -170,14 +184,9 @@ double SliderWidget::get_spinbox_value(int i)
     return _wave_v[i]->get_spinbox_value();
 }
 
-double SliderWidget::get_actual_slider_value(int i)
+void SliderWidget::set_spinbox_value(int i,double actual_spinbox_value)
 {
-    return _wave_v[i]->get_actual_slider_value();
-}
-
-void SliderWidget::set_actual_slider_value(int i,double actual_slider_value)
-{
-    _wave_v[i]->set_actual_slider_value(actual_slider_value);
+    _wave_v[i]->set_spinbox_value(actual_spinbox_value);
 }
 
 std::string SliderWidget::get_slider_name()

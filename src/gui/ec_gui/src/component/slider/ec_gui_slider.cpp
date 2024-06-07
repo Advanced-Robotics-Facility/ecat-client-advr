@@ -53,15 +53,17 @@ void EcGuiSlider::delete_sliders()
 
 void EcGuiSlider::reset_sliders()
 {
-    for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map)
-    {
-        slider_wid->align_spinbox();
+    for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
+        slider_wid->align_spinbox(1); // pos_ref=actual motor position
+        slider_wid->align_spinbox(2,0.0); // vel_ref=0.0
+        slider_wid->align_spinbox(3,0.0); // tor_ref=0.0
+        slider_wid->align_spinbox(11,0.0); // aux=0.0
     }
     for (auto& [slave_id, slider_wid]:_slider_map.valve_sw_map){
-        slider_wid->align_spinbox(0.0);
+        slider_wid->align_all_spinbox(0.0);
     }
     for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
-        slider_wid->align_spinbox(0.0);
+        slider_wid->align_spinbox(0); // pressure_ref=actual pressure
     }
 }
 void EcGuiSlider::enable_sliders()

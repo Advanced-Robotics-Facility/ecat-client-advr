@@ -228,7 +228,7 @@ void EcGuiPdo::read_motor_status()
             /************************************* ALIGN POSITION SLIDERS with the motor position ********************************************/
             double motor_pos=std::get<1>(motor_rx_pdo);
             if(_slider_map.motor_sw_map.count(esc_id)>0){
-                _slider_map.motor_sw_map[esc_id]->set_actual_slider_value(1,motor_pos);
+                _slider_map.motor_sw_map[esc_id]->set_spinbox_value(1,motor_pos);
             }
             /************************************* ALIGN POSITION SLIDERS with the motor position ********************************************/
         }
@@ -346,7 +346,7 @@ void EcGuiPdo::read_pump_status()
             /************************************* ALIGN PUMP SLIDERS with the actual pressure********************************************/
             double pressure=std::get<0>(pump_rx_pdo);
             if(_slider_map.pump_sw_map.count(esc_id)>0){
-                _slider_map.pump_sw_map[esc_id]->set_actual_slider_value(0,pressure);
+                _slider_map.pump_sw_map[esc_id]->set_spinbox_value(0,pressure);
             }
             /************************************* ALIGN PUMP SLIDERS with the actual pressure********************************************/
         }

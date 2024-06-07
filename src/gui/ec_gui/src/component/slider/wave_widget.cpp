@@ -59,18 +59,18 @@ WaveWidget::WaveWidget(QDoubleSpinBox *valuebox,
     _valueslider->setMinimum(_slider_spinbox_fct*min.toDouble());
     _valueslider->setTickInterval(_slider_spinbox_fct);
 
-    _actual_slider_value=0.0;
+    _actual_spinbox_value=0.0;
     _min_slider_value=min.toDouble();
     _max_slider_value=max.toDouble();
 
-    if(_actual_slider_value>_max_slider_value){
+    if(_actual_spinbox_value>_max_slider_value){
         _valueslider->setValue(_max_slider_value);
     }
-    else if(_actual_slider_value<_min_slider_value){
+    else if(_actual_spinbox_value<_min_slider_value){
         _valueslider->setValue(_min_slider_value);
     }
     else{
-        _valueslider->setValue(_actual_slider_value);
+        _valueslider->setValue(_actual_spinbox_value);
     }
 
     // connect slider to spinbox
@@ -80,14 +80,14 @@ WaveWidget::WaveWidget(QDoubleSpinBox *valuebox,
     _valuebox->setMaximum(_max_slider_value);
     _valuebox->setMinimum(_min_slider_value);
 
-    if(_actual_slider_value>_max_slider_value){
+    if(_actual_spinbox_value>_max_slider_value){
         _valuebox->setValue(_max_slider_value);
     }
-    else if(_actual_slider_value<_min_slider_value){
+    else if(_actual_spinbox_value<_min_slider_value){
         _valuebox->setValue(_min_slider_value);
     }
     else{
-        _valuebox->setValue(_actual_slider_value);
+        _valuebox->setValue(_actual_spinbox_value);
     }
 
     _valuebox->setDecimals(decimal_value);
@@ -102,7 +102,7 @@ WaveWidget::WaveWidget(QDoubleSpinBox *valuebox,
            );
 
 
-    _slider_filtered=std::make_shared<SecondOrderFilter<double>>(12.0,1.0,1.0,_actual_slider_value);
+    _slider_filtered=std::make_shared<SecondOrderFilter<double>>(12.0,1.0,1.0,_actual_spinbox_value);
 
     // find wave tab.
     _tab_wave = findChild<QTabWidget *>("tabWave");
@@ -120,9 +120,7 @@ WaveWidget::WaveWidget(QDoubleSpinBox *valuebox,
 
 void WaveWidget::on_slider_changed()
 {
-
     double value = _valueslider->value();
-        
     // update spinbox
     _valuebox->setValue(value/((double)_slider_spinbox_fct));
 
@@ -131,7 +129,6 @@ void WaveWidget::on_slider_changed()
 void WaveWidget::on_spinbox_changed()
 {
     double value = _valuebox->value();
-    _valuebox->setValue(value);
 
     // update slider
     _valueslider->blockSignals(true);
@@ -141,21 +138,22 @@ void WaveWidget::on_spinbox_changed()
 
 void WaveWidget::align_spinbox(double value)
 {
-    _valuebox->setValue(value);
+    _actual_spinbox_value = value;
+    _valuebox->setValue(_actual_spinbox_value);
 
     // update slider
     _valueslider->blockSignals(true);
-    _valueslider->setValue(int(_slider_spinbox_fct*value));
+    _valueslider->setValue(int(_slider_spinbox_fct*_actual_spinbox_value));
     _valueslider->blockSignals(false);
 }
 
 void WaveWidget::align_spinbox()
 {
-    _valuebox->setValue(_actual_slider_value);
+    _valuebox->setValue(_actual_spinbox_value);
 
     // update slider
     _valueslider->blockSignals(true);
-    _valueslider->setValue(int(_slider_spinbox_fct*_actual_slider_value));
+    _valueslider->setValue(int(_slider_spinbox_fct*_actual_spinbox_value));
     _valueslider->blockSignals(false);
 }
 
@@ -182,14 +180,9 @@ double WaveWidget::get_spinbox_value()
     return _valuebox->value();
 }
 
-double WaveWidget::get_actual_slider_value()
+void WaveWidget::set_spinbox_value(double actual_spinbox_value)
 {
-    return _actual_slider_value;
-}
-
-void WaveWidget::set_actual_slider_value(double actual_slider_value)
-{
-    _actual_slider_value=actual_slider_value;
+    _actual_spinbox_value=actual_spinbox_value;
 }
 
 
