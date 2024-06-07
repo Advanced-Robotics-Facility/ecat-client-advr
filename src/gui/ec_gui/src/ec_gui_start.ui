@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1367</width>
+    <width>1403</width>
     <height>1015</height>
    </rect>
   </property>
@@ -27,7 +27,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1367</width>
+     <width>1403</width>
      <height>20</height>
     </rect>
    </property>
@@ -271,7 +271,7 @@
   <widget class="QDockWidget" name="Command">
    <property name="minimumSize">
     <size>
-     <width>816</width>
+     <width>991</width>
      <height>428</height>
     </size>
    </property>
@@ -299,8 +299,8 @@
        </property>
        <property name="maximumSize">
         <size>
-         <width>900</width>
-         <height>80</height>
+         <width>600</width>
+         <height>100</height>
         </size>
        </property>
        <property name="title">
@@ -323,49 +323,10 @@
          <number>0</number>
         </property>
         <item>
-         <widget class="QLabel" name="label_4">
-          <property name="maximumSize">
-           <size>
-            <width>150</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>12</pointsize>
-           </font>
-          </property>
-          <property name="text">
-           <string>Device Selection     </string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QDialogButtonBox" name="DisEnableSlaves">
-          <property name="maximumSize">
-           <size>
-            <width>200</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>12</pointsize>
-           </font>
-          </property>
-          <property name="layoutDirection">
-           <enum>Qt::RightToLeft</enum>
-          </property>
-          <property name="standardButtons">
-           <set>QDialogButtonBox::NoToAll|QDialogButtonBox::YesToAll</set>
-          </property>
-         </widget>
-        </item>
-        <item>
          <widget class="QComboBox" name="SelectFieldComboBox">
           <property name="font">
            <font>
-            <pointsize>12</pointsize>
+            <pointsize>14</pointsize>
            </font>
           </property>
           <item>
@@ -390,13 +351,29 @@
           </property>
           <property name="font">
            <font>
-            <pointsize>12</pointsize>
+            <pointsize>14</pointsize>
            </font>
           </property>
           <property name="standardButtons">
            <set>QDialogButtonBox::Apply</set>
           </property>
          </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_6">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Expanding</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
         </item>
         <item>
          <widget class="QLabel" name="label_3">
@@ -408,20 +385,26 @@
           </property>
           <property name="font">
            <font>
-            <pointsize>12</pointsize>
+            <pointsize>17</pointsize>
            </font>
           </property>
           <property name="text">
-           <string>    Battery Level  </string>
+           <string>Battery Level  </string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QLCDNumber" name="BatteryLevel">
+          <property name="minimumSize">
+           <size>
+            <width>150</width>
+            <height>0</height>
+           </size>
+          </property>
           <property name="maximumSize">
            <size>
             <width>200</width>
-            <height>16777215</height>
+            <height>100</height>
            </size>
           </property>
           <property name="font">
@@ -451,7 +434,7 @@
       <widget class="QTabWidget" name="deviceControl">
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>11</pointsize>
         </font>
        </property>
        <property name="currentIndex">
@@ -537,8 +520,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>774</width>
-              <height>186</height>
+              <width>949</width>
+              <height>175</height>
              </rect>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_6">
@@ -611,8 +594,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>774</width>
-              <height>186</height>
+              <width>949</width>
+              <height>175</height>
              </rect>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_18">
@@ -685,8 +668,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>774</width>
-              <height>186</height>
+              <width>949</width>
+              <height>175</height>
              </rect>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_20">
@@ -702,25 +685,84 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="SendStopBtn">
-       <property name="maximumSize">
-        <size>
-         <width>150</width>
-         <height>16777215</height>
-        </size>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <property name="topMargin">
+        <number>10</number>
        </property>
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
-       <property name="layoutDirection">
-        <enum>Qt::RightToLeft</enum>
-       </property>
-       <property name="text">
-        <string>Start Motion</string>
-       </property>
-      </widget>
+       <item>
+        <widget class="QLabel" name="label_4">
+         <property name="maximumSize">
+          <size>
+           <width>150</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Device Selection     </string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDialogButtonBox" name="DisEnableSlaves">
+         <property name="maximumSize">
+          <size>
+           <width>200</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="layoutDirection">
+          <enum>Qt::RightToLeft</enum>
+         </property>
+         <property name="standardButtons">
+          <set>QDialogButtonBox::NoToAll|QDialogButtonBox::YesToAll</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_7">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="SendStopBtn">
+         <property name="maximumSize">
+          <size>
+           <width>150</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="layoutDirection">
+          <enum>Qt::RightToLeft</enum>
+         </property>
+         <property name="text">
+          <string>Start Motion</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </widget>
@@ -762,8 +804,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>519</width>
-          <height>389</height>
+          <width>404</width>
+          <height>375</height>
          </rect>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_4">
