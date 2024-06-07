@@ -75,8 +75,8 @@ SliderWidget::SliderWidget (const QString&  name,
         valuebox_name_layout->addWidget(value_box,0, Qt::AlignTop);
 
         unit_label->setText(QString::fromStdString(slider_info_s.slider_unit[i]));
-        unit_label->setMinimumSize(50,25);
-        unit_label->setMaximumSize(50,25);
+        unit_label->setMinimumSize(70,25);
+        unit_label->setMaximumSize(70,25);
         unit_layout->addWidget(unit_label,0, Qt::AlignTop);
 
         auto tab_layout = new QVBoxLayout();
