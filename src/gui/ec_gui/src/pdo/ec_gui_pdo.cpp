@@ -481,7 +481,7 @@ void EcGuiPdo::write_motor_pdo()
                                        gain_2, 
                                        gain_3, 
                                        gain_4,
-                                       op,
+                                       1,
                                        idx,
                                        aux};
 
