@@ -99,6 +99,10 @@ SliderWidget::SliderWidget (const QString&  name,
     disable_slider();
 }
 
+QCheckBox* SliderWidget::get_slider_enabled()
+{
+    return _slider_enabled;
+}
 
 void SliderWidget::on_spinbox_clicked(int i)
 {

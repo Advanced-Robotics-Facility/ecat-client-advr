@@ -40,6 +40,7 @@ public:
     void hide_slider_enabled();
     void enable_slider_enabled();
     void disable_slider_enabled();
+    QCheckBox* get_slider_enabled();
 
     bool is_slider_enabled();
     void check_slider_enabled();

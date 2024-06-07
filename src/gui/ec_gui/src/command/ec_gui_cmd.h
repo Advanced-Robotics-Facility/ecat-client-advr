@@ -63,6 +63,7 @@ private:
   QDialogButtonBox  * _cmd_manager;
   QPushButton * _applybtn;
   QPushButton *_notallbtn,*_allbtn;
+  QListWidget* _device_list_wid;
 
   EcIface::Ptr _client;
   EcGuiSlider::Ptr _ec_gui_slider;

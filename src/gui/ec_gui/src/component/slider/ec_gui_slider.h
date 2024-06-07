@@ -71,8 +71,9 @@ private:
 
   QVBoxLayout *_sliders_motorlayout;
   QVBoxLayout *_sliders_valvelayout,*_sliders_pumplayout;
+  QListWidget* _device_list_wid;
   void delete_items(QLayout * layout);
-
+  void on_checkbox_clicked(QCheckBox *,int);
 };
 
 #endif // EC_GUI_SLIDER_H
