@@ -258,6 +258,13 @@ void EcGuiStart::scan_device()
         if(_ec_wrapper_info.device_info.empty()){
             error_on_scannig();
         }
+        else{
+            for ( auto &[device_id, device_type, device_pos] : _ec_wrapper_info.device_info ) {
+                RR_SDO rr_sdo;
+                _ec_wrapper_info.client->retrieve_all_sdo(device_id,rr_sdo);
+                _ec_wrapper_info.sdo_map[device_id]=rr_sdo;
+            }
+        }
     }
     else{
         error_on_scannig();

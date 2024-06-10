@@ -164,8 +164,14 @@ bool EcZmqCmd::retrieve_rr_sdo(uint32_t esc_id,
         
         if(!cmd_error_status(fault, "retrieve_rr_sdo",msg)){
             auto rd_sdo_read = YAML::Load(rd_sdo_msg);
-            rr_sdo = rd_sdo_read.as<std::map<std::string, float>>();
-            
+            auto rr_sdo_check = rd_sdo_read.as<std::map<std::string, std::string>>();
+            for(auto &[sdo_name,sdo_value]:rr_sdo_check){
+                try{
+                    rr_sdo[sdo_name]=std::stof(sdo_value);
+                }catch(std::exception e){
+                    rr_sdo[sdo_name]=0xffffffff;
+                }
+            }
             return true;
         }
         else{
