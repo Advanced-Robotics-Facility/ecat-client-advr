@@ -124,23 +124,17 @@ void EcGuiStart::create_ec_iface()
 void EcGuiStart::onStartEtherCATSystem()
 {
     QMessageBox msgBox;
-    if(!_etherCAT_sys_started)
-    {
+    if(!_etherCAT_sys_started){
         /******************************STAR EtherCAT Master and Server ************************************************/
-        if(!_ec_gui_net->start_network())
-        {
+        if(!_ec_gui_net->start_network()){
             return;
         }
-        /******************************STAR CLIENT ************************************************/
-        sleep(1);
-        create_ec_iface();
         _etherCAT_sys_started=true;
         
         msgBox.setText("EtherCAT Master system started");
         
     }
-    else
-    {
+    else{
         msgBox.setText("EtherCAT Master system already started");
     }
     msgBox.exec();
@@ -160,12 +154,10 @@ void EcGuiStart::stopping_client()
 bool EcGuiStart::stopping_ec_sys()
 {
     bool etherCAT_sys_stopped=false;
-    if(_etherCAT_sys_started)
-    {
+    if(_etherCAT_sys_started){
         stopping_client();
         /******************************STOP EtherCAT Master and Server ************************************************/
         _ec_gui_net->stop_network();
-        
         /******************************CLEAN UP THE GUI ************************************************/
         clear_device();
         EcGuiWrapper::ec_wrapper_info_t _ec_wrapper_info_reset;

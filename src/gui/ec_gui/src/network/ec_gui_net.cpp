@@ -258,6 +258,7 @@ bool EcGuiNet::create_ssh_cmd(QProcess *process)
 
     _ssh_command.append(_server_pwd);
     _ssh_command.append("ssh");
+    _ssh_command.append("-o StrictHostKeyChecking=no");
     _ssh_command.append(_server_hostname+"@"+_server_ip);
 
     QStringList cmd = _ssh_command;
@@ -281,8 +282,7 @@ bool EcGuiNet::create_ssh_cmd(QProcess *process)
 
 bool EcGuiNet::start_network()
 {
-    if(!create_ssh_cmd(_server_process))
-    {
+    if(!create_ssh_cmd(_server_process)){
         return false;
     }
 
@@ -291,11 +291,9 @@ bool EcGuiNet::start_network()
     auto bin_file_path = find_process(_ec_master_process,bin_file_name,_ec_master_stoud);
 
     /******************************START EtherCAT Master ************************************************/
-    if(!bin_file_path.isEmpty())
-    {
+    if(!bin_file_path.isEmpty()){
         QString option="";
-        if(_server_protocol=="udp")
-        {
+        if(_server_protocol=="udp"){
             option="-f ~/.ecat_master/configs/zipc_config.yaml";  
         }
         
@@ -303,16 +301,14 @@ bool EcGuiNet::start_network()
     }
     
     /******************************START SEVER ************************************************/
-    if(_server_protocol=="udp")
-    {
+    if(_server_protocol=="udp") {
         bin_file_name = "'udp_server'";
         kill_process(_server_process,bin_file_name,_server_stdout);
         
         bin_file_path.clear();
         bin_file_path = find_process(_server_process,bin_file_name,_server_stdout);
 
-        if(!bin_file_path.isEmpty())
-        {
+        if(!bin_file_path.isEmpty()){
             start_process(_server_process,bin_file_path,"");
         }
     }
