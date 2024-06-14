@@ -7,7 +7,7 @@
 #include "ec_gui_terminal.h"
 
 
-class EcGuiNet : public QWidget
+class EcGuiNet : public QThread
 {
     Q_OBJECT
 public:
@@ -23,13 +23,15 @@ public:
     explicit EcGuiNet(QWidget *parent = nullptr);
 
     ~EcGuiNet();
-    
+
     bool start_network();
     void stop_network();
     bool check_network();
     ec_net_info_t get_net_setup();
 
 public slots:
+    void ec_master_processFinished(int, QProcess::ExitStatus);
+    void server_processFinished(int, QProcess::ExitStatus);
     void OnMouseDoubleClicked(QTreeWidgetItem* item, int column);
     void OnMouseClicked(QTreeWidgetItem* item, int column);
     void OnPasswordEntered();
@@ -54,15 +56,15 @@ private:
   
   QComboBox * _protocol_combobox;
   
-  bool create_ssh_cmd(QProcess *process);
+  bool create_ssh_cmd(QProcess *process,QString& stdout);
   QString find_running_process(QProcess * process,QString bin_name,QString& stdout);
   QString find_process(QProcess * process,QString bin_name,QString& stdout);
   void start_process(QProcess *process,QString bin_file_path,QString option);
   void kill_process(QProcess *process,QString bin_name,QString& stdout);
   
-  void on_ec_process_readyReadStandardOutput();
-  void on_server_process_readyReadStandardOutput();
-  void set_ec_network();
+  void ec_master_readyStdO();
+  void server_readyStdO();
+  void set_ec_network();      
+  void run();
 };
-
 #endif // EC_GUI_NET_H

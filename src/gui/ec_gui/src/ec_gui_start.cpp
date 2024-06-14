@@ -129,6 +129,8 @@ void EcGuiStart::onStartEtherCATSystem()
         if(!_ec_gui_net->start_network()){
             return;
         }
+        _ec_gui_net->setObjectName("ec_gui_net");
+        _ec_gui_net->start();
         _etherCAT_sys_started=true;
         
         msgBox.setText("EtherCAT Master system started");
@@ -142,10 +144,8 @@ void EcGuiStart::onStartEtherCATSystem()
 
 void EcGuiStart::stopping_client()
 {
-    if(_ec_wrapper_info.client)
-    {
-        if(_ec_wrapper_info.client->is_client_alive())
-        {
+    if(_ec_wrapper_info.client){
+        if(_ec_wrapper_info.client->is_client_alive()){
             _ec_wrapper_info.client->stop_client();
         }
         _ec_wrapper_info.client.reset();
@@ -155,9 +155,13 @@ bool EcGuiStart::stopping_ec_sys()
 {
     bool etherCAT_sys_stopped=false;
     if(_etherCAT_sys_started){
-        stopping_client();
+        //stopping_client();
         /******************************STOP EtherCAT Master and Server ************************************************/
         _ec_gui_net->stop_network();
+        if(_ec_gui_net->isRunning()){
+            _ec_gui_net->terminate();
+            _ec_gui_net->wait();
+        }
         /******************************CLEAN UP THE GUI ************************************************/
         clear_device();
         EcGuiWrapper::ec_wrapper_info_t _ec_wrapper_info_reset;
@@ -176,12 +180,10 @@ bool EcGuiStart::stopping_ec_sys()
 void EcGuiStart::onStopEtherCATSystem()
 {
     QMessageBox msgBox;
-    if(stopping_ec_sys())
-    {
+    if(stopping_ec_sys()){
         msgBox.setText("EtherCAT Master system stopped");
     }
-    else
-    {
+    else{
         msgBox.setText("EtherCAT Master system already stopped");
     }
     msgBox.exec();
@@ -206,8 +208,7 @@ void EcGuiStart::error_on_scannig()
 void EcGuiStart::add_device()
 {
     auto ec_device_item =_net_tree_wid->topLevelItem(0)->child(2)->child(0);
-    for ( auto &[esc_id, type, pos] : _ec_wrapper_info.device_info )
-    {
+    for ( auto &[esc_id, type, pos] : _ec_wrapper_info.device_info ){
         QTreeWidgetItem * type_item = new QTreeWidgetItem();
         std::string type_str = "   type: "+std::to_string(type);
         type_item->setText(0,QString::fromStdString(type_str));
@@ -234,8 +235,7 @@ void EcGuiStart::add_device()
 void EcGuiStart::clear_device()
 {
     auto ec_device_item =_net_tree_wid->topLevelItem(0)->child(2)->child(0);
-    while(ec_device_item->childCount()>0)
-    {
+    while(ec_device_item->childCount()>0){
         auto child = ec_device_item->child(0);
         ec_device_item->removeChild(child);
     }
@@ -300,8 +300,7 @@ void EcGuiStart::onScanDeviceReleased()
 
 EcGuiStart::~EcGuiStart()
 {
-   if(!stopping_ec_sys())
-   {
+   if(!stopping_ec_sys()){
        stopping_client();
    }
 }

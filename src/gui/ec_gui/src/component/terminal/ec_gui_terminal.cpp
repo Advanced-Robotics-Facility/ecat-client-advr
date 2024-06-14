@@ -39,6 +39,8 @@ QWidget(parent)
     setLayout(layout);
 
     _terminal_txt= findChild<QTextBrowser *>("Terminal");
+    
+    int id=qRegisterMetaType<QTextCursor>();
 }
 
 void EcGuiTerminal::setText(QString terminal_line)

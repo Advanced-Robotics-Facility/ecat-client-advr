@@ -1,11 +1,12 @@
 ﻿#include "ec_gui_net.h"
+#include "iostream"
 
 #define HOSTNAME_COL 1
 #define HOSTIP_COL 2
 #define HOSTPORT_COL 3
 
 EcGuiNet::EcGuiNet(QWidget *parent) :
-    QWidget(parent)
+    QThread(parent)
 {
     _net_tree_wid = parent->findChild<QTreeWidget *>("NetworkSetup");
     _net_tree_wid->installEventFilter(this);
@@ -40,17 +41,21 @@ EcGuiNet::EcGuiNet(QWidget *parent) :
     _ec_master_process->setReadChannel(QProcess::StandardOutput);
     _ec_master_process->setProcessChannelMode(QProcess::MergedChannels);
     _ec_master_process->setCurrentReadChannel(QProcess::StandardOutput);
-    
-    connect(_ec_master_process, &QProcess::readyReadStandardOutput,
-            this, &EcGuiNet::on_ec_process_readyReadStandardOutput);
+
+    connect(_ec_master_process , SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(ec_master_processFinished(int, QProcess::ExitStatus)));
+
+    ///connect(_ec_master_process, &QProcess::readyReadStandardOutput,
+    //       this, &EcGuiNet::on_ec_process_readyReadStandardOutput);
     
     _server_process = new QProcess(this);
     _server_process->setReadChannel(QProcess::StandardOutput);
     _server_process->setProcessChannelMode(QProcess::MergedChannels);
     _server_process->setCurrentReadChannel(QProcess::StandardOutput);
-    
-    connect(_server_process, &QProcess::readyReadStandardOutput,
-            this, &EcGuiNet::on_server_process_readyReadStandardOutput);
+
+    connect(_server_process , SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(server_processFinished(int, QProcess::ExitStatus)));
+
+    //connect(_server_process, &QProcess::readyReadStandardOutput,
+    //        this, &EcGuiNet::on_server_process_readyReadStandardOutput);
     
     /*protocl */
 
@@ -161,8 +166,26 @@ void EcGuiNet::OnMouseClicked(QTreeWidgetItem* item, int column)
     } 
 }
 
+void EcGuiNet::ec_master_processFinished(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    ec_master_readyStdO();
+}
+void EcGuiNet::server_processFinished(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    server_readyStdO();
+}
 
-void EcGuiNet::on_ec_process_readyReadStandardOutput()
+void EcGuiNet::run()
+{
+    //while(1){
+    //    ec_master_readyStdO();
+    //    server_readyStdO();
+    //    sleep(1);
+    //}
+}
+
+
+void EcGuiNet::ec_master_readyStdO()
 {
    _ec_master_stoud.clear();
    while(_ec_master_process->canReadLine()){
@@ -171,7 +194,7 @@ void EcGuiNet::on_ec_process_readyReadStandardOutput()
   }
 }
 
-void EcGuiNet::on_server_process_readyReadStandardOutput()
+void EcGuiNet::server_readyStdO()
 {
    _server_stdout.clear();
    while(_server_process->canReadLine()){
@@ -251,7 +274,7 @@ void EcGuiNet::start_process(QProcess *process,QString bin_file_path,QString opt
     process->start("sshpass", cmd);
 }
 
-bool EcGuiNet::create_ssh_cmd(QProcess *process)
+bool EcGuiNet::create_ssh_cmd(QProcess *process,QString& stdout)
 {
     _ssh_command.clear();
     _ssh_command.append("-p");
@@ -265,9 +288,8 @@ bool EcGuiNet::create_ssh_cmd(QProcess *process)
     cmd.append("'whoami'");
     process->start("sshpass", cmd);
     process->waitForFinished();
-    
-    auto host_name = _server_stdout;
-    host_name = host_name.remove(QChar('\n'));
+
+    auto host_name = stdout.remove(QChar('\n'));
     
     if(host_name != _server_hostname)
     {
@@ -282,7 +304,7 @@ bool EcGuiNet::create_ssh_cmd(QProcess *process)
 
 bool EcGuiNet::start_network()
 {
-    if(!create_ssh_cmd(_server_process)){
+    if(!create_ssh_cmd(_ec_master_process,_ec_master_stoud)){
         return false;
     }
 
@@ -337,7 +359,7 @@ bool EcGuiNet::check_network()
 {
     bool ret= false;
     if(_server_protocol=="udp"){
-        if(!create_ssh_cmd(_server_process))
+        if(!create_ssh_cmd(_server_process,_server_stdout))
         {
             return ret;
         }
@@ -373,4 +395,5 @@ EcGuiNet::~EcGuiNet()
     }
     
     _ec_master_process->kill();
+
 }

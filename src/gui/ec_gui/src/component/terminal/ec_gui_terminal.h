@@ -23,4 +23,6 @@ private:
 
 };
 
+Q_DECLARE_METATYPE(QTextCursor)
+
 #endif // EC_GUI_TERMINAL_H
