@@ -177,11 +177,11 @@ void EcGuiNet::server_processFinished(int exitCode, QProcess::ExitStatus exitSta
 
 void EcGuiNet::run()
 {
-    //while(1){
-    //    ec_master_readyStdO();
-    //    server_readyStdO();
-    //    sleep(1);
-    //}
+    while(1){
+        ec_master_readyStdO();
+        server_readyStdO();
+        sleep(1);
+    }
 }
 
 
