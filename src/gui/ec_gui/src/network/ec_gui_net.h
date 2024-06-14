@@ -29,6 +29,10 @@ public:
     bool check_network();
     ec_net_info_t get_net_setup();
 
+signals:
+
+   void start_timer();
+
 public slots:
     void ec_master_processFinished(int, QProcess::ExitStatus);
     void server_processFinished(int, QProcess::ExitStatus);
@@ -37,9 +41,12 @@ public slots:
     void OnPasswordEntered();
     void OnPasswordChanged();
     void OnProtocolChanged();
-    
+    void update_std_out();
+    void slot_timer_start();
+
 protected:
     bool eventFilter( QObject* o, QEvent* e );
+    void run();
     
 private:
 
@@ -53,6 +60,7 @@ private:
   QString _ec_master_stoud,_server_stdout;
   EcGuiTerminal::Ptr _ec_master_terminal, _server_terminal;
   QString _server_hostname,_server_ip,_server_port,_server_protocol,_server_pwd;
+  QTimer *_recv_std_out;
   
   QComboBox * _protocol_combobox;
   
@@ -65,6 +73,5 @@ private:
   void ec_master_readyStdO();
   void server_readyStdO();
   void set_ec_network();      
-  void run();
 };
 #endif // EC_GUI_NET_H

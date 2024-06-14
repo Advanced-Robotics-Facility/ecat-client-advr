@@ -75,6 +75,10 @@ EcGuiNet::EcGuiNet(QWidget *parent) :
     _server_terminal=std::make_shared<EcGuiTerminal>();
     _server_terminal->setWindowTitle("Server terminal");
     _server_terminal->setAttribute( Qt::WA_QuitOnClose, false );
+
+    _recv_std_out = new QTimer(this);
+    connect(this,SIGNAL(start_timer()),this, SLOT(slot_timer_start()));
+    connect(_recv_std_out,SIGNAL(timeout()),this,SLOT(update_std_out()));
 }
 
 void EcGuiNet::OnPasswordEntered()
@@ -175,13 +179,21 @@ void EcGuiNet::server_processFinished(int exitCode, QProcess::ExitStatus exitSta
     server_readyStdO();
 }
 
+void EcGuiNet::slot_timer_start(){
+    _recv_std_out->start(1000);
+}
+
+
+void EcGuiNet::update_std_out()
+{
+    ec_master_readyStdO();
+    server_readyStdO();
+}
+
 void EcGuiNet::run()
 {
-    while(1){
-        ec_master_readyStdO();
-        server_readyStdO();
-        sleep(1);
-    }
+    emit(start_timer());
+    exec();
 }
 
 
