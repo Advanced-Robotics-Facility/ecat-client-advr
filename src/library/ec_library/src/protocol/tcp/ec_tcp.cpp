@@ -18,14 +18,14 @@ EcTCP::EcTCP(std::string host_address,uint32_t host_port):
 EcTCP::~EcTCP()
 {
     iit::ecat::print_stat ( s_loop );
-
-    stop_logging();
     
     stop();
     
     if(_thread_jointable){
         join();
     }
+    
+    stop_logging();
     
     _client_alive=false;
 }
@@ -81,14 +81,14 @@ void EcTCP::start_client(uint32_t period_ms,bool logging)
 
 void EcTCP::stop_client()
 {
-    stop_logging();
-    
     stop();
     
     if(_thread_jointable){
         join();
         _thread_jointable=false;
     }
+    
+    stop_logging();
 
     //_client_alive=false;
 }

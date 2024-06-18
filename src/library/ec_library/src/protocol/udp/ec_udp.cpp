@@ -71,11 +71,12 @@ void EcUDP::stop_client()
 {
     if(_client_alive)
     {
-        stop_logging();
         
         stop();
         
         disconnect();
+        
+        stop_logging();
         
         _client_alive=false;
     }

@@ -29,13 +29,13 @@ EcIDDP::~EcIDDP()
 {
     iit::ecat::print_stat ( s_loop );
     
-    stop_logging();
-    
     stop();
     
     if(_thread_jointable){
         join();
     }
+    
+    stop_logging();
     
     _client_alive=false;
 }
@@ -90,14 +90,14 @@ void EcIDDP::start_client(uint32_t period_ms,bool logging)
 
 void EcIDDP::stop_client()
 {
-    stop_logging();
-    
     stop();
     
     if(_thread_jointable){
         join();
         _thread_jointable=false;
     }
+    
+    stop_logging();
 
     //_client_alive=false;
 }

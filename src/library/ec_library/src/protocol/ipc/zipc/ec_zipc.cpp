@@ -19,13 +19,13 @@ EcZipc::~EcZipc()
 {
     iit::ecat::print_stat ( s_loop );
     
-    stop_logging();
-    
     stop();
     
     if(_thread_jointable){
         join();
     }
+    
+    stop_logging();
     
     _client_alive=false;
 }
@@ -80,9 +80,7 @@ void EcZipc::start_client(uint32_t period_ms,bool logging)
 }
 
 void EcZipc::stop_client()
-{    
-    stop_logging();
-    
+{        
     stop();
     
      if(_thread_jointable){
@@ -90,6 +88,8 @@ void EcZipc::stop_client()
         _thread_jointable=false;
     }
 
+    stop_logging();
+    
     //_client_alive=false;
 }
 

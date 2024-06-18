@@ -44,6 +44,7 @@ public:
         pb.mutable_hyqknee_rx_pdo()->set_pressure_2(curr_ref);
         pb.mutable_hyqknee_rx_pdo()->set_temperature(temp(gen));
         pb.mutable_hyqknee_rx_pdo()->set_rtt(0.0);
+        pb.mutable_hyqknee_rx_pdo()->set_aux(curr_ref);
     }
 };
 
