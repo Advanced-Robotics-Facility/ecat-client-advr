@@ -75,8 +75,8 @@ int main(int argc, char * const argv[])
         uint64_t start_time_ns = iit::ecat::get_time_ns();
         uint64_t time_ns=start_time_ns;
         
-        double time_elapsed_ms;
-        double incrementat_freq_ns=0;
+        float time_elapsed_ms;
+        float incrementat_freq_ns=0;
     
         bool first_Rx=false;
         
@@ -164,7 +164,7 @@ int main(int argc, char * const argv[])
 
         while (run_loop && client->is_client_alive())
         {
-            time_elapsed_ms= (time_ns-start_time_ns)/1000000;
+            time_elapsed_ms= (static_cast<float>((time_ns-start_time_ns))/1000000);
             //DPRINTF("Time [%f]\n",time_elapsed_ms);
             
             // Rx "SENSE"

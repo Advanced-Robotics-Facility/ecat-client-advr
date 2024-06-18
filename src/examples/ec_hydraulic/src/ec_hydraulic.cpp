@@ -63,11 +63,11 @@ int main(int argc, char * const argv[])
         uint64_t start_time_ns = iit::ecat::get_time_ns();
         uint64_t time_ns=start_time_ns;
         
-        double time_elapsed_ms;
-        double hm_time_ms=ec_cfg.homing_time_sec*1000;
-        double trj_time_ms=ec_cfg.trajectory_time_sec*1000;
-        double pressure_time_ms=1000; // 2minutes.
-        double set_trj_time_ms=hm_time_ms;
+        float time_elapsed_ms;
+        float hm_time_ms=ec_cfg.homing_time_sec*1000;
+        float trj_time_ms=ec_cfg.trajectory_time_sec*1000;
+        float pressure_time_ms=1000; // 2minutes.
+        float set_trj_time_ms=hm_time_ms;
         
         std::string STM_sts;
         bool run=true;
@@ -118,7 +118,7 @@ int main(int argc, char * const argv[])
         uint32_t cmd_aux_sts,brake_sts,led_sts;
         MotorStatusMap motors_status_map;
         
-        double tau=0,alpha=0;
+        float tau=0,alpha=0;
         MotorReferenceMap motors_ref;
         
         // memory allocation
@@ -216,7 +216,7 @@ int main(int argc, char * const argv[])
     
         while (run && client->is_client_alive())
         {
-            time_elapsed_ms= (time_ns-start_time_ns)/1000000;
+            time_elapsed_ms= (static_cast<float>((time_ns-start_time_ns))/1000000);
             //DPRINTF("Time [%f]\n",time_elapsed_ms);
             
             // Rx "SENSE"

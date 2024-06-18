@@ -40,8 +40,8 @@ public:
         // HyqKnee_rx_pdo
         pb.mutable_hyqknee_rx_pdo()->set_encoder_position(encoder_position(gen));
         pb.mutable_hyqknee_rx_pdo()->set_torque (torque(gen));
-        pb.mutable_hyqknee_rx_pdo()->set_pressure_1(curr_ref*100);
-        pb.mutable_hyqknee_rx_pdo()->set_pressure_2(curr_ref*100);
+        pb.mutable_hyqknee_rx_pdo()->set_pressure_1(curr_ref);
+        pb.mutable_hyqknee_rx_pdo()->set_pressure_2(curr_ref);
         pb.mutable_hyqknee_rx_pdo()->set_temperature(temp(gen));
         pb.mutable_hyqknee_rx_pdo()->set_rtt(0.0);
     }
