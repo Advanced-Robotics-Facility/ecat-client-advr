@@ -214,23 +214,21 @@ void EcPdo<T>::read_motor_pdo()
 template < class T >
 void EcPdo<T>::write_motor_pdo()
 {
-    if(_motor_ref_flags!=RefFlags::FLAG_NONE){
 
-        pthread_mutex_lock(&_mutex_motor_reference);
-        _ec_logger->log_motors_ref(_motors_references);
-        get_map_reference(_motors_references,_moto_pdo_map);
-        pthread_mutex_unlock(&_mutex_motor_reference);
+    pthread_mutex_lock(&_mutex_motor_reference);
+    _ec_logger->log_motors_ref(_motors_references);
+    get_map_reference(_motors_references,_moto_pdo_map);
+    pthread_mutex_unlock(&_mutex_motor_reference);
 
-        for ( const auto &[id,motor_pdo] : _moto_pdo_map ) {
-            auto ctrl_type=std::get<0>(motor_pdo->tx_pdo);
-            if(ctrl_type!=0x00){
-                if (iit::advr::Gains_Type_IsValid(ctrl_type) ) {
-                    //write 
-                    motor_pdo->write();
-                }
-                else{
-                    DPRINTF("Control mode not recognized for id 0x%04X \n", id);
-                }
+    for ( const auto &[id,motor_pdo] : _moto_pdo_map ) {
+        auto ctrl_type=std::get<0>(motor_pdo->tx_pdo);
+        if(ctrl_type!=0x00){
+            if (iit::advr::Gains_Type_IsValid(ctrl_type) ) {
+                //write 
+                motor_pdo->write();
+            }
+            else{
+                DPRINTF("Control mode not recognized for id 0x%04X \n", id);
             }
         }
     }
@@ -322,18 +320,14 @@ void EcPdo<T>::read_valve_pdo()
 template < class T >
 void EcPdo<T>::write_valve_pdo()
 {
-    if(_valve_ref_flags!=RefFlags::FLAG_NONE){
+    pthread_mutex_lock(&_mutex_valve_reference);
+    _ec_logger->log_valve_ref(_valves_references);
+    get_map_reference(_valves_references,_valve_pdo_map);
+    pthread_mutex_unlock(&_mutex_valve_reference);
 
-
-        pthread_mutex_lock(&_mutex_valve_reference);
-        _ec_logger->log_valve_ref(_valves_references);
-        get_map_reference(_valves_references,_valve_pdo_map);
-        pthread_mutex_unlock(&_mutex_valve_reference);
-
-        for ( const auto &[bId,valve_pdo] : _valve_pdo_map ) {
-            //write 
-            valve_pdo->write();
-        }
+    for ( const auto &[bId,valve_pdo] : _valve_pdo_map ) {
+        //write 
+        valve_pdo->write();
     }
 }
 
@@ -361,17 +355,14 @@ void EcPdo<T>::read_pump_pdo()
 template < class T >
 void EcPdo<T>::write_pump_pdo()
 {
-    if(_pump_ref_flags!=RefFlags::FLAG_NONE){
-
-        pthread_mutex_lock(&_mutex_pump_reference);
-        _ec_logger->log_pump_ref(_pumps_references);
-        get_map_reference(_pumps_references,_pump_pdo_map);
-        pthread_mutex_unlock(&_mutex_pump_reference);        
-        
-        for (auto const &[id,pump_pdo] : _pump_pdo_map)  {
-            //write 
-            pump_pdo->write();
-        }
+    pthread_mutex_lock(&_mutex_pump_reference);
+    _ec_logger->log_pump_ref(_pumps_references);
+    get_map_reference(_pumps_references,_pump_pdo_map);
+    pthread_mutex_unlock(&_mutex_pump_reference);        
+    
+    for (auto const &[id,pump_pdo] : _pump_pdo_map)  {
+        //write 
+        pump_pdo->write();
     }
 }
 
