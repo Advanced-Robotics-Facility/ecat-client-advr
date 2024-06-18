@@ -160,15 +160,9 @@ void EcLogger::log_motors_ref(const MotorReferenceMap& motors_ref)
 {
     if(_motors_references_logger != nullptr){
         for ( const auto &[esc_id,motor_tx_pdo] : motors_ref) {
-            auto ctrl_type=std::get<0>(motor_tx_pdo);
-            if(ctrl_type!=0x00){
-                if ((ctrl_type==0x3B)||(ctrl_type==0x71)|| 
-                    (ctrl_type==0xD4)||(ctrl_type==0xCC)){
-                    if(_log_motor_ref_map.count(esc_id)>0){
-                        if(MotorPdoTx::make_vector_from_tuple(motor_tx_pdo,_motor_tx_v)){
-                            _motors_references_logger->add(_log_motor_ref_map[esc_id], _motor_tx_v);
-                        }
-                    }
+            if(_log_motor_ref_map.count(esc_id)>0){
+                if(MotorPdoTx::make_vector_from_tuple(motor_tx_pdo,_motor_tx_v)){
+                    _motors_references_logger->add(_log_motor_ref_map[esc_id], _motor_tx_v);
                 }
             }
         }
