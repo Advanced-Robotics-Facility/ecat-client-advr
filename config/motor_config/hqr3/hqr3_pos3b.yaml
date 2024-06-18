@@ -2,14 +2,14 @@
 # LEG 1 
 #############################
 leg_1_joint_1:
-  motor_type: FlexPro #allowed HHCM, Circulo, FlexPro, default HHCM
+  motor_type: HHCM #allowed HHCM, Circulo, FlexPro, default HHCM
   brake_present: false
   control_mode: 0x3B
   gains: [0.0,0.0,0.0,0.0,0.0]
 
 
 leg_1_joint_2:
-  motor_type: FlexPro #allowed HHCM, Circulo, FlexPro, default HHCM
+  motor_type: HHCM #allowed HHCM, Circulo, FlexPro, default HHCM
   brake_present: false
   control_mode: 0x3B
   gains: [0.0,0.0,0.0,0.0,0.0]
@@ -18,14 +18,14 @@ leg_1_joint_2:
 # LEG 2
 #############################
 leg_2_joint_1:
-  motor_type: FlexPro #allowed HHCM, Circulo, FlexPro, default HHCM
+  motor_type: HHCM #allowed HHCM, Circulo, FlexPro, default HHCM
   brake_present: false
   control_mode: 0x3B
   gains: [0.0,0.0,0.0,0.0,0.0]
   
 
 leg_2_joint_2:
-  motor_type: FlexPro #allowed HHCM, Circulo, FlexPro, default HHCM
+  motor_type: HHCM #allowed HHCM, Circulo, FlexPro, default HHCM
   brake_present: false
   control_mode: 0x3B
   gains: [0.0,0.0,0.0,0.0,0.0]
@@ -34,13 +34,13 @@ leg_2_joint_2:
 # LEG 3
 #############################
 leg_3_joint_1:
-  motor_type: FlexPro #allowed HHCM, Circulo, FlexPro, default HHCM
+  motor_type: HHCM #allowed HHCM, Circulo, FlexPro, default HHCM
   brake_present: false
   control_mode: 0x3B
   gains: [0.0,0.0,0.0,0.0,0.0]
   
 leg_3_joint_2:
-  motor_type: FlexPro #allowed HHCM, Circulo, FlexPro, default HHCM
+  motor_type: HHCM #allowed HHCM, Circulo, FlexPro, default HHCM
   brake_present: false
   control_mode: 0x3B
   gains: [0.0,0.0,0.0,0.0,0.0]
@@ -49,13 +49,13 @@ leg_3_joint_2:
 # LEG 4
 #############################
 leg_4_joint_1:
-  motor_type: FlexPro #allowed HHCM, Circulo, FlexPro, default HHCM
+  motor_type: HHCM #allowed HHCM, Circulo, FlexPro, default HHCM
   brake_present: false
   control_mode: 0x3B
   gains: [0.0,0.0,0.0,0.0,0.0]
   
 leg_4_joint_2:
-  motor_type: FlexPro #allowed HHCM, Circulo, FlexPro, default HHCM
+  motor_type: HHCM #allowed HHCM, Circulo, FlexPro, default HHCM
   brake_present: false
   control_mode: 0x3B
   gains: [0.0,0.0,0.0,0.0,0.0]

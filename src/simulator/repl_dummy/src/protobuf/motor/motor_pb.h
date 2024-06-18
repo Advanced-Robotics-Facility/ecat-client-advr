@@ -72,34 +72,20 @@ public:
     {
         static struct timespec ts;
         clock_gettime(CLOCK_MONOTONIC, &ts);
-
-        // Type
-        pb.set_type(iit::advr::Ec_slave_pdo::RX_CIRCULO9);
-
         // Header
-        clock_gettime(CLOCK_MONOTONIC, &ts);
         pb.mutable_header()->mutable_stamp()->set_sec(ts.tv_sec);
         pb.mutable_header()->mutable_stamp()->set_nsec(ts.tv_nsec);
-        
-        pb.mutable_circulo9_rx_pdo()->set_statusword(0.0);
-        pb.mutable_circulo9_rx_pdo()->set_modes_of_op(0.0);
-        
-        pb.mutable_circulo9_rx_pdo()->set_motor_pos(pos_ref);
-        pb.mutable_circulo9_rx_pdo()->set_link_pos(pos_ref);
-        pb.mutable_circulo9_rx_pdo()->set_demanded_pos(pos_ref);
-        
-        pb.mutable_circulo9_rx_pdo()->set_motor_vel(vel_ref);
-        pb.mutable_circulo9_rx_pdo()->set_link_vel(vel_ref);
-        pb.mutable_circulo9_rx_pdo()->set_demanded_vel(vel_ref);
-        
-        pb.mutable_circulo9_rx_pdo()->set_current(0.0);
-        pb.mutable_circulo9_rx_pdo()->set_demanded_current(0.0);
-        
-        pb.mutable_circulo9_rx_pdo()->set_torque(tor_ref);
-        pb.mutable_circulo9_rx_pdo()->set_demanded_torque(tor_ref);
-
-        pb.mutable_circulo9_rx_pdo()->set_control_effort(0.0);
-        pb.mutable_circulo9_rx_pdo()->set_drive_temp(0.0);
+        // Type
+        pb.set_type(iit::advr::Ec_slave_pdo::RX_XT_MOTOR);
+        // Motor_xt_tx_pdo
+        pb.mutable_motor_xt_rx_pdo()->set_link_pos(pos_ref);
+        pb.mutable_motor_xt_rx_pdo()->set_motor_pos(pos_ref);
+        pb.mutable_motor_xt_rx_pdo()->set_link_vel(vel_ref);
+        pb.mutable_motor_xt_rx_pdo()->set_motor_vel(vel_ref);
+        pb.mutable_motor_xt_rx_pdo()->set_torque(tor_ref);
+        pb.mutable_motor_xt_rx_pdo()->set_temperature(0.0);
+        pb.mutable_motor_xt_rx_pdo()->set_fault(0.0);
+        pb.mutable_motor_xt_rx_pdo()->set_rtt(0.0);
     } 
 };
 
