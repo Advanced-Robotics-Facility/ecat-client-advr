@@ -22,7 +22,7 @@ void EcLogger::start_mat_logger()
 {
     // Logger setup
     XBot::MatLogger2::Options opt;
-    opt.default_buffer_size = 1e4; // set default buffer size
+    opt.default_buffer_size = 86400000; // set default buffer size of 24h
     opt.enable_compression = true; // enable ZLIB compression
     
     for ( auto &[esc_id, esc_type, pos] : _slave_descr ) {
