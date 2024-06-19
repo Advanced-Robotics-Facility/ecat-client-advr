@@ -61,8 +61,8 @@ int main(int argc, char * const argv[])
     {                                               
         struct timespec ts= { 0, ec_cfg.period_ms*1000000}; //sample time
         
-        uint64_t start_time_ns = iit::ecat::get_time_ns();
-        uint64_t time_ns=start_time_ns;
+        uint64_t start_time_ns=0;
+        uint64_t time_ns=0;
         
         float time_elapsed_ms;
         float hm_time_ms=ec_cfg.homing_time_sec*1000;
@@ -155,7 +155,9 @@ int main(int argc, char * const argv[])
             assert(set_main_sched_policy(10) >= 0);
         }
 
-    
+        start_time_ns= iit::ecat::get_time_ns();
+        time_ns=start_time_ns;
+        
         while (run && client->is_client_alive())
         {
             time_elapsed_ms= (static_cast<float>((time_ns-start_time_ns))/1000000);
@@ -223,9 +225,6 @@ int main(int argc, char * const argv[])
             client->set_motors_references(RefFlags::FLAG_MULTI_REF, motors_ref);
             // ************************* SEND ALWAYS REFERENCES***********************************//
 
-            // get period ns
-            time_ns = iit::ecat::get_time_ns();
-                
             if((time_elapsed_ms>=hm_time_ms)&&(STM_sts=="Homing"))
             {
                 STM_sts="Trajectory";
@@ -253,8 +252,10 @@ int main(int argc, char * const argv[])
                     tau=alpha=0;
                 }
             } 
-            
+        
             clock_nanosleep(CLOCK_MONOTONIC, 0, &ts, NULL); 
+            // get period ns
+            time_ns = iit::ecat::get_time_ns();
         }
             
     }

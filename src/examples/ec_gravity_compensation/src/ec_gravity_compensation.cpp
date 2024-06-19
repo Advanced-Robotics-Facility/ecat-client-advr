@@ -92,8 +92,8 @@ int main(int argc, char * const argv[])
         
         struct timespec ts= { 0, ec_cfg.period_ms*1000000}; //sample time
         
-        uint64_t start_time_ns = iit::ecat::get_time_ns();
-        uint64_t time_ns=start_time_ns;
+        uint64_t start_time_ns=0;
+        uint64_t time_ns=0;
         
         float time_elapsed_ms;
         
@@ -201,6 +201,8 @@ int main(int argc, char * const argv[])
             sigaction(SIGINT,&sa, nullptr);
         }
     
+        start_time_ns= iit::ecat::get_time_ns();
+        time_ns=start_time_ns;
         
         while (run_loop && client->is_client_alive())
         {
@@ -280,9 +282,6 @@ int main(int argc, char * const argv[])
             client->set_motors_references(RefFlags::FLAG_MULTI_REF, motors_ref);
             // ************************* SEND ALWAYS REFERENCES***********************************//
             
-            // get period ns
-            time_ns = iit::ecat::get_time_ns();
-            
             if(STM_sts=="Motor_Ctrl_SetGains")
             {
                 if(time_elapsed_ms>=set_gain_time_ms)
@@ -303,6 +302,8 @@ int main(int argc, char * const argv[])
             }
             
             clock_nanosleep(CLOCK_MONOTONIC, 0, &ts, NULL); 
+            // get period ns
+            time_ns = iit::ecat::get_time_ns();
         }
             
     }
