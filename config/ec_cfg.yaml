@@ -21,9 +21,9 @@ control:
   trajectory_time_sec: 1
   repeat_trj: 1
 
-  imu_id: [102]
+  #imu_id: [102]
   #ft_id: [110,111]
-  pow_id: [201]
+  #pow_id: [201]
   valve_id: [120,121,122,123]
-  pump_id: [202]
+  #pump_id: [202]
 
