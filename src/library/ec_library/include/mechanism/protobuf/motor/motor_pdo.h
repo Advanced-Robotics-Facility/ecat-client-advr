@@ -83,7 +83,7 @@ private:
 };
 
 template < class T >
-inline void ValvePdo<T>::init_pb() 
+inline void MotorPdo<T>::init_pb() 
 {
    T::pb_rx_pdos=iit::advr::Ec_slave_pdo();
    T::pb_tx_pdos=iit::advr::Ec_slave_pdo();
