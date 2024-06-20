@@ -83,12 +83,26 @@ public:
     PumpPdoRx::pdo_t rx_pdo={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     PumpPdoTx::pdo_t tx_pdo={0,0,0,0,0,0,0,0,0};
     bool init_rx_pdo=false;
+private:
+    void init_pb();
 };
+
+template < class T >
+inline void PumpPdo<T>::init_pb() 
+{
+   uint8_t  pb_buf[MAX_PB_SIZE];
+   uint32_t msg_size=0;
+
+   set_to_pb();
+   msg_size = T::pb_tx_pdos.ByteSizeLong();
+   T::pb_tx_pdos.SerializeToArray( (void*)(pb_buf+sizeof(msg_size)), msg_size);
+}
 
 template < class T >
 inline PumpPdo<T>::PumpPdo(std::string value,int id):
                        T(id,"HyQ_HpuESC",value)
 {
+    init_pb();
     T::init();
     T::write_connect();
 };

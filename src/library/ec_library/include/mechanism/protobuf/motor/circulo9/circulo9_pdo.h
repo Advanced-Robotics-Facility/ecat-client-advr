@@ -21,14 +21,14 @@ template < class T >
 inline Circulo9Pdo<T>::Circulo9Pdo(std::string value,int id):
                                    MotorPdo<T>(value,id)
 {
-
+    MotorPdo<T>::init_pb();
 };
 
 template < class T >
 inline Circulo9Pdo<T>::Circulo9Pdo(std::string value,int32_t id, uint32_t type):
                                    MotorPdo<T>(value,id,type)
 {
-    
+    MotorPdo<T>::init_pb();
 };
 
 template < class T >

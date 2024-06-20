@@ -78,22 +78,25 @@ public:
 
     MotorPdoRx::pdo_t tx_pdo={0,0,0,0,0,0,0,0,0,0,0,0};
     float curr_ref; // should be added in tx_pdo
-private:
-    void init_pb();
+protected:
+    virtual void init_pb();
 };
 
 template < class T >
 inline void MotorPdo<T>::init_pb() 
 {
-   T::pb_rx_pdos=iit::advr::Ec_slave_pdo();
-   T::pb_tx_pdos=iit::advr::Ec_slave_pdo();
+    uint8_t  pb_buf[MAX_PB_SIZE];
+    uint32_t msg_size=0;
+
+    set_to_pb();
+    msg_size = T::pb_tx_pdos.ByteSizeLong();
+    T::pb_tx_pdos.SerializeToArray( (void*)(pb_buf+sizeof(msg_size)), msg_size);
 }
 
 template < class T >
 inline MotorPdo<T>::MotorPdo(std::string value,int id):
                            T(id,"Motor",value)
 {
-    init_pb();
     T::init();
     T::write_connect();
 };
@@ -102,7 +105,6 @@ template < class T >
 inline MotorPdo<T>::MotorPdo(std::string value,int32_t id, uint32_t type):
                            T(id, type, value)
 {
-    init_pb();
     T::init();
     T::write_connect();
 };

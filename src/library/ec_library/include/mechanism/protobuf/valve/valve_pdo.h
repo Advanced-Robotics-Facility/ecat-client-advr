@@ -68,6 +68,17 @@ private:
 };
 
 template < class T >
+inline void ValvePdo<T>::init_pb() 
+{
+   uint8_t  pb_buf[MAX_PB_SIZE];
+   uint32_t msg_size=0;
+
+   set_to_pb();
+   msg_size = T::pb_tx_pdos.ByteSizeLong();
+   T::pb_tx_pdos.SerializeToArray( (void*)(pb_buf+sizeof(msg_size)), msg_size);
+}
+
+template < class T >
 inline ValvePdo<T>::ValvePdo(std::string value,int id):
                             T(id,"HyQ_KneeESC",value)
 {
@@ -82,12 +93,6 @@ inline ValvePdo<T>::~ValvePdo()
     T::write_quit();
 };
 
-template < class T >
-inline void ValvePdo<T>::init_pb() 
-{
-   T::pb_rx_pdos=iit::advr::Ec_slave_pdo();
-   T::pb_tx_pdos=iit::advr::Ec_slave_pdo();
-}
 
 template < class T >
 inline void ValvePdo<T>::get_from_pb() 
