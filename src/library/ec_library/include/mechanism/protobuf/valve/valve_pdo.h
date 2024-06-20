@@ -63,12 +63,15 @@ public:
     ValvePdoRx::pdo_t rx_pdo={0,0,0,0,0,0,0,0,0};
     ValvePdoTx::pdo_t tx_pdo={0,0,0,0,0,0,0,0};
     bool init_rx_pdo=false;
+private:
+    void init_pb();
 };
 
 template < class T >
 inline ValvePdo<T>::ValvePdo(std::string value,int id):
                             T(id,"HyQ_KneeESC",value)
 {
+    init_pb();
     T::init();
     T::write_connect();
 };
@@ -78,6 +81,13 @@ inline ValvePdo<T>::~ValvePdo()
 {
     T::write_quit();
 };
+
+template < class T >
+inline void ValvePdo<T>::init_pb() 
+{
+   get_from_pb();
+   set_to_pb();	
+}
 
 template < class T >
 inline void ValvePdo<T>::get_from_pb() 

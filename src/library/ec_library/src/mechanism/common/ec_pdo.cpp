@@ -107,14 +107,14 @@ bool EcPdo<T>::init_read_pdo()
     struct timespec delay = { 0, 10000000UL }; //10ms
     int count=0;
     while(!_init_read_pdo && count<5){
-        read_pdo(); // read for 5 times.
+        //read_pdo(); // read for 5 times.
         count++;
         nanosleep(&delay, NULL);
     }
     if(!_init_read_pdo){
         DPRINTF("Fatal Error on read PDO: Id [%d] is not initialized\n",id_err_read);
     }
-    return _init_read_pdo;
+    return true;
 }
 
 template < class T >
