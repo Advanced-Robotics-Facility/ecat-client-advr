@@ -78,12 +78,22 @@ public:
 
     MotorPdoRx::pdo_t tx_pdo={0,0,0,0,0,0,0,0,0,0,0,0};
     float curr_ref; // should be added in tx_pdo
+private:
+    void init_pb();
 };
+
+template < class T >
+inline void ValvePdo<T>::init_pb() 
+{
+   T::pb_rx_pdos=iit::advr::Ec_slave_pdo();
+   T::pb_tx_pdos=iit::advr::Ec_slave_pdo();
+}
 
 template < class T >
 inline MotorPdo<T>::MotorPdo(std::string value,int id):
                            T(id,"Motor",value)
 {
+    init_pb();
     T::init();
     T::write_connect();
 };
@@ -92,6 +102,7 @@ template < class T >
 inline MotorPdo<T>::MotorPdo(std::string value,int32_t id, uint32_t type):
                            T(id, type, value)
 {
+    init_pb();
     T::init();
     T::write_connect();
 };
