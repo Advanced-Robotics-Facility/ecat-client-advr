@@ -143,33 +143,36 @@ public:
             int32_t nbytes = 0;
             do {
                 nbytes = read_pb_from(pipe, pb_buf, sizeof(pb_buf), &pb_tx_pdos[id], name);
-                if ( pb_tx_pdos[id].type() == iit::advr::Ec_slave_pdo::CLIENT_PIPE ) {
-                    auto pb_client_pdo = pb_tx_pdos[id].mutable_client_pdo();
-                    if ( pb_client_pdo->type() == iit::advr::Client_pipe::CONNECT ) {
-                        if ( ! wr_iddp_connected[id] ) { 
-                            wr_iddp[id].connect( wr_esc_pdo[id]);
-                            wr_iddp_connected[id] = true;
-                            DPRINTF ("connect to %s_tx_pdo port\n", wr_esc_pdo[id].c_str() );
+                if ( nbytes  > 0 ) {
+                    if ( pb_tx_pdos[id].type() == iit::advr::Ec_slave_pdo::CLIENT_PIPE ) {
+                        auto pb_client_pdo = pb_tx_pdos[id].mutable_client_pdo();
+                        if ( pb_client_pdo->type() == iit::advr::Client_pipe::CONNECT ) {
+                            if ( ! wr_iddp_connected[id] ) { 
+                                wr_iddp[id].connect( wr_esc_pdo[id]);
+                                wr_iddp_connected[id] = true;
+                                DPRINTF ("connect to %s_tx_pdo port\n", wr_esc_pdo[id].c_str() );
+                            } 
+                            else{
+                                //DPRINTF (" Already connected to %s_tx_pdo\n", wr_esc_pdo[id].c_str() );                                
+                            }
                         } 
-                        else{
-                            //DPRINTF (" Already connected to %s_tx_pdo\n", wr_esc_pdo[id].c_str() );                                
+                        else if ( pb_client_pdo->type() == iit::advr::Client_pipe::QUIT ) {
+                            if ( wr_iddp_connected[id] ) {
+                                wr_iddp[id].close_pipe();
+                                wr_iddp_connected[id] = false;
+                                DPRINTF ("quit %s_tx_pdo\n", wr_esc_pdo[id].c_str() );
+                            } 
+                            else {
+                                //DPRINTF (" Already disconnected to %s_tx_pdo\n", wr_esc_pdo[id].c_str() );
+                            }               
                         }
                     } 
-                    else if ( pb_client_pdo->type() == iit::advr::Client_pipe::QUIT ) {
-                        if ( wr_iddp_connected[id] ) {
-                            wr_iddp[id].close_pipe();
-                            wr_iddp_connected[id] = false;
-                            DPRINTF ("quit %s_tx_pdo\n", wr_esc_pdo[id].c_str() );
-                        } 
-                        else {
-                            //DPRINTF (" Already disconnected to %s_tx_pdo\n", wr_esc_pdo[id].c_str() );
-                        }               
+                    else {
+                        if(esc_pb[id]!=nullptr){
+                            esc_pb[id]->pbDeserialize(pb_tx_pdos[id]);  
+                        }
                     }
-                } 
-                else {
-                    if(esc_pb[id]!=nullptr){
-                        esc_pb[id]->pbDeserialize(pb_tx_pdos[id]);  
-                    }
+                } else {                
                 }
             } while (nbytes > 0);
             // read pdo
