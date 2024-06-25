@@ -45,7 +45,7 @@ void EcLogger::start_mat_logger()
                 }
                 
                 if(_motors_references_logger==nullptr){
-                    _motors_references_logger = XBot::MatLogger2::MakeLogger("/tmp/motors_references_logger");
+                    _motors_references_logger = XBot::MatLogger2::MakeLogger("/tmp/motors_references_logger",opt);
                     _motors_references_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
                 }
                 
@@ -100,7 +100,7 @@ void EcLogger::start_mat_logger()
                 }
                 
                 if(_valves_references_logger==nullptr){
-                    _valves_references_logger = XBot::MatLogger2::MakeLogger("/tmp/valves_references_logger");
+                    _valves_references_logger = XBot::MatLogger2::MakeLogger("/tmp/valves_references_logger",opt);
                     _valves_references_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
                 }
                 
@@ -124,7 +124,7 @@ void EcLogger::start_mat_logger()
                 }
                 
                 if(_pumps_references_logger==nullptr){
-                    _pumps_references_logger = XBot::MatLogger2::MakeLogger("/tmp/pumps_references_logger");
+                    _pumps_references_logger = XBot::MatLogger2::MakeLogger("/tmp/pumps_references_logger",opt);
                     _pumps_references_logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
                 }
                 
