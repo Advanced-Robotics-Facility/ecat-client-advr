@@ -122,6 +122,7 @@ int main(int argc, char * const argv[])
         MotorReferenceMap motors_ref;
         
         // memory allocation
+        client->update();
         client->get_pow_status(pow_status_map);
         client->get_imu_status(imu_status_map);
         client->get_pump_status(pump_status_map);
@@ -216,6 +217,7 @@ int main(int argc, char * const argv[])
         start_time_ns= iit::ecat::get_time_ns();
         time_ns=start_time_ns;
         
+        client->update();
         while (run && client->is_client_alive())
         {
             time_elapsed_ms= (static_cast<float>((time_ns-start_time_ns))/1000000);
@@ -520,6 +522,7 @@ int main(int argc, char * const argv[])
                 }
             } 
             
+            client->update();
             clock_nanosleep(CLOCK_MONOTONIC, 0, &ts, NULL); 
             // get period ns
             time_ns = iit::ecat::get_time_ns();
@@ -528,6 +531,7 @@ int main(int argc, char * const argv[])
     
     ec_common_step.stop_ec_valves();
     ec_common_step.stop_ec_motors();
+    client->update();
     ec_common_step.stop_ec();
     
     return 0;

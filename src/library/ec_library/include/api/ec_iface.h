@@ -23,6 +23,9 @@ public:
     // EtherCAT Client ADVR Facilty logger
     void start_logging(void);
     void stop_logging(void);
+
+    // EtherCAT Client ADVR Facilty update getters/setters
+    void update();
     
     // EtherCAT Client ADVR Facilty getters
     void get_motors_status(MotorStatusMap &motor_status_map);
@@ -68,36 +71,33 @@ protected:
 
     SSI _fake_slave_info;
     // last received motor data
-    MotorStatusMap _motor_status_map;
+    MotorStatusMap _motor_status_map,_internal_motor_status_map;
     // last received ft data
-    FtStatusMap _ft_status_map;
+    FtStatusMap _ft_status_map,_internal_ft_status_map;
     // last received pow data
-    PwrStatusMap _pow_status_map;
+    PwrStatusMap _pow_status_map,_internal_pow_status_map;
     // last received imu data
-    ImuStatusMap _imu_status_map;
+    ImuStatusMap _imu_status_map,_internal_imu_status_map;
     // last received valve data
-    ValveStatusMap _valve_status_map;
+    ValveStatusMap _valve_status_map,_internal_valve_status_map;
     // last received pump data
-    PumpStatusMap _pump_status_map;
+    PumpStatusMap _pump_status_map,_internal_pump_status_map;
     
     RefFlags _motor_ref_flags;
-    MotorReferenceMap _motors_references;
+    MotorReferenceMap _motors_references,_internal_motors_references;
     
     RefFlags _valve_ref_flags;
-    ValveReferenceMap _valves_references;
+    ValveReferenceMap _valves_references,_internal_valves_references;
     
     RefFlags _pump_ref_flags;
-    PumpReferenceMap _pumps_references;
+    PumpReferenceMap _pumps_references,_internal_pumps_references;
     
-    pthread_mutex_t _mutex_motor_status;
-    pthread_mutex_t _mutex_motor_reference;
-    pthread_mutex_t _mutex_ft_status;
-    pthread_mutex_t _mutex_pow_status;
-    pthread_mutex_t _mutex_imu_status;
-    pthread_mutex_t _mutex_valve_status;
-    pthread_mutex_t _mutex_valve_reference;
-    pthread_mutex_t _mutex_pump_status;
-    pthread_mutex_t _mutex_pump_reference;
+    pthread_mutex_t _mutex_update;
+    pthread_cond_t update_cond;
+    unsigned int _waiting_counter=0;
+
+    void sync_update();
+
 private:
     template <typename T>
     int32_t check_maps(const std::map<int32_t,T>& map1,const std::map<int32_t,T>& map2);

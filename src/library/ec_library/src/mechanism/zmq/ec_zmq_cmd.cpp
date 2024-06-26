@@ -336,16 +336,13 @@ void EcZmqCmd::feed_motors()
         return;
     }
     else{
-        if(_motor_ref_flags!=RefFlags::FLAG_NONE){
 
-            pthread_mutex_lock(&_mutex_motor_reference);
-            _motors_references_cmd=_motors_references;
-            _ec_logger->log_motors_ref(_motors_references_cmd);
-            pthread_mutex_unlock(&_mutex_motor_reference);
-            
-            if(!_motors_references_cmd.empty()){
+        _ec_logger->log_motors_ref(_internal_motors_references);
+
+        if(_motor_ref_flags!=RefFlags::FLAG_NONE){   
+            if(!_internal_motors_references.empty()){
                 std::string msg="";
-                auto fault=_ec_repl_cmd->Motors_PDO_cmd(_motors_references_cmd);
+                auto fault=_ec_repl_cmd->Motors_PDO_cmd(_internal_motors_references);
 /*                 if(!cmd_error_status(fault, "feed_motors",msg)){
                     // ...continue if not in timeout
                 } */
@@ -364,14 +361,11 @@ void EcZmqCmd::feed_valves()
         return;
     }
     else{
+
+        _ec_logger->log_valve_ref(_internal_valves_references);   
+        
         if(_valve_ref_flags!=RefFlags::FLAG_NONE){
-
-            pthread_mutex_lock(&_mutex_valve_reference);
-            _valves_references_cmd=_valves_references;
-            _ec_logger->log_valve_ref(_valves_references_cmd);   
-            pthread_mutex_unlock(&_mutex_valve_reference);
-
-            if(!_valves_references_cmd.empty()){
+            if(!_internal_valves_references.empty()){
 //                 auto fault=_ec_repl_cmd->Motors_PDO_cmd(_motors_references);
 //                 if(fault.get_type() == EC_REPL_CMD_STATUS::TIMEOUT){
 //                     _consoleLog->error("Client not alive, please stop the main process!");
@@ -392,12 +386,11 @@ void EcZmqCmd::feed_pumps()
         return;
     }
     else{
+        
+        _ec_logger->log_pump_ref(_internal_pumps_references); 
+
         if(_pump_ref_flags!=RefFlags::FLAG_NONE){
-            pthread_mutex_lock(&_mutex_pump_reference);
-            _pumps_references_cmd=_pumps_references;
-            _ec_logger->log_pump_ref(_pumps_references_cmd); 
-            pthread_mutex_unlock(&_mutex_pump_reference);
-            if(!_pumps_references_cmd.empty()){
+            if(!_internal_pumps_references.empty()){
 //                 auto fault=_ec_repl_cmd->Motors_PDO_cmd(_motors_references);
 //                 if(fault.get_type() == EC_REPL_CMD_STATUS::TIMEOUT){
 //                     _consoleLog->error("Client not alive, please stop the main process!");

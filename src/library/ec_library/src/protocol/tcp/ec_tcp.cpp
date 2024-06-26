@@ -111,11 +111,13 @@ void EcTCP::th_loop( void * )
         return;
     }
     
+    pthread_mutex_lock(&_mutex_update);
     // read motors, imu, ft, power board and others pdo information 
     read_pdo();
     
     // send motors and others pdo
     send_pdo();
+    pthread_mutex_unlock(&_mutex_update);
 }
 
 //******************************* Periodic Activity *****************************************************//

@@ -15,22 +15,8 @@ EcIface::EcIface()
     _pump_ref_flags=RefFlags::FLAG_NONE;
     _pumps_references.clear();
     
-    
-    pthread_mutex_init(&_mutex_motor_status, NULL);
-    pthread_mutex_init(&_mutex_motor_reference, NULL);
-    
-    pthread_mutex_init(&_mutex_ft_status, NULL);
-    
-    pthread_mutex_init(&_mutex_pow_status, NULL);
-    
-    pthread_mutex_init(&_mutex_imu_status, NULL);
-    
-    pthread_mutex_init(&_mutex_valve_status, NULL);
-    pthread_mutex_init(&_mutex_valve_reference, NULL);
-    
-    
-    pthread_mutex_init(&_mutex_pump_status, NULL);
-    pthread_mutex_init(&_mutex_pump_reference, NULL);
+    pthread_mutex_init(&_mutex_update, NULL);
+    pthread_cond_init(&update_cond,NULL);
     
     _consoleLog=spdlog::get("console");
     if(!_consoleLog)
@@ -46,24 +32,10 @@ EcIface::EcIface()
 
 EcIface::~EcIface()
 {
-    pthread_mutex_destroy(&_mutex_motor_status);
-    pthread_mutex_destroy(&_mutex_motor_reference);
-    
-    pthread_mutex_destroy(&_mutex_ft_status);
-    
-    pthread_mutex_destroy(&_mutex_pow_status);
-    
-    pthread_mutex_destroy(&_mutex_imu_status);
-    
-    pthread_mutex_destroy(&_mutex_valve_status);
-    pthread_mutex_destroy(&_mutex_valve_reference);
-    
-    pthread_mutex_destroy(&_mutex_pump_status);
-    pthread_mutex_destroy(&_mutex_pump_reference);
-    
+    pthread_mutex_destroy(&_mutex_update);
+    pthread_cond_destroy(&update_cond);
     _consoleLog->info("EtherCAT Client closed");
     _consoleLog.reset();
-    
 }
 
 bool EcIface::is_client_alive()
@@ -87,16 +59,46 @@ void EcIface::test_client(SSI slave_info)
     _fake_slave_info=slave_info;
 }
 
+void EcIface::update()
+{
+    //read
+    _motor_status_map=  _internal_motor_status_map;
+    _ft_status_map=     _internal_ft_status_map;
+    _imu_status_map=    _internal_imu_status_map;
+    _valve_status_map=  _internal_valve_status_map;
+    _pump_status_map=   _internal_pump_status_map;
+
+    //write
+    _internal_motors_references=    _motors_references;
+    _internal_valves_references=    _valves_references;
+    _internal_pumps_references=     _pumps_references;
+    sync_update();
+}
+
+void EcIface::sync_update(void) {
+    
+    pthread_mutex_lock(&_mutex_update);
+
+    _waiting_counter++;
+    DPRINTF("COUNT: %d\n",_waiting_counter);
+
+    if (_waiting_counter == 2) {
+        pthread_cond_broadcast(&update_cond);
+        _waiting_counter=0;
+    } else {
+        pthread_cond_wait(&update_cond, &_mutex_update);
+    }
+
+    pthread_mutex_unlock(&_mutex_update);
+}
+
 void EcIface::get_motors_status(MotorStatusMap &motor_status_map)
 {
-    pthread_mutex_lock(&_mutex_motor_status);
     motor_status_map= _motor_status_map;
-    pthread_mutex_unlock(&_mutex_motor_status);
 }
 
 void EcIface::set_motors_references(const RefFlags motor_ref_flags,const MotorReferenceMap motors_references)
 {
-    pthread_mutex_lock(&_mutex_motor_reference);
     int ret=check_maps(_motors_references,motors_references);
     if(ret==0){
         _motor_ref_flags = motor_ref_flags;
@@ -116,41 +118,31 @@ void EcIface::set_motors_references(const RefFlags motor_ref_flags,const MotorRe
             DPRINTF("Esc id [%d] is not a motor\n",ret);
         }
     }
-    pthread_mutex_unlock(&_mutex_motor_reference);
 }
 
 void EcIface::get_ft_status(FtStatusMap &ft_status_map)
 {
-    pthread_mutex_lock(&_mutex_ft_status);
     ft_status_map= _ft_status_map;
-    pthread_mutex_unlock(&_mutex_ft_status);
 }
 
 void EcIface::get_pow_status(PwrStatusMap &pow_status_map)
 {
-    pthread_mutex_lock(&_mutex_pow_status);
     pow_status_map= _pow_status_map;
-    pthread_mutex_unlock(&_mutex_pow_status);
 }
 
 
 void EcIface::get_imu_status(ImuStatusMap &imu_status_map)
 {
-    pthread_mutex_lock(&_mutex_imu_status);
     imu_status_map= _imu_status_map;
-    pthread_mutex_unlock(&_mutex_imu_status);
 }
 
 void EcIface::get_valve_status(ValveStatusMap &valve_status_map)
 {
-    pthread_mutex_lock(&_mutex_valve_status);
     valve_status_map= _valve_status_map;
-    pthread_mutex_unlock(&_mutex_valve_status);
 }
 
 void EcIface::set_valves_references(const RefFlags valve_ref_flags,const ValveReferenceMap valves_references)
 {
-    pthread_mutex_lock(&_mutex_valve_reference);
     int ret=check_maps(_valves_references,valves_references);
     if(ret==0){
         _valve_ref_flags=valve_ref_flags;
@@ -170,19 +162,15 @@ void EcIface::set_valves_references(const RefFlags valve_ref_flags,const ValveRe
             DPRINTF("Esc id [%d] is not a valve\n",ret);
         }
     }
-    pthread_mutex_unlock(&_mutex_valve_reference);
 }
 
 void EcIface::get_pump_status(PumpStatusMap &pump_status_map)
 {
-    pthread_mutex_lock(&_mutex_pump_status);
     pump_status_map= _pump_status_map;
-    pthread_mutex_unlock(&_mutex_pump_status);
 }
 
 void EcIface::set_pumps_references(const RefFlags pump_ref_flags,const PumpReferenceMap pumps_references)
 {
-    pthread_mutex_lock(&_mutex_pump_reference);
     int ret=check_maps(_pumps_references,pumps_references);
     if(ret==0){
         _pump_ref_flags=pump_ref_flags;
@@ -202,7 +190,6 @@ void EcIface::set_pumps_references(const RefFlags pump_ref_flags,const PumpRefer
             DPRINTF("Esc id [%d] is not a pump\n",ret);
         }
     }
-    pthread_mutex_unlock(&_mutex_pump_reference);
 }
  
 bool EcIface::pdo_aux_cmd_sts(const PAC & pac)

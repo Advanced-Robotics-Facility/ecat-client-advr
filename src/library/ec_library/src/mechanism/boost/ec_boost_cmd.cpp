@@ -350,13 +350,9 @@ bool EcBoostCmd::start_motors(const MST &motors_start)
         {
             if(_client_alive)
             {
-                pthread_mutex_lock(&_mutex_motor_reference);
 
                 // clear motors references
                 _motor_ref_flags=RefFlags::FLAG_NONE;
-                //_motors_references.clear();
-
-                 pthread_mutex_unlock(&_mutex_motor_reference);
 
                 CBuffT<4096u> sendBuffer{};
                 auto sizet = proto.packReplRequestMotorsStart(sendBuffer, motors_start);
@@ -406,14 +402,10 @@ bool EcBoostCmd::stop_motors()
             {
                 attemps_cnt = _max_cmd_attemps;
 
-                pthread_mutex_lock(&_mutex_motor_reference);
                 _client_status=ClientStatus::MOTORS_STOPPED;
 
                 // clear motors references
                 _motor_ref_flags=RefFlags::FLAG_NONE;
-                //_motors_references.clear();
-
-                 pthread_mutex_unlock(&_mutex_motor_reference);
             }
             else
             {
@@ -486,13 +478,12 @@ void EcBoostCmd::send_pdo()
 
 void EcBoostCmd::feed_motors()
 {
-    pthread_mutex_lock(&_mutex_motor_reference);
     if(_client_alive){
         if(_client_status==ClientStatus::MOTORS_STARTED ||
            _client_status==ClientStatus::MOTORS_CTRL){
-            if(_motor_ref_flags!=RefFlags::FLAG_NONE && !_motors_references.empty()){
+            if(_motor_ref_flags!=RefFlags::FLAG_NONE && !_internal_motors_references.empty()){
                 std::vector<MR> mot_ref_v;
-                for ( const auto &[bId,motor_tx] : _motors_references ) {
+                for ( const auto &[bId,motor_tx] : _internal_motors_references ) {
                     auto ctrl_type=std::get<0>(motor_tx);
                     if(ctrl_type!=0x00){
                         mot_ref_v.push_back(std::tuple_cat(std::make_tuple(bId),motor_tx));
@@ -511,7 +502,7 @@ void EcBoostCmd::feed_motors()
                 auto sizet = proto.packReplRequestSetMotorsRefs(sendBuffer, m_ref_flag);
                 do_send(sendBuffer.data(), sendBuffer.size() );
                 _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
-                _ec_logger->log_motors_ref(_motors_references);
+                _ec_logger->log_motors_ref(_internal_motors_references);
             }
         }
         else{
@@ -521,7 +512,5 @@ void EcBoostCmd::feed_motors()
     else{
         _consoleLog->error("UDP client not alive, please stop the main process");
     }
-    
-    pthread_mutex_unlock(&_mutex_motor_reference);
 }
 

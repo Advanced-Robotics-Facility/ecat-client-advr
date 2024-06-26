@@ -51,48 +51,48 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                 case iit::ecat::LO_PWR_DC_MC:{
                     auto hhcm_pdo = std::make_shared<HhcmPdo<T>>(_ec_pdo_start, id, esc_type);
                     _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(hhcm_pdo);
-                    _motor_status_map[id]=  hhcm_pdo->rx_pdo;
-                    _motors_references[id]= hhcm_pdo->tx_pdo;
+                    _internal_motor_status_map[id]=_motor_status_map[id]=  hhcm_pdo->rx_pdo;
+                    _internal_motors_references[id]=_motors_references[id]= hhcm_pdo->tx_pdo;
                 }break;
                 case iit::ecat::SYNAPTICON_v5_0:
                 case iit::ecat::SYNAPTICON_v5_1:{
                     auto circulo9_pdo = std::make_shared<Circulo9Pdo<T>>(_ec_pdo_start, id, esc_type);
                     _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(circulo9_pdo);
-                    _motor_status_map[id]=  circulo9_pdo->rx_pdo;
-                    _motors_references[id]= circulo9_pdo->tx_pdo;
+                    _internal_motor_status_map[id]=_motor_status_map[id]=  circulo9_pdo->rx_pdo;
+                    _internal_motors_references[id]=_motors_references[id]= circulo9_pdo->tx_pdo;
                 }break;
                 case iit::ecat::AMC_FLEXPRO:{
                     auto flex_pdo = std::make_shared<FlexproPdo<T>>(_ec_pdo_start, id, esc_type);
                     _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(flex_pdo);
-                    _motor_status_map[id] = flex_pdo->rx_pdo;
-                    _motors_references[id]= flex_pdo->tx_pdo;
+                    _internal_motor_status_map[id]=_motor_status_map[id]= flex_pdo->rx_pdo;
+                    _internal_motors_references[id]=_motors_references[id]= flex_pdo->tx_pdo;
                 }break;
                 case iit::ecat::FT6_MSP432:{
                     auto ft_pdo = std::make_shared<FtPdo<T>>(_ec_pdo_start, id);
                     _ft_pdo_map[id]=ft_pdo;
-                    _ft_status_map[id]= ft_pdo->rx_pdo;
+                    _internal_ft_status_map[id]=_ft_status_map[id]= ft_pdo->rx_pdo;
                 }break;   
                 case iit::ecat::IMU_ANY :{
                     auto imu_pdo = std::make_shared<ImuPdo<T>>(_ec_pdo_start, id);
                     _imu_pdo_map[id]=imu_pdo;
-                    _imu_status_map[id]= imu_pdo->rx_pdo;
+                    _internal_imu_status_map[id]=_imu_status_map[id]= imu_pdo->rx_pdo;
                 }break;
                 case iit::ecat::POW_F28M36_BOARD :{
                     auto pow_pdo = std::make_shared<PowPdo<T>>(_ec_pdo_start, id);
                     _pow_pdo_map[id]=pow_pdo;
-                    _pow_status_map[id]= pow_pdo->rx_pdo;
+                    _internal_pow_status_map[id]=_pow_status_map[id]= pow_pdo->rx_pdo;
                 }break;
                 case iit::ecat::HYQ_KNEE:{
                     auto valve_pdo = std::make_shared<ValvePdo<T>>(_ec_pdo_start, id);
                     _valve_pdo_map[id]=valve_pdo;
-                    _valve_status_map[id]=  valve_pdo->rx_pdo;
-                    _valves_references[id]= valve_pdo->tx_pdo;
+                    _internal_valve_status_map[id]=_valve_status_map[id]=  valve_pdo->rx_pdo;
+                    _internal_valves_references[id]=_valves_references[id]= valve_pdo->tx_pdo;
                 }break;
                 case iit::ecat::HYQ_HPU:{
                     auto pump_pdo = std::make_shared<PumpPdo<T>>(_ec_pdo_start, id);
                     _pump_pdo_map[id]=pump_pdo;
-                    _pump_status_map[id]= pump_pdo->rx_pdo;
-                    _pumps_references[id]= pump_pdo->tx_pdo;
+                    _internal_pump_status_map[id]=_pump_status_map[id]= pump_pdo->rx_pdo;
+                    _internal_pumps_references[id]=_pumps_references[id]= pump_pdo->tx_pdo;
                 }break;
                 
                 default:
@@ -166,19 +166,6 @@ void EcPdo<T>::get_init_rx_pdo(const MapPdo& pdo_map)
     }
 }
 
-
-template <class T > 
-template <typename MapPdo,typename MapStatus>
-void EcPdo<T>::set_map_status(pthread_mutex_t &mutex_status,const MapPdo& pdo_map,MapStatus& map_status)
-{
-    pthread_mutex_lock(&mutex_status);
-    for (auto const &[id,pdo] : pdo_map )  {
-        map_status[id]=pdo->rx_pdo;
-    }
-    pthread_mutex_unlock(&mutex_status);
-    get_init_rx_pdo(pdo_map);
-}
-
 template <class T > 
 template <typename MapReference,typename MapPdo>
 void EcPdo<T>::get_map_reference(const MapReference& map_reference,
@@ -201,26 +188,26 @@ void EcPdo<T>::read_motor_pdo()
                 // read protobuf data
                 nbytes = motor_pdo->read();
             } while ( nbytes > 0);
+
+            _internal_motor_status_map[id]=motor_pdo->rx_pdo;
             //////////////////////////////////////////////////////////////
         }
         
         catch ( std::out_of_range ) {};   
     }
 
-    set_map_status(_mutex_motor_status,_moto_pdo_map,_motor_status_map);
-    _ec_logger->log_motors_sts(_motor_status_map);
+    _ec_logger->log_motors_sts(_internal_motor_status_map);
 }
 
 template < class T >
 void EcPdo<T>::write_motor_pdo()
 {
+    _ec_logger->log_motors_ref(_internal_motors_references);
 
-    pthread_mutex_lock(&_mutex_motor_reference);
-    _ec_logger->log_motors_ref(_motors_references);
-    get_map_reference(_motors_references,_moto_pdo_map);
-    pthread_mutex_unlock(&_mutex_motor_reference);
+    for (auto &[id,motor_pdo] : _moto_pdo_map ) {
 
-    for ( const auto &[id,motor_pdo] : _moto_pdo_map ) {
+        motor_pdo->tx_pdo=_internal_motors_references[id];
+
         auto ctrl_type=std::get<0>(motor_pdo->tx_pdo);
         if(ctrl_type!=0x00){
             if (iit::advr::Gains_Type_IsValid(ctrl_type) ) {
@@ -246,13 +233,14 @@ void EcPdo<T>::read_ft_pdo()
                 // read protobuf data
                 nbytes = ft_pdo->read();
             } while ( nbytes > 0);
+
+            _internal_ft_status_map[id]=ft_pdo->rx_pdo;
             //////////////////////////////////////////////////////////////
         }
         catch ( std::out_of_range ) {};   
     }
 
-    set_map_status(_mutex_ft_status,_ft_pdo_map,_ft_status_map);
-    _ec_logger->log_ft_sts(_ft_status_map);
+    _ec_logger->log_ft_sts(_internal_ft_status_map);
 }
 template < class T >
 void EcPdo<T>::read_imu_pdo()
@@ -266,13 +254,14 @@ void EcPdo<T>::read_imu_pdo()
                 // read protobuf data
                 nbytes = imu_pdo->read();
             } while ( nbytes > 0);
+
+            _internal_imu_status_map[id]=imu_pdo->rx_pdo;
             //////////////////////////////////////////////////////////////
         }
         catch ( std::out_of_range ) {};   
     }
 
-    set_map_status(_mutex_imu_status,_imu_pdo_map,_imu_status_map);
-    _ec_logger->log_imu_sts(_imu_status_map);
+    _ec_logger->log_imu_sts(_internal_imu_status_map);
 }
 
 template < class T >
@@ -287,13 +276,14 @@ void EcPdo<T>::read_pow_pdo()
                 // read protobuf data
                 nbytes = pow_pdo->read();
             } while ( nbytes > 0);
+
+            _internal_pow_status_map[id]=pow_pdo->rx_pdo;
             //////////////////////////////////////////////////////////////
         }
         catch ( std::out_of_range ) {};   
     }
 
-    set_map_status(_mutex_pow_status,_pow_pdo_map,_pow_status_map);
-    _ec_logger->log_pow_sts(_pow_status_map);
+    _ec_logger->log_pow_sts(_internal_pow_status_map);
 }
 
 template < class T >
@@ -308,24 +298,23 @@ void EcPdo<T>::read_valve_pdo()
                 // read protobuf data
                 nbytes = valve_pdo->read();
             } while ( nbytes > 0);
+
+            _internal_valve_status_map[id]=valve_pdo->rx_pdo;
             //////////////////////////////////////////////////////////////
         }
         catch ( std::out_of_range ) {};   
     }
 
-    set_map_status(_mutex_valve_status,_valve_pdo_map,_valve_status_map);
-    _ec_logger->log_valve_sts(_valve_status_map);
+    _ec_logger->log_valve_sts(_internal_valve_status_map);
 }
 
 template < class T >
 void EcPdo<T>::write_valve_pdo()
 {
-    pthread_mutex_lock(&_mutex_valve_reference);
-    _ec_logger->log_valve_ref(_valves_references);
-    get_map_reference(_valves_references,_valve_pdo_map);
-    pthread_mutex_unlock(&_mutex_valve_reference);
+    _ec_logger->log_valve_ref(_internal_valves_references);
 
-    for ( const auto &[bId,valve_pdo] : _valve_pdo_map ) {
+    for (auto &[id,valve_pdo] : _valve_pdo_map ) {
+        valve_pdo->tx_pdo=_internal_valves_references[id];
         //write 
         valve_pdo->write();
     }
@@ -343,24 +332,23 @@ void EcPdo<T>::read_pump_pdo()
                 // read protobuf data
                 nbytes = pump_pdo->read();
             } while ( nbytes > 0);
+
+            _internal_pump_status_map[id]=pump_pdo->rx_pdo;
             //////////////////////////////////////////////////////////////
         }
         catch ( std::out_of_range ) {};   
     }
 
-    set_map_status(_mutex_pump_status,_pump_pdo_map,_pump_status_map);
-    _ec_logger->log_pump_sts(_pump_status_map);
+    _ec_logger->log_pump_sts(_internal_pump_status_map);
 }
 
 template < class T >
 void EcPdo<T>::write_pump_pdo()
 {
-    pthread_mutex_lock(&_mutex_pump_reference);
-    _ec_logger->log_pump_ref(_pumps_references);
-    get_map_reference(_pumps_references,_pump_pdo_map);
-    pthread_mutex_unlock(&_mutex_pump_reference);        
+    _ec_logger->log_pump_ref(_internal_pumps_references);   
     
-    for (auto const &[id,pump_pdo] : _pump_pdo_map)  {
+    for (auto &[id,pump_pdo] : _pump_pdo_map)  {
+        pump_pdo->tx_pdo=_internal_pumps_references[id];
         //write 
         pump_pdo->write();
     }
