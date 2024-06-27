@@ -8,7 +8,10 @@
 #include "ec_types.h"
 #include "logger/ec_logger.h"
 #include "cmn_utils.h"
+#include <boost/lockfree/spsc_queue.hpp>
 
+
+using namespace boost::lockfree;
 class EcIface
 {
 public:
@@ -71,7 +74,10 @@ protected:
 
     SSI _fake_slave_info;
     // last received motor data
+
     MotorStatusMap _motor_status_map,_internal_motor_status_map;
+    spsc_queue<MotorStatusMap,fixed_sized<true>> _motor_status_queue{128};
+
     // last received ft data
     FtStatusMap _ft_status_map,_internal_ft_status_map;
     // last received pow data
@@ -85,6 +91,7 @@ protected:
     
     RefFlags _motor_ref_flags;
     MotorReferenceMap _motors_references,_internal_motors_references;
+    spsc_queue<MotorReferenceMap,fixed_sized<true>> _motors_references_queue{128};
     
     RefFlags _valve_ref_flags;
     ValveReferenceMap _valves_references,_internal_valves_references;

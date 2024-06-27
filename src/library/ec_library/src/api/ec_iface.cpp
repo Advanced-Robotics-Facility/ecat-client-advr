@@ -62,25 +62,25 @@ void EcIface::test_client(SSI slave_info)
 void EcIface::update()
 {
     //read
-    _motor_status_map=  _internal_motor_status_map;
-    _ft_status_map=     _internal_ft_status_map;
-    _imu_status_map=    _internal_imu_status_map;
-    _valve_status_map=  _internal_valve_status_map;
-    _pump_status_map=   _internal_pump_status_map;
+    //_motor_status_map=  _internal_motor_status_map;
+    //_ft_status_map=     _internal_ft_status_map;
+    //_imu_status_map=    _internal_imu_status_map;
+    //_valve_status_map=  _internal_valve_status_map;
+    //_pump_status_map=   _internal_pump_status_map;
 
     //write
-    _internal_motors_references=    _motors_references;
-    _internal_valves_references=    _valves_references;
-    _internal_pumps_references=     _pumps_references;
-    sync_update();
+    //_internal_motors_references=    _motors_references;
+    //_internal_valves_references=    _valves_references;
+    //_internal_pumps_references=     _pumps_references;
 }
 
 void EcIface::sync_update(void) {
     
     pthread_mutex_lock(&_mutex_update);
 
-    _waiting_counter++;
-    DPRINTF("COUNT: %d\n",_waiting_counter);
+    if(_waiting_counter<2){
+        _waiting_counter++;
+    }
 
     if (_waiting_counter == 2) {
         pthread_cond_broadcast(&update_cond);
@@ -94,6 +94,10 @@ void EcIface::sync_update(void) {
 
 void EcIface::get_motors_status(MotorStatusMap &motor_status_map)
 {
+    while(_motor_status_queue.pop(_motor_status_map)){
+        
+    }
+ 
     motor_status_map= _motor_status_map;
 }
 
@@ -103,6 +107,7 @@ void EcIface::set_motors_references(const RefFlags motor_ref_flags,const MotorRe
     if(ret==0){
         _motor_ref_flags = motor_ref_flags;
         _motors_references = motors_references;
+        _motors_references_queue.push(_motors_references);
     }
     else{
         if(ret==-1){

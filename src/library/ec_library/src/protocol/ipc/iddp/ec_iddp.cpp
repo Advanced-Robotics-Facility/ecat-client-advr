@@ -123,8 +123,6 @@ void EcIDDP::th_loop( void * )
     // read motors, imu, ft, power board and others pdo information
     read_pdo();
     
-    sync_update();
-
     // write motors and others pdo
     write_pdo();
 }

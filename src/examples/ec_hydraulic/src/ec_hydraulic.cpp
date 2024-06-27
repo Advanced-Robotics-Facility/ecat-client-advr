@@ -45,7 +45,7 @@ int main(int argc, char * const argv[])
     try{
         ec_common_step.autodetection();
         //sys_ctrl=ec_common_step.start_ec_motors(motor_id_vector);
-        sys_ctrl &= ec_common_step.start_ec_valves(ec_cfg.valve_id);
+        //sys_ctrl &= ec_common_step.start_ec_valves(ec_cfg.valve_id);
     }catch(std::exception &ex){
         DPRINTF("%s\n",ex.what());
         return 1;
@@ -61,9 +61,9 @@ int main(int argc, char * const argv[])
         struct timespec ts= { 0, ec_cfg.period_ms*1000000}; //sample time
         
         uint64_t start_time_ns=0;
-        uint64_t time_ns=0;
+        uint64_t time_ns=0,pre_time_ns=0;
         
-        float time_elapsed_ms;
+        float time_elapsed_ms,sample_time_ms;
         float hm_time_ms=ec_cfg.homing_time_sec*1000;
         float trj_time_ms=ec_cfg.trajectory_time_sec*1000;
         float pressure_time_ms=1000; // 2minutes.
@@ -122,7 +122,6 @@ int main(int argc, char * const argv[])
         MotorReferenceMap motors_ref;
         
         // memory allocation
-        client->update();
         client->get_pow_status(pow_status_map);
         client->get_imu_status(imu_status_map);
         client->get_pump_status(pump_status_map);
@@ -215,13 +214,13 @@ int main(int argc, char * const argv[])
         }
 
         start_time_ns= iit::ecat::get_time_ns();
-        time_ns=start_time_ns;
+        pre_time_ns=time_ns=start_time_ns;
         
-        client->update();
         while (run && client->is_client_alive())
         {
             time_elapsed_ms= (static_cast<float>((time_ns-start_time_ns))/1000000);
-            //DPRINTF("Time [%f]\n",time_elapsed_ms);
+            sample_time_ms=  (static_cast<float>((time_ns-pre_time_ns))/1000000);
+            //DPRINTF("Time [%f] and Sample_time [%f]\n",time_elapsed_ms,sample_time_ms);
             
             // Rx "SENSE"
             //******************* Power Board Telemetry ********
@@ -522,7 +521,7 @@ int main(int argc, char * const argv[])
                 }
             } 
             
-            client->update();
+            pre_time_ns=time_ns;
             clock_nanosleep(CLOCK_MONOTONIC, 0, &ts, NULL); 
             // get period ns
             time_ns = iit::ecat::get_time_ns();
@@ -531,7 +530,6 @@ int main(int argc, char * const argv[])
     
     ec_common_step.stop_ec_valves();
     ec_common_step.stop_ec_motors();
-    client->update();
     ec_common_step.stop_ec();
     
     return 0;
