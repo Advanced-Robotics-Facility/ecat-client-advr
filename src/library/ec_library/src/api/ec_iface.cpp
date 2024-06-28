@@ -95,9 +95,9 @@ void EcIface::sync_update(void) {
 void EcIface::get_motors_status(MotorStatusMap &motor_status_map)
 {
     while(_motor_status_queue.pop(_motor_status_map)){
-        
+
     }
- 
+
     motor_status_map= _motor_status_map;
 }
 
