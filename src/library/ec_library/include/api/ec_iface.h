@@ -74,7 +74,6 @@ protected:
 
     SSI _fake_slave_info;
     // last received motor data
-
     MotorStatusMap _motor_status_map,_internal_motor_status_map;
     spsc_queue<MotorStatusMap,fixed_sized<true>> _motor_status_queue{128};
 
@@ -86,6 +85,7 @@ protected:
     ImuStatusMap _imu_status_map,_internal_imu_status_map;
     // last received valve data
     ValveStatusMap _valve_status_map,_internal_valve_status_map;
+    spsc_queue<ValveStatusMap,fixed_sized<true>> _valve_status_queue{128};
     // last received pump data
     PumpStatusMap _pump_status_map,_internal_pump_status_map;
     
@@ -95,6 +95,7 @@ protected:
     
     RefFlags _valve_ref_flags;
     ValveReferenceMap _valves_references,_internal_valves_references;
+    spsc_queue<ValveReferenceMap,fixed_sized<true>> _valves_references_queue{128};
     
     RefFlags _pump_ref_flags;
     PumpReferenceMap _pumps_references,_internal_pumps_references;

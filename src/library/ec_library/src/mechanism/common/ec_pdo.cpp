@@ -311,11 +311,17 @@ void EcPdo<T>::read_valve_pdo()
     }
 
     _ec_logger->log_valve_sts(_internal_valve_status_map);
+    _valve_status_queue.push(_internal_valve_status_map);
 }
 
 template < class T >
 void EcPdo<T>::write_valve_pdo()
 {
+
+    while(_valves_references_queue.pop(_internal_valves_references)){
+    
+    }
+
     _ec_logger->log_valve_ref(_internal_valves_references);
 
     for (auto &[id,valve_pdo] : _valve_pdo_map ) {

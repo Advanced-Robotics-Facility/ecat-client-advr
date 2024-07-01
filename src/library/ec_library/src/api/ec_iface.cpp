@@ -143,6 +143,11 @@ void EcIface::get_imu_status(ImuStatusMap &imu_status_map)
 
 void EcIface::get_valve_status(ValveStatusMap &valve_status_map)
 {
+
+    while(_valve_status_queue.pop(_valve_status_map)){
+
+    }
+
     valve_status_map= _valve_status_map;
 }
 
@@ -152,6 +157,7 @@ void EcIface::set_valves_references(const RefFlags valve_ref_flags,const ValveRe
     if(ret==0){
         _valve_ref_flags=valve_ref_flags;
         _valves_references=valves_references;
+        _valves_references_queue.push(_valves_references);
     }
     else{
         if(ret==-1){
