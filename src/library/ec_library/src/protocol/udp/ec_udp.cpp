@@ -116,12 +116,12 @@ void EcUDP::periodicActivity()
         _actual_server_status= ServerStatus::IDLE;
         _client_alive_time = steady_clock::now();
         
-        pthread_mutex_lock(&_mutex_update);
+        //pthread_mutex_lock(&_mutex_update);
         // read motors, imu, ft, power board and others pdo information 
 
         // send motors and others pdo
         send_pdo();
-        pthread_mutex_unlock(&_mutex_update);
+        //pthread_mutex_unlock(&_mutex_update);
     }
         
 }

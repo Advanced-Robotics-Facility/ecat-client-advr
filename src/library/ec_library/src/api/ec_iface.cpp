@@ -15,8 +15,11 @@ EcIface::EcIface()
     _pump_ref_flags=RefFlags::FLAG_NONE;
     _pumps_references.clear();
     
-    pthread_mutex_init(&_mutex_update, NULL);
-    pthread_cond_init(&update_cond,NULL);
+    pthread_mutex_init(&_mutex_read, NULL);
+    pthread_cond_init(&read_cond,NULL);
+
+    pthread_mutex_init(&_mutex_write, NULL);
+    pthread_cond_init(&write_cond,NULL);
     
     _consoleLog=spdlog::get("console");
     if(!_consoleLog)
@@ -32,8 +35,10 @@ EcIface::EcIface()
 
 EcIface::~EcIface()
 {
-    pthread_mutex_destroy(&_mutex_update);
-    pthread_cond_destroy(&update_cond);
+    pthread_mutex_destroy(&_mutex_read);
+    pthread_cond_destroy(&read_cond);
+    pthread_mutex_destroy(&_mutex_write);
+    pthread_cond_destroy(&write_cond);
     _consoleLog->info("EtherCAT Client closed");
     _consoleLog.reset();
 }
@@ -59,38 +64,61 @@ void EcIface::test_client(SSI slave_info)
     _fake_slave_info=slave_info;
 }
 
-void EcIface::update()
+void EcIface::read()
 {
     //read
+    //sync_read();
     //_motor_status_map=  _internal_motor_status_map;
     //_ft_status_map=     _internal_ft_status_map;
     //_imu_status_map=    _internal_imu_status_map;
     //_valve_status_map=  _internal_valve_status_map;
     //_pump_status_map=   _internal_pump_status_map;
-
+}
+void EcIface::write()
+{
     //write
     //_internal_motors_references=    _motors_references;
     //_internal_valves_references=    _valves_references;
     //_internal_pumps_references=     _pumps_references;
+    //sync_write();
 }
 
-void EcIface::sync_update(void) {
+void EcIface::sync_read(void) {
     
-    pthread_mutex_lock(&_mutex_update);
+    pthread_mutex_lock(&_mutex_read);
 
-    if(_waiting_counter<2){
-        _waiting_counter++;
+    if(_waiting_read_counter<2){
+        _waiting_read_counter++;
     }
 
-    if (_waiting_counter == 2) {
-        pthread_cond_broadcast(&update_cond);
-        _waiting_counter=0;
+    if (_waiting_read_counter == 2) {
+        pthread_cond_broadcast(&read_cond);
+        _waiting_read_counter=0;
     } else {
-        pthread_cond_wait(&update_cond, &_mutex_update);
+        pthread_cond_wait(&read_cond, &_mutex_read);
     }
 
-    pthread_mutex_unlock(&_mutex_update);
+    pthread_mutex_unlock(&_mutex_read);
 }
+
+void EcIface::sync_write(void) {
+    
+    pthread_mutex_lock(&_mutex_write);
+
+    if(_waiting_write_counter<2){
+        _waiting_write_counter++;
+    }
+
+    if (_waiting_write_counter == 2) {
+        pthread_cond_broadcast(&write_cond);
+        _waiting_write_counter=0;
+    } else {
+        pthread_cond_wait(&write_cond, &_mutex_write);
+    }
+
+    pthread_mutex_unlock(&_mutex_write);
+}
+
 
 void EcIface::get_motors_status(MotorStatusMap &motor_status_map)
 {
@@ -143,11 +171,15 @@ void EcIface::get_imu_status(ImuStatusMap &imu_status_map)
 
 void EcIface::get_valve_status(ValveStatusMap &valve_status_map)
 {
-
+    bool recv=false;
     while(_valve_status_queue.pop(_valve_status_map)){
-
+        recv=true;
+        DPRINTF("DOPPIOOOOOOOOOOOOOO!\n");
     }
-
+    if(!recv){
+        DPRINTF("No valve recv!\n");
+    }
+    
     valve_status_map= _valve_status_map;
 }
 

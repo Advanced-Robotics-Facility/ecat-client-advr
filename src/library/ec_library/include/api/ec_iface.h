@@ -28,7 +28,8 @@ public:
     void stop_logging(void);
 
     // EtherCAT Client ADVR Facilty update getters/setters
-    void update();
+    void read();
+    void write();
     
     // EtherCAT Client ADVR Facilty getters
     void get_motors_status(MotorStatusMap &motor_status_map);
@@ -100,11 +101,12 @@ protected:
     RefFlags _pump_ref_flags;
     PumpReferenceMap _pumps_references,_internal_pumps_references;
     
-    pthread_mutex_t _mutex_update;
-    pthread_cond_t update_cond;
-    unsigned int _waiting_counter=0;
+    pthread_mutex_t _mutex_read,_mutex_write;
+    pthread_cond_t read_cond,write_cond;
+    unsigned int _waiting_read_counter=0,_waiting_write_counter=0;
 
-    void sync_update();
+    void sync_read();
+    void sync_write();
 
 private:
     template <typename T>

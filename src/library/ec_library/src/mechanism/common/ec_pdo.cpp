@@ -136,12 +136,18 @@ void EcPdo<T>::read_pdo()
     
     read_pump_pdo();
 
+    if(_init_read_pdo){
+        //sync_read();
+    }
+
     _init_read_pdo=_init_rx_pdo;
 }
 
 template < class T >
 void EcPdo<T>::write_pdo()
 {
+    //sync_write();
+
     write_motor_pdo();
     
     write_valve_pdo();
