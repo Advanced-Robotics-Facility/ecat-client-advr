@@ -112,7 +112,7 @@ bool EcPdo<T>::init_read_pdo()
         nanosleep(&delay, NULL);
     }
     if(!_init_read_pdo){
-        DPRINTF("Fatal Error on read PDO: Id [%d] is not initialized\n",id_err_read);
+        DPRINTF("Fatal Error on read PDO: Id [%d] is not initialized\n",_id_init_err_read);
     }
     return true;
 }
@@ -160,19 +160,9 @@ void EcPdo<T>::get_init_rx_pdo(const MapPdo& pdo_map)
             }
             _init_rx_pdo&= pdo->init_rx_pdo; // and all bits.
             if(!pdo->init_rx_pdo){
-                id_err_read=id;
+                _id_init_err_read=id;
             }
         }
-    }
-}
-
-template <class T > 
-template <typename MapReference,typename MapPdo>
-void EcPdo<T>::get_map_reference(const MapReference& map_reference,
-                                 MapPdo& pdo_map)
-{
-    for ( const auto &[id,tx_pdo] : map_reference ) {
-        pdo_map[id]->tx_pdo=tx_pdo;
     }
 }
 
@@ -196,8 +186,9 @@ void EcPdo<T>::read_motor_pdo()
         catch ( std::out_of_range ) {};   
     }
 
-    _ec_logger->log_motors_sts(_internal_motor_status_map);
+    get_init_rx_pdo(_moto_pdo_map);
     _motor_status_queue.push(_internal_motor_status_map);
+    _ec_logger->log_motors_sts(_internal_motor_status_map);
 }
 
 template < class T >
@@ -245,6 +236,7 @@ void EcPdo<T>::read_ft_pdo()
         catch ( std::out_of_range ) {};   
     }
 
+    get_init_rx_pdo(_ft_pdo_map);
     _ec_logger->log_ft_sts(_internal_ft_status_map);
 }
 template < class T >
@@ -266,6 +258,7 @@ void EcPdo<T>::read_imu_pdo()
         catch ( std::out_of_range ) {};   
     }
 
+    get_init_rx_pdo(_imu_pdo_map);
     _ec_logger->log_imu_sts(_internal_imu_status_map);
 }
 
@@ -288,6 +281,7 @@ void EcPdo<T>::read_pow_pdo()
         catch ( std::out_of_range ) {};   
     }
 
+    get_init_rx_pdo(_pow_pdo_map);
     _ec_logger->log_pow_sts(_internal_pow_status_map);
 }
 
@@ -310,8 +304,9 @@ void EcPdo<T>::read_valve_pdo()
         catch ( std::out_of_range ) {};   
     }
 
-    _ec_logger->log_valve_sts(_internal_valve_status_map);
+    get_init_rx_pdo(_valve_pdo_map);
     _valve_status_queue.push(_internal_valve_status_map);
+    _ec_logger->log_valve_sts(_internal_valve_status_map);
 }
 
 template < class T >
@@ -350,6 +345,7 @@ void EcPdo<T>::read_pump_pdo()
         catch ( std::out_of_range ) {};   
     }
 
+    get_init_rx_pdo(_pump_pdo_map);
     _ec_logger->log_pump_sts(_internal_pump_status_map);
 }
 
