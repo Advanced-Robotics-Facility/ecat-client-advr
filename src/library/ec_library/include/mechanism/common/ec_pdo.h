@@ -17,10 +17,6 @@ class EcPdo: public virtual EcIface
         void write_pdo();
         
     private:
-
-        template<typename MapReference,typename MapPdo>
-        void get_map_reference(const MapReference& map_reference,MapPdo& pdo_map);
-
         template<typename MapPdo>
         void get_init_rx_pdo(const MapPdo& pdo_map);
         
@@ -51,7 +47,7 @@ class EcPdo: public virtual EcIface
         std::string _robot_name;
         std::string _ec_pdo_start;
         bool _init_read_pdo,_init_rx_pdo;
-        int id_err_read;
+        int _id_init_err_read;
 };
 
 #endif
