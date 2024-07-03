@@ -174,7 +174,6 @@ void EcIface::get_valve_status(ValveStatusMap &valve_status_map)
     bool recv=false;
     while(_valve_status_queue.pop(_valve_status_map)){
         recv=true;
-        DPRINTF("DOPPIOOOOOOOOOOOOOO!\n");
     }
     if(!recv){
         DPRINTF("No valve recv!\n");
