@@ -139,6 +139,17 @@ public:
     }
     
     virtual void th_loop ( void * ){
+
+        // etherCAT rx
+        for ( auto& [id, pipe] : wr_iddp ) {
+            if (wr_iddp_connected[id] ){
+                if(esc_pb[id]!=nullptr){
+                    esc_pb[id]->pbSerialize(pb_rx_pdos[id]);    
+                    write_pb_to(pipe, pb_buf, sizeof(pb_buf), &pb_rx_pdos[id], name); // write pipe
+                }
+            }
+        }
+
         for ( auto& [id, pipe] : rd_iddp ) {
             int32_t nbytes = 0;
             do {
@@ -175,18 +186,9 @@ public:
                 } else {                
                 }
             } while (nbytes > 0);
-            // read pdo
-        }     
-        
-        for ( auto& [id, pipe] : wr_iddp ) {
-            if (wr_iddp_connected[id] ){
-                if(esc_pb[id]!=nullptr){
-                    esc_pb[id]->pbSerialize(pb_rx_pdos[id]);    
-                    write_pb_to(pipe, pb_buf, sizeof(pb_buf), &pb_rx_pdos[id], name);
-                }
-            }
-        }
-        
+            // read pipe
+        }      
+        //ethercat tx       
     }
     
 };
