@@ -62,11 +62,15 @@ void EcIface::stop_logging()
 void EcIface::log()
 {
     _ec_logger->log_motors_sts(_motor_status_map);
+    _ec_logger->log_ft_sts(_ft_status_map);
+    _ec_logger->log_imu_sts(_imu_status_map);
     _ec_logger->log_valve_sts(_valve_status_map);
+    _ec_logger->log_pump_sts(_pump_status_map);
 
 
     _ec_logger->log_motors_ref(_motors_references); 
     _ec_logger->log_valve_ref(_valves_references);
+    _ec_logger->log_pump_ref(_pumps_references);
 }
 
 void EcIface::test_client(SSI slave_info)
@@ -74,10 +78,9 @@ void EcIface::test_client(SSI slave_info)
     _fake_slave_info=slave_info;
 }
 
-void EcIface::read()
+bool EcIface::read()
 {
     //read
-    //sync_read();
     pthread_mutex_lock(&_mutex_read);
     pthread_cond_wait(&read_cond, &_mutex_read);
     pthread_mutex_unlock(&_mutex_read);
@@ -85,26 +88,32 @@ void EcIface::read()
     while(_motor_status_queue.pop(_motor_status_map))
     {}
 
-    //_ft_status_map=     _internal_ft_status_map;
-    //_imu_status_map=    _internal_imu_status_map;
+    while(_ft_status_queue.pop(_ft_status_map))
+    {}
+
+    while(_imu_status_queue.pop(_imu_status_map))
+    {}
 
     while(_valve_status_queue.pop(_valve_status_map))
     {}
 
-    //_pump_status_map=   _internal_pump_status_map;
+    while(_pump_status_queue.pop(_pump_status_map))
+    {}
+
+    return true;
 }
-void EcIface::write()
+bool EcIface::write()
 {
     //write
     _motors_references_queue.push(_motors_references);
-    //_internal_motors_references=    _motors_references;
     _valves_references_queue.push(_valves_references);
-    //_internal_valves_references=    _valves_references;
-    //_internal_pumps_references=     _pumps_references;
+    _pumps_references_queue.push(_pumps_references);
 
     pthread_mutex_lock(&_mutex_write);
     pthread_cond_wait(&write_cond, &_mutex_write);
     pthread_mutex_unlock(&_mutex_write);
+
+    return true;
 }
 
 void EcIface::sync_read(void) {
@@ -146,9 +155,6 @@ void EcIface::sync_write(void) {
 
 void EcIface::get_motors_status(MotorStatusMap &motor_status_map)
 {
-    //while(_motor_status_queue.pop(_motor_status_map))
-    //{}
-
     motor_status_map= _motor_status_map;
 }
 
@@ -158,7 +164,6 @@ void EcIface::set_motors_references(const RefFlags motor_ref_flags,const MotorRe
     if(ret==0){
         _motor_ref_flags = motor_ref_flags;
         _motors_references = motors_references;
-        //_motors_references_queue.push(_motors_references);
     }
     else{
         if(ret==-1){
@@ -194,9 +199,6 @@ void EcIface::get_imu_status(ImuStatusMap &imu_status_map)
 
 void EcIface::get_valve_status(ValveStatusMap &valve_status_map)
 {
-    //while(_valve_status_queue.pop(_valve_status_map))
-    //{}
-
     valve_status_map= _valve_status_map;
 }
 
@@ -206,7 +208,6 @@ void EcIface::set_valves_references(const RefFlags valve_ref_flags,const ValveRe
     if(ret==0){
         _valve_ref_flags=valve_ref_flags;
         _valves_references=valves_references;
-        //_valves_references_queue.push(_valves_references);
     }
     else{
         if(ret==-1){

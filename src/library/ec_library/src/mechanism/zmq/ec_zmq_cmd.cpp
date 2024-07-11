@@ -215,10 +215,6 @@ bool EcZmqCmd::start_motors(const MST &motors_start)
 {
     
     int attemps_cnt = 0; 
-    // stop references
-    _motor_ref_flags=RefFlags::FLAG_NONE;
-    _valve_ref_flags=RefFlags::FLAG_NONE;
-    
     while(_client_alive && attemps_cnt < _max_cmd_attemps){
         bool motors_started=true;
         for (auto &[motor_id ,ctrl_type, gains] : motors_start) {
@@ -255,9 +251,6 @@ bool EcZmqCmd::start_motors(const MST &motors_start)
 bool EcZmqCmd::stop_motors()
 {
     int attemps_cnt = 0; 
-    // stop references
-    _motor_ref_flags=RefFlags::FLAG_NONE;
-    _valve_ref_flags=RefFlags::FLAG_NONE;
     while(_client_alive && attemps_cnt < _max_cmd_attemps){
         bool motors_stopped=true;
         for ( auto &[esc_id, type, pos] : _slave_info ) {
@@ -336,20 +329,12 @@ void EcZmqCmd::feed_motors()
         return;
     }
     else{
-
-        _ec_logger->log_motors_ref(_internal_motors_references);
-
-        if(_motor_ref_flags!=RefFlags::FLAG_NONE){   
-            if(!_internal_motors_references.empty()){
+        while(_motors_references_queue.pop(_internal_motors_references)){
                 std::string msg="";
                 auto fault=_ec_repl_cmd->Motors_PDO_cmd(_internal_motors_references);
 /*                 if(!cmd_error_status(fault, "feed_motors",msg)){
                     // ...continue if not in timeout
                 } */
-            }
-            else{
-                _consoleLog->error("Got empty motors references structure");
-            }
         }
     }
 }
@@ -361,20 +346,12 @@ void EcZmqCmd::feed_valves()
         return;
     }
     else{
-
-        _ec_logger->log_valve_ref(_internal_valves_references);   
-        
-        if(_valve_ref_flags!=RefFlags::FLAG_NONE){
-            if(!_internal_valves_references.empty()){
+        while(_valves_references_queue.pop(_internal_valves_references)){
 //                 auto fault=_ec_repl_cmd->Motors_PDO_cmd(_motors_references);
 //                 if(fault.get_type() == EC_REPL_CMD_STATUS::TIMEOUT){
 //                     _consoleLog->error("Client not alive, please stop the main process!");
 //                     _client_alive=false;
 //                 }
-            }
-            else{
-                _consoleLog->error("Got empty valves references structure");
-            }
         }
     }
 }
@@ -386,20 +363,12 @@ void EcZmqCmd::feed_pumps()
         return;
     }
     else{
-        
-        _ec_logger->log_pump_ref(_internal_pumps_references); 
-
-        if(_pump_ref_flags!=RefFlags::FLAG_NONE){
-            if(!_internal_pumps_references.empty()){
+        while(_pumps_references_queue.pop(_internal_pumps_references)){
 //                 auto fault=_ec_repl_cmd->Motors_PDO_cmd(_motors_references);
 //                 if(fault.get_type() == EC_REPL_CMD_STATUS::TIMEOUT){
 //                     _consoleLog->error("Client not alive, please stop the main process!");
 //                     _client_alive=false;
 //                 }
-            }
-            else{
-                _consoleLog->error("Got empty pumps references structure");
-            }
         }
     }
 }

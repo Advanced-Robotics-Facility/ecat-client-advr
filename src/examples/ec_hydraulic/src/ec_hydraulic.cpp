@@ -218,7 +218,10 @@ int main(int argc, char * const argv[])
         
         while (run && client->is_client_alive())
         {
-            client->read();
+            if(!client->read()){
+                break;
+            }
+
             time_elapsed_ms= (static_cast<float>((time_ns-start_time_ns))/1000000);
             sample_time_ms= (static_cast<float>(sleep_dur)/1000000);
             
@@ -354,8 +357,7 @@ int main(int argc, char * const argv[])
                 
                 // ************************* SEND ALWAYS REFERENCES***********************************//
                 for ( const auto &[esc_id, curr_ref] : valves_set_ref){
-                    std::get<0>(valves_ref[esc_id]) = time_elapsed_ms;
-                    DPRINTF("VALVE ID: [%d], time1: [%f], time_feed: [%f]\n",esc_id,time_elapsed_ms,pressure1);
+                    std::get<0>(valves_ref[esc_id]) = curr_ref;
                 }
                 client->set_valves_references(RefFlags::FLAG_MULTI_REF, valves_ref);
                 // ************************* SEND ALWAYS REFERENCES***********************************//
@@ -524,11 +526,13 @@ int main(int argc, char * const argv[])
                 }
             } 
             
-            client->write();
+            if(!client->write()){
+                break;
+            }
+
             client->log();
             sleep_dur = time_ns- iit::ecat::get_time_ns(CLOCK_MONOTONIC);
             ts.tv_nsec=sleep_dur;
-            //DPRINTF("Main Time [%f] and Sample_time [%f]\n",time_elapsed_ms,sample_time_ms);
             while(clock_nanosleep(CLOCK_MONOTONIC, 0, &ts,NULL) == -1 && errno == EINTR)
             {}
         }

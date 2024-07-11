@@ -9,7 +9,8 @@
 #include "logger/ec_logger.h"
 #include "cmn_utils.h"
 #include <boost/lockfree/spsc_queue.hpp>
-
+#include <boost/lockfree/queue.hpp>
+#include <boost/lockfree/stack.hpp>
 
 using namespace boost::lockfree;
 class EcIface
@@ -29,8 +30,8 @@ public:
     void log(void);
 
     // EtherCAT Client ADVR Facilty update getters/setters
-    void read(void);
-    void write(void);
+    bool read(void);
+    bool write(void);
     
     // EtherCAT Client ADVR Facilty getters
     void get_motors_status(MotorStatusMap &motor_status_map);
@@ -69,6 +70,7 @@ public:
 protected:
     EcLogger::Ptr _ec_logger;
     std::shared_ptr<spdlog::logger> _consoleLog;
+    struct timespec _client_ts;
     
     bool _client_alive;
     bool _logging;
@@ -81,15 +83,19 @@ protected:
 
     // last received ft data
     FtStatusMap _ft_status_map,_internal_ft_status_map;
+    spsc_queue<FtStatusMap,fixed_sized<true>> _ft_status_queue{128};
     // last received pow data
     PwrStatusMap _pow_status_map,_internal_pow_status_map;
+    spsc_queue<PwrStatusMap,fixed_sized<true>> _pow_status_queue{128};
     // last received imu data
     ImuStatusMap _imu_status_map,_internal_imu_status_map;
+    spsc_queue<ImuStatusMap,fixed_sized<true>> _imu_status_queue{128};
     // last received valve data
     ValveStatusMap _valve_status_map,_internal_valve_status_map;
     spsc_queue<ValveStatusMap,fixed_sized<true>> _valve_status_queue{128};
     // last received pump data
     PumpStatusMap _pump_status_map,_internal_pump_status_map;
+    spsc_queue<PumpStatusMap,fixed_sized<true>> _pump_status_queue{128};
     
     RefFlags _motor_ref_flags;
     MotorReferenceMap _motors_references,_internal_motors_references;
@@ -101,6 +107,7 @@ protected:
     
     RefFlags _pump_ref_flags;
     PumpReferenceMap _pumps_references,_internal_pumps_references;
+    spsc_queue<PumpReferenceMap,fixed_sized<true>> _pumps_references_queue{128};
     
     pthread_mutex_t _mutex_read,_mutex_write;
     pthread_cond_t read_cond,write_cond;
