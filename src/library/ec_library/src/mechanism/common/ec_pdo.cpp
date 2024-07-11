@@ -136,6 +136,10 @@ void EcPdo<T>::read_pdo()
     
     read_pump_pdo();
 
+    pthread_mutex_lock(&_mutex_read);
+    pthread_cond_broadcast(&read_cond);
+    pthread_mutex_unlock(&_mutex_read);
+
     if(_init_read_pdo){
         //sync_read();
     }
@@ -147,6 +151,10 @@ template < class T >
 void EcPdo<T>::write_pdo()
 {
     //sync_write();
+
+    pthread_mutex_lock(&_mutex_write);
+    pthread_cond_broadcast(&write_cond);
+    pthread_mutex_unlock(&_mutex_write);
 
     write_motor_pdo();
     
@@ -194,30 +202,24 @@ void EcPdo<T>::read_motor_pdo()
 
     get_init_rx_pdo(_moto_pdo_map);
     _motor_status_queue.push(_internal_motor_status_map);
-    _ec_logger->log_motors_sts(_internal_motor_status_map);
 }
 
 template < class T >
 void EcPdo<T>::write_motor_pdo()
 {
+    while(_motors_references_queue.pop(_internal_motors_references)){ // note: etherCAT Master will take the last element.
+        for (auto &[id,motor_pdo] : _moto_pdo_map ) {
+            motor_pdo->tx_pdo=_internal_motors_references[id];
 
-    while(_motors_references_queue.pop(_internal_motors_references)){
-    
-    }
-
-    _ec_logger->log_motors_ref(_internal_motors_references); 
-    
-    for (auto &[id,motor_pdo] : _moto_pdo_map ) {
-        motor_pdo->tx_pdo=_internal_motors_references[id];
-
-        auto ctrl_type=std::get<0>(motor_pdo->tx_pdo);
-        if(ctrl_type!=0x00){
-            if (iit::advr::Gains_Type_IsValid(ctrl_type) ) {
-                //write 
-                motor_pdo->write();
-            }
-            else{
-                DPRINTF("Control mode not recognized for id 0x%04X \n", id);
+            auto ctrl_type=std::get<0>(motor_pdo->tx_pdo);
+            if(ctrl_type!=0x00){
+                if (iit::advr::Gains_Type_IsValid(ctrl_type) ) {
+                    //write 
+                    motor_pdo->write();
+                }
+                else{
+                    DPRINTF("Control mode not recognized for id 0x%04X \n", id);
+                }
             }
         }
     }
@@ -294,42 +296,52 @@ void EcPdo<T>::read_pow_pdo()
 template < class T >
 void EcPdo<T>::read_valve_pdo()
 {
+    int count_read=0;
     for (auto const &[id,valve_pdo] : _valve_pdo_map )  {
         try { 
             ///////////////////////////////////////////////////////////////
             // read
-            int nbytes;
+            int nbytes=0;
             do {
                 // read protobuf data
                 nbytes = valve_pdo->read();
+                if(nbytes>0){
+                    count_read++;
+                }
             } while ( nbytes > 0);
 
-            _internal_valve_status_map[id]=valve_pdo->rx_pdo;
+            if(count_read>0){
+                _internal_valve_status_map[id]=valve_pdo->rx_pdo;
+                //DPRINTF("VALVE ID: [%d], push: [%f] count: [%d]\n",id,std::get<2>(_internal_valve_status_map[id]),count_read);
+            }
+            //std::get<2>(_internal_valve_status_map[id])=std::get<0>(_internal_valves_references[id]);
+            //DPRINTF("VALVE ID: [%d], push: [%f] old_pop: [%f]\n",id,std::get<2>(_internal_valve_status_map[id]),std::get<0>(_internal_valves_references[id]));
+            //count_read=1;
+            
             //////////////////////////////////////////////////////////////
         }
         catch ( std::out_of_range ) {};   
     }
 
     get_init_rx_pdo(_valve_pdo_map);
-    _valve_status_queue.push(_internal_valve_status_map);
-    _ec_logger->log_valve_sts(_internal_valve_status_map);
+    
+    if(count_read>0){
+        _valve_status_queue.push(_internal_valve_status_map);
+    }
 }
 
 template < class T >
 void EcPdo<T>::write_valve_pdo()
 {
-
-    while(_valves_references_queue.pop(_internal_valves_references)){
+    while(_valves_references_queue.pop(_internal_valves_references)){ // note: etherCAT Master will take the last element.
+        for (auto &[id,valve_pdo] : _valve_pdo_map ) {
+            //DPRINTF("VALVE ID: [%d], pop: [%f]\n",id,std::get<0>(_internal_valves_references[id]));
+            valve_pdo->tx_pdo=_internal_valves_references[id];
+            //write 
+            valve_pdo->write();
+        }
+    }
     
-    }
-
-    _ec_logger->log_valve_ref(_internal_valves_references);
-
-    for (auto &[id,valve_pdo] : _valve_pdo_map ) {
-        valve_pdo->tx_pdo=_internal_valves_references[id];
-        //write 
-        valve_pdo->write();
-    }
 }
 
 template < class T >

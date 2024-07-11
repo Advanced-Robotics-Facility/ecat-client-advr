@@ -61,7 +61,7 @@ int main(int argc, char * const argv[])
         struct timespec ts= { 0, ec_cfg.period_ms*1000000}; //sample time
         
         uint64_t start_time_ns=0;
-        uint64_t time_ns=0,pre_time_ns=0;
+        uint64_t time_ns=0,sleep_dur=0;
         
         float time_elapsed_ms,sample_time_ms;
         float hm_time_ms=ec_cfg.homing_time_sec*1000;
@@ -213,14 +213,14 @@ int main(int argc, char * const argv[])
             assert(set_main_sched_policy(10) >= 0);
         }
 
-        start_time_ns= iit::ecat::get_time_ns();
-        pre_time_ns=time_ns=start_time_ns;
+        start_time_ns= iit::ecat::get_time_ns(CLOCK_MONOTONIC);
+        time_ns=start_time_ns;
         
         while (run && client->is_client_alive())
         {
+            client->read();
             time_elapsed_ms= (static_cast<float>((time_ns-start_time_ns))/1000000);
-            sample_time_ms=  (static_cast<float>((time_ns-pre_time_ns))/1000000);
-            //DPRINTF("Time [%f] and Sample_time [%f]\n",time_elapsed_ms,sample_time_ms);
+            sample_time_ms= (static_cast<float>(sleep_dur)/1000000);
             
             // Rx "SENSE"
             //******************* Power Board Telemetry ********
@@ -354,7 +354,8 @@ int main(int argc, char * const argv[])
                 
                 // ************************* SEND ALWAYS REFERENCES***********************************//
                 for ( const auto &[esc_id, curr_ref] : valves_set_ref){
-                    std::get<0>(valves_ref[esc_id]) = curr_ref;
+                    std::get<0>(valves_ref[esc_id]) = time_elapsed_ms;
+                    DPRINTF("VALVE ID: [%d], time1: [%f], time_feed: [%f]\n",esc_id,time_elapsed_ms,pressure1);
                 }
                 client->set_valves_references(RefFlags::FLAG_MULTI_REF, valves_ref);
                 // ************************* SEND ALWAYS REFERENCES***********************************//
@@ -383,6 +384,8 @@ int main(int argc, char * const argv[])
                 // ************************* SEND ALWAYS REFERENCES***********************************//
             }
             
+            time_ns += ec_cfg.period_ms*1000000;
+
             if(STM_sts=="PumpPreOp"){
                 if(pump_req_sts){
                     if(trajectory_counter==ec_cfg.repeat_trj){
@@ -521,10 +524,13 @@ int main(int argc, char * const argv[])
                 }
             } 
             
-            pre_time_ns=time_ns;
-            clock_nanosleep(CLOCK_MONOTONIC, 0, &ts, NULL); 
-            // get period ns
-            time_ns = iit::ecat::get_time_ns();
+            client->write();
+            client->log();
+            sleep_dur = time_ns- iit::ecat::get_time_ns(CLOCK_MONOTONIC);
+            ts.tv_nsec=sleep_dur;
+            //DPRINTF("Main Time [%f] and Sample_time [%f]\n",time_elapsed_ms,sample_time_ms);
+            while(clock_nanosleep(CLOCK_MONOTONIC, 0, &ts,NULL) == -1 && errno == EINTR)
+            {}
         }
     }
     

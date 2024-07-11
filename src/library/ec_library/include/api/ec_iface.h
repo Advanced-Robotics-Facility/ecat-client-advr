@@ -26,10 +26,11 @@ public:
     // EtherCAT Client ADVR Facilty logger
     void start_logging(void);
     void stop_logging(void);
+    void log(void);
 
     // EtherCAT Client ADVR Facilty update getters/setters
-    void read();
-    void write();
+    void read(void);
+    void write(void);
     
     // EtherCAT Client ADVR Facilty getters
     void get_motors_status(MotorStatusMap &motor_status_map);
