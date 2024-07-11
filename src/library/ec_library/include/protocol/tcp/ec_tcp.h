@@ -1,11 +1,11 @@
 #ifndef EC_TCP_H
 #define EC_TCP_H
 
-#include <thread_util.h>
+#include "utils/ec_thread.h"
 #include "mechanism/zmq/ec_zmq_cmd.h"
 #include "mechanism/common/ec_pdo.h"
 
-class EcTCP : public EcZmqCmd,EcPdo<EcZmqPdo>,Thread_hook
+class EcTCP : public EcZmqCmd,EcPdo<EcZmqPdo>,EcThread
 {
 public:
 

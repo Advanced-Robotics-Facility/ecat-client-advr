@@ -2,7 +2,7 @@
 #define __NRT_ESC_ZMQ__
 
 #include <utils.h>
-#include <thread_util.h>
+#include "utils/ec_thread.h"
 
 #include "zmq.hpp"
 #include <zmq_addon.hpp>
@@ -67,7 +67,7 @@ public:
     }   
 };
 
-class NrtEscZmq : public Thread_hook {
+class NrtEscZmq : public EcThread {
 
 private:
     

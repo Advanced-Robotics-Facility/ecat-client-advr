@@ -61,7 +61,7 @@ int main(int argc, char * const argv[])
         struct timespec ts= { 0, ec_cfg.period_ms*1000000}; //sample time
         
         uint64_t start_time_ns=0;
-        uint64_t time_ns=0,sleep_dur=0;
+        uint64_t time_ns=0,sleep_ns=0,min_sleep_ns=10000;;
         
         float time_elapsed_ms,sample_time_ms;
         float hm_time_ms=ec_cfg.homing_time_sec*1000;
@@ -223,7 +223,7 @@ int main(int argc, char * const argv[])
             }
 
             time_elapsed_ms= (static_cast<float>((time_ns-start_time_ns))/1000000);
-            sample_time_ms= (static_cast<float>(sleep_dur)/1000000);
+            sample_time_ms= (static_cast<float>(sleep_ns)/1000000);
             
             // Rx "SENSE"
             //******************* Power Board Telemetry ********
@@ -531,8 +531,20 @@ int main(int argc, char * const argv[])
             }
 
             client->log();
-            sleep_dur = time_ns- iit::ecat::get_time_ns(CLOCK_MONOTONIC);
-            ts.tv_nsec=sleep_dur;
+            
+            sleep_ns = time_ns- iit::ecat::get_time_ns(CLOCK_MONOTONIC);
+
+            #if defined(PREEMPT_RT) || defined(__COBALT__)
+                // if less than threshold, print warning (only on rt threads)
+                if(sleep_ns < min_sleep_ns && th_hook->sched_policy == SCHED_FIFO)
+                {
+                    ++overruns;
+                    DPRINTF( "main process overruns: %d\n", n_overruns);
+                }
+            #endif
+
+            sleep_ns = std::max(min_sleep_ns, sleep_ns);
+            ts.tv_nsec=sleep_ns;
             while(clock_nanosleep(CLOCK_MONOTONIC, 0, &ts,NULL) == -1 && errno == EINTR)
             {}
         }

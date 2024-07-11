@@ -1,11 +1,11 @@
 #ifndef EC_IDDP_H
 #define EC_IDDP_H
 
-#include <thread_util.h>
+#include "utils/ec_thread.h"
 #include "mechanism/zmq/ec_zmq_cmd.h"
 #include "mechanism/common/ec_pdo.h"
 
-class EcIDDP : public EcZmqCmd,EcPdo<EcPipePdo>,Thread_hook
+class EcIDDP : public EcZmqCmd,EcPdo<EcPipePdo>,EcThread
 {
 public:
 

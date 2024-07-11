@@ -23,7 +23,7 @@
 static int loop_guard = 1;
 
 
-ThreadsMap threads;
+EcThreadsMap threads;
     
 static void test_sighandler(int signum) {
     

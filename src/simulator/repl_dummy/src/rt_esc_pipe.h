@@ -3,7 +3,7 @@
 
 #include <utils.h>
 #include <ipc_pipe.h>
-#include <thread_util.h>
+#include "utils/ec_thread.h"
 #include <pb_utils.h>
 #include <esc_info.h>
 
@@ -17,7 +17,7 @@
 #define POOL_SIZE   4096
 #define MAX_WRK     64
 
-class RtEscPipe : public Thread_hook {
+class RtEscPipe : public EcThread {
 
 private:
     
