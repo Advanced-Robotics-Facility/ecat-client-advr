@@ -226,6 +226,7 @@ int main(int argc, char * const argv[])
 
             time_elapsed_ms= (static_cast<float>((time_ns-start_time_ns))/1000000);
             sample_time_ms= (static_cast<float>(sleep_ns)/1000000);
+            DPRINTF("Time elapsed ms: [%f], Sample time ms: [%f]\n",time_elapsed_ms,sample_time_ms);
             
             // Rx "SENSE"
             //******************* Power Board Telemetry ********
