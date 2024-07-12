@@ -61,7 +61,8 @@ int main(int argc, char * const argv[])
         struct timespec ts= { 0, ec_cfg.period_ms*1000000}; //sample time
         
         uint64_t start_time_ns=0;
-        uint64_t time_ns=0,sleep_ns=0,min_sleep_ns=10000;;
+        uint64_t time_ns=0,sleep_ns=0,min_sleep_ns=10000;
+        int overruns = 0;
         
         float time_elapsed_ms,sample_time_ms;
         float hm_time_ms=ec_cfg.homing_time_sec*1000;
@@ -536,10 +537,10 @@ int main(int argc, char * const argv[])
 
             #if defined(PREEMPT_RT) || defined(__COBALT__)
                 // if less than threshold, print warning (only on rt threads)
-                if(sleep_ns < min_sleep_ns && th_hook->sched_policy == SCHED_FIFO)
+                if(sleep_ns < min_sleep_ns && ec_cfg.protocol=="iddp")
                 {
                     ++overruns;
-                    DPRINTF( "main process overruns: %d\n", n_overruns);
+                    DPRINTF( "main process overruns: %d\n", overruns);
                 }
             #endif
 
