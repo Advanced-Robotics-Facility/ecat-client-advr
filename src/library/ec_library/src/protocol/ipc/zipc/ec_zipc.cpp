@@ -11,21 +11,13 @@ EcZipc::EcZipc(std::string host_address,uint32_t host_port):
     schedpolicy = SCHED_OTHER;
     priority = sched_get_priority_max ( schedpolicy ) / 2;
     stacksize = 0; // not set stak size !!!! YOU COULD BECAME CRAZY !!!!!!!!!!!!
-
-    _thread_jointable=false;
 }
 
 EcZipc::~EcZipc()
 {
     iit::ecat::print_stat ( s_loop );
     
-    stop();
-    
-    if(_thread_jointable){
-        join();
-    }
-    
-    stop_logging();
+    stop_client();
     
     _client_alive=false;
 }
@@ -38,8 +30,16 @@ void EcZipc::th_init ( void * )
     tNow = tPre = start_time;
     loop_cnt = 0;
 
-    if(_logging){
-        start_logging();
+    if(!init_read_pdo()){
+        DPRINTF("Client thread not initialized!\n");
+        _client_alive=false;
+        stop_client();
+    }
+    else{
+        if(_logging){
+            start_logging();
+        }
+        DPRINTF("Client thread initialized!\n");
     }
 }
 
@@ -56,21 +56,15 @@ void EcZipc::start_client(uint32_t period_ms,bool logging)
     struct timespec ts;
     iit::ecat::us2ts(&ts, 1000*period_ms);
     // period.period is a timeval ... tv_usec 
-    period.period = { ts.tv_sec, ts.tv_nsec / 1000 };
+    period.period = { ts.tv_sec, ts.tv_nsec / 1000 };   
     
     _logging=logging;
-    
+
     SSI slave_info;
     if(retrieve_slaves_info(slave_info)){
         try{
             esc_factory(slave_info);
-            if(init_read_pdo()){
-                create(false); // non-real time thread
-                _thread_jointable=true;
-            }
-            else{
-                _client_alive=false;
-            }
+            create(false); // non-real time thread
         } catch ( std::exception &e ) {
             DPRINTF ( "Fatal Error: %s\n", e.what() );
             stop_client();
@@ -83,10 +77,7 @@ void EcZipc::stop_client()
 {        
     stop();
     
-     if(_thread_jointable){
-        join();
-        _thread_jointable=false;
-    }
+    join();
 
     stop_logging();
     

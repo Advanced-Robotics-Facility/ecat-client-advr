@@ -61,6 +61,7 @@ protected:
     ec_period_t     period;
 
     pthread_t       thread_id;
+    bool            joinable=false;
     // pthread attribute
     int             schedpolicy;
     int             priority;
@@ -101,7 +102,17 @@ inline void EcThread::stop() {
 
 inline void EcThread::join() {
     //pthread_cancel(thread_id);
-    pthread_join ( thread_id, 0 );
+    try{
+        if(joinable){
+            joinable=false;
+            int ret= pthread_join ( thread_id, 0 );
+            if(ret!=0){
+                DPRINTF( "Unsuccess join on thread, reason: %d\n",ret);
+            }
+        }
+    }catch(std::exception e){
+        DPRINTF( "Join error on thread, reason: %s\n",e.what());
+    }
 }
 
 inline void EcThread::create ( int rt=true, int cpu_nr=-1 ) {
@@ -152,6 +163,9 @@ inline void EcThread::create ( int rt=true, int cpu_nr=-1 ) {
     if ( ret != 0 ) {
         DPRINTF ( "%s %d %s", __FILE__, __LINE__, name.c_str() );
         handle_error_en(ret, "pthread_create");
+    }
+    else{
+        joinable=true;
     }
 
 }

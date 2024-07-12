@@ -21,21 +21,13 @@ EcIDDP::EcIDDP(std::string host_address,uint32_t host_port):
         priority = sched_get_priority_max ( schedpolicy ) / 2;
 #endif
     stacksize = 0; // not set stak size !!!! YOU COULD BECAME CRAZY !!!!!!!!!!!!
-    
-    _thread_jointable=false;
 }
 
 EcIDDP::~EcIDDP()
 {
     iit::ecat::print_stat ( s_loop );
     
-    stop();
-    
-    if(_thread_jointable){
-        join();
-    }
-    
-    stop_logging();
+    stop_client();
     
     _client_alive=false;
 }
@@ -48,8 +40,16 @@ void EcIDDP::th_init ( void * )
     tNow = tPre = start_time;
     loop_cnt = 0;
 
-    if(_logging){
-        start_logging();
+    if(!init_read_pdo()){
+        DPRINTF("Client thread not initialized!\n");
+        _client_alive=false;
+        stop_client();
+    }
+    else{
+        if(_logging){
+            start_logging();
+        }
+        DPRINTF("Client thread initialized!\n");
     }
 }
 
@@ -74,13 +74,7 @@ void EcIDDP::start_client(uint32_t period_ms,bool logging)
     if(retrieve_slaves_info(slave_info)){
         try{
             esc_factory(slave_info);
-            if(init_read_pdo()){
-                create(true); // real time thread
-                _thread_jointable=true;
-            }
-            else{
-                _client_alive=false;
-            }
+            create(true); // real time thread
         } catch ( std::exception &e ) {
             DPRINTF ( "Fatal Error: %s\n", e.what() );
             stop_client();
@@ -92,10 +86,7 @@ void EcIDDP::stop_client()
 {
     stop();
     
-    if(_thread_jointable){
-        join();
-        _thread_jointable=false;
-    }
+    join();
     
     stop_logging();
 
@@ -119,7 +110,7 @@ void EcIDDP::th_loop( void * )
         stop_client();
         return;
     }
-    
+
     // read motors, imu, ft, power board and others pdo information
     read_pdo();
     
