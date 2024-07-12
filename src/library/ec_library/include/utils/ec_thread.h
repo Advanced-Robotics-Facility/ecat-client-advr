@@ -224,7 +224,7 @@ inline void * periodic_thread ( EcThread_Ptr th_hook ) {
                 // if less than threshold, print warning (only on rt threads)
                 if(sleep_ns < min_sleep_ns && th_hook->schedpolicy == SCHED_FIFO){
                     ++overruns;
-                    DPRINTF( "Thread: %s overruns detected: %d\n",th_hook->name.c_str(),n_overruns);
+                    DPRINTF( "Thread: %s overruns detected: %d\n",th_hook->name.c_str(),overruns);
                 }
         #endif
 
