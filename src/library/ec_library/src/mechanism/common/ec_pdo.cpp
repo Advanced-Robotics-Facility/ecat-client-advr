@@ -139,13 +139,13 @@ void EcPdo<T>::read_pdo()
     
     read_pump_pdo();
 
-    _init_read_pdo=_init_rx_pdo;
-
     if(_init_read_pdo){
         pthread_mutex_lock(&_mutex_read);
         pthread_cond_broadcast(&read_cond);
         pthread_mutex_unlock(&_mutex_read);
     }
+
+    _init_read_pdo=_init_rx_pdo;
 }
 
 template < class T >
