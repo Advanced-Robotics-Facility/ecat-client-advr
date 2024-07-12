@@ -535,10 +535,6 @@ int main(int argc, char * const argv[])
             client->log();
 
             sleep_ns = static_cast<uint64_t>(time_ns- iit::ecat::get_time_ns(CLOCK_MONOTONIC));
-
-            
-            sleep_ns = time_ns- iit::ecat::get_time_ns(CLOCK_MONOTONIC);
-
             #if defined(PREEMPT_RT) || defined(__COBALT__)
                 // if less than threshold, print warning (only on rt threads)
                 if(sleep_ns < min_sleep_ns && ec_cfg.protocol=="iddp")
