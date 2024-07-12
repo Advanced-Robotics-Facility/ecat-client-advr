@@ -61,7 +61,8 @@ int main(int argc, char * const argv[])
         struct timespec ts= { 0, ec_cfg.period_ms*1000000}; //sample time
         
         uint64_t start_time_ns=0;
-        uint64_t time_ns=0,sleep_ns=0,min_sleep_ns=10000;
+        uint64_t time_ns=0;
+        int64_t sleep_ns=0,min_sleep_ns=10000;
         int overruns = 0;
         
         float time_elapsed_ms,sample_time_ms;
@@ -532,6 +533,9 @@ int main(int argc, char * const argv[])
             }
 
             client->log();
+
+            sleep_ns = static_cast<uint64_t>(time_ns- iit::ecat::get_time_ns(CLOCK_MONOTONIC));
+
             
             sleep_ns = time_ns- iit::ecat::get_time_ns(CLOCK_MONOTONIC);
 

@@ -178,8 +178,8 @@ inline void EcThread::create ( int rt=true, int cpu_nr=-1 ) {
 inline void * periodic_thread ( EcThread_Ptr th_hook ) {
     
     int                 ret = 0;
-    uint64_t            time_ns=0,start_time_ns=0,sleep_ns=0;
-    uint64_t            min_sleep_ns=10000;
+    uint64_t            time_ns=0,start_time_ns=0;
+    int64_t            sleep_ns=0,min_sleep_ns=10000;
     struct timespec     periodtp;
     int overruns = 0;
         
@@ -231,7 +231,7 @@ inline void * periodic_thread ( EcThread_Ptr th_hook ) {
         // thread specific loop
         th_hook->th_loop ( 0 );
 
-        sleep_ns = time_ns- iit::ecat::get_time_ns(CLOCK_MONOTONIC);
+        sleep_ns = static_cast<uint64_t>(time_ns- iit::ecat::get_time_ns(CLOCK_MONOTONIC));
 
 
         #if defined(PREEMPT_RT) || defined(__COBALT__)
