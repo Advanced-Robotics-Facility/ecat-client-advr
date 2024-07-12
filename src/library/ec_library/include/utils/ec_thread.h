@@ -189,7 +189,7 @@ inline void * periodic_thread ( EcThread_Ptr th_hook ) {
 #ifdef __COBALT__
     // PTHREAD_WARNSW, when set, cause the signal SIGXCPU to be sent to the
     // current thread, whenever it involontary switches to secondary mode;
-    if(th_hook->sched_policy == SCHED_FIFO){
+    if(th_hook->schedpolicy == SCHED_FIFO){
         ret = pthread_setmode_np ( 0, PTHREAD_WARNSW, 0 );
         if ( ret != 0 ) {
             DPRINTF ( "%s : pthread_set_mode_np() return code %d\n",
@@ -222,7 +222,7 @@ inline void * periodic_thread ( EcThread_Ptr th_hook ) {
 
         #if defined(PREEMPT_RT) || defined(__COBALT__)
                 // if less than threshold, print warning (only on rt threads)
-                if(sleep_ns < min_sleep_ns && th_hook->sched_policy == SCHED_FIFO){
+                if(sleep_ns < min_sleep_ns && th_hook->schedpolicy == SCHED_FIFO){
                     ++overruns;
                     DPRINTF( "Thread: %s overruns detected: %d\n",th_hook->name.c_str(),n_overruns);
                 }
@@ -265,7 +265,7 @@ inline void * non_periodic_thread ( EcThread_Ptr th_hook ) {
 #ifdef __COBALT__
     // PTHREAD_WARNSW, when set, cause the signal SIGXCPU to be sent to the
     // current thread, whenever it involontary switches to secondary mode;
-    if(th_hook->sched_policy == SCHED_FIFO){
+    if(th_hook->schedpolicy == SCHED_FIFO){
         ret = pthread_setmode_np ( 0, PTHREAD_WARNSW, 0 );
         if ( ret != 0 ) {
             DPRINTF ( "%s : pthread_set_mode_np() return code %d\n",
