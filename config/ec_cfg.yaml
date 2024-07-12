@@ -8,7 +8,7 @@ network:
   timeout: 1000
 
 period_ms: 1
-logging: true
+logging: false
 auto-start: true
 
 control:
