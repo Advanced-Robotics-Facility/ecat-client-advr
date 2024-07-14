@@ -50,6 +50,7 @@ void EcIDDP::th_init ( void * )
             start_logging();
         }
         DPRINTF("Client thread initialized!\n");
+        sync();
     }
 }
 
@@ -67,7 +68,7 @@ void EcIDDP::start_client(uint32_t period_ms,bool logging)
     iit::ecat::us2ts(&ts, 1000*period_ms);
     // period.period is a timeval ... tv_usec 
     period.period = { ts.tv_sec, ts.tv_nsec / 1000 };   
-    
+
     _logging=logging;
 
     SSI slave_info;
@@ -110,7 +111,7 @@ void EcIDDP::th_loop( void * )
         stop_client();
         return;
     }
-
+    
     // read motors, imu, ft, power board and others pdo information
     read_pdo();
     

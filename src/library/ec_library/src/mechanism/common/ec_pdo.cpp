@@ -139,21 +139,26 @@ void EcPdo<T>::read_pdo()
     
     read_pump_pdo();
 
-    if(_init_read_pdo){
-        pthread_mutex_lock(&_mutex_read);
-        pthread_cond_broadcast(&read_cond);
-        pthread_mutex_unlock(&_mutex_read);
-    }
-
     _init_read_pdo=_init_rx_pdo;
 }
 
 template < class T >
 void EcPdo<T>::write_pdo()
 {
-    pthread_mutex_lock(&_mutex_write);
-    pthread_cond_broadcast(&write_cond);
-    pthread_mutex_unlock(&_mutex_write);
+    int count=0;
+    struct timespec delay = { 0, 10000UL }; //10us
+
+    // wait for sync write.
+    while(count < 10){ // 10 times.
+        if(_motors_references_queue.read_available() > 0 ||
+           _valves_references_queue.read_available() > 0 ||
+           _pumps_references_queue.read_available()  > 0){
+                break;
+        }
+
+        count++;
+        nanosleep(&delay, NULL);
+    }
 
     write_motor_pdo();
     
@@ -315,6 +320,7 @@ void EcPdo<T>::read_valve_pdo()
             } while ( nbytes > 0);
             
             _internal_valve_status_map[id]=valve_pdo->rx_pdo;
+            //std::get<2>(_internal_valve_status_map[id])=std::get<0>(_internal_valves_references[id]);
             //////////////////////////////////////////////////////////////
         }
         catch ( std::out_of_range ) {};   
@@ -335,7 +341,7 @@ void EcPdo<T>::write_valve_pdo()
             //write 
             valve_pdo->write();
         }
-    }   
+    } 
 }
 
 template < class T >

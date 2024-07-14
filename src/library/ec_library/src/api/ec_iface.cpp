@@ -80,10 +80,67 @@ void EcIface::test_client(SSI slave_info)
 
 bool EcIface::read()
 {
-    //read
-    pthread_mutex_lock(&_mutex_read);
-    pthread_cond_wait(&read_cond, &_mutex_read);
-    pthread_mutex_unlock(&_mutex_read);
+
+    int count=0;
+    struct timespec delay = { 0, 10000UL }; //10us
+    
+    while(count < 10){ // 10 times.
+
+        bool read_all = true;
+
+        if(!_motor_status_map.empty()){
+            if(_motor_status_queue.read_available() > 0){
+                read_all &= true;
+            }
+            else{
+                read_all &= false;
+            }
+        }
+
+        if(!_ft_status_map.empty()){
+            if(_ft_status_queue.read_available() > 0){
+                read_all &= true;
+            }
+            else{
+                read_all &= false;
+            }
+        }
+
+        if(!_imu_status_map.empty()){
+            if(_imu_status_queue.read_available() > 0){
+                read_all &= true;
+            }
+            else{
+                read_all &= false;
+            }
+        }
+
+        if(!_valve_status_map.empty()){
+            if(_valve_status_queue.read_available() > 0){
+                read_all &= true;
+            }
+            else{
+                read_all &= false;
+            }
+        }
+
+        if(!_pump_status_map.empty()){
+            if(_pump_status_queue.read_available() > 0){
+                read_all &= true;
+            }
+            else{
+                read_all &= false;
+            }
+        }
+
+        if(read_all){
+            break;
+        }
+
+        count++;
+
+        nanosleep(&delay, NULL);
+    }
 
     while(_motor_status_queue.pop(_motor_status_map))
     {}
@@ -109,10 +166,6 @@ bool EcIface::write()
     _valves_references_queue.push(_valves_references);
     _pumps_references_queue.push(_pumps_references);
 
-    pthread_mutex_lock(&_mutex_write);
-    pthread_cond_wait(&write_cond, &_mutex_write);
-    pthread_mutex_unlock(&_mutex_write);
-
     return true;
 }
 
@@ -134,7 +187,7 @@ void EcIface::sync_read(void) {
     pthread_mutex_unlock(&_mutex_read);
 }
 
-void EcIface::sync_write(void) {
+void EcIface::sync(void) {
     
     pthread_mutex_lock(&_mutex_write);
 

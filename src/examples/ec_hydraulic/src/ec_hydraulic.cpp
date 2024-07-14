@@ -215,18 +215,17 @@ int main(int argc, char * const argv[])
             assert(set_main_sched_policy(10) >= 0);
         }
 
+        client->sync();
         start_time_ns= iit::ecat::get_time_ns(CLOCK_MONOTONIC);
         time_ns=start_time_ns;
         
         while (run && client->is_client_alive())
         {
-            if(!client->read()){
-                break;
-            }
+            client->read();
 
             time_elapsed_ms= (static_cast<float>((time_ns-start_time_ns))/1000000);
             sample_time_ms= (static_cast<float>(sleep_ns)/1000000);
-            DPRINTF("Time elapsed ms: [%f], Sample time ms: [%f]\n",time_elapsed_ms,sample_time_ms);
+            //DPRINTF("Main Time elapsed ms: [%f], Sample time ms: [%f]\n",time_elapsed_ms,sample_time_ms);
             
             // Rx "SENSE"
             //******************* Power Board Telemetry ********
@@ -528,25 +527,24 @@ int main(int argc, char * const argv[])
                     tau=alpha=0;
                 }
             } 
-            
-            if(!client->write()){
-                break;
-            }
 
+            client->write();
             client->log();
+        
+            sleep_ns = static_cast<uint64_t>(time_ns-iit::ecat::get_time_ns(CLOCK_MONOTONIC));
 
-            sleep_ns = static_cast<uint64_t>(time_ns- iit::ecat::get_time_ns(CLOCK_MONOTONIC));
             #if defined(PREEMPT_RT) || defined(__COBALT__)
                 // if less than threshold, print warning (only on rt threads)
-                if(sleep_ns < min_sleep_ns && ec_cfg.protocol=="iddp")
-                {
+                if(sleep_ns < min_sleep_ns && ec_cfg.protocol=="iddp"){
                     ++overruns;
                     DPRINTF( "main process overruns: %d\n", overruns);
                 }
             #endif
 
             sleep_ns = std::max(min_sleep_ns, sleep_ns);
+            //sleep_ns = ts.tv_nsec;
             ts.tv_nsec=sleep_ns;
+
             while(clock_nanosleep(CLOCK_MONOTONIC, 0, &ts,NULL) == -1 && errno == EINTR)
             {}
         }

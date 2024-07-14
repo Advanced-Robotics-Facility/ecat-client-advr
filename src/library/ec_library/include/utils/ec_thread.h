@@ -227,6 +227,7 @@ inline void * periodic_thread ( EcThread_Ptr th_hook ) {
         float time_elapsed_ms= (static_cast<float>((time_ns-start_time_ns))/1000000);   
         time_ns += th_hook->period.period.tv_usec * 1000ULL;
         float sample_time_ms= (static_cast<float>(sleep_ns)/1000000);
+        //DPRINTF("Thread Time elapsed ms: [%f], Sample time ms: [%f]\n",time_elapsed_ms,sample_time_ms);
 
         // thread specific loop
         th_hook->th_loop ( 0 );
