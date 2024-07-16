@@ -125,8 +125,10 @@ void EcIDDP::th_loop( void * )
     pthread_cond_timedwait(&_update_cond, &_mutex_update, &ts);
     pthread_mutex_unlock(&_mutex_update);
 
+    // read motors, imu, ft, power board and others pdo information
     read_pdo();
 
+    // write motors and others pdo
     write_pdo();
 
 }
