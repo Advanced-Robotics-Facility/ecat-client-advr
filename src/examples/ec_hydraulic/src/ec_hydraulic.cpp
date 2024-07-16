@@ -214,8 +214,7 @@ int main(int argc, char * const argv[])
             main_common (&argc, (char*const**)&argv, 0);
             assert(set_main_sched_policy(10) >= 0);
         }
-
-        client->sync();
+        
         start_time_ns= iit::ecat::get_time_ns(CLOCK_MONOTONIC);
         time_ns=start_time_ns;
         

@@ -107,9 +107,16 @@ bool EcPdo<T>::init_read_pdo()
     struct timespec delay = { 0, 10000000UL }; //10ms
     int count=0;
     while(!_init_read_pdo && count<5){
+
+        _init_rx_pdo=true; // start all bits from true
         read_pdo(); // read for 5 times.
-        count++;
-        nanosleep(&delay, NULL);
+        _init_read_pdo=_init_rx_pdo;
+
+        if(!_init_read_pdo){
+            count++;
+            nanosleep(&delay, NULL);
+        }
+
     }
     if(!_init_read_pdo){
         DPRINTF("Fatal Error on read PDO: Id [%d] is not initialized\n",_id_init_err_read);
@@ -123,10 +130,6 @@ bool EcPdo<T>::init_read_pdo()
 template < class T >
 void EcPdo<T>::read_pdo()
 {
-    if(!_init_read_pdo){
-        _init_rx_pdo=true; // start all bits from true
-    }
-
     read_motor_pdo();
     
     read_ft_pdo();
@@ -138,8 +141,6 @@ void EcPdo<T>::read_pdo()
     read_valve_pdo();
     
     read_pump_pdo();
-
-    _init_read_pdo=_init_rx_pdo;
 }
 
 template < class T >
