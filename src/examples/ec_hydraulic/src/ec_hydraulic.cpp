@@ -217,7 +217,7 @@ int main(int argc, char * const argv[])
         
         start_time_ns= iit::ecat::get_time_ns(CLOCK_MONOTONIC);
         time_ns=start_time_ns;
-        
+    
         while (run && client->is_client_alive())
         {
             client->read();
@@ -360,6 +360,7 @@ int main(int argc, char * const argv[])
                 for ( const auto &[esc_id, curr_ref] : valves_set_ref){
                     std::get<0>(valves_ref[esc_id]) = curr_ref;
                 }
+                //DPRINTF("CURRENT VALUE ms: [%f], CURRENT Feednback: [%f]\n",time_elapsed_ms,pressure1);
                 client->set_valves_references(RefFlags::FLAG_MULTI_REF, valves_ref);
                 // ************************* SEND ALWAYS REFERENCES***********************************//
             }

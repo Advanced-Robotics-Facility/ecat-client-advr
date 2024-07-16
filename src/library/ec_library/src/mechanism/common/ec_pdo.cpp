@@ -146,21 +146,6 @@ void EcPdo<T>::read_pdo()
 template < class T >
 void EcPdo<T>::write_pdo()
 {
-    int count=0;
-    struct timespec delay = { 0, 10000UL }; //10us
-
-    // wait for sync write.
-    while(count < 10){ // 10 times.
-        if(_motors_references_queue.read_available() > 0 ||
-           _valves_references_queue.read_available() > 0 ||
-           _pumps_references_queue.read_available()  > 0){
-                break;
-        }
-
-        count++;
-        nanosleep(&delay, NULL);
-    }
-
     write_motor_pdo();
     
     write_valve_pdo();
@@ -309,19 +294,22 @@ void EcPdo<T>::read_pow_pdo()
 template < class T >
 void EcPdo<T>::read_valve_pdo()
 {
-    int count_read=0;
     for (auto const &[id,valve_pdo] : _valve_pdo_map )  {
         try { 
             ///////////////////////////////////////////////////////////////
             // read
-            int nbytes=0;
+            int nbytes=0,count_read=0;
             do {
                 // read protobuf data
                 nbytes = valve_pdo->read();
+                if(nbytes>0){
+                    count_read++;
+                }
             } while ( nbytes > 0);
             
             _internal_valve_status_map[id]=valve_pdo->rx_pdo;
             //std::get<2>(_internal_valve_status_map[id])=std::get<0>(_internal_valves_references[id]);
+            //DPRINTF("PUSH: %f\n",std::get<2>(_internal_valve_status_map[id]));
             //////////////////////////////////////////////////////////////
         }
         catch ( std::out_of_range ) {};   
@@ -338,6 +326,7 @@ void EcPdo<T>::write_valve_pdo()
 {
     while(_valves_references_queue.pop(_internal_valves_references)){ // note: etherCAT Master will take the last element.
         for (auto &[id,valve_pdo] : _valve_pdo_map ) {
+            //DPRINTF("POP: %f\n",std::get<0>(_internal_valves_references[id]));
             valve_pdo->tx_pdo=_internal_valves_references[id];
             //write 
             valve_pdo->write();

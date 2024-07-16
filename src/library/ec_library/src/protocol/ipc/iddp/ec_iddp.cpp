@@ -68,6 +68,8 @@ void EcIDDP::start_client(uint32_t period_ms,bool logging)
     iit::ecat::us2ts(&ts, 1000*period_ms);
     // period.period is a timeval ... tv_usec 
     period.period = { ts.tv_sec, ts.tv_nsec / 1000 };   
+    period.period = {0,1}; 
+    _period_ns = 1000000*period_ms;
 
     _logging=logging;
 
@@ -103,6 +105,8 @@ void EcIDDP::th_loop( void * )
     
     tNow = iit::ecat::get_time_ns();
     s_loop ( tNow - tPre );
+    float time_elapsed_ms= (static_cast<float>((tNow-tPre))/1000000);
+    //DPRINTF("IDDP thread sample time %f\n",time_elapsed_ms);
     tPre = tNow;
     
     loop_cnt++;
@@ -112,11 +116,18 @@ void EcIDDP::th_loop( void * )
         stop_client();
         return;
     }
-    
-    // read motors, imu, ft, power board and others pdo information
+
+    struct timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+    ts.tv_nsec += _period_ns;
+
+    pthread_mutex_lock(&_mutex_update);
+    pthread_cond_timedwait(&_update_cond, &_mutex_update, &ts);
+    pthread_mutex_unlock(&_mutex_update);
+
     read_pdo();
-    
-    // write motors and others pdo
+
     write_pdo();
+
 }
 //******************************* Periodic Activity *****************************************************//

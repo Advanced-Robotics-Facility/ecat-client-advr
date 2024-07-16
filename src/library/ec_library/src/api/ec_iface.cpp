@@ -15,11 +15,11 @@ EcIface::EcIface()
     _pump_ref_flags=RefFlags::FLAG_NONE;
     _pumps_references.clear();
     
-    pthread_mutex_init(&_mutex_read, NULL);
-    pthread_cond_init(&read_cond,NULL);
+    pthread_mutex_init(&_mutex_update, NULL);
+    pthread_cond_init(&_update_cond,NULL);
 
-    pthread_mutex_init(&_mutex_write, NULL);
-    pthread_cond_init(&write_cond,NULL);
+    pthread_mutex_init(&_mutex_client_thread, NULL);
+    pthread_cond_init(&_client_thread_cond,NULL);
     
     _consoleLog=spdlog::get("console");
     if(!_consoleLog)
@@ -35,10 +35,10 @@ EcIface::EcIface()
 
 EcIface::~EcIface()
 {
-    pthread_mutex_destroy(&_mutex_read);
-    pthread_cond_destroy(&read_cond);
-    pthread_mutex_destroy(&_mutex_write);
-    pthread_cond_destroy(&write_cond);
+    pthread_mutex_destroy(&_mutex_update);
+    pthread_cond_destroy(&_update_cond);
+    pthread_mutex_destroy(&_mutex_client_thread);
+    pthread_cond_destroy(&_client_thread_cond);
     _consoleLog->info("EtherCAT Client closed");
     _consoleLog.reset();
 }
@@ -80,6 +80,9 @@ void EcIface::test_client(SSI slave_info)
 
 bool EcIface::read()
 {
+    pthread_mutex_lock(&_mutex_update);
+    pthread_cond_signal(&_update_cond);
+    pthread_mutex_unlock(&_mutex_update);
 
     int count=0;
     struct timespec delay = { 0, 10000UL }; //10us
@@ -142,6 +145,8 @@ bool EcIface::read()
         nanosleep(&delay, NULL);
     }
 
+    //PRINTF("READ COUNT %d\n",count);
+
     while(_motor_status_queue.pop(_motor_status_map))
     {}
 
@@ -166,43 +171,29 @@ bool EcIface::write()
     _valves_references_queue.push(_valves_references);
     _pumps_references_queue.push(_pumps_references);
 
+    pthread_mutex_lock(&_mutex_update);
+    pthread_cond_signal(&_update_cond);
+    pthread_mutex_unlock(&_mutex_update);
+
     return true;
 }
 
-void EcIface::sync_read(void) {
+void EcIface::sync_client_thread(void) {
     
-    pthread_mutex_lock(&_mutex_read);
+    pthread_mutex_lock(&_mutex_client_thread);
 
-    if(_waiting_read_counter<2){
-        _waiting_read_counter++;
+    if(_waiting_client_counter<2){
+        _waiting_client_counter++;
     }
 
-    if (_waiting_read_counter == 2) {
-        pthread_cond_broadcast(&read_cond);
-        _waiting_read_counter=0;
+    if (_waiting_client_counter == 2) {
+        pthread_cond_broadcast(&_client_thread_cond);
+        _waiting_client_counter=0;
     } else {
-        pthread_cond_wait(&read_cond, &_mutex_read);
+        pthread_cond_wait(&_client_thread_cond, &_mutex_client_thread);
     }
 
-    pthread_mutex_unlock(&_mutex_read);
-}
-
-void EcIface::sync(void) {
-    
-    pthread_mutex_lock(&_mutex_write);
-
-    if(_waiting_write_counter<2){
-        _waiting_write_counter++;
-    }
-
-    if (_waiting_write_counter == 2) {
-        pthread_cond_broadcast(&write_cond);
-        _waiting_write_counter=0;
-    } else {
-        pthread_cond_wait(&write_cond, &_mutex_write);
-    }
-
-    pthread_mutex_unlock(&_mutex_write);
+    pthread_mutex_unlock(&_mutex_client_thread);
 }
 
 

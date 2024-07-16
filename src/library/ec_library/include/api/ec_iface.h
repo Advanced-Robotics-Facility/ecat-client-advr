@@ -32,7 +32,6 @@ public:
     // EtherCAT Client ADVR Facilty update getters/setters
     bool read(void);
     bool write(void);
-    void sync();
     
     // EtherCAT Client ADVR Facilty getters
     void get_motors_status(MotorStatusMap &motor_status_map);
@@ -75,6 +74,8 @@ protected:
     
     bool _client_alive;
     bool _logging;
+    uint64_t _period_ns;
+
     ClientStatus _client_status;
 
     SSI _fake_slave_info;
@@ -110,11 +111,11 @@ protected:
     PumpReferenceMap _pumps_references,_internal_pumps_references;
     spsc_queue<PumpReferenceMap,fixed_sized<true>> _pumps_references_queue{128};
     
-    pthread_mutex_t _mutex_read,_mutex_write;
-    pthread_cond_t read_cond,write_cond;
-    unsigned int _waiting_read_counter=0,_waiting_write_counter=0;
+    pthread_mutex_t _mutex_update,_mutex_client_thread;
+    pthread_cond_t _update_cond,_client_thread_cond;
+    unsigned int _waiting_client_counter=0;
 
-    void sync_read();
+    void sync_client_thread();
 
 private:
     template <typename T>
