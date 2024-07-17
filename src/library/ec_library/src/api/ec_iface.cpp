@@ -86,54 +86,6 @@ bool EcIface::read()
     pthread_cond_signal(&_update_cond);
     pthread_mutex_unlock(&_mutex_update);
 
-    int count=0;
-    struct timespec delay = { 0, 10000UL }; //10us
-    
-    while(count < 1000){ // 10 times.
-
-        bool read_all = true;
-
-        if(!_motor_status_map.empty()){
-            if(!_motor_status_queue.read_available() > 0){
-                read_all &= false;
-            }
-        }
-
-        if(!_ft_status_map.empty()){
-            if(!_ft_status_queue.read_available() > 0){
-                read_all &= false;
-            }
-        }
-
-        if(!_imu_status_map.empty()){
-            if(!_imu_status_queue.read_available() > 0){
-                read_all &= false;
-            }
-        }
-
-        if(!_valve_status_map.empty()){
-            if(!_valve_status_queue.read_available() > 0){
-                read_all &= false;
-            }
-
-        }
-
-        if(!_pump_status_map.empty()){
-            if(!_pump_status_queue.read_available() > 0){
-                read_all &= false;
-            }
-        }
-
-        if(read_all){
-            break;
-        }
-
-        count++;
-
-        nanosleep(&delay, NULL);
-    }
-
-    DPRINTF("READ COUNT %d\n",count);
 
     while(_motor_status_queue.pop(_motor_status_map))
     {}

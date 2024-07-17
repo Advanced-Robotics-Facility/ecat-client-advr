@@ -36,10 +36,6 @@ EcIDDP::~EcIDDP()
 
 void EcIDDP::th_init ( void * )
 {
-    start_time = iit::ecat::get_time_ns();
-    tNow = tPre = start_time;
-    loop_cnt = 0;
-
     if(!init_read_pdo()){
         DPRINTF("Client thread not initialized!\n");
         _client_alive=false;
@@ -51,6 +47,10 @@ void EcIDDP::th_init ( void * )
         }
         DPRINTF("Client thread initialized!\n");
         sync_client_thread();
+        start_time = iit::ecat::get_time_ns(CLOCK_MONOTONIC);
+	tNow = tPre = start_time;
+	loop_cnt = 0;
+
     }
 }
 
