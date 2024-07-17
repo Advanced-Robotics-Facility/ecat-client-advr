@@ -48,9 +48,8 @@ void EcIDDP::th_init ( void * )
         DPRINTF("Client thread initialized!\n");
         sync_client_thread();
         start_time = iit::ecat::get_time_ns(CLOCK_MONOTONIC);
-	tNow = tPre = start_time;
-	loop_cnt = 0;
-
+	    tNow = tPre = start_time;
+	    loop_cnt = 0;
     }
 }
 
@@ -103,7 +102,7 @@ void EcIDDP::stop_client()
 void EcIDDP::th_loop( void * )
 {
     
-    tNow = iit::ecat::get_time_ns();
+    tNow = iit::ecat::get_time_ns(CLOCK_MONOTONIC);
     s_loop ( tNow - tPre );
     float time_elapsed_ms= (static_cast<float>((tNow-tPre))/1000000);
     DPRINTF("IDDP thread sample time %f\n",time_elapsed_ms);
@@ -117,7 +116,7 @@ void EcIDDP::th_loop( void * )
     }
 
     struct timespec ts;
-    clock_gettime(CLOCK_REALTIME, &ts);
+    clock_gettime(CLOCK_MONOTONIC, &ts);
     ts.tv_nsec += _period_ns;
 
     pthread_mutex_lock(&_mutex_update);
@@ -128,8 +127,6 @@ void EcIDDP::th_loop( void * )
     update_count=std::max(update_count,0);
     pthread_mutex_unlock(&_mutex_update);
     
-    DPRINTF("update count %d",update_count);
-	
     // read motors, imu, ft, power board and others pdo information
     read_pdo();
 

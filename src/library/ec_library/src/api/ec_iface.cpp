@@ -16,11 +16,12 @@ EcIface::EcIface()
     _pumps_references.clear();
     
     pthread_mutex_init(&_mutex_update, NULL);
-    pthread_cond_init(&_update_cond,NULL);
+    pthread_condattr_setclock(&update_attr, CLOCK_MONOTONIC);
+    pthread_cond_init(&_update_cond, &update_attr);
 
     pthread_mutex_init(&_mutex_client_thread, NULL);
     pthread_cond_init(&_client_thread_cond,NULL);
-    
+
     _consoleLog=spdlog::get("console");
     if(!_consoleLog)
     {
@@ -39,6 +40,7 @@ EcIface::~EcIface()
     pthread_cond_destroy(&_update_cond);
     pthread_mutex_destroy(&_mutex_client_thread);
     pthread_cond_destroy(&_client_thread_cond);
+    
     _consoleLog->info("EtherCAT Client closed");
     _consoleLog.reset();
 }

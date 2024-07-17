@@ -113,6 +113,7 @@ protected:
     
     pthread_mutex_t _mutex_update,_mutex_client_thread;
     pthread_cond_t _update_cond,_client_thread_cond;
+    pthread_condattr_t update_attr;
     int update_count=0;
     unsigned int _waiting_client_counter=0;
     
