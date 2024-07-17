@@ -81,57 +81,45 @@ void EcIface::test_client(SSI slave_info)
 bool EcIface::read()
 {
     pthread_mutex_lock(&_mutex_update);
+    update_count++;
+    update_count=std::min(update_count,10);
     pthread_cond_signal(&_update_cond);
     pthread_mutex_unlock(&_mutex_update);
 
     int count=0;
     struct timespec delay = { 0, 10000UL }; //10us
     
-    while(count < 10){ // 10 times.
+    while(count < 1000){ // 10 times.
 
         bool read_all = true;
 
         if(!_motor_status_map.empty()){
-            if(_motor_status_queue.read_available() > 0){
-                read_all &= true;
-            }
-            else{
+            if(!_motor_status_queue.read_available() > 0){
                 read_all &= false;
             }
         }
 
         if(!_ft_status_map.empty()){
-            if(_ft_status_queue.read_available() > 0){
-                read_all &= true;
-            }
-            else{
+            if(!_ft_status_queue.read_available() > 0){
                 read_all &= false;
             }
         }
 
         if(!_imu_status_map.empty()){
-            if(_imu_status_queue.read_available() > 0){
-                read_all &= true;
-            }
-            else{
+            if(!_imu_status_queue.read_available() > 0){
                 read_all &= false;
             }
         }
 
         if(!_valve_status_map.empty()){
-            if(_valve_status_queue.read_available() > 0){
-                read_all &= true;
-            }
-            else{
+            if(!_valve_status_queue.read_available() > 0){
                 read_all &= false;
             }
+
         }
 
         if(!_pump_status_map.empty()){
-            if(_pump_status_queue.read_available() > 0){
-                read_all &= true;
-            }
-            else{
+            if(!_pump_status_queue.read_available() > 0){
                 read_all &= false;
             }
         }
@@ -145,7 +133,7 @@ bool EcIface::read()
         nanosleep(&delay, NULL);
     }
 
-    //PRINTF("READ COUNT %d\n",count);
+    DPRINTF("READ COUNT %d\n",count);
 
     while(_motor_status_queue.pop(_motor_status_map))
     {}
@@ -172,6 +160,8 @@ bool EcIface::write()
     _pumps_references_queue.push(_pumps_references);
 
     pthread_mutex_lock(&_mutex_update);
+    update_count++;
+    update_count=std::min(update_count,10);
     pthread_cond_signal(&_update_cond);
     pthread_mutex_unlock(&_mutex_update);
 

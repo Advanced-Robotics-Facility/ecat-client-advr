@@ -50,7 +50,7 @@ void EcIDDP::th_init ( void * )
             start_logging();
         }
         DPRINTF("Client thread initialized!\n");
-        sync();
+        sync_client_thread();
     }
 }
 
@@ -78,7 +78,7 @@ void EcIDDP::start_client(uint32_t period_ms,bool logging)
         try{
             esc_factory(slave_info);
             create(true); // real time thread
-            sync();
+            sync_client_thread();
         } catch ( std::exception &e ) {
             DPRINTF ( "Fatal Error: %s\n", e.what() );
             stop_client();
@@ -106,13 +106,12 @@ void EcIDDP::th_loop( void * )
     tNow = iit::ecat::get_time_ns();
     s_loop ( tNow - tPre );
     float time_elapsed_ms= (static_cast<float>((tNow-tPre))/1000000);
-    //DPRINTF("IDDP thread sample time %f\n",time_elapsed_ms);
+    DPRINTF("IDDP thread sample time %f\n",time_elapsed_ms);
     tPre = tNow;
     
     loop_cnt++;
 
-    if(!_client_alive)
-    {
+    if(!_client_alive){
         stop_client();
         return;
     }
@@ -122,9 +121,15 @@ void EcIDDP::th_loop( void * )
     ts.tv_nsec += _period_ns;
 
     pthread_mutex_lock(&_mutex_update);
-    pthread_cond_timedwait(&_update_cond, &_mutex_update, &ts);
+    if(update_count==0){
+       pthread_cond_timedwait(&_update_cond, &_mutex_update, &ts);
+    }
+    update_count--;
+    update_count=std::max(update_count,0);
     pthread_mutex_unlock(&_mutex_update);
-
+    
+    DPRINTF("update count %d",update_count);
+	
     // read motors, imu, ft, power board and others pdo information
     read_pdo();
 
