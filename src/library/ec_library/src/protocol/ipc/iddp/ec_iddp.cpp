@@ -105,7 +105,7 @@ void EcIDDP::th_loop( void * )
     tNow = iit::ecat::get_time_ns(CLOCK_MONOTONIC);
     s_loop ( tNow - tPre );
     float sample_elapsed_ms= (static_cast<float>((tNow-tPre))/1000000);
-    DPRINTF("IDDP thread sample time %f\n",sample_elapsed_ms);
+    //DPRINTF("IDDP thread sample time %f\n",sample_elapsed_ms);
     tPre = tNow;
     
     loop_cnt++;
