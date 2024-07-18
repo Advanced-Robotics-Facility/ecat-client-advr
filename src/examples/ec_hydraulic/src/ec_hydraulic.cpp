@@ -124,6 +124,7 @@ int main(int argc, char * const argv[])
         MotorReferenceMap motors_ref;
         
         // memory allocation
+        client->read();
         client->get_pow_status(pow_status_map);
         client->get_imu_status(imu_status_map);
         client->get_pump_status(pump_status_map);
