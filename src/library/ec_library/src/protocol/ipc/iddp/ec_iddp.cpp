@@ -104,8 +104,8 @@ void EcIDDP::th_loop( void * )
     
     tNow = iit::ecat::get_time_ns(CLOCK_MONOTONIC);
     s_loop ( tNow - tPre );
-    float time_elapsed_ms= (static_cast<float>((tNow-tPre))/1000000);
-    DPRINTF("IDDP thread sample time %f\n",time_elapsed_ms);
+    float sample_elapsed_ms= (static_cast<float>((tNow-tPre))/1000000);
+    DPRINTF("IDDP thread sample time %f\n",sample_elapsed_ms);
     tPre = tNow;
     
     loop_cnt++;
@@ -120,11 +120,11 @@ void EcIDDP::th_loop( void * )
     ts.tv_nsec += _period_ns;
 
     pthread_mutex_lock(&_mutex_update);
-    if(update_count==0){
+    if(_update_count==0){
        pthread_cond_timedwait(&_update_cond, &_mutex_update, &ts);
     }
-    update_count--;
-    update_count=std::max(update_count,0);
+    _update_count--;
+    _update_count=std::max(_update_count,0);
     pthread_mutex_unlock(&_mutex_update);
     
     // read motors, imu, ft, power board and others pdo information

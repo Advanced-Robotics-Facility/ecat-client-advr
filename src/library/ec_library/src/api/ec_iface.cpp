@@ -16,8 +16,8 @@ EcIface::EcIface()
     _pumps_references.clear();
     
     pthread_mutex_init(&_mutex_update, NULL);
-    pthread_condattr_setclock(&update_attr, CLOCK_MONOTONIC);
-    pthread_cond_init(&_update_cond, &update_attr);
+    pthread_condattr_setclock(&_update_attr, CLOCK_MONOTONIC);
+    pthread_cond_init(&_update_cond, &_update_attr);
 
     pthread_mutex_init(&_mutex_client_thread, NULL);
     pthread_cond_init(&_client_thread_cond,NULL);
@@ -83,8 +83,8 @@ void EcIface::test_client(SSI slave_info)
 bool EcIface::read()
 {
     pthread_mutex_lock(&_mutex_update);
-    update_count++;
-    update_count=std::min(update_count,10);
+    _update_count++;
+    _update_count=std::min(_update_count,10);
     pthread_cond_signal(&_update_cond);
     pthread_mutex_unlock(&_mutex_update);
 
@@ -114,8 +114,8 @@ bool EcIface::write()
     _pumps_references_queue.push(_pumps_references);
 
     pthread_mutex_lock(&_mutex_update);
-    update_count++;
-    update_count=std::min(update_count,10);
+    _update_count++;
+    _update_count=std::min(_update_count,10);
     pthread_cond_signal(&_update_cond);
     pthread_mutex_unlock(&_mutex_update);
 
