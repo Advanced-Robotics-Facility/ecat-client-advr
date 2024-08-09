@@ -16,6 +16,9 @@
 
 #include <utils.h>
 
+#include <chrono>
+#include <thread>
+
 #define handle_error_en(en, msg) \
     do { errno = en; perror(msg); exit(EXIT_FAILURE); } while (0)
 
@@ -177,13 +180,9 @@ inline void EcThread::create ( int rt=true, int cpu_nr=-1 ) {
 
 inline void * periodic_thread ( EcThread_Ptr th_hook ) {
     
-    int                 ret = 0;
-    uint64_t            time_ns=0,start_time_ns=0;
-    int64_t            sleep_ns=0,min_sleep_ns=10000;
-    struct timespec     periodtp;
+    int ret = 0;
     int overruns = 0;
         
-
     // thread specific initialization
     th_hook->th_init ( 0 );
 
@@ -213,10 +212,9 @@ inline void * periodic_thread ( EcThread_Ptr th_hook ) {
     }
 #endif
     
-    periodtp.tv_sec  = th_hook->period.period.tv_sec;
-    periodtp.tv_nsec = th_hook->period.period.tv_usec * 1000ULL;
-    start_time_ns=iit::ecat::get_time_ns(CLOCK_MONOTONIC);
-    time_ns=start_time_ns;
+    auto start_time = std::chrono::high_resolution_clock::now();
+    auto time = start_time;
+    const auto period = std::chrono::nanoseconds(th_hook->period.period.tv_usec * 1000ULL);
 
     DPRINTF ( "%s %s : Start looping ...\n",
               __FUNCTION__, th_hook->name.c_str() );
@@ -224,29 +222,24 @@ inline void * periodic_thread ( EcThread_Ptr th_hook ) {
 
     while ( th_hook->_run_loop ) {
 
-        float time_elapsed_ms= (static_cast<float>((time_ns-start_time_ns))/1000000);   
-        time_ns += th_hook->period.period.tv_usec * 1000ULL;
-        float sample_time_ms= (static_cast<float>(sleep_ns)/1000000);
-        //DPRINTF("Thread Time elapsed ms: [%f], Sample time ms: [%f]\n",time_elapsed_ms,sample_time_ms);
+        float time_elapsed_ms = std::chrono::duration<float, std::milli>(time - start_time).count();
+        //DPRINTF("Thread Time elapsed ms: [%f]\n",time_elapsed_ms);
 
         // thread specific loop
         th_hook->th_loop ( 0 );
-
-        sleep_ns = static_cast<uint64_t>(time_ns- iit::ecat::get_time_ns(CLOCK_MONOTONIC));
-
+        
+        time = time + period;
+        const auto now = std::chrono::high_resolution_clock::now();
 
         #if defined(PREEMPT_RT) || defined(__COBALT__)
-                // if less than threshold, print warning (only on rt threads)
-                if(sleep_ns < min_sleep_ns && th_hook->schedpolicy == SCHED_FIFO){
-                    ++overruns;
-                    DPRINTF( "Thread: %s overruns detected: %d\n",th_hook->name.c_str(),overruns);
-                }
+            // if less than threshold, print warning (only on rt threads)
+            if(now > time && th_hook->schedpolicy == SCHED_FIFO){
+                ++overruns;
+                DPRINTF("main process overruns: %d\n", overruns);
+            }
         #endif
-
-        sleep_ns = std::max(min_sleep_ns, sleep_ns);
-        periodtp.tv_nsec=sleep_ns;
-        while(clock_nanosleep(CLOCK_MONOTONIC, 0, &periodtp,NULL) == -1 && errno == EINTR)
-        {}
+        
+        std::this_thread::sleep_until(time);
     } // end while
 
     DPRINTF ( "%s %s : exit thread ...\n",
