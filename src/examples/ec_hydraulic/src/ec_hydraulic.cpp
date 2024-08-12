@@ -229,7 +229,10 @@ int main(int argc, char *const argv[])
             DPRINTF("Real-time process....\n");
             // add SIGALRM
             main_common(&argc, (char *const **)&argv, 0);
-            int priority = 45;
+            int priority = SCHED_OTHER;
+            #if defined(PREEMPT_RT) || defined(__COBALT__)
+                priority = sched_get_priority_max ( SCHED_FIFO ) / 3;
+            #endif
             int ret = set_main_sched_policy(priority);
             if (ret < 0){
                 throw std::runtime_error("fatal error on set_main_sched_policy");

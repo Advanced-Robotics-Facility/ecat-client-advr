@@ -7,19 +7,12 @@
 EcIDDP::EcIDDP(std::string host_address,uint32_t host_port):
   EcZmqCmd("tcp",host_address,host_port),
   EcPdo<EcPipePdo>("NoNe")
-{        
-    
-#ifdef PREEMPT_RT
+{ 
+    schedpolicy = SCHED_OTHER;
+#if defined(PREEMPT_RT) || defined(__COBALT__)       
     schedpolicy = SCHED_FIFO;
-    priority = sched_get_priority_max (99);
-#else
-    #ifdef __COBALT__
-        schedpolicy = SCHED_FIFO;
-    #else
-        schedpolicy = SCHED_OTHER;
-    #endif
-        priority = sched_get_priority_max ( schedpolicy ) / 2;
 #endif
+    priority = sched_get_priority_max ( schedpolicy ) / 2;
     stacksize = 0; // not set stak size !!!! YOU COULD BECAME CRAZY !!!!!!!!!!!!
 }
 
