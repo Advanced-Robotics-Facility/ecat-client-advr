@@ -61,20 +61,6 @@ void EcIface::stop_logging()
     _ec_logger->stop_mat_logger();
 }
 
-void EcIface::log()
-{
-    _ec_logger->log_motors_sts(_motor_status_map);
-    _ec_logger->log_ft_sts(_ft_status_map);
-    _ec_logger->log_imu_sts(_imu_status_map);
-    _ec_logger->log_valve_sts(_valve_status_map);
-    _ec_logger->log_pump_sts(_pump_status_map);
-
-
-    _ec_logger->log_motors_ref(_motors_references); 
-    _ec_logger->log_valve_ref(_valves_references);
-    _ec_logger->log_pump_ref(_pumps_references);
-}
-
 void EcIface::test_client(SSI slave_info)
 {
     _fake_slave_info=slave_info;
@@ -88,7 +74,7 @@ bool EcIface::read()
     pthread_cond_signal(&_update_cond);
     pthread_mutex_unlock(&_mutex_update);
 
-
+    //read, note: only one thread is allowed to pop data
     while(_motor_status_queue.pop(_motor_status_map))
     {}
 
@@ -104,14 +90,24 @@ bool EcIface::read()
     while(_pump_status_queue.pop(_pump_status_map))
     {}
 
+    _ec_logger->log_motors_sts(_motor_status_map);
+    _ec_logger->log_ft_sts(_ft_status_map);
+    _ec_logger->log_imu_sts(_imu_status_map);
+    _ec_logger->log_valve_sts(_valve_status_map);
+    _ec_logger->log_pump_sts(_pump_status_map);
+
     return true;
 }
 bool EcIface::write()
 {
-    //write
+    //write, note: only one thread is allowed to push data
     _motors_references_queue.push(_motors_references);
     _valves_references_queue.push(_valves_references);
     _pumps_references_queue.push(_pumps_references);
+
+    _ec_logger->log_motors_ref(_motors_references); 
+    _ec_logger->log_valve_ref(_valves_references);
+    _ec_logger->log_pump_ref(_pumps_references);
 
     pthread_mutex_lock(&_mutex_update);
     _update_count++;

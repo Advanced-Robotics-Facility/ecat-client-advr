@@ -27,7 +27,6 @@ public:
     // EtherCAT Client ADVR Facilty logger
     void start_logging(void);
     void stop_logging(void);
-    void log(void);
 
     // EtherCAT Client ADVR Facilty update getters/setters
     bool read(void);
