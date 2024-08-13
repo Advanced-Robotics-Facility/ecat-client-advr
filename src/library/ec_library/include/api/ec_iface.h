@@ -117,6 +117,8 @@ protected:
     unsigned int _waiting_client_counter=0;
     
     void sync_client_thread();
+    virtual void internal_read() = 0;
+    virtual void internal_write() = 0;
 
 private:
     template <typename T>

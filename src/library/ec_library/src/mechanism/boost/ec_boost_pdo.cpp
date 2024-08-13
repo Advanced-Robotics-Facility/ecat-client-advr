@@ -79,7 +79,9 @@ void EcBoostPdo::motor_status_handler(char *buf, size_t size)
         }
     }
 
-    _ec_logger->log_motors_sts(_internal_motor_status_map);
+    if(!_internal_motor_status_map.empty()){
+        _motor_status_queue.push(_internal_motor_status_map);
+    }
 }
 
 void EcBoostPdo::ft6_status_handler(char *buf, size_t size)
@@ -97,7 +99,9 @@ void EcBoostPdo::ft6_status_handler(char *buf, size_t size)
         }
     }
 
-    _ec_logger->log_ft_sts(_internal_ft_status_map);
+    if(!_internal_ft_status_map.empty()){
+        _ft_status_queue.push(_internal_ft_status_map);
+    }
 }
 
 void EcBoostPdo::pwr_status_handler(char *buf, size_t size)
