@@ -105,15 +105,15 @@ bool EcIface::write()
     _valves_references_queue.push(_valves_references);
     _pumps_references_queue.push(_pumps_references);
 
-    _ec_logger->log_motors_ref(_motors_references); 
-    _ec_logger->log_valve_ref(_valves_references);
-    _ec_logger->log_pump_ref(_pumps_references);
-
     pthread_mutex_lock(&_mutex_update);
     _update_count++;
     _update_count=std::min(_update_count,10);
     pthread_cond_signal(&_update_cond);
     pthread_mutex_unlock(&_mutex_update);
+
+    _ec_logger->log_motors_ref(_motors_references); 
+    _ec_logger->log_valve_ref(_valves_references);
+    _ec_logger->log_pump_ref(_pumps_references);
 
     return true;
 }
