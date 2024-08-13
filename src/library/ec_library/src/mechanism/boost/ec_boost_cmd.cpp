@@ -502,7 +502,6 @@ void EcBoostCmd::feed_motors()
                 auto sizet = proto.packReplRequestSetMotorsRefs(sendBuffer, m_ref_flag);
                 do_send(sendBuffer.data(), sendBuffer.size() );
                 _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
-                _ec_logger->log_motors_ref(_internal_motors_references);
             }
         }
         else{
