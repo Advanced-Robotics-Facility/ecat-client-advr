@@ -11,6 +11,7 @@
 #include <boost/lockfree/spsc_queue.hpp>
 #include <boost/lockfree/queue.hpp>
 #include <boost/lockfree/stack.hpp>
+#include <semaphore.h>
 
 using namespace boost::lockfree;
 class EcIface
@@ -110,15 +111,13 @@ protected:
     PumpReferenceMap _pumps_references,_internal_pumps_references;
     spsc_queue<PumpReferenceMap,fixed_sized<true>> _pumps_references_queue{128};
     
-    pthread_mutex_t _mutex_update,_mutex_client_thread;
-    pthread_cond_t _update_cond,_client_thread_cond;
-    pthread_condattr_t _update_attr;
-    int _update_count=0;
-    unsigned int _waiting_client_counter=0;
-    
     void sync_client_thread();
-    //virtual void internal_read() = 0;
-    //virtual void internal_write() = 0;
+
+    pthread_mutex_t _mutex_client_thread;
+    pthread_cond_t _client_thread_cond;
+    sem_t _client_sem;
+    unsigned int _waiting_client_counter=0;
+
 
 private:
     template <typename T>
