@@ -120,7 +120,9 @@ void EcBoostPdo::pwr_status_handler(char *buf, size_t size)
         }
     }
 
-    _ec_logger->log_pow_sts(_internal_pow_status_map);
+    if(!_internal_pow_status_map.empty()){
+        _pow_status_queue.push(_internal_pow_status_map);
+    }
 }
 //******************************* EVENT HANDLERS *****************************************************//
 
