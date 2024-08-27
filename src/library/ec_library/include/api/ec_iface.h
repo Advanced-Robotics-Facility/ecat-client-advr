@@ -30,8 +30,8 @@ public:
     void log(void);
 
     // EtherCAT Client ADVR Facilty update getters/setters
-    bool read(void);
-    bool write(void);
+    void read(void);
+    void write(void);
     
     // EtherCAT Client ADVR Facilty getters
     void get_motors_status(MotorStatusMap &motor_status_map);
@@ -118,6 +118,7 @@ protected:
     unsigned int _waiting_client_counter=0;
     
     void sync_client_thread();
+    void wake_client_thread();
 
 private:
     template <typename T>

@@ -23,8 +23,7 @@ EcIface::EcIface()
     pthread_cond_init(&_client_thread_cond,NULL);
 
     _consoleLog=spdlog::get("console");
-    if(!_consoleLog)
-    {
+    if(!_consoleLog){
         createLogger("console","client");
         _consoleLog=spdlog::get("console");
     }
@@ -80,15 +79,11 @@ void EcIface::test_client(SSI slave_info)
     _fake_slave_info=slave_info;
 }
 
-bool EcIface::read()
+void EcIface::read()
 {
-    pthread_mutex_lock(&_mutex_update);
-    _update_count++;
-    _update_count=std::min(_update_count,10);
-    pthread_cond_signal(&_update_cond);
-    pthread_mutex_unlock(&_mutex_update);
+    wake_client_thread();
 
-
+    //note: only one thread is allowed to pop data
     while(_motor_status_queue.pop(_motor_status_map))
     {}
 
@@ -103,43 +98,16 @@ bool EcIface::read()
 
     while(_pump_status_queue.pop(_pump_status_map))
     {}
-
-    return true;
 }
-bool EcIface::write()
+void EcIface::write()
 {
-    //write
+    ///note: only one thread is allowed to push data
     _motors_references_queue.push(_motors_references);
     _valves_references_queue.push(_valves_references);
     _pumps_references_queue.push(_pumps_references);
 
-    pthread_mutex_lock(&_mutex_update);
-    _update_count++;
-    _update_count=std::min(_update_count,10);
-    pthread_cond_signal(&_update_cond);
-    pthread_mutex_unlock(&_mutex_update);
-
-    return true;
+    wake_client_thread();
 }
-
-void EcIface::sync_client_thread(void) {
-    
-    pthread_mutex_lock(&_mutex_client_thread);
-
-    if(_waiting_client_counter<2){
-        _waiting_client_counter++;
-    }
-
-    if (_waiting_client_counter == 2) {
-        pthread_cond_broadcast(&_client_thread_cond);
-        _waiting_client_counter=0;
-    } else {
-        pthread_cond_wait(&_client_thread_cond, &_mutex_client_thread);
-    }
-
-    pthread_mutex_unlock(&_mutex_client_thread);
-}
-
 
 void EcIface::get_motors_status(MotorStatusMap &motor_status_map)
 {
@@ -295,6 +263,34 @@ bool EcIface::pdo_aux_cmd_sts(const PAC & pac)
         
     return true;
 } 
+
+void EcIface::sync_client_thread(void) {
+    
+    pthread_mutex_lock(&_mutex_client_thread);
+
+    if(_waiting_client_counter<2){
+        _waiting_client_counter++;
+    }
+
+    if (_waiting_client_counter == 2) {
+        pthread_cond_broadcast(&_client_thread_cond);
+        _waiting_client_counter=0;
+    } else {
+        pthread_cond_wait(&_client_thread_cond, &_mutex_client_thread);
+    }
+
+    pthread_mutex_unlock(&_mutex_client_thread);
+}
+
+void EcIface::wake_client_thread()
+{
+    pthread_mutex_lock(&_mutex_update);
+    _update_count++;
+    _update_count=std::min(_update_count,10);
+    pthread_cond_signal(&_update_cond);
+    pthread_mutex_unlock(&_mutex_update);
+
+}
 
 template <typename T>
 int32_t EcIface::check_maps(const std::map<int32_t,T>& map1,const std::map<int32_t,T>& map2)
