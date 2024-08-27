@@ -11,7 +11,6 @@
 #include <boost/lockfree/spsc_queue.hpp>
 #include <boost/lockfree/queue.hpp>
 #include <boost/lockfree/stack.hpp>
-#include <semaphore.h>
 
 using namespace boost::lockfree;
 class EcIface
@@ -28,6 +27,7 @@ public:
     // EtherCAT Client ADVR Facilty logger
     void start_logging(void);
     void stop_logging(void);
+    void log(void);
 
     // EtherCAT Client ADVR Facilty update getters/setters
     bool read(void);
@@ -111,13 +111,13 @@ protected:
     PumpReferenceMap _pumps_references,_internal_pumps_references;
     spsc_queue<PumpReferenceMap,fixed_sized<true>> _pumps_references_queue{128};
     
-    void sync_client_thread();
-
-    pthread_mutex_t _mutex_client_thread;
-    pthread_cond_t _client_thread_cond;
-    sem_t _client_sem;
+    pthread_mutex_t _mutex_update,_mutex_client_thread;
+    pthread_cond_t _update_cond,_client_thread_cond;
+    pthread_condattr_t _update_attr;
+    int _update_count=0;
     unsigned int _waiting_client_counter=0;
-
+    
+    void sync_client_thread();
 
 private:
     template <typename T>

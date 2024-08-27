@@ -112,10 +112,14 @@ void EcIDDP::th_loop( void * )
     clock_gettime(CLOCK_MONOTONIC, &ts);
     ts.tv_nsec += _period_ns;
 
-    int ret=0;
-    while ((ret = sem_timedwait(&_client_sem, &ts)) == -1 && errno == EINTR)
-        continue;       /* Restart if interrupted by handler */
-
+    pthread_mutex_lock(&_mutex_update);
+    if(_update_count==0){
+       pthread_cond_timedwait(&_update_cond, &_mutex_update, &ts);
+    }
+    _update_count--;
+    _update_count=std::max(_update_count,0);
+    pthread_mutex_unlock(&_mutex_update);
+    
     // read motors, imu, ft, power board and others pdo information
     read_pdo();
 

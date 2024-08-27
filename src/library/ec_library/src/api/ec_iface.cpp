@@ -14,13 +14,17 @@ EcIface::EcIface()
     
     _pump_ref_flags=RefFlags::FLAG_NONE;
     _pumps_references.clear();
+    
+    pthread_mutex_init(&_mutex_update, NULL);
+    pthread_condattr_setclock(&_update_attr, CLOCK_MONOTONIC);
+    pthread_cond_init(&_update_cond, &_update_attr);
 
     pthread_mutex_init(&_mutex_client_thread, NULL);
     pthread_cond_init(&_client_thread_cond,NULL);
-    sem_init(&_client_sem, 0, 0);
 
     _consoleLog=spdlog::get("console");
-    if(!_consoleLog){
+    if(!_consoleLog)
+    {
         createLogger("console","client");
         _consoleLog=spdlog::get("console");
     }
@@ -32,9 +36,10 @@ EcIface::EcIface()
 
 EcIface::~EcIface()
 {
+    pthread_mutex_destroy(&_mutex_update);
+    pthread_cond_destroy(&_update_cond);
     pthread_mutex_destroy(&_mutex_client_thread);
     pthread_cond_destroy(&_client_thread_cond);
-    sem_destroy(&_client_sem);
     
     _consoleLog->info("EtherCAT Client closed");
     _consoleLog.reset();
@@ -56,6 +61,20 @@ void EcIface::stop_logging()
     _ec_logger->stop_mat_logger();
 }
 
+void EcIface::log()
+{
+    _ec_logger->log_motors_sts(_motor_status_map);
+    _ec_logger->log_ft_sts(_ft_status_map);
+    _ec_logger->log_imu_sts(_imu_status_map);
+    _ec_logger->log_valve_sts(_valve_status_map);
+    _ec_logger->log_pump_sts(_pump_status_map);
+
+
+    _ec_logger->log_motors_ref(_motors_references); 
+    _ec_logger->log_valve_ref(_valves_references);
+    _ec_logger->log_pump_ref(_pumps_references);
+}
+
 void EcIface::test_client(SSI slave_info)
 {
     _fake_slave_info=slave_info;
@@ -63,7 +82,13 @@ void EcIface::test_client(SSI slave_info)
 
 bool EcIface::read()
 {
-    //read, note: only one thread is allowed to pop data
+    pthread_mutex_lock(&_mutex_update);
+    _update_count++;
+    _update_count=std::min(_update_count,10);
+    pthread_cond_signal(&_update_cond);
+    pthread_mutex_unlock(&_mutex_update);
+
+
     while(_motor_status_queue.pop(_motor_status_map))
     {}
 
@@ -79,26 +104,20 @@ bool EcIface::read()
     while(_pump_status_queue.pop(_pump_status_map))
     {}
 
-    _ec_logger->log_motors_sts(_motor_status_map);
-    _ec_logger->log_ft_sts(_ft_status_map);
-    _ec_logger->log_imu_sts(_imu_status_map);
-    _ec_logger->log_valve_sts(_valve_status_map);
-    _ec_logger->log_pump_sts(_pump_status_map);
-
     return true;
 }
 bool EcIface::write()
 {
-    //write, note: only one thread is allowed to push data
+    //write
     _motors_references_queue.push(_motors_references);
     _valves_references_queue.push(_valves_references);
     _pumps_references_queue.push(_pumps_references);
 
-    sem_post(&_client_sem);
-    
-    _ec_logger->log_motors_ref(_motors_references); 
-    _ec_logger->log_valve_ref(_valves_references);
-    _ec_logger->log_pump_ref(_pumps_references);
+    pthread_mutex_lock(&_mutex_update);
+    _update_count++;
+    _update_count=std::min(_update_count,10);
+    pthread_cond_signal(&_update_cond);
+    pthread_mutex_unlock(&_mutex_update);
 
     return true;
 }

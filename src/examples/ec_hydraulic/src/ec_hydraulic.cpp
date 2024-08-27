@@ -600,7 +600,8 @@ int main(int argc, char *const argv[])
             }
 
             client->write();
-
+            client->log();
+            
             const auto now = std::chrono::high_resolution_clock::now();
 
 #if defined(PREEMPT_RT) || defined(__COBALT__)
