@@ -80,6 +80,13 @@ int main(int argc, char *const argv[])
 
         std::map<int, double> q_set_trj = ec_cfg.homing_position;
         std::map<int, double> q_ref, q_start, qdot;
+        double qdot_ref_k = 1.0; // [rad/s]
+        std::map<int, double> qdot_ref, qdot_start,qdot_set_trj;
+        std::map<int, double> qdot_set_trj_1,qdot_set_trj_2,qdot_set_zero;
+
+        double taur_ref_k = 10.0; // [rad/s]
+        std::map<int, double> tor_ref, tor_start, tor_set_trj;
+        std::map<int, double> tor_set_trj_1,tor_set_trj_2,tor_set_zero;
 
         bool first_pump_RX = false;
         uint8_t pump_pressure_ref = 180; // bar
@@ -153,6 +160,18 @@ int main(int argc, char *const argv[])
             q_start[esc_id] = std::get<1>(motor_status); // motor pos
             qdot[esc_id] = std::get<3>(motor_status);    // motor vel
             q_ref[esc_id] = q_start[esc_id];
+
+            qdot_ref[esc_id] = qdot_start[esc_id] = 0.0;
+            qdot_set_trj_1[esc_id] = qdot_ref_k;
+            qdot_set_trj_2[esc_id] = -qdot_ref_k;
+            qdot_set_trj[esc_id] = qdot_set_trj_1[esc_id];
+            qdot_set_zero[esc_id]=0.0;
+
+            tor_ref[esc_id] = tor_start[esc_id] = 0.0;
+            tor_set_trj_1[esc_id] = taur_ref_k;
+            tor_set_trj_2[esc_id] = -taur_ref_k;
+            tor_set_trj[esc_id] = tor_set_trj_1[esc_id];
+            tor_set_zero[esc_id]=0.0;
         }
 
         pumps_set_trj = pumps_trj_1;
@@ -419,6 +438,8 @@ int main(int argc, char *const argv[])
                         if (q_set_trj.count(id) > 0)
                         {
                             q_ref[id] = q_start[id] + alpha * (q_set_trj[id] - q_start[id]);
+                            qdot_ref[id] = qdot_start[id] + alpha * (qdot_set_trj[id] - qdot_start[id]);
+                            tor_ref[id] = tor_start[id] + alpha * (tor_set_trj[id] - tor_start[id]);
                         }
                     }
                 }
@@ -427,6 +448,8 @@ int main(int argc, char *const argv[])
                 for (const auto &[esc_id, pos_ref] : q_ref)
                 {
                     std::get<1>(motors_ref[esc_id]) = pos_ref;
+                    std::get<2>(motors_ref[esc_id]) = qdot_ref[esc_id];
+                    std::get<3>(motors_ref[esc_id]) = tor_ref[esc_id];
                 }
                 client->set_motors_references(RefFlags::FLAG_MULTI_REF, motors_ref);
                 // ************************* SEND ALWAYS REFERENCES***********************************//
@@ -532,6 +555,12 @@ int main(int argc, char *const argv[])
                             q_set_trj = ec_cfg.homing_position;
                             q_start = q_ref;
 
+                            qdot_set_trj = qdot_set_trj_1;
+                            qdot_start = qdot_ref;
+
+                            tor_set_trj = tor_set_trj_1;
+                            tor_start = tor_ref;
+
                             valves_set_trj = valves_trj_1;
                             valves_start = valves_set_ref;
 
@@ -549,16 +578,23 @@ int main(int argc, char *const argv[])
                 q_set_trj = ec_cfg.trajectory;
                 q_start = q_ref;
 
+                
+                qdot_start = qdot_ref;
+                tor_start = tor_ref;
+                valves_start = valves_set_ref;
+
                 if (trajectory_counter == ec_cfg.repeat_trj - 1)
                 {                                     // second last references
                     valves_set_trj = valves_set_zero; // set to zero. (close valves)
+                    qdot_set_trj = qdot_set_zero;
+                    tor_set_trj = tor_set_zero;
                 }
                 else
                 {
+                    qdot_set_trj = qdot_set_trj_2;
+                    tor_set_trj = tor_set_trj_2;
                     valves_set_trj = valves_trj_2;
                 }
-
-                valves_start = valves_set_ref;
 
                 tau = alpha = 0;
                 trajectory_counter = trajectory_counter + 1;
@@ -587,10 +623,16 @@ int main(int argc, char *const argv[])
                 {
                     STM_sts = "Homing";
                     start_time = time;
-                    set_trj_time_ms = hm_time_ms;
+                    set_trj_time_ms = hm_time_ms;            
 
                     q_set_trj = ec_cfg.homing_position;
                     q_start = q_ref;
+
+                    qdot_set_trj = qdot_set_trj_1;
+                    qdot_start = qdot_ref;
+
+                    tor_set_trj = tor_set_trj_1;
+                    tor_start = tor_ref;
 
                     valves_set_trj = valves_trj_1;
                     valves_start = valves_set_ref;
