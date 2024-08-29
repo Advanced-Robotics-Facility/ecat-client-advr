@@ -84,7 +84,7 @@ int main(int argc, char *const argv[])
         std::map<int, double> qdot_ref, qdot_start,qdot_set_trj;
         std::map<int, double> qdot_set_trj_1,qdot_set_trj_2,qdot_set_zero;
 
-        double taur_ref_k = 10.0; // [rad/s]
+        double taur_ref_k = 5.0; // [NM]
         std::map<int, double> tor_ref, tor_start, tor_set_trj;
         std::map<int, double> tor_set_trj_1,tor_set_trj_2,tor_set_zero;
 
@@ -447,9 +447,21 @@ int main(int argc, char *const argv[])
                 // ************************* SEND ALWAYS REFERENCES***********************************//
                 for (const auto &[esc_id, pos_ref] : q_ref)
                 {
-                    std::get<1>(motors_ref[esc_id]) = pos_ref;
-                    std::get<2>(motors_ref[esc_id]) = qdot_ref[esc_id];
-                    std::get<3>(motors_ref[esc_id]) = tor_ref[esc_id];
+                    int ctrl_mode= std::get<0>(motors_ref[esc_id]);
+                    if(ctrl_mode != iit::advr::Gains_Type_VELOCITY){
+                        if(ctrl_mode == iit::advr::Gains_Type_POSITION){
+                            std::get<1>(motors_ref[esc_id]) = pos_ref;
+                        }
+                        else{
+                            if(ctrl_mode == iit::advr::Gains_Type_IMPEDANCE){
+                                std::get<1>(motors_ref[esc_id]) = pos_ref;
+                            }
+                            std::get<3>(motors_ref[esc_id]) = tor_ref[esc_id]; // current mode (0xCC or oxDD) or impedance
+                        }
+                    }
+                    else{
+                        std::get<2>(motors_ref[esc_id]) = qdot_ref[esc_id];
+                    }
                 }
                 client->set_motors_references(RefFlags::FLAG_MULTI_REF, motors_ref);
                 // ************************* SEND ALWAYS REFERENCES***********************************//

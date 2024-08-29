@@ -19,7 +19,7 @@ control:
   homing_time_sec: 1
   trajectory: {1: 0.0, 2: -1.9, 3: -2.3, 4: 0.0, 5: -0.4, 6: 0.0, 7: -1.9, 8: -2.3}
   trajectory_time_sec: 1
-  repeat_trj: 1
+  repeat_trj: 2
 
   #imu_id: [102]
   #ft_id: [110,111]
