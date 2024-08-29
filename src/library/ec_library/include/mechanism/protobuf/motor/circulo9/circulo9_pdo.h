@@ -74,7 +74,7 @@ inline void Circulo9Pdo<T>::set_to_pb()
     T::pb_tx_pdos.mutable_circulo9_tx_pdo()->set_target_pos(std::get<1>(MotorPdo<T>::tx_pdo));
     T::pb_tx_pdos.mutable_circulo9_tx_pdo()->set_target_vel(std::get<2>(MotorPdo<T>::tx_pdo));
     T::pb_tx_pdos.mutable_circulo9_tx_pdo()->set_target_torque(std::get<3>(MotorPdo<T>::tx_pdo));  
-    T::pb_tx_pdos.mutable_circulo9_tx_pdo()->set_target_current(MotorPdo<T>::curr_ref);
+    T::pb_tx_pdos.mutable_circulo9_tx_pdo()->set_target_current(std::get<3>(MotorPdo<T>::tx_pdo));
     
     T::pb_tx_pdos.mutable_circulo9_tx_pdo()->set_gain_0(std::get<4>(MotorPdo<T>::tx_pdo));
     T::pb_tx_pdos.mutable_circulo9_tx_pdo()->set_gain_1(std::get<5>(MotorPdo<T>::tx_pdo));
