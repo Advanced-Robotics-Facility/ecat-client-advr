@@ -286,14 +286,17 @@ void EcCommonStep::stop_ec_valves(void)
 
 void EcCommonStep::start_ec(void)
 {
-    _client->start_client(_ec_cfg.period_ms,_ec_cfg.logging);
+    try{
+        _client->start_client(_ec_cfg.period_ms,_ec_cfg.logging);
+    }catch(std::exception &ex){
+        throw std::runtime_error(ex.what());
+    }
 }
 
 void EcCommonStep::stop_ec(void)
 {
     // STOP CLIENT
-    if(_client->is_client_alive())
-    {
+    if(_client->is_client_alive()){
         _client->stop_client();
     }
 }
