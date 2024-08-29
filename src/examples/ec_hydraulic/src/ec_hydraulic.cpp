@@ -84,7 +84,7 @@ int main(int argc, char *const argv[])
         std::map<int, double> qdot_ref, qdot_start,qdot_set_trj;
         std::map<int, double> qdot_set_trj_1,qdot_set_trj_2,qdot_set_zero;
 
-        double taur_ref_k = 5.0; // [NM]
+        double taur_ref_k = 1.0; // [Nm]
         std::map<int, double> tor_ref, tor_start, tor_set_trj;
         std::map<int, double> tor_set_trj_1,tor_set_trj_2,tor_set_zero;
 
