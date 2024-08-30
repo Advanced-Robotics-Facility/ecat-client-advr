@@ -110,7 +110,7 @@ void EcIDDP::th_loop( void * )
 
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
-    ts.tv_nsec += _period_ns;
+    iit::ecat::add_timespec(&ts,_period_ns);
 
     pthread_mutex_lock(&_mutex_update);
     if(_update_count==0){
