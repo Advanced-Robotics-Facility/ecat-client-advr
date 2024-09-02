@@ -14,14 +14,44 @@ EcIface::EcIface()
     
     _pump_ref_flags=RefFlags::FLAG_NONE;
     _pumps_references.clear();
+
+
+    pthread_mutexattr_t mutex_update_attr;
+
+    pthread_mutexattr_init(&mutex_update_attr);
+    pthread_mutexattr_settype(&mutex_update_attr, PTHREAD_MUTEX_NORMAL);
+    pthread_mutexattr_setpshared(&mutex_update_attr, PTHREAD_PROCESS_PRIVATE);
+    pthread_mutexattr_setprotocol(&mutex_update_attr, PTHREAD_PRIO_NONE);
     
-    pthread_mutex_init(&_mutex_update, NULL);
-    pthread_condattr_setclock(&_update_attr, CLOCK_MONOTONIC);
-    pthread_cond_init(&_update_cond, &_update_attr);
+    int ret=0;
+    bool error=false;
+    ret=pthread_mutex_init(&_mutex_update, &mutex_update_attr);
+    if (ret != 0){
+        pthread_mutexattr_destroy(&mutex_update_attr);
+        throw std::runtime_error("fatal error: cannot initialize mutex_update, reason: "+std::to_string(ret));
+    }
+    ret=pthread_mutex_init(&_mutex_client_thread, &mutex_update_attr);
+    pthread_mutexattr_destroy(&mutex_update_attr);
+    if (ret != 0){
+        throw std::runtime_error("fatal error: cannot initialize mutex_client_thread, reason: "+std::to_string(ret));
+    }
 
-    pthread_mutex_init(&_mutex_client_thread, NULL);
-    pthread_cond_init(&_client_thread_cond,NULL);
+    pthread_condattr_t update_attr;
+    pthread_condattr_init(&update_attr);
+    pthread_condattr_setpshared(&update_attr, PTHREAD_PROCESS_PRIVATE);
+    pthread_condattr_setclock(&update_attr, CLOCK_MONOTONIC);
 
+    ret=pthread_cond_init(&_update_cond, &update_attr);
+    if (ret != 0){
+        pthread_condattr_destroy(&update_attr);
+        throw std::runtime_error("fatal error: cannot initialize update_cond, reason: "+std::to_string(ret));
+    }
+    ret=pthread_cond_init(&_client_thread_cond,&update_attr);
+    pthread_condattr_destroy(&update_attr);
+    if (ret != 0){
+        throw std::runtime_error("fatal error: cannot initialize client_thread_cond, reason: "+std::to_string(ret));
+    }
+    
     _consoleLog=spdlog::get("console");
     if(!_consoleLog){
         createLogger("console","client");

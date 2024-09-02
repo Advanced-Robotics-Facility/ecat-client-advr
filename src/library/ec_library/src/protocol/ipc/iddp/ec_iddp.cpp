@@ -104,7 +104,7 @@ void EcIDDP::th_loop( void * )
     loop_cnt++;
 
     if(!_client_alive){
-        stop_client();
+        _run_loop = false;
         return;
     }
 
@@ -114,7 +114,14 @@ void EcIDDP::th_loop( void * )
 
     pthread_mutex_lock(&_mutex_update);
     if(_update_count==0){
-       pthread_cond_timedwait(&_update_cond, &_mutex_update, &ts);
+       int ret = pthread_cond_timedwait(&_update_cond, &_mutex_update, &ts);
+       if(ret!=0){
+            if(ret!=ETIMEDOUT){
+                DPRINTF("Error on pthread_cond_timedwait reason: %d\n",ret);
+                _run_loop = false;
+                return;
+            }
+       }
     }
     _update_count--;
     _update_count=std::max(_update_count,0);
