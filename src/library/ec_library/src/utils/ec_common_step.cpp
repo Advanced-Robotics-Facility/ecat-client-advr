@@ -38,6 +38,8 @@ void EcCommonStep::autodetection()
     if(_client->retrieve_slaves_info(_slave_info)){   
         if(!_slave_info.empty()){
             DPRINTF("Retrieved slaves\n");
+            _motor_id_vector.clear();
+            _valve_id_vector.clear();
             for ( auto &[id, type, pos] : _slave_info ) {
                 if(ec_motors.count(type)>0){
                     _motor_id_vector.push_back(id);
@@ -79,6 +81,7 @@ void EcCommonStep::find_motors(std::vector<int> motor_id_vector)
 
 void EcCommonStep::prepare_motors()
 {
+    _motors_start.clear();
     for(int i=0; i< _motor_id_vector.size();i++)
     {
         int id = _motor_id_vector[i];
