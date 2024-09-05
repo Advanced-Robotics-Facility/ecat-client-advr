@@ -52,10 +52,15 @@ EcUtils::EcUtils()
     else
         _ec_cfg.logging=ec_cfg_node["logging"].as<bool>();
     
-    if(!ec_cfg_node["auto-start"])
-        _ec_cfg.auto_start=true;
+    if(!ec_cfg_node["start_motor"])
+        _ec_cfg.start_motor=false;
     else
-        _ec_cfg.auto_start=ec_cfg_node["auto-start"].as<bool>();
+        _ec_cfg.start_motor=ec_cfg_node["start_motor"].as<bool>();
+
+    if(!ec_cfg_node["start_valve"])
+        _ec_cfg.start_valve=false;
+    else
+        _ec_cfg.start_valve=ec_cfg_node["start_valve"].as<bool>();
     
     
     //****** Trajectory **************//
@@ -421,11 +426,8 @@ EcIface::Ptr EcUtils::make_ec_iface()
     if(ec_iface_ptr != nullptr)
     {
 #ifdef TEST_LIBRARY 
-        ec_iface_ptr->test_client(_ec_cfg.fake_slave_info);
+        ec_iface_ptr->set_slaves_info(_ec_cfg.fake_slave_info);
 #endif 
-        if(_ec_cfg.auto_start){
-            ec_iface_ptr->start_client(_ec_cfg.period_ms,_ec_cfg.logging); // auto-start
-        }
     }
     
     return ec_iface_ptr;    

@@ -104,7 +104,7 @@ void EcIface::log()
     _ec_logger->log_pump_ref(_pumps_references);
 }
 
-void EcIface::test_client(SSI slave_info)
+void EcIface::set_slaves_info(SSI slave_info)
 {
     _fake_slave_info=slave_info;
 }

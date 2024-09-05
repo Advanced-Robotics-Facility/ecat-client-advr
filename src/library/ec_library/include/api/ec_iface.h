@@ -51,7 +51,6 @@ public:
     virtual void start_client(uint32_t period_ms,bool logging) = 0;
     virtual void stop_client(void) = 0;
     virtual void set_loop_time(uint32_t period_ms) = 0;
-    void test_client(SSI slave_info);
     
     // EtherCAT Client ADVR Facilty commands
     virtual bool start_motors(const MST &) = 0;
@@ -59,6 +58,7 @@ public:
     virtual bool pdo_aux_cmd(const PAC & pac) = 0;
 
     virtual bool retrieve_slaves_info(SSI &slave_info) = 0;
+    void set_slaves_info(SSI slave_info);
     virtual bool retrieve_all_sdo(uint32_t esc_id,RR_SDO &rr_sdo) = 0;
     virtual bool retrieve_rr_sdo(uint32_t esc_id,
                                  const RD_SDO &rd_sdo, 

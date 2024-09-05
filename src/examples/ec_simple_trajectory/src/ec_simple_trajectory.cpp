@@ -29,35 +29,24 @@ int main(int argc, char * const argv[])
     
     if(motor_id_vector.empty()){
         DPRINTF("Got an homing position map\n");
-        ec_common_step.stop_ec();
         return 1;
     }
     
     if(ec_cfg.trajectory.empty()){
         DPRINTF("Got an empty general trajectory map\n");
-        ec_common_step.stop_ec();
         return 1;
     }
     
-    bool motor_ctrl=false;
+    bool ec_sys_started = true;
     try{
-        ec_common_step.autodetection();
-        motor_ctrl=ec_common_step.start_ec_motors(motor_id_vector);
-        motor_ctrl=true;
-    }catch(std::exception &ex){
-        DPRINTF("%s\n",ex.what());
+        ec_sys_started = ec_common_step.start_ec_sys();
+    }
+    catch (std::exception &ex){
+        DPRINTF("%s\n", ex.what());
         return 1;
     }
 
-
-#ifdef TEST_EXAMPLES
-    if(!motor_id_vector.empty())
-    {
-        motor_ctrl=true;
-    }
-#endif 
-
-    if(motor_ctrl)
+    if(ec_sys_started)
     {                                               
         struct timespec ts= { 0, ec_cfg.period_ms*1000000}; //sample time
         
@@ -260,8 +249,7 @@ int main(int argc, char * const argv[])
             
     }
     
-    ec_common_step.stop_ec_motors();
-    ec_common_step.stop_ec();
+    ec_common_step.stop_ec_sys();
     
     return 0;
 }

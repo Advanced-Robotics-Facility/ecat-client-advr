@@ -27,7 +27,8 @@ public:
         uint32_t host_port;
         int period_ms; 
         bool logging;
-        bool auto_start;
+        bool start_motor;
+        bool start_valve;
         std::map<int,double> homing_position,trajectory;
         double homing_time_sec,trajectory_time_sec;
         int repeat_trj;

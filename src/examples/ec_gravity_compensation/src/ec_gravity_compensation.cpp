@@ -33,8 +33,6 @@ static void sig_handler(int sig)
         restore_gains=true;
     }
 }
-
-// IDLE-->Connected->Autodetection->Motor_Started->Motor_Ctrl_SetGains->Motor_Ctrl->Motor_Ctrl_SetGains->Engage_Motor_Brake->Motor_Stopping->Exit
                                                                     
 int main(int argc, char * const argv[])
 {
@@ -56,26 +54,21 @@ int main(int argc, char * const argv[])
     
     if(motor_id_vector.empty()){
         DPRINTF("Got an homing position map\n");
-        ec_common_step.stop_ec();
         return 1;
     }
     
-    bool motor_ctrl=false;
+     bool ec_sys_started = true;
     try{
-        ec_common_step.autodetection();
-        motor_ctrl=ec_common_step.start_ec_motors(motor_id_vector);
-    }catch(std::exception &ex){
-        DPRINTF("%s\n",ex.what());
+        ec_sys_started = ec_common_step.start_ec_sys();
+        if(ec_sys_started){
+            STM_sts="Motor_Ctrl_SetGains";
+        }
+    }
+    catch (std::exception &ex){
+        DPRINTF("%s\n", ex.what());
         return 1;
     }
-    
-#ifdef TEST_EXAMPLES
-    if(!motor_id_vector.empty())
-    {
-        STM_sts="Motor_Ctrl_SetGains";
-    }
-#endif
-            
+         
     if(STM_sts=="Motor_Ctrl_SetGains")
     {
         // MODEL INTEFACE SETUP
@@ -86,7 +79,7 @@ int main(int argc, char * const argv[])
         
         if(model==nullptr){
             DPRINTF("fatal error: Got an empty model\n");
-            ec_common_step.stop_ec();
+            ec_common_step.stop_ec_sys();
             return 1;
         }
         
@@ -308,8 +301,7 @@ int main(int argc, char * const argv[])
             
     }
     
-    ec_common_step.stop_ec_motors();
-    ec_common_step.stop_ec();
+    ec_common_step.stop_ec_sys();
     
     return 0;
 }
