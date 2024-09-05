@@ -52,16 +52,6 @@ EcUtils::EcUtils()
     else
         _ec_cfg.logging=ec_cfg_node["logging"].as<bool>();
     
-    if(!ec_cfg_node["start_motor"])
-        _ec_cfg.start_motor=false;
-    else
-        _ec_cfg.start_motor=ec_cfg_node["start_motor"].as<bool>();
-
-    if(!ec_cfg_node["start_valve"])
-        _ec_cfg.start_valve=false;
-    else
-        _ec_cfg.start_valve=ec_cfg_node["start_valve"].as<bool>();
-    
     
     //****** Trajectory **************//
     if(ec_cfg_node["control"])
@@ -109,6 +99,11 @@ EcUtils::EcUtils()
         {
             throw std::runtime_error("Wrong Id map path!");
         }
+
+        if(!ec_cfg_node["control"]["start_motor"])
+        _ec_cfg.start_motor=false;
+        else
+            _ec_cfg.start_motor=ec_cfg_node["control"]["start_motor"].as<bool>();
         
         std::vector<int> homing_position_id;
         if(ec_cfg_node["control"]["homing_position"])
@@ -208,6 +203,12 @@ EcUtils::EcUtils()
         else
             _ec_cfg.pow_id=ec_cfg_node["control"]["pow_id"].as<std::vector<int>>();
         
+
+        if(!ec_cfg_node["control"]["start_valve"])
+            _ec_cfg.start_valve=false;
+        else
+            _ec_cfg.start_valve=ec_cfg_node["control"]["start_valve"].as<bool>();
+
         if(!ec_cfg_node["control"]["valve_id"])
             _ec_cfg.valve_id.clear();
         else

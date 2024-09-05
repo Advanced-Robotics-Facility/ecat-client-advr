@@ -30,6 +30,8 @@ void EcCommonStep::create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg)
         _valve_start_vector.clear();
         _valve_start_vector=_ec_cfg.valve_id;
 
+        _start_motor=_ec_cfg.start_motor;
+        _start_valve=_ec_cfg.start_valve;
 
     }catch(std::exception &ex){
         throw std::runtime_error(ex.what());
