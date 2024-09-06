@@ -59,7 +59,6 @@ void EcIDDP::start_client(uint32_t period_ms,bool logging)
     struct timespec ts;
     iit::ecat::us2ts(&ts, 1000*period_ms);
     // period.period is a timeval ... tv_usec 
-    period.period = { ts.tv_sec, ts.tv_nsec / 1000 };   
     period.period = {0,1}; 
     _period_ns = 1000000*period_ms;
 
