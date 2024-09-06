@@ -43,7 +43,7 @@ int main(int argc, char *const argv[])
 
     if (ec_sys_started){
         int overruns = 0;
-        float time_elapsed_ms, sample_time_ms;
+        float time_elapsed_ms;
         float hm_time_ms = ec_cfg.homing_time_sec * 1000;
         float trj_time_ms = ec_cfg.trajectory_time_sec * 1000;
         float pressure_time_ms = 1000; // 2minutes.

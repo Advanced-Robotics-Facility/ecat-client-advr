@@ -21,13 +21,8 @@ int main(int argc, char * const argv[])
         DPRINTF("%s\n",ex.what());
         return 1;
     }
-    
-    std::vector<int> motor_id_vector;
-    for ( auto &[id, pos] : ec_cfg.homing_position ) {
-        motor_id_vector.push_back(id);
-    }
-    
-    if(motor_id_vector.empty()){
+     
+    if(ec_cfg.homing_position.empty()){
         DPRINTF("Got an homing position map\n");
         return 1;
     }
@@ -46,207 +41,171 @@ int main(int argc, char * const argv[])
         return 1;
     }
 
-    if(ec_sys_started)
-    {                                               
-        struct timespec ts= { 0, ec_cfg.period_ms*1000000}; //sample time
+    if(ec_sys_started){                       
+        int overruns = 0;
+        float time_elapsed_ms, sample_time_ms;
+        float hm_time_ms = ec_cfg.homing_time_sec * 1000;
+        float trj_time_ms = ec_cfg.trajectory_time_sec * 1000;
+        float set_trj_time_ms = hm_time_ms;
         
-        uint64_t start_time_ns=0;
-        uint64_t time_ns=0;
-        
-        float time_elapsed_ms;
-        float hm_time_ms=ec_cfg.homing_time_sec*1000;
-        float trj_time_ms=ec_cfg.trajectory_time_sec*1000;
-        float set_trj_time_ms=hm_time_ms;
-        
-        bool run=true;
-        bool first_Rx=false;
-        
+        bool run=true;        
         std::string STM_sts="Homing";
-        std::map<int,double> q_set_trj=ec_cfg.homing_position;
-        std::map<int,double> q_ref,q_start,qdot;
 
-        
+        std::map<int, double> q_set_trj = ec_cfg.homing_position;
+        std::map<int, double> q_ref, q_start, qdot;
+        double qdot_ref_k = 1.0; // [rad/s]
+        std::map<int, double> qdot_ref, qdot_start,qdot_set_trj;
+        std::map<int, double> qdot_set_trj_1,qdot_set_trj_2,qdot_set_zero;
+
+        double taur_ref_k = 1.0; // [Nm]
+        std::map<int, double> tor_ref, tor_start, tor_set_trj;
+        std::map<int, double> tor_set_trj_1,tor_set_trj_2,tor_set_zero;
+
         int trajectory_counter=0;
-        
-        // Power Board
-        PwrStatusMap pow_status_map;
-        float v_batt,v_load,i_load,temp_pcb,temp_heatsink,temp_batt;
-        
-        // Motor
-        float  link_pos,motor_pos,link_vel,motor_vel,torque,aux;
-        float  motor_temp, board_temp;
-        uint32_t fault,rtt,op_idx_ack;
-        uint32_t cmd_aux_sts,brake_sts,led_sts;
-        MotorStatusMap motors_status_map;
-        
         float tau=0,alpha=0;
-        MotorReferenceMap motors_ref;
-        
-        // memory allocation
-        client->get_pow_status(pow_status_map);
-        client->get_motors_status(motors_status_map);
-        
-        for ( const auto &[esc_id, motor_status] : motors_status_map){
-            q_start[esc_id]= std::get<1>(motor_status); //motor pos
-            qdot[esc_id] = std::get<3>(motor_status); //motor vel
-            q_ref[esc_id]=q_start[esc_id];
-        }
-#ifdef TEST_EXAMPLES
-        if(q_ref.empty()){
-            for(int i=0; i<q_set_trj.size();i++){
-                int id=motor_id_vector[i];
-                q_start[id] = 0.0;
-                qdot[id]    = 0.0;
-                q_ref[id]   = 0.0;
+
+        for (const auto &[esc_id, motor_rx_pdo] : motors_status_map){
+            if(ec_cfg.homing_position.count(esc_id)>0){
+                q_start[esc_id] = std::get<1>(motors_status_map[esc_id]); // motor pos
+                qdot[esc_id] = std::get<3>(motors_status_map[esc_id]);    // motor vel
+                q_ref[esc_id] = q_start[esc_id];
+
+                qdot_ref[esc_id] = qdot_start[esc_id] = 0.0;
+                qdot_set_trj_1[esc_id] = qdot_ref_k;
+                qdot_set_trj_2[esc_id] = -qdot_ref_k;
+                qdot_set_trj[esc_id] = qdot_set_trj_1[esc_id];
+                qdot_set_zero[esc_id]=0.0;
+
+                tor_ref[esc_id] = tor_start[esc_id] = 0.0;
+                tor_set_trj_1[esc_id] = taur_ref_k;
+                tor_set_trj_2[esc_id] = -taur_ref_k;
+                tor_set_trj[esc_id] = tor_set_trj_1[esc_id];
+                tor_set_zero[esc_id]=0.0;
             }
         }
-#endif
 
-        if(q_start.size() == q_set_trj.size()){
-            //Open Loop SENSE
-            first_Rx=true;
-        }
-        else{
-            throw std::runtime_error("fatal error: different size of initial position and trajectory vectors");
-        }
-        
-        for ( const auto &[esc_id, pos_ref] : q_ref){
-           motors_ref[esc_id]=std::make_tuple(ec_cfg.motor_config_map[esc_id].control_mode_type, //ctrl_type
-                                              pos_ref, //pos_ref
-                                              0.0, //vel_ref
-                                              0.0, //tor_ref
-                                              ec_cfg.motor_config_map[esc_id].gains[0], //gain_1
-                                              ec_cfg.motor_config_map[esc_id].gains[1], //gain_2
-                                              ec_cfg.motor_config_map[esc_id].gains[2], //gain_3
-                                              ec_cfg.motor_config_map[esc_id].gains[3], //gain_4
-                                              ec_cfg.motor_config_map[esc_id].gains[4], //gain_5
-                                              1, // op means NO_OP
-                                              0, // idx
-                                              0  // aux
-                                              );
-        }
-        
-        
-        if(motors_ref.empty()){
+        if(q_ref.empty()){
             throw std::runtime_error("fatal error: motors references structure empty!");
-        }
-        
-        if(motors_ref.size() != q_set_trj.size()){
-            throw std::runtime_error("fatal error: different size of reference and trajectory vectors");
         }
         // memory allocation
                 
-        
-        if(ec_cfg.protocol=="iddp"){
+        if (ec_cfg.protocol == "iddp"){
             DPRINTF("Real-time process....\n");
             // add SIGALRM
-            main_common (&argc, (char*const**)&argv, 0);
-            assert(set_main_sched_policy(10) >= 0);
+            main_common(&argc, (char *const **)&argv, 0);
+            int priority = SCHED_OTHER;
+            #if defined(PREEMPT_RT) || defined(__COBALT__)
+                priority = sched_get_priority_max ( SCHED_FIFO ) / 3;
+            #endif
+            int ret = set_main_sched_policy(priority);
+            if (ret < 0){
+                throw std::runtime_error("fatal error on set_main_sched_policy");
+            }
         }
 
-        start_time_ns= iit::ecat::get_time_ns();
-        time_ns=start_time_ns;
+        auto start_time = std::chrono::high_resolution_clock::now();
+        auto time = start_time;
+        const auto period = std::chrono::nanoseconds(ec_cfg.period_ms * 1000000);
         
-        while (run && client->is_client_alive())
-        {
-            time_elapsed_ms= (static_cast<float>((time_ns-start_time_ns))/1000000);
-            //DPRINTF("Time [%f]\n",time_elapsed_ms);
-            
-            // Rx "SENSE"
-            //******************* Power Board Telemetry ********
-            client->get_pow_status(pow_status_map);
-            for ( const auto &[esc_id, pow_rx_pdo] : pow_status_map){
-                v_batt =        std::get<0>(pow_rx_pdo);
-                v_load =        std::get<1>(pow_rx_pdo);
-                i_load =        std::get<2>(pow_rx_pdo);
-                temp_pcb =      std::get<3>(pow_rx_pdo);
-                temp_heatsink=  std::get<4>(pow_rx_pdo);
-                temp_batt=      std::get<5>(pow_rx_pdo);
-            }
-            //******************* Power Board Telemetry ********
-            
-            //******************* Motor Telemetry **************
-            client->get_motors_status(motors_status_map);
-            for ( const auto &[esc_id, motor_status] : motors_status_map){
-                try {
-                        if(q_set_trj.count(esc_id))
-                        {
-                            std::tie(link_pos,motor_pos,link_vel,motor_vel,torque,motor_temp,board_temp,fault,rtt,op_idx_ack,aux,cmd_aux_sts) = motor_status;
-                            
-                            // PRINT OUT Brakes and LED get_motors_status @ NOTE To be tested.         
-                            brake_sts = cmd_aux_sts & 3; //00 unknown
-                                                        //01 release brake 
-                                                        //10 enganged brake  
-                                                        //11 error
-                            led_sts= (cmd_aux_sts & 4)/4; // 1 or 0 LED  ON/OFF
-                            
-                            //Closed Loop SENSE for motor velocity
-                            qdot[esc_id] = motor_vel;
-                            
-                            if(!first_Rx)
-                            {
-                                q_start[esc_id]=motor_pos; // get actual motor position at first time
-                            }
-                            DPRINTF("MOTOR ID: [%d], MOTOR_POS: [%f], LINK_POS: [%f]\n",esc_id,motor_pos,link_pos);
-                        }
-                } catch (std::out_of_range oor) {}
-            }
-            //******************* Motor Telemetry **************
+        while (run && client->is_client_alive()){
+            client->read();
+            ec_common_step.telemetry();
 
+            time_elapsed_ms = std::chrono::duration<float, std::milli>(time - start_time).count();
+            //DPRINTF("Main Time elapsed ms: [%f]\n",time_elapsed_ms);
+        
             // define a simplistic linear trajectory
             tau= time_elapsed_ms / set_trj_time_ms;
             // quintic poly 6t^5 - 15t^4 + 10t^3
             alpha = ((6*tau - 15)*tau + 10)*tau*tau*tau;
             // interpolate
-            for(int i=0; i<q_set_trj.size();i++)
-            {
-                int id=motor_id_vector[i];
-                if(q_set_trj.count(id)>0)
-                {
-                    q_ref[id] = q_start[id] + alpha * (q_set_trj[id] - q_start[id]);
+            for (const auto &[esc_id, target] : q_set_trj){
+                int ctrl_mode= std::get<0>(motors_ref[esc_id]);
+                if(ctrl_mode != iit::advr::Gains_Type_VELOCITY){
+                    if(ctrl_mode == iit::advr::Gains_Type_POSITION ||
+                        ctrl_mode == iit::advr::Gains_Type_IMPEDANCE){
+                        q_ref[esc_id] = q_start[esc_id] + alpha * (q_set_trj[esc_id] - q_start[esc_id]);
+                        std::get<1>(motors_ref[esc_id]) = q_ref[esc_id];
+                    }
+                    if(ctrl_mode != iit::advr::Gains_Type_POSITION ){
+                        tor_ref[esc_id] = tor_start[esc_id] + alpha * (tor_set_trj[esc_id] - tor_start[esc_id]);
+                        std::get<3>(motors_ref[esc_id]) = tor_ref[esc_id]; // current mode (0xCC or oxDD) or impedance
+                    }
+                }
+                else{
+                    qdot_ref[esc_id] = qdot_start[esc_id] + alpha * (qdot_set_trj[esc_id] - qdot_start[esc_id]);
+                    std::get<2>(motors_ref[esc_id]) = qdot_ref[esc_id];
                 }
             }
             
             // ************************* SEND ALWAYS REFERENCES***********************************//
-            for ( const auto &[esc_id, pos_ref] : q_ref){
-                std::get<1>(motors_ref[esc_id]) = pos_ref;
-            }
             client->set_motors_references(RefFlags::FLAG_MULTI_REF, motors_ref);
             // ************************* SEND ALWAYS REFERENCES***********************************//
 
-            if((time_elapsed_ms>=hm_time_ms)&&(STM_sts=="Homing"))
-            {
-                STM_sts="Trajectory";
-                start_time_ns=time_ns;
-                trajectory_counter=trajectory_counter+1;
-                set_trj_time_ms=trj_time_ms;
-                q_set_trj=ec_cfg.trajectory;
-                q_start=q_ref;
-                tau=alpha=0;
+            time = time + period;
+
+            if((time_elapsed_ms>=hm_time_ms)&&(STM_sts=="Homing")) {
+                STM_sts = "Trajectory";
+                start_time = time;
+                set_trj_time_ms = trj_time_ms;
+
+                q_set_trj = ec_cfg.trajectory;
+                q_start = q_ref;
+
+                
+                qdot_start = qdot_ref;
+                tor_start = tor_ref;
+
+                if (trajectory_counter == ec_cfg.repeat_trj - 1){ // second last references
+                    qdot_set_trj = qdot_set_zero;
+                    tor_set_trj = tor_set_zero;
+                }
+                else{
+                    qdot_set_trj = qdot_set_trj_2;
+                    tor_set_trj = tor_set_trj_2;
+                }
+
+                tau = alpha = 0;
+                trajectory_counter = trajectory_counter + 1;
+
             }
-            else if((time_elapsed_ms>=trj_time_ms)&&(STM_sts=="Trajectory"))
-            {
-                if(trajectory_counter==ec_cfg.repeat_trj)
-                {
-                    start_time_ns=time_ns;
+            else if((time_elapsed_ms>=trj_time_ms)&&(STM_sts=="Trajectory")){
+                if(trajectory_counter==ec_cfg.repeat_trj){
+                    start_time=time;
                     run=false;
                 }
-                else
-                {
-                    STM_sts="Homing";
-                    start_time_ns=time_ns;
-                    set_trj_time_ms=hm_time_ms;
-                    q_set_trj=ec_cfg.homing_position;
-                    q_start=q_ref;
-                    tau=alpha=0;
+                else{
+                    STM_sts = "Homing";
+                    start_time = time;
+                    set_trj_time_ms = hm_time_ms;
+
+                    q_set_trj = ec_cfg.homing_position;
+                    q_start = q_ref;
+
+                    qdot_set_trj = qdot_set_trj_1;
+                    qdot_start = qdot_ref;
+
+                    tor_set_trj = tor_set_trj_1;
+                    tor_start = tor_ref;
+
+                    tau = alpha = 0;
                 }
             } 
-        
-            clock_nanosleep(CLOCK_MONOTONIC, 0, &ts, NULL); 
-            // get period ns
-            time_ns = iit::ecat::get_time_ns();
-        }
+
+            client->write();
+            client->log();
             
+            const auto now = std::chrono::high_resolution_clock::now();
+
+#if defined(PREEMPT_RT) || defined(__COBALT__)
+            // if less than threshold, print warning (only on rt threads)
+            if (now > time && ec_cfg.protocol == "iddp"){
+                ++overruns;
+                DPRINTF("main process overruns: %d\n", overruns);
+            }
+#endif
+            std::this_thread::sleep_until(time);
+        }           
     }
     
     ec_common_step.stop_ec_sys();
