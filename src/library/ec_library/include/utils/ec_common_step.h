@@ -4,6 +4,20 @@
 #include "utils/ec_utils.h"
 #include <utils.h>
 
+//Power board
+extern PwrStatusMap pow_status_map;
+//IMU
+extern ImuStatusMap imu_status_map;
+// Pump
+extern PumpStatusMap pump_status_map;
+extern PumpReferenceMap pumps_ref;
+// Valve
+extern ValveStatusMap valve_status_map;
+extern ValveReferenceMap valves_ref;
+// Motor
+extern MotorStatusMap motors_status_map;
+extern MotorReferenceMap motors_ref;
+
 class EcCommonStep
 {
 public:
@@ -33,6 +47,9 @@ private:
     bool start_ec_valves(void);
     void stop_ec_valves(void);
     
+    void init_ref_map();
+
+
     EcUtils::EC_CONFIG _ec_cfg;
     EcUtils::Ptr _ec_utils;
   
@@ -47,17 +64,6 @@ private:
     std::vector<int> _valve_id_vector,_valve_start_vector;
     bool _print_telemetry=false;
     bool _start_motor=false,_start_valve=false;
-
-    //Power board
-    PwrStatusMap _pow_status_map;
-    //IMU
-    ImuStatusMap _imu_status_map;
-    // Pump
-    PumpStatusMap _pump_status_map;
-    // Valve
-    ValveStatusMap _valve_status_map;
-    // Motor
-    MotorStatusMap _motors_status_map;
 };
 
 #endif

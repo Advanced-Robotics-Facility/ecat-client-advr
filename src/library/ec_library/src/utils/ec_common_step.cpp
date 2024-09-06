@@ -1,5 +1,19 @@
 #include "utils/ec_common_step.h"
 
+//Power board
+PwrStatusMap pow_status_map;
+//IMU
+ImuStatusMap imu_status_map;
+// Pump
+PumpStatusMap pump_status_map;
+PumpReferenceMap pumps_ref;
+// Valve
+ValveStatusMap valve_status_map;
+ValveReferenceMap valves_ref;
+// Motor
+MotorStatusMap motors_status_map;
+MotorReferenceMap motors_ref;
+
 
 using namespace std::chrono;
 
@@ -311,6 +325,9 @@ bool EcCommonStep::start_ec_sys(void)
 #endif       
         if(ec_sts_started){
             _client->start_client(_ec_cfg.period_ms,_ec_cfg.logging);
+            _client->read();
+            telemetry();
+            init_ref_map();
         }
     }catch(std::exception &ex){
         ec_sts_started=false;
@@ -337,18 +354,18 @@ void EcCommonStep::stop_ec_sys(void)
 
 void EcCommonStep::telemetry()
 {
-    _client->get_pow_status(_pow_status_map);
-    _client->get_imu_status(_imu_status_map);
-    _client->get_pump_status(_pump_status_map);
-    _client->get_valve_status(_valve_status_map);
-    _client->get_motors_status(_motors_status_map);
+    _client->get_pow_status(pow_status_map);
+    _client->get_imu_status(imu_status_map);
+    _client->get_pump_status(pump_status_map);
+    _client->get_valve_status(valve_status_map);
+    _client->get_motors_status(motors_status_map);
     
     if(!_print_telemetry){
         return;
     }
 
     //******************* Power Board Telemetry ********
-    for (const auto &[esc_id, pow_rx_pdo] : _pow_status_map){
+    for (const auto &[esc_id, pow_rx_pdo] : pow_status_map){
         auto v_batt =        std::get<0>(pow_rx_pdo);
         auto v_load =        std::get<1>(pow_rx_pdo);
         auto i_load =        std::get<2>(pow_rx_pdo);
@@ -363,7 +380,7 @@ void EcCommonStep::telemetry()
 
     //******************* IMU Telemetry ********
 
-    for (const auto &[esc_id, imu_rx_pdo] : _imu_status_map){
+    for (const auto &[esc_id, imu_rx_pdo] : imu_status_map){
         auto x_rate = std::get<0>(imu_rx_pdo);
         auto y_rate = std::get<1>(imu_rx_pdo);
         auto z_rate = std::get<2>(imu_rx_pdo);
@@ -382,13 +399,13 @@ void EcCommonStep::telemetry()
     //******************* IMU Telemetry ********
 
     //******************* Pump Telemetry ********
-    for (const auto &[esc_id, pump_rx_pdo] : _pump_status_map){
+    for (const auto &[esc_id, pump_rx_pdo] : pump_status_map){
         DPRINTF("PUMP ID: [%d], Pressure: [%hhu] \n",esc_id,std::get<0>(pump_rx_pdo));
     }
     //******************* Pump Telemetry ********
 
     //******************* Valve Telemetry ********
-    for (const auto &[esc_id, valve_rx_pdo] : _valve_status_map){
+    for (const auto &[esc_id, valve_rx_pdo] : valve_status_map){
         auto encoder_position = std::get<0>(valve_rx_pdo);
         auto tor_valve = std::get<1>(valve_rx_pdo);
         auto pressure1 = std::get<2>(valve_rx_pdo);
@@ -402,7 +419,7 @@ void EcCommonStep::telemetry()
 
 
      //******************* Motor Telemetry **************
-    for (const auto &[esc_id, motor_rx_pdo] : _motors_status_map)
+    for (const auto &[esc_id, motor_rx_pdo] : motors_status_map)
     {
         auto link_pos =     std::get<0>(motor_rx_pdo);
         auto motor_pos =    std::get<1>(motor_rx_pdo);
@@ -429,4 +446,36 @@ void EcCommonStep::telemetry()
 
     }
     //******************* Motor Telemetry **************
+}
+
+void EcCommonStep::init_ref_map()
+{
+    
+    // init motor reference map 
+    for (const auto &[esc_id, motor_rx_pdo] : motors_status_map){
+        auto motor_pos =    std::get<1>(motor_rx_pdo);
+        motors_ref[esc_id] = std::make_tuple(   _ec_cfg.motor_config_map[esc_id].control_mode_type,  // ctrl_type
+                                                motor_pos,                                           // pos_ref
+                                                0.0,                                                 // vel_ref
+                                                0.0,                                                 // tor_ref
+                                                _ec_cfg.motor_config_map[esc_id].gains[0],           // gain_1
+                                                _ec_cfg.motor_config_map[esc_id].gains[1],           // gain_2
+                                                _ec_cfg.motor_config_map[esc_id].gains[2],           // gain_3
+                                                _ec_cfg.motor_config_map[esc_id].gains[3],           // gain_4
+                                                _ec_cfg.motor_config_map[esc_id].gains[4],           // gain_5
+                                                1,                                                   // op means NO_OP
+                                                0,                                                   // idx
+                                                0                                                    // aux
+                                            );
+    }
+
+    // init valve reference map 
+    for (const auto &[esc_id, curr_ref] : valve_status_map){
+        valves_ref[esc_id] = std::make_tuple(0, 0, 0, 0, 0, 0, 0, 0);
+    }
+
+    // init valve reference ma
+    for (const auto &[esc_id, press_ref] : pump_status_map){
+        pumps_ref[esc_id] = std::make_tuple(0, 0, 0, 0, 0, 0, 0, 0, 0);
+    }
 }
