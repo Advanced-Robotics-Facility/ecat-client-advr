@@ -102,8 +102,7 @@ int main(int argc, char * const argv[])
         auto incrementat_k=std::chrono::nanoseconds(100000); //(100 us) every 1s
         bool incrementat_freq_req=true;
         
-        while (run_loop && client->is_client_alive())
-        {
+        while (run_loop && client->is_client_alive()){
             client->read();
             ec_common_step.telemetry();
 
@@ -142,8 +141,7 @@ int main(int argc, char * const argv[])
             }
 #endif
             std::this_thread::sleep_until(time);
-        }
-            
+        }       
     }
     
     ec_common_step.stop_ec_sys();
