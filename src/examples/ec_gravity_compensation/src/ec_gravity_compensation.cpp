@@ -24,12 +24,10 @@ static bool run_loop = true;
 static void sig_handler(int sig) 
 {
     printf("got signal %d\n", sig);
-    if (STM_sts=="Motor_Ctrl_SetGains")
-    {
+    if (STM_sts=="Motor_Ctrl_SetGains"){
         run_loop=false;
     }
-    else if (STM_sts=="Motor_Ctrl")
-    {
+    else if (STM_sts=="Motor_Ctrl"){
         restore_gains=true;
     }
 }
@@ -47,17 +45,12 @@ int main(int argc, char * const argv[])
         return 1;
     }
     
-    std::vector<int> motor_id_vector;
-    for ( auto &[id, pos] : ec_cfg.homing_position ) {
-        motor_id_vector.push_back(id);
-    }
-    
-    if(motor_id_vector.empty()){
+    if(ec_cfg.homing_position.empty()){
         DPRINTF("Got an homing position map\n");
         return 1;
     }
     
-     bool ec_sys_started = true;
+    bool ec_sys_started = true;
     try{
         ec_sys_started = ec_common_step.start_ec_sys();
         if(ec_sys_started){
@@ -69,8 +62,7 @@ int main(int argc, char * const argv[])
         return 1;
     }
          
-    if(STM_sts=="Motor_Ctrl_SetGains")
-    {
+    if(STM_sts=="Motor_Ctrl_SetGains") {
         // MODEL INTEFACE SETUP
         auto ec_cfg_file=ec_common_step.get_ec_utils()->get_ec_cfg_file();
         XBot::ConfigOptions config=XBot::ConfigOptions::FromConfigFile(ec_cfg_file); 
@@ -83,101 +75,41 @@ int main(int argc, char * const argv[])
             return 1;
         }
         
-        struct timespec ts= { 0, ec_cfg.period_ms*1000000}; //sample time
-        
-        uint64_t start_time_ns=0;
-        uint64_t time_ns=0;
-        
         float time_elapsed_ms;
-        
-        bool first_Rx=false;
+        float tau=0,alpha=0;
 
-        
-        XBot::JointIdMap q,qdot,q_ref,tau_ref;
+        XBot::JointIdMap q,q_ref,tau_ref;
         Eigen::VectorXd tau_g; 
         
-        
-        /// GAINS
+        // memory allocation
         std::map<int,std::vector<float>> imp_gains_map,imp_zero_gains_map;
-        for(int i=0; i< motor_id_vector.size();i++)
-        {
-            int id = motor_id_vector[i];
-            imp_gains_map[id]=ec_cfg.motor_config_map[id].gains;
-            imp_zero_gains_map[id]=imp_gains_map[id];
-            imp_zero_gains_map[id][0]=0.0;
-            imp_zero_gains_map[id][1]=0.0;
-            imp_zero_gains_map[id][2]=0.0;
+        for (const auto &[esc_id, motor_rx_pdo] : motors_status_map){
+            if(ec_cfg.homing_position.count(esc_id)>0){
+                imp_gains_map[esc_id]=ec_cfg.motor_config_map[esc_id].gains;
+                imp_zero_gains_map[esc_id]=imp_gains_map[esc_id];
+                imp_zero_gains_map[esc_id][0]=0.0;
+                imp_zero_gains_map[esc_id][1]=0.0;
+                q[esc_id]=std::get<1>(motor_rx_pdo); //motor pos
+                q_ref[esc_id]=q[esc_id];
+            }
+        }
+
+        if(q_ref.empty()){
+            throw std::runtime_error("fatal error: motors references structure empty!");
+        }
+
+        int join_num=model->getJointNum();
+        if(model->isFloatingBase()){
+            join_num=join_num-6;
+        }
+        if(q.size() != model->getJointNum()-6){
+            throw std::runtime_error("fatal error: different size of initial position from joint of the model");
         }
 
         float set_gain_time_ms=3000; // Default 3s 
         std::map<int,std::vector<float>> gain_start_map=imp_gains_map;
         std::map<int,std::vector<float>> gain_trj_map=imp_zero_gains_map;
-        std::map<int,std::vector<float>> gain_ref_map=gain_start_map;
-        /// GAINS
-        
-        // Power Board
-        PwrStatusMap pow_status_map;
-        float v_batt,v_load,i_load,temp_pcb,temp_heatsink,temp_batt;
-        
-        // Motor
-        float  link_pos,motor_pos,link_vel,motor_vel,torque,aux;
-        float  motor_temp, board_temp;
-        uint32_t fault,rtt,op_idx_ack;
-        uint32_t cmd_aux_sts,brake_sts,led_sts;
-        MotorStatusMap motors_status_map;
-        
-        float tau=0,alpha=0;
-        MotorReferenceMap motors_ref;
-        
-        // memory allocation
-        client->get_pow_status(pow_status_map);
-        client->get_motors_status(motors_status_map);
-        
-        for ( const auto &[esc_id, motor_status] : motors_status_map){
-            q[esc_id]=std::get<1>(motor_status); //motor pos
-            qdot[esc_id] = std::get<3>(motor_status); //motor vel
-            q_ref[esc_id]=q[esc_id];
-        }
-
-#ifdef TEST_EXAMPLES
-        if(q_ref.empty()){
-            for(int i=0; i<motor_id_vector.size();i++){
-                int id=motor_id_vector[i];
-                q[id]=0.0;
-                qdot[id] = 0.0;
-                q_ref[id]=0.0;
-            }
-        }
-#endif
-
-        if(q.size() == model->getJointNum()-6){
-            //Open Loop SENSE
-            first_Rx=true;
-        }
-        else{
-            throw std::runtime_error("fatal error: different size of initial position from joint of the model");
-        }
-        
-        for ( const auto &[esc_id, pos_ref] : q_ref){
-           motors_ref[esc_id]=std::make_tuple(ec_cfg.motor_config_map[esc_id].control_mode_type, //ctrl_type
-                                              pos_ref, //pos_ref
-                                              0.0, //vel_ref
-                                              0.0, //tor_ref
-                                              ec_cfg.motor_config_map[esc_id].gains[0], //gain_1
-                                              ec_cfg.motor_config_map[esc_id].gains[1], //gain_2
-                                              ec_cfg.motor_config_map[esc_id].gains[2], //gain_3
-                                              ec_cfg.motor_config_map[esc_id].gains[3], //gain_4
-                                              ec_cfg.motor_config_map[esc_id].gains[4], //gain_5
-                                              1, // op means NO_OP
-                                              0, // idx
-                                              0  // aux
-                                              );
-        }
-        
-        if(motors_ref.empty()){
-            throw std::runtime_error("fatal error: motors references structure empty!");
-        }
-        
+        std::map<int,std::vector<float>> gain_ref_map=gain_start_map;        
         // memory allocation
     
         if(ec_cfg.protocol=="iddp"){
@@ -185,7 +117,14 @@ int main(int argc, char * const argv[])
             // add SIGALRM
             signal ( SIGALRM, sig_handler );
             main_common (&argc, (char*const**)&argv, sig_handler);
-            assert(set_main_sched_policy(10) >= 0);
+            int priority = SCHED_OTHER;
+            #if defined(PREEMPT_RT) || defined(__COBALT__)
+                priority = sched_get_priority_max ( SCHED_FIFO ) / 3;
+            #endif
+            int ret = set_main_sched_policy(priority);
+            if (ret < 0){
+                throw std::runtime_error("fatal error on set_main_sched_policy");
+            }
         }
         else{
             struct sigaction sa;
@@ -194,53 +133,19 @@ int main(int argc, char * const argv[])
             sigaction(SIGINT,&sa, nullptr);
         }
     
-        start_time_ns= iit::ecat::get_time_ns();
-        time_ns=start_time_ns;
+        auto start_time = std::chrono::high_resolution_clock::now();
+        auto time = start_time;
+        const auto period = std::chrono::nanoseconds(ec_cfg.period_ms * 1000000);
         
         while (run_loop && client->is_client_alive())
         {
-            time_elapsed_ms= (static_cast<float>((time_ns-start_time_ns))/1000000);
-            //DPRINTF("Time [%f]\n",time_elapsed_ms);
-            
-            // Rx "SENSE"
-            //******************* Power Board Telemetry ********
-            client->get_pow_status(pow_status_map);
-            for ( const auto &[esc_id, pow_rx_pdo] : pow_status_map){
-                v_batt =        std::get<0>(pow_rx_pdo);
-                v_load =        std::get<1>(pow_rx_pdo);
-                i_load =        std::get<2>(pow_rx_pdo);
-                temp_pcb =      std::get<3>(pow_rx_pdo);
-                temp_heatsink=  std::get<4>(pow_rx_pdo);
-                temp_batt=      std::get<5>(pow_rx_pdo);
-            }
-            //******************* Power Board Telemetry ********
-            
-            //******************* Motor Telemetry **************
-            client->get_motors_status(motors_status_map);
-            for ( const auto &[esc_id, motor_status] : motors_status_map){
-                try{
-                    std::tie(link_pos,motor_pos,link_vel,motor_vel,torque,motor_temp,board_temp,fault,rtt,op_idx_ack,aux,cmd_aux_sts) = motor_status;
-                    
-                    // PRINT OUT Brakes and LED get_motors_status @ NOTE To be tested.         
-                    brake_sts = cmd_aux_sts & 3; //00 unknown
-                                                //01 release brake 
-                                                //10 enganged brake  
-                                                //11 error
-                    led_sts= (cmd_aux_sts & 4)/4; // 1 or 0 LED  ON/OFF
-                    
-                    
-                    //Closed Loop SENSE for motor position and velocity
-                    q[esc_id]=motor_pos;
-                    qdot[esc_id] = motor_vel;
-                    q_ref[esc_id]=q[esc_id];
-                    
-                } catch (std::out_of_range oor) {}
-            }
+            client->read();
+            ec_common_step.telemetry();
 
-            //******************* Motor Telemetry **************
+            time_elapsed_ms = std::chrono::duration<float, std::milli>(time - start_time).count();
+            //DPRINTF("Time elapsed ms: [%f]\n",time_elapsed_ms);
                 
-            if(STM_sts=="Motor_Ctrl_SetGains")
-            {
+            if(STM_sts=="Motor_Ctrl_SetGains"){
                 // define a simplistic linear trajectory
                 tau= time_elapsed_ms / set_gain_time_ms;
 
@@ -255,48 +160,67 @@ int main(int argc, char * const argv[])
                 }
             }
 
+            for (const auto &[esc_id, motor_rx_pdo] : motors_status_map){
+                if(ec_cfg.homing_position.count(esc_id)>0){
+                    q[esc_id]=std::get<1>(motor_rx_pdo); //motor pos
+                    q_ref[esc_id]=q[esc_id];
+                }
+            }   
+
             model->setJointPosition(q);
             model->update();
             
             model->computeGravityCompensation(tau_g);
             model->eigenToMap(tau_g,tau_ref);
+
+            for ( const auto &[esc_id, tor_ref] : tau_ref){
+                if(ec_cfg.homing_position.count(esc_id)>0){
+                    double pos_ref = q_ref[esc_id];
+                    std::get<1>(motors_ref[esc_id]) = pos_ref;
+                    std::get<3>(motors_ref[esc_id]) = tor_ref;
+                    std::get<4>(motors_ref[esc_id]) = gain_ref_map[esc_id][0];
+                    std::get<5>(motors_ref[esc_id]) = gain_ref_map[esc_id][1];
+                    std::get<6>(motors_ref[esc_id]) = gain_ref_map[esc_id][2];
+                    std::get<7>(motors_ref[esc_id]) = gain_ref_map[esc_id][3];
+                    std::get<8>(motors_ref[esc_id]) = gain_ref_map[esc_id][4];
+                }
+            }
             
             // ************************* SEND ALWAYS REFERENCES***********************************//
-            for ( const auto &[esc_id, tor_ref] : tau_ref){
-                double pos_ref = q_ref[esc_id];
-                std::get<1>(motors_ref[esc_id]) = pos_ref;
-                std::get<3>(motors_ref[esc_id]) = tor_ref;
-                std::get<4>(motors_ref[esc_id]) = gain_ref_map[esc_id][0];
-                std::get<5>(motors_ref[esc_id]) = gain_ref_map[esc_id][1];
-                std::get<6>(motors_ref[esc_id]) = gain_ref_map[esc_id][2];
-                std::get<7>(motors_ref[esc_id]) = gain_ref_map[esc_id][3];
-                std::get<8>(motors_ref[esc_id]) = gain_ref_map[esc_id][4];
-            }
             client->set_motors_references(RefFlags::FLAG_MULTI_REF, motors_ref);
             // ************************* SEND ALWAYS REFERENCES***********************************//
+
+            time = time + period;
             
-            if(STM_sts=="Motor_Ctrl_SetGains")
-            {
-                if(time_elapsed_ms>=set_gain_time_ms)
-                {
+            if(STM_sts=="Motor_Ctrl_SetGains"){
+                if(time_elapsed_ms>=set_gain_time_ms){
                     STM_sts="Motor_Ctrl";
-                    start_time_ns=time_ns;
+                    start_time=time;
                 }
             }
             else if(STM_sts=="Motor_Ctrl")
             {
-                if(restore_gains)
-                {
+                if(restore_gains){
                     STM_sts="Motor_Ctrl_SetGains";
                     gain_start_map=gain_ref_map;
                     gain_trj_map=imp_gains_map;
-                    start_time_ns=time_ns;
+                    start_time=time;
                 }
             }
             
-            clock_nanosleep(CLOCK_MONOTONIC, 0, &ts, NULL); 
-            // get period ns
-            time_ns = iit::ecat::get_time_ns();
+            client->write();
+            client->log();
+            
+            const auto now = std::chrono::high_resolution_clock::now();
+
+#if defined(PREEMPT_RT) || defined(__COBALT__)
+            // if less than threshold, print warning (only on rt threads)
+            if (now > time && ec_cfg.protocol == "iddp"){
+                ++overruns;
+                DPRINTF("main process overruns: %d\n", overruns);
+            }
+#endif
+            std::this_thread::sleep_until(time);
         }
             
     }
