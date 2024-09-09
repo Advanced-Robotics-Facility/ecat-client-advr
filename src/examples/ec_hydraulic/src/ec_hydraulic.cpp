@@ -154,7 +154,6 @@ int main(int argc, char *const argv[])
 
         if (ec_cfg.protocol == "iddp"){
             DPRINTF("Real-time process....\n");
-            // add SIGALRM
             main_common(&argc, (char *const **)&argv, 0);
             int priority = SCHED_OTHER;
             #if defined(PREEMPT_RT) || defined(__COBALT__)
