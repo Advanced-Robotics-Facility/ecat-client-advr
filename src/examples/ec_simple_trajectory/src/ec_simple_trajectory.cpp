@@ -111,7 +111,7 @@ int main(int argc, char * const argv[])
             ec_common_step.telemetry();
 
             time_elapsed_ms = std::chrono::duration<float, std::milli>(time - start_time).count();
-            //DPRINTF("Main Time elapsed ms: [%f]\n",time_elapsed_ms);
+            //DPRINTF("Time elapsed ms: [%f]\n",time_elapsed_ms);
         
             // define a simplistic linear trajectory
             tau= time_elapsed_ms / set_trj_time_ms;
