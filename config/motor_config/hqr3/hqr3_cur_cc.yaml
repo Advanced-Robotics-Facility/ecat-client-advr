@@ -5,7 +5,7 @@ leg_1_joint_1:
   motor_type: HHCM #allowed HHCM, Circulo, FlexPro, default HHCM
   brake_present: false
   control_mode: 0xCC
-  gains: [2000.0,2000.0,0.0,0.0,0.0]
+  gains: [3500.0,2000.0,0.0,0.0,0.0]
 
 
 leg_1_joint_2:

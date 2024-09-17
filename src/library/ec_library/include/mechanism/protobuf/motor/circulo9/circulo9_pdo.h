@@ -51,7 +51,7 @@ inline void Circulo9Pdo<T>::get_from_pb()
     std::get<7>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->statusword();
     std::get<8>(MotorPdo<T>::rx_pdo)    = 0; //rtt
     std::get<9>(MotorPdo<T>::rx_pdo)    = 0; //op_idx_ack
-    std::get<10>(MotorPdo<T>::rx_pdo)   = 0; //aux
+    std::get<10>(MotorPdo<T>::rx_pdo)   = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->current(); //aux
     std::get<11>(MotorPdo<T>::rx_pdo)   = 0; //cmd_aux_sts
     
     MotorPdo<T>::read_pos_ref           = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->demanded_pos();

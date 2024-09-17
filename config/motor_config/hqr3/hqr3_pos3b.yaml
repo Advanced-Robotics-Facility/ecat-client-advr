@@ -6,7 +6,8 @@ leg_1_joint_1:
   brake_present: false
   control_mode: 0x3B
   #gains: [200.0,0.0,10.0,0.0,0.0]
-  gains: [0.01,0.001,0.00004,0.0,0.0]
+  #gains: [0.01,0.001,0.00004,0.0,0.0]
+  gains: [9.0,4.907,0.02,0.0,0.0]
 
 
 leg_1_joint_2:
