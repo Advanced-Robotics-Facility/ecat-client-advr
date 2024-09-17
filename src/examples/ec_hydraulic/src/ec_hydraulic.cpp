@@ -112,7 +112,8 @@ int main(int argc, char *const argv[])
                 qdot_set_trj[esc_id] = qdot_set_trj_1[esc_id];
                 qdot_set_zero[esc_id]=0.0;
 
-                tor_ref[esc_id] = tor_start[esc_id] = 0.0;
+                tor_start[esc_id] = std::get<4>(motors_status_map[esc_id]);    // torque actual
+                tor_ref[esc_id] = tor_start[esc_id];
                 tor_set_trj_1[esc_id] = taur_ref_k;
                 tor_set_trj_2[esc_id] = -taur_ref_k;
                 tor_set_trj[esc_id] = tor_set_trj_1[esc_id];
