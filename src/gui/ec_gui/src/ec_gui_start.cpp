@@ -84,10 +84,7 @@ void EcGuiStart::create_ec_iface()
             if(_ec_wrapper_info.client->is_client_alive()){
                 _ec_wrapper_info.client->stop_client();
             }
-        } 
-#ifdef TEST_GUI 
-        EcUtils::Ptr ec_utils = std::make_shared<EcUtils>();
-#else
+        }
         
         auto ec_net_info = _ec_gui_net->get_net_setup();
     
@@ -96,8 +93,11 @@ void EcGuiStart::create_ec_iface()
         ec_cfg.host_name=ec_net_info.host_name;
         ec_cfg.host_port=ec_net_info.host_port;
         ec_cfg.period_ms = _ec_gui_wrapper->get_period_ms();
-        ec_cfg.logging = false;
-        ec_cfg.auto_start=true;
+        ec_cfg.logging = false; 
+        
+#ifdef TEST_GUI 
+        EcUtils::Ptr ec_utils = std::make_shared<EcUtils>();
+#else
         EcUtils::Ptr ec_utils = std::make_shared<EcUtils>(ec_cfg);
 #endif
 
@@ -105,6 +105,7 @@ void EcGuiStart::create_ec_iface()
         _ec_wrapper_info.client.reset();
         try{
             _ec_wrapper_info.client = ec_utils->make_ec_iface();
+            _ec_wrapper_info.client->start_client(ec_cfg.period_ms,ec_cfg.logging);
         }
         catch ( std::exception &e ){
             QMessageBox msgBox;
