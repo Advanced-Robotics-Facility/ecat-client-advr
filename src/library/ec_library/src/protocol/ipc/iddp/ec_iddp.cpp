@@ -88,7 +88,6 @@ void EcIDDP::stop_client()
 
 void EcIDDP::th_loop( void * )
 {
-    
     tNow = iit::ecat::get_time_ns(CLOCK_MONOTONIC);
     s_loop ( tNow - tPre );
     float sample_elapsed_ms= (static_cast<float>((tNow-tPre))/1000000);
@@ -126,6 +125,5 @@ void EcIDDP::th_loop( void * )
 
     // write motors and others pdo
     write_pdo();
-
 }
 //******************************* Periodic Activity *****************************************************//
