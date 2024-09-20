@@ -13,6 +13,8 @@ EcIDDP::EcIDDP(std::string host_address,uint32_t host_port):
     schedpolicy = SCHED_FIFO;
 #endif
     priority = sched_get_priority_max ( schedpolicy ) / 2;
+    // non-periodic
+    period.period = {0,1}; 
     stacksize = 0; // not set stak size !!!! YOU COULD BECAME CRAZY !!!!!!!!!!!!
 }
 
@@ -55,11 +57,6 @@ void EcIDDP::set_loop_time(uint32_t period_ms)
 
 void EcIDDP::start_client(uint32_t period_ms,bool logging)
 {
-    // periodic
-    struct timespec ts;
-    iit::ecat::us2ts(&ts, 1000*period_ms);
-    // period.period is a timeval ... tv_usec 
-    period.period = {0,1}; 
     _period_ns = 1000000*period_ms;
 
     _logging=logging;
@@ -84,8 +81,6 @@ void EcIDDP::stop_client()
     join();
     
     stop_logging();
-
-    //_client_alive=false;
 }
 
 

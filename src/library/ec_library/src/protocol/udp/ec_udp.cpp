@@ -16,10 +16,8 @@ EcUDP::~EcUDP()
 {
     stop_client();
     
-    if(_ec_udp_thread != nullptr)
-    {
-        if ( _ec_udp_thread->joinable() ) 
-        {
+    if(_ec_udp_thread != nullptr){
+        if ( _ec_udp_thread->joinable() ) {
             _consoleLog->info("EtherCAT Client thread stopped");
             _ec_udp_thread->join();
         }
@@ -69,9 +67,7 @@ void EcUDP::start_client(uint32_t period_ms,bool logging)
 
 void EcUDP::stop_client()
 {
-    if(_client_alive)
-    {
-        
+    if(_client_alive){ 
         stop();
         
         disconnect();
@@ -98,10 +94,8 @@ void EcUDP::periodicActivity()
     // Server alive checking //
     auto client_alive_elapsed_ms=duration_cast<milliseconds>(sample_time-_client_alive_time);
     
-    if(_actual_server_status==ServerStatus::IDLE)
-    {
-        if(client_alive_elapsed_ms >= _server_alive_check_ms)
-        {
+    if(_actual_server_status==ServerStatus::IDLE){
+        if(client_alive_elapsed_ms >= _server_alive_check_ms){
              // Stop to receive motors, imu, ft, power board pdo information // 
             // reset motors references
             _motor_ref_flags = RefFlags::FLAG_NONE;
@@ -111,8 +105,7 @@ void EcUDP::periodicActivity()
             stop_client();
         }
     }
-    else
-    {
+    else{
         _actual_server_status= ServerStatus::IDLE;
         _client_alive_time = steady_clock::now();
         
