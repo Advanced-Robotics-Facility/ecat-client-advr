@@ -4,14 +4,14 @@
 leg_1_joint_1:
   motor_type: HHCM #allowed HHCM, Circulo, FlexPro, default HHCM
   brake_present: false
-  control_mode: 0xCC
+  control_mode: 0xDD
   gains: [2000.0,2000.0,0.0,0.0,0.0]
 
 
 leg_1_joint_2:
   motor_type: HHCM #allowed HHCM, Circulo, FlexPro, default HHCM
   brake_present: false
-  control_mode: 0xCC
+  control_mode: 0xDD
   gains: [200.0,0.0,10.0,0.0,0.0]
 
 #############################
@@ -20,14 +20,14 @@ leg_1_joint_2:
 leg_2_joint_1:
   motor_type: HHCM #allowed HHCM, Circulo, FlexPro, default HHCM
   brake_present: false
-  control_mode: 0xCC
+  control_mode: 0xDD
   gains: [200.0,0.0,10.0,0.0,0.0]
   
 
 leg_2_joint_2:
   motor_type: HHCM #allowed HHCM, Circulo, FlexPro, default HHCM
   brake_present: false
-  control_mode: 0xCC
+  control_mode: 0xDD
   gains: [200.0,0.0,10.0,0.0,0.0]
 
 #############################
@@ -36,13 +36,13 @@ leg_2_joint_2:
 leg_3_joint_1:
   motor_type: HHCM #allowed HHCM, Circulo, FlexPro, default HHCM
   brake_present: false
-  control_mode: 0xCC
+  control_mode: 0xDD
   gains: [200.0,0.0,10.0,0.0,0.0]
   
 leg_3_joint_2:
   motor_type: HHCM #allowed HHCM, Circulo, FlexPro, default HHCM
   brake_present: false
-  control_mode: 0xCC
+  control_mode: 0xDD
   gains: [200.0,0.0,10.0,0.0,0.0]
 
 #############################
@@ -51,11 +51,11 @@ leg_3_joint_2:
 leg_4_joint_1:
   motor_type: HHCM #allowed HHCM, Circulo, FlexPro, default HHCM
   brake_present: false
-  control_mode: 0xCC
+  control_mode: 0xDD
   gains: [200.0,0.0,10.0,0.0,0.0]
   
 leg_4_joint_2:
   motor_type: HHCM #allowed HHCM, Circulo, FlexPro, default HHCM
   brake_present: false
-  control_mode: 0xCC
+  control_mode: 0xDD
   gains: [200.0,0.0,10.0,0.0,0.0]
