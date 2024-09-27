@@ -233,7 +233,7 @@ void EcGuiWrapper::send()
         }
     }
 
-    if(_ec_wrapper_info.client->is_client_alive()){
+    if(_ec_wrapper_info.client->get_client_status().status!=ClientStatusEnum::ERROR){
         _ec_gui_pdo->write();
     }
     else{
@@ -315,7 +315,7 @@ void EcGuiWrapper::stop_receive()
 
 void EcGuiWrapper::receive()
 {
-    if(_ec_wrapper_info.client->is_client_alive()){
+    if(_ec_wrapper_info.client->get_client_status().status!=ClientStatusEnum::ERROR){
         _ec_gui_pdo->read();
     }
     else{

@@ -23,8 +23,6 @@ EcIDDP::~EcIDDP()
     iit::ecat::print_stat ( s_loop );
     
     stop_client();
-    
-    _client_alive=false;
 }
 
 //******************************* INIT *****************************************************//
@@ -33,7 +31,7 @@ void EcIDDP::th_init ( void * )
 {
     if(!init_read_pdo()){
         DPRINTF("Client thread not initialized!\n");
-        _client_alive=false;
+        _client_status.status=ClientStatusEnum::ERROR;
         stop_client();
     }
     else{
@@ -96,7 +94,7 @@ void EcIDDP::th_loop( void * )
     
     loop_cnt++;
 
-    if(!_client_alive){
+    if(_client_status.status==ClientStatusEnum::ERROR){
         _run_loop = false;
         return;
     }
@@ -112,6 +110,7 @@ void EcIDDP::th_loop( void * )
             if(ret!=ETIMEDOUT){
                 DPRINTF("Error on pthread_cond_timedwait reason: %d\n",ret);
                 _run_loop = false;
+                _client_status.status=ClientStatusEnum::ERROR;
                 return;
             }
        }

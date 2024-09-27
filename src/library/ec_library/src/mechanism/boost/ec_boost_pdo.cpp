@@ -51,13 +51,15 @@ void EcBoostPdo::server_status_handler(char *buf, size_t size)
         case ServerStatus::CONNECTED :
             break;
         case ServerStatus::MOTOR_STARTED :{
-            _client_status=ClientStatus::MOTORS_STARTED;
+            _client_status.status=ClientStatusEnum::DEVICES_STARTED;
+            _client_status.motors_started=true;
         }break;
         case ServerStatus::MOTOR_STOPPED :{
-            _client_status=ClientStatus::MOTORS_STOPPED;
+            _client_status.status=ClientStatusEnum::DEVICES_STOPPED;
+            _client_status.motors_started=false;
         }break;
         case ServerStatus::MOTOR_CTRL :{
-            _client_status=ClientStatus::MOTORS_CTRL;
+            _client_status.status=ClientStatusEnum::DEVICES_CTRL;
         }break;
     
         default:

@@ -67,14 +67,13 @@ void EcUDP::start_client(uint32_t period_ms,bool logging)
 
 void EcUDP::stop_client()
 {
-    if(_client_alive){ 
+    if(_client_status.status!=ClientStatusEnum::IDLE){ 
+
         stop();
         
         disconnect();
         
         stop_logging();
-        
-        _client_alive=false;
     }
 }
 

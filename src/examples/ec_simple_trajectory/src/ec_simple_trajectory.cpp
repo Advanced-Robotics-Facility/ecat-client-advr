@@ -48,7 +48,7 @@ int main(int argc, char * const argv[])
         float trj_time_ms = ec_cfg.trajectory_time_sec * 1000;
         float set_trj_time_ms = hm_time_ms;
         
-        bool run=true;        
+        bool run_loop=true;        
         std::string STM_sts="Homing";
 
         std::map<int, double> q_set_trj = ec_cfg.homing_position;
@@ -106,7 +106,7 @@ int main(int argc, char * const argv[])
         auto time = start_time;
         const auto period = std::chrono::nanoseconds(ec_cfg.period_ms * 1000000);
         
-        while (run && client->is_client_alive()){
+        while (run_loop && client->get_client_status().status!=ClientStatusEnum::ERROR){
             client->read();
             ec_common_step.telemetry();
 
@@ -171,7 +171,7 @@ int main(int argc, char * const argv[])
             else if((time_elapsed_ms>=trj_time_ms)&&(STM_sts=="Trajectory")){
                 if(trajectory_counter==ec_cfg.repeat_trj){
                     start_time=time;
-                    run=false;
+                    run_loop=false;
                 }
                 else{
                     STM_sts = "Homing";

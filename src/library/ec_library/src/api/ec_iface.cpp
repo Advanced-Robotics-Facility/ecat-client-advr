@@ -4,7 +4,11 @@ EcIface::EcIface()
 {
     _ec_logger = std::make_shared<EcLogger>();
     _logging=false;
-    _client_status=ClientStatus::IDLE;
+
+    _client_status.status=ClientStatusEnum::IDLE;
+    _client_status.motors_started=false;
+    _client_status.valves_started=false;
+    _client_status.pumps_started=false;
     
     _motor_ref_flags=RefFlags::FLAG_NONE;
     _motors_references.clear();
@@ -58,8 +62,6 @@ EcIface::EcIface()
         _consoleLog=spdlog::get("console");
     }
     
-    _client_alive=true;
-    
     _consoleLog->info("EtherCAT Client initialized");
 }
 
@@ -74,9 +76,9 @@ EcIface::~EcIface()
     _consoleLog.reset();
 }
 
-bool EcIface::is_client_alive()
+EcIface::CLIENT_STATUS EcIface::get_client_status()
 {
-    return _client_alive;
+    return _client_status;
 }
 
 void EcIface::start_logging()

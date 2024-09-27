@@ -347,9 +347,8 @@ void EcCommonStep::stop_ec_sys(void)
     }
 
     // STOP CLIENT
-    if(_client->is_client_alive()){
-        _client->stop_client();
-    }
+    _client->stop_client();
+
 }
 
 void EcCommonStep::telemetry()

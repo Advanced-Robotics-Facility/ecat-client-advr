@@ -55,20 +55,16 @@ enum class RefFlags : uint32_t
 
 enum ClientCmdType { STOP, START};
 
-enum class ClientStatus : uint32_t
+enum class ClientStatusEnum : uint32_t
 {
     ERROR           = 0,        // Error
     WAITING_REPLY   = 1 << 0,
     IDLE            = 1 << 1,   
     CONNECTED       = 1 << 2,   
-    MOTORS_MAPPED   = 1 << 3,   
-    MOTORS_READY    = 1 << 4,   
-    MOTORS_STARTED  = 1 << 5,   
-    MOTORS_BRK_OFF  = 1 << 6,   
-    MOTORS_CTRL     = 1 << 7,   
-    MOTORS_STOPPED  = 1 << 8,   
-    MOTORS_BRK_ON   = 1 << 9,   
-    
+    DEVICES_MAPPED   = 1 << 3,   
+    DEVICES_STARTED  = 1 << 4,   
+    DEVICES_CTRL     = 1 << 5,   
+    DEVICES_STOPPED  = 1 << 6,   
 };
 
 template <typename E>

@@ -39,7 +39,7 @@ void EcBoostCmd::server_replies_handler(char*buf, size_t size)
             this->proto.getCliReqSrvRepPayload(buf, size, offset, server_args);
             std::tie(hash, std::ignore) = server_args;
             _consoleLog->info(" <-- Connected ! {}", hash);
-            _client_status=ClientStatus::CONNECTED;
+            _client_status.status=ClientStatusEnum::CONNECTED;
             break;
     
         case CliReqSrvRep::PONG :
@@ -61,32 +61,26 @@ void EcBoostCmd::repl_replies_handler(char *buf, size_t size)
 
     switch ( _repl_req_rep ) {
     
-        case ReplReqRep::SLAVES_INFO:
-            {
+        case ReplReqRep::SLAVES_INFO:{
                 ret = proto.getReplReplySlaveInfo(buf,size,_slave_info,_reply_err_msg);
                 for ( auto &[id, type, pos] : _slave_info ) {
                     _consoleLog->info( "     id {} type {} pos {}", id, type, pos);
                 }
-            }
-            break;
-
-        case ReplReqRep::SDO_CMD:
-            {
+        }break;
+        case ReplReqRep::SDO_CMD:{
                 uint32_t esc_id;
                 _rr_sdo.clear();
                 ret = proto.getReplReplySdoCmd(buf,size, esc_id, _rr_sdo,_reply_err_msg);
                 for ( auto &[k,v] : _rr_sdo ) {
                     _consoleLog->info( " <-- id {} : {} = {}", esc_id, k, v);
                 }
-            }
-            break;
+        }break;
 
         default:
             break;
     }
     
-    if(_cmd_req_reply)
-    {
+    if(_cmd_req_reply){
         _cv_repl_reply->notify_one();
         _cmd_req_reply=false;
     }
@@ -95,8 +89,7 @@ void EcBoostCmd::repl_replies_handler(char *buf, size_t size)
 //******************************* COMMANDS *****************************************************//
 void EcBoostCmd::connect()
 {
-    if(_client_status==ClientStatus::IDLE)
-    {
+    if(_client_status.status==ClientStatusEnum::IDLE){
         CBuff sendBuffer{};
         _consoleLog->info(" Client port:{} and period_ms: {} \n", _client_port, get_period_ms());
         CCA client_args = std::make_tuple(_client_port, get_period_ms());
@@ -104,8 +97,7 @@ void EcBoostCmd::connect()
         do_send(sendBuffer.data(),  sendBuffer.size() );
         _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
     }
-    else
-    {
+    else{
         _consoleLog->info("Client already connected, cannot perform the connect command");
     }
 
@@ -113,14 +105,16 @@ void EcBoostCmd::connect()
 
 void EcBoostCmd::disconnect()
 {
-    if(_client_status!=ClientStatus::IDLE)
-    {
+    if(_client_status.status!=ClientStatusEnum::IDLE){
         CBuff sendBuffer{};
         uint32_t payload = 0xCACA0;
         auto sizet = proto.packClientRequest(sendBuffer, CliReqSrvRep::DISCONNECT, payload);
         do_send(sendBuffer.data(),  sendBuffer.size() );
         _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
-        _client_status=ClientStatus::IDLE;
+        _client_status.status=ClientStatusEnum::IDLE;
+    }
+    else{
+        _consoleLog->info("Client already disconnected, cannot perform the connect command");
     }
 }
 
@@ -155,13 +149,10 @@ bool EcBoostCmd::get_reply_from_server(ReplReqRep cmd_req)
     _cmd_req_reply=true;
     _cv_repl_reply->wait_for(lk,std::chrono::milliseconds(_wait_reply_time)); // timer for ACK and NACK from udp server
     
-    if(_client_alive)
-    {
+    if(_client_status.status!=ClientStatusEnum::ERROR){
         _consoleLog->info(" Command requested ---> {} Command reply--->{} ", cmd_req, _repl_req_rep);
-        if(cmd_req == _repl_req_rep)
-        {
-            if(_reply_err_msg == "OkI")
-            {
+        if(cmd_req == _repl_req_rep){
+            if(_reply_err_msg == "OkI"){
                 _reply_err_msg = "";
                 return true;
             }
@@ -191,38 +182,32 @@ bool EcBoostCmd::retrieve_slaves_info(SSI &slave_info)
     int attemps_cnt = 0;
     bool ret_cmd_status=false;
     
-    if(!_slave_info.empty())
-    {
+    if(!_slave_info.empty()){
         slave_info=_slave_info;
         return true;
     }
 
     _slave_info.clear();
-    while(slave_info.empty() && attemps_cnt < _max_cmd_attemps)
-    {
-        if(_client_alive)
-        {
+    while(slave_info.empty() && attemps_cnt < _max_cmd_attemps){
+        if(_client_status.status!=ClientStatusEnum::ERROR){
+            
             get_slaves_info();
-
             ret_cmd_status = get_reply_from_server(ReplReqRep::SLAVES_INFO);
-            if(ret_cmd_status)
-            {
+            
+            if(ret_cmd_status){
                 slave_info = _slave_info;
                 attemps_cnt = _max_cmd_attemps;
-                if(_client_status!=ClientStatus::MOTORS_STARTED ||
-                   _client_status!=ClientStatus::MOTORS_CTRL)
-                {
-                    _client_status=ClientStatus::MOTORS_MAPPED;
+                if(_client_status.status!=ClientStatusEnum::DEVICES_STARTED ||
+                   _client_status.status!=ClientStatusEnum::DEVICES_CTRL){
+                    _client_status.status=ClientStatusEnum::DEVICES_MAPPED;
                 }
             }
-            else
-            {
+            else{
                 attemps_cnt++;
             }
         }
-        else
-        {
-            _consoleLog->error("UDP client not alive, please stop the main process!");
+        else{
+            _consoleLog->error("Client in error state, please stop the main process!");
             return false;
         }
     }
@@ -266,26 +251,21 @@ bool EcBoostCmd::retrieve_rr_sdo(uint32_t esc_id,
     bool ret_cmd_status=false;
     
     _rr_sdo.clear();
-    while(rr_sdo.empty() && attemps_cnt < _max_cmd_attemps)
-    {
-        if(_client_alive)
-        {
+    while(rr_sdo.empty() && attemps_cnt < _max_cmd_attemps){
+        if(_client_status.status!=ClientStatusEnum::ERROR){
             getAndset_slaves_sdo(esc_id,rd_sdo,wr_sdo);
             
             ret_cmd_status = get_reply_from_server(ReplReqRep::SDO_CMD);
-            if(ret_cmd_status)
-            {
+            if(ret_cmd_status){
                 rr_sdo = _rr_sdo;
                 attemps_cnt = _max_cmd_attemps;
             }
-            else
-            {
+            else{
                 attemps_cnt++;
             }
         }
-        else
-        {
-            _consoleLog->error("UDP client not alive, please stop the main process");
+        else{
+            _consoleLog->error("Client in error state, please stop the main process!");
             return false;
         }
     }
@@ -300,25 +280,20 @@ bool EcBoostCmd::set_wr_sdo(uint32_t esc_id,
     int attemps_cnt = 0;
     bool ret_cmd_status=false;
 
-    while(attemps_cnt < _max_cmd_attemps)
-    {
-        if(_client_alive)
-        {
+    while(attemps_cnt < _max_cmd_attemps){
+        if(_client_status.status!=ClientStatusEnum::ERROR){
             getAndset_slaves_sdo(esc_id,rd_sdo,wr_sdo);
 
             ret_cmd_status = get_reply_from_server(ReplReqRep::SDO_CMD);
-            if(ret_cmd_status)
-            {
+            if(ret_cmd_status){
                 attemps_cnt = _max_cmd_attemps;
             }
-            else
-            {
+            else{
                 attemps_cnt++;
             }
         }
-        else
-        {
-            _consoleLog->error("UDP client not alive, please stop the main process");
+        else{
+            _consoleLog->error("Client in error state, please stop the main process!");
             return false;
         }
     }
@@ -329,14 +304,14 @@ bool EcBoostCmd::start_motors(const MST &motors_start)
 {
     bool ret_cmd_status=false;
 
-    if(_client_status==ClientStatus::MOTORS_STARTED)
+    if(_client_status.motors_started)
     {
         _consoleLog->error("Motors already started, stop the motors before performing start motors command");
         return ret_cmd_status;
     }
-    else if(_client_status==ClientStatus::MOTORS_CTRL)
+    else if(_client_status.status==ClientStatusEnum::DEVICES_CTRL)
     {
-        _consoleLog->error("Motors are controlled, stop the motors before performing start motors command");
+        _consoleLog->error("Devices are controlled, stop the devices before performing start motors command");
         return ret_cmd_status;
     }
     else
@@ -346,10 +321,8 @@ bool EcBoostCmd::start_motors(const MST &motors_start)
         uint32_t extend_wait_reply_time = _wait_reply_time + 1000 * (motors_start.size() / 10 );
         set_wait_reply_time(extend_wait_reply_time);
 
-        while(attemps_cnt < _max_cmd_attemps)
-        {
-            if(_client_alive)
-            {
+        while(attemps_cnt < _max_cmd_attemps){
+            if(_client_status.status!=ClientStatusEnum::ERROR){
 
                 // clear motors references
                 _motor_ref_flags=RefFlags::FLAG_NONE;
@@ -360,19 +333,17 @@ bool EcBoostCmd::start_motors(const MST &motors_start)
                 _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
                 ret_cmd_status = get_reply_from_server(ReplReqRep::START_MOTOR);
 
-                if(ret_cmd_status)
-                {
+                if(ret_cmd_status){
                     attemps_cnt = _max_cmd_attemps;
-                    _client_status=ClientStatus::MOTORS_STARTED;
+                    _client_status.status=ClientStatusEnum::DEVICES_STARTED;
+                    _client_status.motors_started=true;
                 }
-                else
-                {
+                else{
                     attemps_cnt++;
                 }
             }
-            else
-            {
-                _consoleLog->error("UDP client not alive, please stop the main process");
+            else{
+                _consoleLog->error("Client in error state, please stop the main process!");
                 return false;
             }
         }
@@ -388,33 +359,29 @@ bool EcBoostCmd::stop_motors()
 {
     int attemps_cnt=0;
     bool ret_cmd_status=false;
-    while(attemps_cnt < _max_cmd_attemps)
-    {
-        if(_client_alive)
-        {
+    while(attemps_cnt < _max_cmd_attemps){
+        if(_client_status.status!=ClientStatusEnum::ERROR){
             CBuff sendBuffer{};
             auto sizet = proto.packReplRequest(sendBuffer, ReplReqRep::STOP_MOTOR);
             do_send(sendBuffer.data(), sendBuffer.size() );
             _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
             
             ret_cmd_status = get_reply_from_server(ReplReqRep::STOP_MOTOR);
-            if(ret_cmd_status)
-            {
+            if(ret_cmd_status){
                 attemps_cnt = _max_cmd_attemps;
 
-                _client_status=ClientStatus::MOTORS_STOPPED;
+                _client_status.status=ClientStatusEnum::DEVICES_STOPPED;
+                _client_status.motors_started=false;
 
                 // clear motors references
                 _motor_ref_flags=RefFlags::FLAG_NONE;
             }
-            else
-            {
+            else{
                 attemps_cnt++;
             }
         }
-        else
-        {
-            _consoleLog->error("UDP client not alive, please stop the main process");
+        else{
+            _consoleLog->error("Client in error state, please stop the main process!");
             return false;
         }
     }
@@ -425,17 +392,15 @@ bool EcBoostCmd::stop_motors()
 bool EcBoostCmd::pdo_aux_cmd(const PAC & pac)
 {
     bool ret_cmd_status=false;
-    if(_client_alive)
-    {
+    if(_client_status.status!=ClientStatusEnum::ERROR){
         CBuffT<4096u> sendBuffer{};
         auto sizet = proto.packReplRequestSetPdoAuxCmd(sendBuffer, pac);
         do_send(sendBuffer.data(), sendBuffer.size() );
         _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
         ret_cmd_status=true;
     }
-    else
-    {
-        _consoleLog->error("UDP client not alive, please stop the main process");
+    else{
+        _consoleLog->error("Client not alive, please stop the main process!");
     }
 
     return ret_cmd_status;
@@ -444,16 +409,14 @@ bool EcBoostCmd::pdo_aux_cmd(const PAC & pac)
 
 void EcBoostCmd::set_motors_gains(const MSG &motors_gains)
 {
-    if(_client_alive)
-    {
+    if(_client_status.status!=ClientStatusEnum::ERROR){
         CBuffT<4096u> sendBuffer{};
         auto sizet = proto.packReplRequestSetMotorsGains(sendBuffer, motors_gains);
         do_send(sendBuffer.data(), sendBuffer.size() );
         _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
     }
-    else
-    {
-        _consoleLog->error("UDP client not alive, please stop the main process");
+    else{
+        _consoleLog->error("Client in error state, please stop the main process!");
     }
 }
 //******************************* COMMANDS *****************************************************//
@@ -478,9 +441,9 @@ void EcBoostCmd::send_pdo()
 
 void EcBoostCmd::feed_motors()
 {
-    if(_client_alive){
-        if(_client_status==ClientStatus::MOTORS_STARTED ||
-           _client_status==ClientStatus::MOTORS_CTRL){
+    if(_client_status.status!=ClientStatusEnum::ERROR){
+        if(_client_status.motors_started ||
+           _client_status.status==ClientStatusEnum::DEVICES_CTRL){
             if(_motor_ref_flags!=RefFlags::FLAG_NONE && !_internal_motors_references.empty()){
                 std::vector<MR> mot_ref_v;
                 for ( const auto &[bId,motor_tx] : _internal_motors_references ) {
@@ -509,7 +472,7 @@ void EcBoostCmd::feed_motors()
         }
     }
     else{
-        _consoleLog->error("UDP client not alive, please stop the main process");
+        _consoleLog->error("Client in error state, please stop the main process!");
     }
 }
 

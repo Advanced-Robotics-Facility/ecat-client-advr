@@ -81,9 +81,7 @@ void EcGuiStart::create_ec_iface()
 {
     if(_ec_gui_net->check_network()){
         if(_ec_wrapper_info.client){
-            if(_ec_wrapper_info.client->is_client_alive()){
-                _ec_wrapper_info.client->stop_client();
-            }
+            _ec_wrapper_info.client->stop_client();
         }
         
         auto ec_net_info = _ec_gui_net->get_net_setup();
@@ -146,9 +144,7 @@ void EcGuiStart::onStartEtherCATSystem()
 void EcGuiStart::stopping_client()
 {
     if(_ec_wrapper_info.client){
-        if(_ec_wrapper_info.client->is_client_alive()){
-            _ec_wrapper_info.client->stop_client();
-        }
+        _ec_wrapper_info.client->stop_client();
         _ec_wrapper_info.client.reset();
     }
 }

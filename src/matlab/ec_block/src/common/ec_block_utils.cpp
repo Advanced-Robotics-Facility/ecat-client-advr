@@ -165,10 +165,7 @@ void EcBlockUtils::stop_ec_iface()
     if(_client != nullptr)
     {
         stop_robot();
-        if(_client->is_client_alive())
-        {
-            _client->stop_client();
-        }
+        _client->stop_client();
     }
     _client.reset();
 }
@@ -239,7 +236,7 @@ bool EcBlockUtils::ec_sense(MotorStatusMap &motors_status_map,
                             MotorReferenceMap &motors_ref)
 {
     
-    if(!_client->is_client_alive())
+    if(_client->get_client_status().status==ClientStatusEnum::ERROR)
     {
         return false;
     }
@@ -265,7 +262,7 @@ bool EcBlockUtils::ec_sense(MotorStatusMap &motors_status_map,
 
 bool EcBlockUtils::ec_move(RefFlags flag,MotorReferenceMap motors_ref)
 {
-    if(!_client->is_client_alive())
+    if(_client->get_client_status().status==ClientStatusEnum::ERROR)
     {
         return false;
     }

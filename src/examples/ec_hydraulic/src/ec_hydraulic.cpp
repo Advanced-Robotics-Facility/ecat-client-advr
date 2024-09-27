@@ -50,7 +50,7 @@ int main(int argc, char *const argv[])
         float set_trj_time_ms = hm_time_ms;
 
         std::string STM_sts;
-        bool run = true;
+        bool run_loop = true;
 
         std::map<int, double> q_set_trj = ec_cfg.homing_position;
         std::map<int, double> q_ref, q_start, qdot;
@@ -170,7 +170,7 @@ int main(int argc, char *const argv[])
         auto time = start_time;
         const auto period = std::chrono::nanoseconds(ec_cfg.period_ms * 1000000);
 
-        while (run && client->is_client_alive()) {
+        while (run_loop && client->get_client_status().status!=ClientStatusEnum::ERROR){
             client->read();
             ec_common_step.telemetry();
 
@@ -264,7 +264,7 @@ int main(int argc, char *const argv[])
             if (STM_sts == "PumpPreOp"){
                 if (pump_req_sts){
                     if (trajectory_counter == ec_cfg.repeat_trj){
-                        run = false;
+                        run_loop = false;
                     }
                     else{
                         STM_sts = "PumpOp";
@@ -276,7 +276,7 @@ int main(int argc, char *const argv[])
                 else{
                     if (time_elapsed_ms >= 500){ // 500ms
                         DPRINTF("Cannot setup the pump in pre-operational mode\n");
-                        run = false;
+                        run_loop = false;
                     }
                 }
             }
@@ -290,7 +290,7 @@ int main(int argc, char *const argv[])
                 else{
                     if (time_elapsed_ms >= 500){ // 500ms
                         DPRINTF("Cannot setup the pump in operational mode\n");
-                        run = false;
+                        run_loop = false;
                     }
                 }
             }
@@ -310,7 +310,7 @@ int main(int argc, char *const argv[])
                 }
 #endif
                 if (!pump_in_pressure){
-                    run = false;
+                    run_loop = false;
                 }
                 else{
                     if (trajectory_counter == ec_cfg.repeat_trj){
@@ -394,7 +394,7 @@ int main(int argc, char *const argv[])
                         tau = alpha = 0;
                     }
                     else{
-                        run = false; // only homing or trajectory on valves/motors
+                        run_loop= false; // only homing or trajectory on valves/motors
                     }
                 }
                 else{

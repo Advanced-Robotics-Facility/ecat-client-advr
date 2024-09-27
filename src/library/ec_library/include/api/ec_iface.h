@@ -18,11 +18,18 @@ class EcIface
 public:
     
     typedef std::shared_ptr<EcIface> Ptr;
+
+    typedef struct CLIENT_STATUS_t{
+        ClientStatusEnum status;
+        bool motors_started;
+        bool valves_started;
+        bool pumps_started;
+    }CLIENT_STATUS;
     
     EcIface();
     virtual ~EcIface();
 
-    bool is_client_alive(void);
+    CLIENT_STATUS get_client_status(void);
     
     // EtherCAT Client ADVR Facilty logger
     void start_logging(void);
@@ -72,11 +79,10 @@ protected:
     std::shared_ptr<spdlog::logger> _consoleLog;
     struct timespec _client_ts;
     
-    bool _client_alive;
     bool _logging;
     uint64_t _period_ns;
 
-    ClientStatus _client_status;
+    CLIENT_STATUS _client_status;
 
     SSI _fake_slave_info;
     // last received motor data
