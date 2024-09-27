@@ -6,6 +6,8 @@ EcIface::EcIface()
     _logging=false;
 
     _client_status.status=ClientStatusEnum::IDLE;
+    _client_status.run_loop=false;
+
     _client_status.motors_started=false;
     _client_status.valves_started=false;
     _client_status.pumps_started=false;

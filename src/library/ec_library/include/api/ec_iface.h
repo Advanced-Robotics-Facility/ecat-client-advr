@@ -21,6 +21,7 @@ public:
 
     typedef struct CLIENT_STATUS_t{
         ClientStatusEnum status;
+        bool run_loop;
         bool motors_started;
         bool valves_started;
         bool pumps_started;

@@ -106,7 +106,7 @@ int main(int argc, char * const argv[])
         auto time = start_time;
         const auto period = std::chrono::nanoseconds(ec_cfg.period_ms * 1000000);
         
-        while (run_loop && client->get_client_status().status!=ClientStatusEnum::ERROR){
+        while (run_loop && client->get_client_status().run_loop){
             client->read();
             ec_common_step.telemetry();
 

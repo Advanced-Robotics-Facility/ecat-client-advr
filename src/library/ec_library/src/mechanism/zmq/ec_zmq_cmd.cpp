@@ -45,8 +45,8 @@ bool EcZmqCmd::cmd_error_status(EcReplFault fault, std::string op, std::string &
         _consoleLog->error(msg);
         
         if(fault.get_type() == EC_REPL_CMD_STATUS::TIMEOUT){
-            _client_status.status=ClientStatusEnum::ERROR;
-            _consoleLog->error("Client in error state, please stop the main process!");
+            _client_status.status=ClientStatusEnum::NOT_ALIVE;
+            _consoleLog->error("Client in not alive state, please stop the main process!");
         }
     }
     
@@ -64,7 +64,7 @@ bool EcZmqCmd::retrieve_slaves_info(SSI &slave_info)
         return true;
     }
     
-    while(_client_status.status!=ClientStatusEnum::ERROR && attemps_cnt < _max_cmd_attemps){
+    while(_client_status.status!=ClientStatusEnum::NOT_ALIVE && attemps_cnt < _max_cmd_attemps){
         std::string slave_descr_info,msg="";
         
         std::map<std::string,std::string> args;
@@ -127,7 +127,7 @@ bool EcZmqCmd::retrieve_slaves_info(SSI &slave_info)
 bool EcZmqCmd::retrieve_all_sdo(uint32_t esc_id,RR_SDO &rr_sdo)
 {
     int attemps_cnt = 0; 
-    while(_client_status.status!=ClientStatusEnum::ERROR && attemps_cnt < _max_cmd_attemps){
+    while(_client_status.status!=ClientStatusEnum::NOT_ALIVE && attemps_cnt < _max_cmd_attemps){
         std::string msg,rd_all_sdo_name;
         auto fault=_ec_repl_cmd->Slave_SDO_info(iit::advr::Slave_SDO_info_Type::Slave_SDO_info_Type_SDO_NAME, 
                                                 esc_id,
@@ -155,7 +155,7 @@ bool EcZmqCmd::retrieve_rr_sdo(uint32_t esc_id,
 
 {
     int attemps_cnt = 0; 
-    while(_client_status.status!=ClientStatusEnum::ERROR && attemps_cnt < _max_cmd_attemps){
+    while(_client_status.status!=ClientStatusEnum::NOT_ALIVE && attemps_cnt < _max_cmd_attemps){
         std::string msg,rd_sdo_msg;
         auto fault=_ec_repl_cmd->Slave_SDO_cmd(esc_id, 
                                                rd_sdo,
@@ -193,7 +193,7 @@ bool EcZmqCmd::set_wr_sdo(uint32_t esc_id,
     }
         
     int attemps_cnt = 0; 
-    while(_client_status.status!=ClientStatusEnum::ERROR && attemps_cnt < _max_cmd_attemps){
+    while(_client_status.status!=ClientStatusEnum::NOT_ALIVE && attemps_cnt < _max_cmd_attemps){
         std::string msg,wd_sdo_msg;
         auto fault=_ec_repl_cmd->Slave_SDO_cmd(esc_id, 
                                               {},  // ignored
@@ -215,7 +215,7 @@ bool EcZmqCmd::start_motors(const MST &motors_start)
 {
     
     int attemps_cnt = 0; 
-    while(_client_status.status!=ClientStatusEnum::ERROR && attemps_cnt < _max_cmd_attemps){
+    while(_client_status.status!=ClientStatusEnum::NOT_ALIVE && attemps_cnt < _max_cmd_attemps){
         bool motors_started=true;
         for (auto &[motor_id ,ctrl_type, gains] : motors_start) {
             std::string msg="";
@@ -247,7 +247,7 @@ bool EcZmqCmd::start_motors(const MST &motors_start)
 bool EcZmqCmd::stop_motors()
 {
     int attemps_cnt = 0; 
-    while(_client_status.status!=ClientStatusEnum::ERROR  && attemps_cnt < _max_cmd_attemps){
+    while(_client_status.status!=ClientStatusEnum::NOT_ALIVE  && attemps_cnt < _max_cmd_attemps){
         bool motors_stopped=true;
         for ( auto &[esc_id, type, pos] : _slave_info ) {
             if(ec_motors.count(type)>0){
@@ -290,7 +290,7 @@ bool EcZmqCmd::pdo_aux_cmd(const PAC & pac)
     }
 
     int attemps_cnt = 0; 
-    while(_client_status.status!=ClientStatusEnum::ERROR && attemps_cnt < _max_cmd_attemps){ 
+    while(_client_status.status!=ClientStatusEnum::NOT_ALIVE && attemps_cnt < _max_cmd_attemps){ 
         std::string msg="";
         
         // send command
@@ -316,8 +316,8 @@ void EcZmqCmd::send_pdo()
 
 void EcZmqCmd::feed_motors()
 {
-    if(_client_status.status==ClientStatusEnum::ERROR){
-        _consoleLog->error("Client in error state, please stop the main process!");
+    if(_client_status.status==ClientStatusEnum::NOT_ALIVE){
+        _consoleLog->error("Client in not alive state, please stop the main process!");
         return;
     }
     else{
@@ -333,8 +333,8 @@ void EcZmqCmd::feed_motors()
 
 void EcZmqCmd::feed_valves()
 {
-    if(_client_status.status==ClientStatusEnum::ERROR){
-        _consoleLog->error("Client in error state, please stop the main process!");
+    if(_client_status.status==ClientStatusEnum::NOT_ALIVE){
+        _consoleLog->error("Client in not alive state, please stop the main process!");
         return;
     }
     else{
@@ -348,8 +348,8 @@ void EcZmqCmd::feed_valves()
 
 void EcZmqCmd::feed_pumps()
 {
-    if(_client_status.status==ClientStatusEnum::ERROR){
-        _consoleLog->error("Client in error state, please stop the main process!");
+    if(_client_status.status==ClientStatusEnum::NOT_ALIVE){
+        _consoleLog->error("Client in not alive state, please stop the main process!");
         return;
     }
     else{

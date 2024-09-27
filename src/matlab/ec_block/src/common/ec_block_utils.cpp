@@ -236,7 +236,7 @@ bool EcBlockUtils::ec_sense(MotorStatusMap &motors_status_map,
                             MotorReferenceMap &motors_ref)
 {
     
-    if(_client->get_client_status().status==ClientStatusEnum::ERROR)
+    if(!_client->get_client_status().run_loop)
     {
         return false;
     }
@@ -262,7 +262,7 @@ bool EcBlockUtils::ec_sense(MotorStatusMap &motors_status_map,
 
 bool EcBlockUtils::ec_move(RefFlags flag,MotorReferenceMap motors_ref)
 {
-    if(_client->get_client_status().status==ClientStatusEnum::ERROR)
+    if(!_client->get_client_status().run_loop)
     {
         return false;
     }

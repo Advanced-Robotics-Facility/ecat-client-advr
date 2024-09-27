@@ -57,10 +57,10 @@ enum ClientCmdType { STOP, START};
 
 enum class ClientStatusEnum : uint32_t
 {
-    ERROR           = 0,        // Error
-    WAITING_REPLY   = 1 << 0,
-    IDLE            = 1 << 1,   
-    CONNECTED       = 1 << 2,   
+    ERROR            = 0,        // Error
+    NOT_ALIVE        = 1 << 0,
+    IDLE             = 1 << 1,   
+    CONNECTED        = 1 << 2,   
     DEVICES_MAPPED   = 1 << 3,   
     DEVICES_STARTED  = 1 << 4,   
     DEVICES_CTRL     = 1 << 5,   

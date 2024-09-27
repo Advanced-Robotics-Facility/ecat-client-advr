@@ -44,6 +44,7 @@ void EcUDP::start_client(uint32_t period_ms,bool logging)
     connect();
     _client_alive_time = steady_clock::now();
     if(_ec_udp_thread == nullptr){
+        _client_status.run_loop=true;
         _ec_udp_thread = std::make_shared<std::thread>(std::thread{[&]{run();}});
     }
     else{
@@ -74,6 +75,9 @@ void EcUDP::stop_client()
         disconnect();
         
         stop_logging();
+
+        _client_status.run_loop=false;
+        _client_status.status=ClientStatusEnum::ERROR;
     }
 }
 

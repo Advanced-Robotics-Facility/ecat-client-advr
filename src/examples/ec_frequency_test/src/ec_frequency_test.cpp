@@ -102,7 +102,7 @@ int main(int argc, char * const argv[])
         auto incrementat_k=std::chrono::nanoseconds(100000); //(100 us) every 1s
         bool incrementat_freq_req=true;
         
-        while (run_loop && client->get_client_status().status!=ClientStatusEnum::ERROR){
+        while (run_loop && client->get_client_status().run_loop){
             client->read();
             ec_common_step.telemetry();
 

@@ -31,7 +31,7 @@ void EcIDDP::th_init ( void * )
 {
     if(!init_read_pdo()){
         DPRINTF("Client thread not initialized!\n");
-        _client_status.status=ClientStatusEnum::ERROR;
+        _client_status.run_loop=false;
         stop_client();
     }
     else{
@@ -39,6 +39,7 @@ void EcIDDP::th_init ( void * )
             start_logging();
         }
         DPRINTF("Client thread initialized!\n");
+        _client_status.run_loop=true;
         sync_client_thread();
         start_time = iit::ecat::get_time_ns(CLOCK_MONOTONIC);
 	    tNow = tPre = start_time;
@@ -79,6 +80,8 @@ void EcIDDP::stop_client()
     join();
     
     stop_logging();
+
+    _client_status.run_loop=_run_loop;
 }
 
 
@@ -94,8 +97,9 @@ void EcIDDP::th_loop( void * )
     
     loop_cnt++;
 
-    if(_client_status.status==ClientStatusEnum::ERROR){
+    if(_client_status.status==ClientStatusEnum::NOT_ALIVE){
         _run_loop = false;
+        _client_status.run_loop=_run_loop;
         return;
     }
 
@@ -110,7 +114,7 @@ void EcIDDP::th_loop( void * )
             if(ret!=ETIMEDOUT){
                 DPRINTF("Error on pthread_cond_timedwait reason: %d\n",ret);
                 _run_loop = false;
-                _client_status.status=ClientStatusEnum::ERROR;
+                _client_status.run_loop=_run_loop;
                 return;
             }
        }

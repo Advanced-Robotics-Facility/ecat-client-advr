@@ -149,7 +149,7 @@ bool EcBoostCmd::get_reply_from_server(ReplReqRep cmd_req)
     _cmd_req_reply=true;
     _cv_repl_reply->wait_for(lk,std::chrono::milliseconds(_wait_reply_time)); // timer for ACK and NACK from udp server
     
-    if(_client_status.status!=ClientStatusEnum::ERROR){
+    if(_client_status.status!=ClientStatusEnum::NOT_ALIVE){
         _consoleLog->info(" Command requested ---> {} Command reply--->{} ", cmd_req, _repl_req_rep);
         if(cmd_req == _repl_req_rep){
             if(_reply_err_msg == "OkI"){
@@ -189,7 +189,7 @@ bool EcBoostCmd::retrieve_slaves_info(SSI &slave_info)
 
     _slave_info.clear();
     while(slave_info.empty() && attemps_cnt < _max_cmd_attemps){
-        if(_client_status.status!=ClientStatusEnum::ERROR){
+        if(_client_status.status!=ClientStatusEnum::NOT_ALIVE){
             
             get_slaves_info();
             ret_cmd_status = get_reply_from_server(ReplReqRep::SLAVES_INFO);
@@ -207,7 +207,7 @@ bool EcBoostCmd::retrieve_slaves_info(SSI &slave_info)
             }
         }
         else{
-            _consoleLog->error("Client in error state, please stop the main process!");
+            _consoleLog->error("Client in not alive state, please stop the main process!");
             return false;
         }
     }
@@ -252,7 +252,7 @@ bool EcBoostCmd::retrieve_rr_sdo(uint32_t esc_id,
     
     _rr_sdo.clear();
     while(rr_sdo.empty() && attemps_cnt < _max_cmd_attemps){
-        if(_client_status.status!=ClientStatusEnum::ERROR){
+        if(_client_status.status!=ClientStatusEnum::NOT_ALIVE){
             getAndset_slaves_sdo(esc_id,rd_sdo,wr_sdo);
             
             ret_cmd_status = get_reply_from_server(ReplReqRep::SDO_CMD);
@@ -265,7 +265,7 @@ bool EcBoostCmd::retrieve_rr_sdo(uint32_t esc_id,
             }
         }
         else{
-            _consoleLog->error("Client in error state, please stop the main process!");
+            _consoleLog->error("Client in not alive state, please stop the main process!");
             return false;
         }
     }
@@ -281,7 +281,7 @@ bool EcBoostCmd::set_wr_sdo(uint32_t esc_id,
     bool ret_cmd_status=false;
 
     while(attemps_cnt < _max_cmd_attemps){
-        if(_client_status.status!=ClientStatusEnum::ERROR){
+        if(_client_status.status!=ClientStatusEnum::NOT_ALIVE){
             getAndset_slaves_sdo(esc_id,rd_sdo,wr_sdo);
 
             ret_cmd_status = get_reply_from_server(ReplReqRep::SDO_CMD);
@@ -293,7 +293,7 @@ bool EcBoostCmd::set_wr_sdo(uint32_t esc_id,
             }
         }
         else{
-            _consoleLog->error("Client in error state, please stop the main process!");
+            _consoleLog->error("Client in not alive state, please stop the main process!");
             return false;
         }
     }
@@ -322,7 +322,7 @@ bool EcBoostCmd::start_motors(const MST &motors_start)
         set_wait_reply_time(extend_wait_reply_time);
 
         while(attemps_cnt < _max_cmd_attemps){
-            if(_client_status.status!=ClientStatusEnum::ERROR){
+            if(_client_status.status!=ClientStatusEnum::NOT_ALIVE){
 
                 // clear motors references
                 _motor_ref_flags=RefFlags::FLAG_NONE;
@@ -343,7 +343,7 @@ bool EcBoostCmd::start_motors(const MST &motors_start)
                 }
             }
             else{
-                _consoleLog->error("Client in error state, please stop the main process!");
+                _consoleLog->error("Client in not alive state, please stop the main process!");
                 return false;
             }
         }
@@ -360,7 +360,7 @@ bool EcBoostCmd::stop_motors()
     int attemps_cnt=0;
     bool ret_cmd_status=false;
     while(attemps_cnt < _max_cmd_attemps){
-        if(_client_status.status!=ClientStatusEnum::ERROR){
+        if(_client_status.status!=ClientStatusEnum::NOT_ALIVE){
             CBuff sendBuffer{};
             auto sizet = proto.packReplRequest(sendBuffer, ReplReqRep::STOP_MOTOR);
             do_send(sendBuffer.data(), sendBuffer.size() );
@@ -381,7 +381,7 @@ bool EcBoostCmd::stop_motors()
             }
         }
         else{
-            _consoleLog->error("Client in error state, please stop the main process!");
+            _consoleLog->error("Client in not alive state, please stop the main process!");
             return false;
         }
     }
@@ -392,7 +392,7 @@ bool EcBoostCmd::stop_motors()
 bool EcBoostCmd::pdo_aux_cmd(const PAC & pac)
 {
     bool ret_cmd_status=false;
-    if(_client_status.status!=ClientStatusEnum::ERROR){
+    if(_client_status.status!=ClientStatusEnum::NOT_ALIVE){
         CBuffT<4096u> sendBuffer{};
         auto sizet = proto.packReplRequestSetPdoAuxCmd(sendBuffer, pac);
         do_send(sendBuffer.data(), sendBuffer.size() );
@@ -400,7 +400,7 @@ bool EcBoostCmd::pdo_aux_cmd(const PAC & pac)
         ret_cmd_status=true;
     }
     else{
-        _consoleLog->error("Client not alive, please stop the main process!");
+        _consoleLog->error("Client in not alive state, please stop the main process!");
     }
 
     return ret_cmd_status;
@@ -409,14 +409,14 @@ bool EcBoostCmd::pdo_aux_cmd(const PAC & pac)
 
 void EcBoostCmd::set_motors_gains(const MSG &motors_gains)
 {
-    if(_client_status.status!=ClientStatusEnum::ERROR){
+    if(_client_status.status!=ClientStatusEnum::NOT_ALIVE){
         CBuffT<4096u> sendBuffer{};
         auto sizet = proto.packReplRequestSetMotorsGains(sendBuffer, motors_gains);
         do_send(sendBuffer.data(), sendBuffer.size() );
         _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
     }
     else{
-        _consoleLog->error("Client in error state, please stop the main process!");
+        _consoleLog->error("Client in not alive state, please stop the main process!");
     }
 }
 //******************************* COMMANDS *****************************************************//
@@ -441,7 +441,7 @@ void EcBoostCmd::send_pdo()
 
 void EcBoostCmd::feed_motors()
 {
-    if(_client_status.status!=ClientStatusEnum::ERROR){
+    if(_client_status.status!=ClientStatusEnum::NOT_ALIVE){
         if(_client_status.motors_started ||
            _client_status.status==ClientStatusEnum::DEVICES_CTRL){
             if(_motor_ref_flags!=RefFlags::FLAG_NONE && !_internal_motors_references.empty()){
