@@ -452,8 +452,6 @@ void EcGuiPdo::write_motor_pdo()
         return;
     }
 
-    _motor_ref_flags = RefFlags::FLAG_MULTI_REF;
-    
     for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
         int ctrl_cmd_ref=0x00;
         if(slider_wid->is_slider_enabled()){
@@ -489,7 +487,7 @@ void EcGuiPdo::write_motor_pdo()
     }
 
     if(!_motors_ref.empty()){
-       _client->set_motors_references(_motor_ref_flags, _motors_ref);
+       _client->set_motors_references(_motors_ref);
     }
 }
 
@@ -522,9 +520,8 @@ void EcGuiPdo::clear_motor_ref()
         }
     }
 
-    _motor_ref_flags = RefFlags::FLAG_NONE;
     if(!_motors_ref.empty()){
-       _client->set_motors_references(_motor_ref_flags, _motors_ref);
+       _client->set_motors_references(_motors_ref);
     }
     _motors_ref.clear();
 }
@@ -539,8 +536,6 @@ void EcGuiPdo::write_valve_pdo()
     if(!valves_selected){
         return;
     }
-
-    _valves_ref_flags = RefFlags::FLAG_MULTI_REF;
 
     for (auto& [slave_id, slider_wid]:_slider_map.valve_sw_map){
         double curr_ref=0.0;
@@ -561,7 +556,7 @@ void EcGuiPdo::write_valve_pdo()
     }
 
     if(!_valves_ref.empty()){
-       _client->set_valves_references(_valves_ref_flags, _valves_ref);
+       _client->set_valves_references(_valves_ref);
     }
 }
 
@@ -594,9 +589,8 @@ void EcGuiPdo::clear_valve_ref()
         }
     }
 
-    _valves_ref_flags = RefFlags::FLAG_NONE;
     if(!_valves_ref.empty()){
-       _client->set_valves_references(_valves_ref_flags, _valves_ref);
+       _client->set_valves_references(_valves_ref);
     }
     _valves_ref.clear();
 }
@@ -611,8 +605,6 @@ void EcGuiPdo::write_pump_pdo()
     if(!pumps_selected){
         return;
     }
-
-    _pumps_ref_flags = RefFlags::FLAG_MULTI_REF;
 
     for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
         double press_ref=0.0;
@@ -637,7 +629,7 @@ void EcGuiPdo::write_pump_pdo()
     }
 
     if(!_pumps_ref.empty()){
-       _client->set_pumps_references(_pumps_ref_flags, _pumps_ref);
+       _client->set_pumps_references(_pumps_ref);
     }
 }
 
@@ -671,9 +663,8 @@ void EcGuiPdo::clear_pump_ref()
         }
     }
 
-    _pumps_ref_flags = RefFlags::FLAG_NONE;
     if(!_pumps_ref.empty()){
-       _client->set_pumps_references(_pumps_ref_flags, _pumps_ref);
+       _client->set_pumps_references(_pumps_ref);
     }
     _pumps_ref.clear();
 }

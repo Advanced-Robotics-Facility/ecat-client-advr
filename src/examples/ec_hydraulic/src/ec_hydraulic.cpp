@@ -210,7 +210,7 @@ int main(int argc, char *const argv[])
                 }
 
                 // ************************* SEND ALWAYS REFERENCES***********************************//
-                client->set_pumps_references(RefFlags::FLAG_MULTI_REF, pumps_ref);
+                client->set_pumps_references(pumps_ref);
                 // ************************* SEND ALWAYS REFERENCES***********************************//
             }
 
@@ -225,7 +225,7 @@ int main(int argc, char *const argv[])
                 }
 
                 // ************************* SEND ALWAYS REFERENCES***********************************//
-                client->set_valves_references(RefFlags::FLAG_MULTI_REF, valves_ref);
+                client->set_valves_references(valves_ref);
                 // ************************* SEND ALWAYS REFERENCES***********************************//
             }
 
@@ -255,7 +255,7 @@ int main(int argc, char *const argv[])
                 }
 
                 // ************************* SEND ALWAYS REFERENCES***********************************//
-                client->set_motors_references(RefFlags::FLAG_MULTI_REF, motors_ref);
+                client->set_motors_references(motors_ref);
                 // ************************* SEND ALWAYS REFERENCES***********************************//
             }
 

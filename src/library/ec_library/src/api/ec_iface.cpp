@@ -138,7 +138,7 @@ void EcIface::get_motors_status(MotorStatusMap &motor_status_map)
     motor_status_map= _motor_status_map;
 }
 
-void EcIface::set_motors_references(const RefFlags motor_ref_flags,const MotorReferenceMap motors_references)
+void EcIface::set_motors_references(const MotorReferenceMap motors_references)
 {
     int ret=check_maps(_motors_references,motors_references);
     if(ret==0){
@@ -181,7 +181,7 @@ void EcIface::get_valve_status(ValveStatusMap &valve_status_map)
     valve_status_map= _valve_status_map;
 }
 
-void EcIface::set_valves_references(const RefFlags valve_ref_flags,const ValveReferenceMap valves_references)
+void EcIface::set_valves_references(const ValveReferenceMap valves_references)
 {
     int ret=check_maps(_valves_references,valves_references);
     if(ret==0){
@@ -208,7 +208,7 @@ void EcIface::get_pump_status(PumpStatusMap &pump_status_map)
     pump_status_map= _pump_status_map;
 }
 
-void EcIface::set_pumps_references(const RefFlags pump_ref_flags,const PumpReferenceMap pumps_references)
+void EcIface::set_pumps_references(const PumpReferenceMap pumps_references)
 {
     int ret=check_maps(_pumps_references,pumps_references);
     if(ret==0){

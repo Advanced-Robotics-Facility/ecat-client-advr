@@ -268,7 +268,7 @@ bool EcBlockUtils::ec_move(RefFlags flag,MotorReferenceMap motors_ref)
     }
     
     _motors_ref = motors_ref;
-    _client->set_motors_references(flag,_motors_ref);
+    _client->set_motors_references(_motors_ref);
     
     return true;
 }

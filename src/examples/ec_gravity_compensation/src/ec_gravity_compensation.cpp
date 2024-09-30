@@ -186,7 +186,7 @@ int main(int argc, char * const argv[])
             }
             
             // ************************* SEND ALWAYS REFERENCES***********************************//
-            client->set_motors_references(RefFlags::FLAG_MULTI_REF, motors_ref);
+            client->set_motors_references(motors_ref);
             // ************************* SEND ALWAYS REFERENCES***********************************//
 
             time = time + period;

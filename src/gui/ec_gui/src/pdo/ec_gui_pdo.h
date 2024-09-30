@@ -97,13 +97,10 @@ private:
       int _time_ms;
       
       MotorReferenceMap _motors_ref;
-      RefFlags _motor_ref_flags;
 
       ValveReferenceMap _valves_ref;
-      RefFlags _valves_ref_flags;
-
+      
       PumpReferenceMap _pumps_ref;
-      RefFlags _pumps_ref_flags;
 
       std::vector<float> _gains;
       float _ctrl_cmd;

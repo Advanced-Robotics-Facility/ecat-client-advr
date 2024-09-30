@@ -49,9 +49,9 @@ public:
     bool pdo_aux_cmd_sts(const PAC & pac);
     
     // EtherCAT Client ADVR Facilty setters
-    void set_motors_references(const RefFlags motor_ref_flags,const MotorReferenceMap motors_references);
-    void set_valves_references(const RefFlags valve_ref_flags,const ValveReferenceMap valves_references);
-    void set_pumps_references(const RefFlags pump_ref_flags,const PumpReferenceMap pumps_references);
+    void set_motors_references(const MotorReferenceMap motors_references);
+    void set_valves_references(const ValveReferenceMap valves_references);
+    void set_pumps_references(const PumpReferenceMap pumps_references);
     
     // EtherCAT Client ADVR Facilty manager
     virtual void start_client(uint32_t period_ms,bool logging) = 0;
