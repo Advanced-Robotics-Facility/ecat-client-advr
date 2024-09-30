@@ -104,15 +104,12 @@ protected:
     PumpStatusMap _pump_status_map,_internal_pump_status_map;
     spsc_queue<PumpStatusMap,fixed_sized<true>> _pump_status_queue{128};
     
-    RefFlags _motor_ref_flags;
     MotorReferenceMap _motors_references,_internal_motors_references;
     spsc_queue<MotorReferenceMap,fixed_sized<true>> _motors_references_queue{128};
     
-    RefFlags _valve_ref_flags;
     ValveReferenceMap _valves_references,_internal_valves_references;
     spsc_queue<ValveReferenceMap,fixed_sized<true>> _valves_references_queue{128};
     
-    RefFlags _pump_ref_flags;
     PumpReferenceMap _pumps_references,_internal_pumps_references;
     spsc_queue<PumpReferenceMap,fixed_sized<true>> _pumps_references_queue{128};
     

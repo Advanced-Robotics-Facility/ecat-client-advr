@@ -322,10 +322,6 @@ bool EcBoostCmd::start_motors(const MST &motors_start)
 
         while(attemps_cnt < _max_cmd_attemps){
             if(_client_status.status!=ClientStatusEnum::NOT_ALIVE){
-
-                // clear motors references
-                _motor_ref_flags=RefFlags::FLAG_NONE;
-
                 CBuffT<4096u> sendBuffer{};
                 auto sizet = proto.packReplRequestMotorsStart(sendBuffer, motors_start);
                 do_send(sendBuffer.data(), sendBuffer.size() );
@@ -372,8 +368,6 @@ bool EcBoostCmd::stop_motors()
                 if(all_devices_stopped()){
                     _client_status.status=ClientStatusEnum::DEVICES_STOPPED;
                 }
-                // clear motors references
-                _motor_ref_flags=RefFlags::FLAG_NONE;
             }
             else{
                 attemps_cnt++;
@@ -443,11 +437,11 @@ void EcBoostCmd::feed_motors()
     if(_client_status.status!=ClientStatusEnum::NOT_ALIVE){
         if(_client_status.devices_started[DeviceType::MOTOR]||
            _client_status.status==ClientStatusEnum::DEVICES_CTRL){
-            
-            while(_motors_references_queue.pop(_internal_motors_references))
-            {}
-
-            if(_motor_ref_flags!=RefFlags::FLAG_NONE){
+            if(_motors_references_queue.read_available()>0){
+                
+                while(_motors_references_queue.pop(_internal_motors_references))
+                {}
+         
                 std::vector<MR> mot_ref_v;
                 for ( const auto &[bId,motor_tx] : _internal_motors_references ) {
                     auto ctrl_type=std::get<0>(motor_tx);
@@ -457,14 +451,7 @@ void EcBoostCmd::feed_motors()
                 }
                 
                 if(!mot_ref_v.empty()){
-                    MSR m_ref_flag;
-                    if(_motor_ref_flags==RefFlags::FLAG_MULTI_REF ){
-                        m_ref_flag=std::make_tuple(1, mot_ref_v);
-                    }
-                    else{
-                        m_ref_flag=std::make_tuple(2, mot_ref_v);
-                    }
-                    
+                    MSR m_ref_flag=std::make_tuple(1, mot_ref_v); //RefFlags::FLAG_MULTI_REF
                     CBuffT<4096u> sendBuffer{};
                     auto sizet = proto.packReplRequestSetMotorsRefs(sendBuffer, m_ref_flag);
                     do_send(sendBuffer.data(), sendBuffer.size() );

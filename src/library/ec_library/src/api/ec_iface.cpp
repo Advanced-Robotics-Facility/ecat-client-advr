@@ -12,16 +12,6 @@ EcIface::EcIface()
         _client_status.devices_started[i]=false;
     }
 
-    _motor_ref_flags=RefFlags::FLAG_NONE;
-    _motors_references.clear();
-    
-    _valve_ref_flags=RefFlags::FLAG_NONE;
-    _valves_references.clear();
-    
-    _pump_ref_flags=RefFlags::FLAG_NONE;
-    _pumps_references.clear();
-
-
     pthread_mutexattr_t mutex_update_attr;
 
     pthread_mutexattr_init(&mutex_update_attr);
@@ -152,7 +142,6 @@ void EcIface::set_motors_references(const RefFlags motor_ref_flags,const MotorRe
 {
     int ret=check_maps(_motors_references,motors_references);
     if(ret==0){
-        _motor_ref_flags = motor_ref_flags;
         _motors_references = motors_references;
     }
     else{
@@ -196,7 +185,6 @@ void EcIface::set_valves_references(const RefFlags valve_ref_flags,const ValveRe
 {
     int ret=check_maps(_valves_references,valves_references);
     if(ret==0){
-        _valve_ref_flags=valve_ref_flags;
         _valves_references=valves_references;
     }
     else{
@@ -224,7 +212,6 @@ void EcIface::set_pumps_references(const RefFlags pump_ref_flags,const PumpRefer
 {
     int ret=check_maps(_pumps_references,pumps_references);
     if(ret==0){
-        _pump_ref_flags=pump_ref_flags;
         _pumps_references=pumps_references;
     }
     else{

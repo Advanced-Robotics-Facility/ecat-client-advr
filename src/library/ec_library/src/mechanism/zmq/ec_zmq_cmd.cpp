@@ -323,12 +323,10 @@ void EcZmqCmd::feed_motors()
         return;
     }
     else{
-        while(_motors_references_queue.pop(_internal_motors_references)){
-                std::string msg="";
-                auto fault=_ec_repl_cmd->Motors_PDO_cmd(_internal_motors_references);
-/*                 if(!cmd_error_status(fault, "feed_motors",msg)){
-                    // ...continue if not in timeout
-                } */
+        if(_motors_references_queue.read_available()>0){
+            while(_motors_references_queue.pop(_internal_motors_references))
+            {}
+            auto fault=_ec_repl_cmd->Motors_PDO_cmd(_internal_motors_references);
         }
     }
 }
@@ -340,10 +338,9 @@ void EcZmqCmd::feed_valves()
         return;
     }
     else{
-        while(_valves_references_queue.pop(_internal_valves_references)){
-//                 auto fault=_ec_repl_cmd->Motors_PDO_cmd(_motors_references);
-//                 if(fault.get_type() == EC_REPL_CMD_STATUS::TIMEOUT){
-//                 }
+        if(_valves_references_queue.read_available()>0){
+            while(_valves_references_queue.pop(_internal_valves_references))
+            {}
         }
     }
 }
@@ -355,10 +352,9 @@ void EcZmqCmd::feed_pumps()
         return;
     }
     else{
-        while(_pumps_references_queue.pop(_internal_pumps_references)){
-//                 auto fault=_ec_repl_cmd->Motors_PDO_cmd(_motors_references);
-//                 if(fault.get_type() == EC_REPL_CMD_STATUS::TIMEOUT){
-//                 }
+        if(_pumps_references_queue.read_available()>0){
+            while(_pumps_references_queue.pop(_internal_pumps_references))
+            {}
         }
     }
 }

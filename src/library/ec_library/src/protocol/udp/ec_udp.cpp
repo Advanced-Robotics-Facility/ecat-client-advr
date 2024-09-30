@@ -77,7 +77,7 @@ void EcUDP::stop_client()
         stop_logging();
 
         _client_status.run_loop=false;
-        _client_status.status=ClientStatusEnum::ERROR;
+        _client_status.status=ClientStatusEnum::NOT_ALIVE;
     }
 }
 
@@ -99,12 +99,9 @@ void EcUDP::periodicActivity()
     
     if(_actual_server_status==ServerStatus::IDLE){
         if(client_alive_elapsed_ms >= _server_alive_check_ms){
-             // Stop to receive motors, imu, ft, power board pdo information // 
-            // reset motors references
-            _motor_ref_flags = RefFlags::FLAG_NONE;
-            //_motors_references.clear();
-            
-            // stop client
+            // Stop receiving motors, imu, ft, power board pdo information // 
+            // Stop sending motors references
+            // Stop client
             stop_client();
         }
     }

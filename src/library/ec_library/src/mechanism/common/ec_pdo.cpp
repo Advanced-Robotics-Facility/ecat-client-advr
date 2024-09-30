@@ -199,7 +199,10 @@ void EcPdo<T>::read_motor_pdo()
 template < class T >
 void EcPdo<T>::write_motor_pdo()
 {
-    while(_motors_references_queue.pop(_internal_motors_references)){ // note: etherCAT Master will take the last element.
+    if(_motors_references_queue.read_available()>0){
+        while(_motors_references_queue.pop(_internal_motors_references))
+        {} 
+
         for (auto &[id,motor_pdo] : _moto_pdo_map ) {
             motor_pdo->tx_pdo=_internal_motors_references[id];
 
@@ -308,8 +311,6 @@ void EcPdo<T>::read_valve_pdo()
             } while ( nbytes > 0);
             
             _internal_valve_status_map[id]=valve_pdo->rx_pdo;
-            //std::get<2>(_internal_valve_status_map[id])=std::get<0>(_internal_valves_references[id]);
-            //DPRINTF("PUSH: %f\n",std::get<2>(_internal_valve_status_map[id]));
             //////////////////////////////////////////////////////////////
         }
         catch ( std::out_of_range ) {};   
@@ -324,9 +325,11 @@ void EcPdo<T>::read_valve_pdo()
 template < class T >
 void EcPdo<T>::write_valve_pdo()
 {
-    while(_valves_references_queue.pop(_internal_valves_references)){ // note: etherCAT Master will take the last element.
+    if(_valves_references_queue.read_available()>0){
+        while(_valves_references_queue.pop(_internal_valves_references))
+        {}
+
         for (auto &[id,valve_pdo] : _valve_pdo_map ) {
-            //DPRINTF("POP: %f\n",std::get<0>(_internal_valves_references[id]));
             valve_pdo->tx_pdo=_internal_valves_references[id];
             //write 
             valve_pdo->write();
@@ -362,7 +365,10 @@ void EcPdo<T>::read_pump_pdo()
 template < class T >
 void EcPdo<T>::write_pump_pdo()
 {
-    while(_pumps_references_queue.pop(_internal_pumps_references)){ // note: etherCAT Master will take the last element.
+    if(_pumps_references_queue.read_available()>0){
+        while(_pumps_references_queue.pop(_internal_pumps_references))
+        {}
+
         for (auto &[id,pump_pdo] : _pump_pdo_map)  {
             pump_pdo->tx_pdo=_internal_pumps_references[id];
             //write 
