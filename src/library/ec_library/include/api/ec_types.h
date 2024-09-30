@@ -67,6 +67,15 @@ enum class ClientStatusEnum : uint32_t
     DEVICES_STOPPED  = 1 << 6,   
 };
 
+static const uint8_t NUM_DEVICES_CTRL=3; // motors,valves,pumps
+enum DeviceType: int
+{
+    MOTOR            = 0,  
+    VALVE            = 1,
+    PUMP             = 2,   
+};
+
+
 template <typename E>
 constexpr auto to_underlying_enum(E e) noexcept
 {

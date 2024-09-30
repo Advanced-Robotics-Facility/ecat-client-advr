@@ -231,7 +231,7 @@ bool EcZmqCmd::start_motors(const MST &motors_start)
         
         if(motors_started){
             _client_status.status=ClientStatusEnum::DEVICES_STARTED;
-            _client_status.motors_started=motors_started;
+            _client_status.devices_started[DeviceType::MOTOR]=motors_started;
             return motors_started;
         }
         else{
@@ -265,8 +265,10 @@ bool EcZmqCmd::stop_motors()
         }
         
         if(motors_stopped){
-            _client_status.status=ClientStatusEnum::DEVICES_STOPPED;
-            _client_status.motors_started=motors_stopped; 
+            _client_status.devices_started[DeviceType::MOTOR]=false;
+            if(all_devices_stopped()){
+                _client_status.status=ClientStatusEnum::DEVICES_STOPPED;
+            }
             return motors_stopped;
         }
         else{

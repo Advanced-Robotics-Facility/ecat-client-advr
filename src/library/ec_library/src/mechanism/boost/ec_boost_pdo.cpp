@@ -52,11 +52,13 @@ void EcBoostPdo::server_status_handler(char *buf, size_t size)
             break;
         case ServerStatus::MOTOR_STARTED :{
             _client_status.status=ClientStatusEnum::DEVICES_STARTED;
-            _client_status.motors_started=true;
+            _client_status.devices_started[DeviceType::MOTOR]=true;
         }break;
         case ServerStatus::MOTOR_STOPPED :{
-            _client_status.status=ClientStatusEnum::DEVICES_STOPPED;
-            _client_status.motors_started=false;
+            _client_status.devices_started[DeviceType::MOTOR]=false;
+            if(all_devices_stopped()){
+                _client_status.status=ClientStatusEnum::DEVICES_STOPPED;
+            }
         }break;
         case ServerStatus::MOTOR_CTRL :{
             _client_status.status=ClientStatusEnum::DEVICES_CTRL;

@@ -22,9 +22,7 @@ public:
     typedef struct CLIENT_STATUS_t{
         ClientStatusEnum status;
         bool run_loop;
-        bool motors_started;
-        bool valves_started;
-        bool pumps_started;
+        std::vector<bool> devices_started;
     }CLIENT_STATUS;
     
     EcIface();
@@ -126,6 +124,7 @@ protected:
     
     void sync_client_thread();
     void wake_client_thread();
+    bool all_devices_stopped();
 
 private:
     template <typename T>

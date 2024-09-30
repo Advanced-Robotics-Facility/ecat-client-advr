@@ -303,8 +303,7 @@ bool EcBoostCmd::set_wr_sdo(uint32_t esc_id,
 bool EcBoostCmd::start_motors(const MST &motors_start)
 {
     bool ret_cmd_status=false;
-
-    if(_client_status.motors_started)
+    if(_client_status.devices_started[DeviceType::MOTOR])
     {
         _consoleLog->error("Motors already started, stop the motors before performing start motors command");
         return ret_cmd_status;
@@ -336,7 +335,7 @@ bool EcBoostCmd::start_motors(const MST &motors_start)
                 if(ret_cmd_status){
                     attemps_cnt = _max_cmd_attemps;
                     _client_status.status=ClientStatusEnum::DEVICES_STARTED;
-                    _client_status.motors_started=true;
+                    _client_status.devices_started[DeviceType::MOTOR]=true;
                 }
                 else{
                     attemps_cnt++;
@@ -369,10 +368,10 @@ bool EcBoostCmd::stop_motors()
             ret_cmd_status = get_reply_from_server(ReplReqRep::STOP_MOTOR);
             if(ret_cmd_status){
                 attemps_cnt = _max_cmd_attemps;
-
-                _client_status.status=ClientStatusEnum::DEVICES_STOPPED;
-                _client_status.motors_started=false;
-
+                _client_status.devices_started[DeviceType::MOTOR]=false;
+                if(all_devices_stopped()){
+                    _client_status.status=ClientStatusEnum::DEVICES_STOPPED;
+                }
                 // clear motors references
                 _motor_ref_flags=RefFlags::FLAG_NONE;
             }
@@ -442,7 +441,7 @@ void EcBoostCmd::send_pdo()
 void EcBoostCmd::feed_motors()
 {
     if(_client_status.status!=ClientStatusEnum::NOT_ALIVE){
-        if(_client_status.motors_started ||
+        if(_client_status.devices_started[DeviceType::MOTOR]||
            _client_status.status==ClientStatusEnum::DEVICES_CTRL){
             if(_motor_ref_flags!=RefFlags::FLAG_NONE && !_internal_motors_references.empty()){
                 std::vector<MR> mot_ref_v;

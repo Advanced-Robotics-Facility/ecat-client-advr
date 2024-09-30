@@ -8,10 +8,10 @@ EcIface::EcIface()
     _client_status.status=ClientStatusEnum::IDLE;
     _client_status.run_loop=false;
 
-    _client_status.motors_started=false;
-    _client_status.valves_started=false;
-    _client_status.pumps_started=false;
-    
+    for(int i=0;i<NUM_DEVICES_CTRL;i++){
+        _client_status.devices_started[i]=false;
+    }
+
     _motor_ref_flags=RefFlags::FLAG_NONE;
     _motors_references.clear();
     
@@ -324,6 +324,15 @@ void EcIface::wake_client_thread()
     pthread_cond_signal(&_update_cond);
     pthread_mutex_unlock(&_mutex_update);
 
+}
+
+bool EcIface::all_devices_stopped(){
+    for(int i=0;i<_client_status.devices_started.size();i++){
+        if(_client_status.devices_started[i]){
+            return false;
+        }
+    }
+    return true;
 }
 
 template <typename T>
