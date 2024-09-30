@@ -443,7 +443,11 @@ void EcBoostCmd::feed_motors()
     if(_client_status.status!=ClientStatusEnum::NOT_ALIVE){
         if(_client_status.devices_started[DeviceType::MOTOR]||
            _client_status.status==ClientStatusEnum::DEVICES_CTRL){
-            if(_motor_ref_flags!=RefFlags::FLAG_NONE && !_internal_motors_references.empty()){
+            
+            while(_motors_references_queue.pop(_internal_motors_references))
+            {}
+
+            if(_motor_ref_flags!=RefFlags::FLAG_NONE){
                 std::vector<MR> mot_ref_v;
                 for ( const auto &[bId,motor_tx] : _internal_motors_references ) {
                     auto ctrl_type=std::get<0>(motor_tx);
@@ -452,19 +456,22 @@ void EcBoostCmd::feed_motors()
                     }
                 }
                 
-                MSR m_ref_flag;
-                if(_motor_ref_flags==RefFlags::FLAG_MULTI_REF ){
-                    m_ref_flag=std::make_tuple(1, mot_ref_v);
+                if(!mot_ref_v.empty()){
+                    MSR m_ref_flag;
+                    if(_motor_ref_flags==RefFlags::FLAG_MULTI_REF ){
+                        m_ref_flag=std::make_tuple(1, mot_ref_v);
+                    }
+                    else{
+                        m_ref_flag=std::make_tuple(2, mot_ref_v);
+                    }
+                    
+                    CBuffT<4096u> sendBuffer{};
+                    auto sizet = proto.packReplRequestSetMotorsRefs(sendBuffer, m_ref_flag);
+                    do_send(sendBuffer.data(), sendBuffer.size() );
+                    _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
                 }
-                else{
-                    m_ref_flag=std::make_tuple(2, mot_ref_v);
-                }
-                
-                CBuffT<4096u> sendBuffer{};
-                auto sizet = proto.packReplRequestSetMotorsRefs(sendBuffer, m_ref_flag);
-                do_send(sendBuffer.data(), sendBuffer.size() );
-                _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
             }
+
         }
         else{
             _consoleLog->error("Cannot send references to the motors since not controlled, stop sending them");
