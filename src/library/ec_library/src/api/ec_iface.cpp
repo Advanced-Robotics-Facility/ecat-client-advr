@@ -9,7 +9,7 @@ EcIface::EcIface()
     _client_status.run_loop=false;
 
     for(int i=0;i<NUM_DEVICES_CTRL;i++){
-        _client_status.devices_started[i]=false;
+        _client_status.devices_started.push_back(false);
     }
 
     pthread_mutexattr_t mutex_update_attr;
@@ -140,23 +140,8 @@ void EcIface::get_motors_status(MotorStatusMap &motor_status_map)
 
 void EcIface::set_motors_references(const MotorReferenceMap motors_references)
 {
-    int ret=check_maps(_motors_references,motors_references);
-    if(ret==0){
+    if(check_maps(_motors_references,motors_references,"motor")){
         _motors_references = motors_references;
-    }
-    else{
-        if(ret==-1){
-            DPRINTF("No motor detected!\n");
-        }
-        else if(ret==-2){
-            DPRINTF("Got an empy motors references map\n");
-        }
-        else if(ret==-3){
-            DPRINTF("Got an different motors references size\n");
-        }
-        else{
-            DPRINTF("Esc id [%d] is not a motor\n",ret);
-        }
     }
 }
 
@@ -183,23 +168,8 @@ void EcIface::get_valve_status(ValveStatusMap &valve_status_map)
 
 void EcIface::set_valves_references(const ValveReferenceMap valves_references)
 {
-    int ret=check_maps(_valves_references,valves_references);
-    if(ret==0){
+    if(check_maps(_valves_references,valves_references,"valve")){
         _valves_references=valves_references;
-    }
-    else{
-        if(ret==-1){
-            DPRINTF("No valve detected!\n");
-        }
-        else if(ret==-2){
-            DPRINTF("Got an empy valves references map\n");
-        }
-        else if(ret==-3){
-            DPRINTF("Got an different valves references size\n");
-        }
-        else{
-            DPRINTF("Esc id [%d] is not a valve\n",ret);
-        }
     }
 }
 
@@ -210,23 +180,8 @@ void EcIface::get_pump_status(PumpStatusMap &pump_status_map)
 
 void EcIface::set_pumps_references(const PumpReferenceMap pumps_references)
 {
-    int ret=check_maps(_pumps_references,pumps_references);
-    if(ret==0){
+    if(check_maps(_pumps_references,pumps_references,"pump")){
         _pumps_references=pumps_references;
-    }
-    else{
-        if(ret==-1){
-            DPRINTF("No pump detected!\n");
-        }
-        else if(ret==-2){
-            DPRINTF("Got an empy pumps references map\n");
-        }
-        else if(ret==-3){
-            DPRINTF("Got an different pumps references size\n");
-        }
-        else{
-            DPRINTF("Esc id [%d] is not a pump\n",ret);
-        }
     }
 }
  
@@ -323,21 +278,27 @@ bool EcIface::all_devices_stopped(){
 }
 
 template <typename T>
-int32_t EcIface::check_maps(const std::map<int32_t,T>& map1,const std::map<int32_t,T>& map2)
+bool EcIface::check_maps(const std::map<int32_t,T>& map1,const std::map<int32_t,T>& map2,std::string map_type)
 {
-    if(map1.size()==0)
-        return -1;
-    else if(map2.size()==0)
-        return -2;
-    else if(map1.size()!=map2.size())
-        return -3;
+    if(map1.size()==0){
+        DPRINTF("No %s detected!\n",map_type.c_str());
+        return false;
+    }
+    else if(map2.size()==0){
+        DPRINTF("Got an empy %s references map\n",map_type.c_str());
+        return false;
+    }
+    else if(map1.size()!=map2.size()){
+        DPRINTF("Got an different %s references size\n",map_type.c_str());
+        return false;
+    }
     else{
         for ( const auto &[esc_id,tx_pdo] : map2) {
             if(map1.count(esc_id)==0){
-                return esc_id; 
+                DPRINTF("Esc id [%d] is not a %s\n",esc_id,map_type.c_str());
+                return false; 
             }
         }
     }
-
-    return 0;
+    return true;
 }

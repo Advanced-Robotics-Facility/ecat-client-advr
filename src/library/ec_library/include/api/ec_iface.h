@@ -125,7 +125,7 @@ protected:
 
 private:
     template <typename T>
-    int32_t check_maps(const std::map<int32_t,T>& map1,const std::map<int32_t,T>& map2);
+    bool check_maps(const std::map<int32_t,T>& map1,const std::map<int32_t,T>& map2,std::string map_type);
 };
 
 #endif // EC_IFACE_H
