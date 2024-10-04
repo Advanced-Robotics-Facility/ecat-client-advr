@@ -112,6 +112,9 @@ void EcIface::read()
     while(_motor_status_queue.pop(_motor_status_map))
     {}
 
+    while(_pow_status_queue.pop(_pow_status_map))
+    {}
+
     while(_ft_status_queue.pop(_ft_status_map))
     {}
 
