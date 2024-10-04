@@ -7,8 +7,9 @@
 class HhcmMotor : public EscPb{
 
 private:
+    std::default_random_engine gen;
+    std::uniform_real_distribution<float> temp{30.0,40.0};
     float pos_ref,vel_ref,tor_ref,curr_ref;
-    
 public:
    
     virtual void pbDeserialize(iit::advr::Ec_slave_pdo pb)
@@ -41,8 +42,8 @@ public:
         // optional
         pb.mutable_motor_xt_rx_pdo()->set_op_idx_ack(0);
         pb.mutable_motor_xt_rx_pdo()->set_aux(0);
-        pb.mutable_motor_xt_rx_pdo()->set_motor_temp(0.0);
-        pb.mutable_motor_xt_rx_pdo()->set_board_temp(0.0);
+        pb.mutable_motor_xt_rx_pdo()->set_motor_temp(temp(gen));
+        pb.mutable_motor_xt_rx_pdo()->set_board_temp(temp(gen));
         //
         pb.mutable_motor_xt_rx_pdo()->set_cmd_aux_sts(0.0);
         
