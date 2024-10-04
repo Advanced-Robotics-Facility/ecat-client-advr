@@ -6,7 +6,7 @@
 
 #include <atomic>
 
-#include "utils/ec_common_step.h"
+#include "utils/ec_wrapper.h"
 #include <test_common.h>
 
 using namespace std::chrono;
@@ -32,10 +32,10 @@ int main(int argc, char * const argv[])
 {    
     EcUtils::EC_CONFIG ec_cfg;
     EcIface::Ptr client;
-    EcCommonStep ec_common_step;
+    EcWrapper ec_wrapper;
     
     try{
-        ec_common_step.create_ec(client,ec_cfg);
+        ec_wrapper.create_ec(client,ec_cfg);
     }catch(std::exception &ex){
         DPRINTF("%s\n",ex.what());
         return 1;
@@ -48,7 +48,7 @@ int main(int argc, char * const argv[])
 
     bool ec_sys_started = true;
     try{
-        ec_sys_started = ec_common_step.start_ec_sys();
+        ec_sys_started = ec_wrapper.start_ec_sys();
     }
     catch (std::exception &ex){
         DPRINTF("%s\n", ex.what());
@@ -73,19 +73,12 @@ int main(int argc, char * const argv[])
         }
         // memory allocation
 
-        if(ec_cfg.protocol=="iddp"){
-            DPRINTF("Real-time process....\n");
+
+        if (ec_cfg.protocol == "iddp"){
             // add SIGALRM
             signal ( SIGALRM, sig_handler );
+            //avoid map swap
             main_common (&argc, (char*const**)&argv, sig_handler);
-            int priority = SCHED_OTHER;
-            #if defined(PREEMPT_RT) || defined(__COBALT__)
-                priority = sched_get_priority_max ( SCHED_FIFO ) / 3;
-            #endif
-            int ret = set_main_sched_policy(priority);
-            if (ret < 0){
-                throw std::runtime_error("fatal error on set_main_sched_policy");
-            }
         }
         else{
             struct sigaction sa;
@@ -93,8 +86,9 @@ int main(int argc, char * const argv[])
             sa.sa_flags = 0;  // receive will return EINTR on CTRL+C!
             sigaction(SIGINT,&sa, nullptr);
         }
-                
-
+        // process scheduling
+        ec_wrapper.ec_self_sched(argv[0]);
+       
         auto start_time = std::chrono::high_resolution_clock::now();
         auto time = start_time;
         const auto period = std::chrono::nanoseconds(ec_cfg.period_ms * 1000000);
@@ -104,7 +98,7 @@ int main(int argc, char * const argv[])
         
         while (run_loop && client->get_client_status().run_loop){
             client->read();
-            ec_common_step.telemetry();
+            ec_wrapper.telemetry();
 
             time_elapsed_ms = std::chrono::duration<float, std::milli>(time - start_time).count();
             //DPRINTF("Time elapsed ms: [%f]\n",time_elapsed_ms);
@@ -144,7 +138,7 @@ int main(int argc, char * const argv[])
         }       
     }
     
-    ec_common_step.stop_ec_sys();
+    ec_wrapper.stop_ec_sys();
     
     return 0;
 }

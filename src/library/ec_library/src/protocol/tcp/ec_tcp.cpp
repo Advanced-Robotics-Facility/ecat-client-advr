@@ -13,6 +13,9 @@ EcTCP::EcTCP(std::string host_address,uint32_t host_port):
     // non-periodic
     period.period = {0,1}; 
     stacksize = 0; // not set stak size !!!! YOU COULD BECAME CRAZY !!!!!!!!!!!!
+
+    _client_thread_info.priority=priority;
+    _client_thread_info.policy=schedpolicy;
 }
 
 EcTCP::~EcTCP()
@@ -35,7 +38,9 @@ void EcTCP::th_init ( void * )
         if(_logging){
             start_logging();
         }
-        DPRINTF("Client thread initialized!\n");
+        _client_thread_info.cpu=sched_getcpu();
+        DPRINTF("Client thread initialized, ");
+        DPRINTF("id: %ld cpu: %d, priority %d\n",pthread_self(),_client_thread_info.cpu,_client_thread_info.priority);
         _client_status.run_loop=true;
         sync_client_thread();
         start_time = iit::ecat::get_time_ns(CLOCK_MONOTONIC);

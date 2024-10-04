@@ -1,5 +1,5 @@
-#ifndef EC_COMMON_STEP_H
-#define EC_COMMON_STEP_H
+#ifndef EC_WRAPPER_H
+#define EC_WRAPPER_H
 
 #include "utils/ec_utils.h"
 #include <utils.h>
@@ -18,7 +18,7 @@ extern ValveReferenceMap valves_ref;
 extern MotorStatusMap motors_status_map;
 extern MotorReferenceMap motors_ref;
 
-class EcCommonStep
+class EcWrapper
 {
 public:
     
@@ -34,6 +34,7 @@ public:
     void telemetry();
     
     std::shared_ptr<EcUtils> get_ec_utils();
+    void ec_self_sched(std::string thread_name="Thread"); // Scheduling an external thread/process with same policy, cpu and less priority of the ec client.
   
 private:
     

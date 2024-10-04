@@ -10,7 +10,7 @@
 #include <cmath>
 #include <random>
 
-#include "utils/ec_common_step.h"
+#include "utils/ec_wrapper.h"
 #include <cxxopts.hpp>
 #include <test_common.h>
 
@@ -43,10 +43,10 @@ static void test_sighandler(int signum) {
 int main ( int argc, char * argv[] ) try {
 
     EcUtils::EC_CONFIG ec_cfg;
-    EcCommonStep ec_common_step;
+    EcWrapper ec_wrapper;
     
     try{
-        ec_cfg=ec_common_step.retrieve_ec_cfg();
+        ec_cfg=ec_wrapper.retrieve_ec_cfg();
     }catch(std::exception &ex){
         DPRINTF("%s\n",ex.what());
         return 1;

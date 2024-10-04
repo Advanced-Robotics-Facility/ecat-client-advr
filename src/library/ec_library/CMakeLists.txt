@@ -61,7 +61,7 @@ add_library(${PROJECT_NAME} STATIC
             src/protocol/ipc/zipc/ec_zipc.cpp
             src/protocol/ipc/iddp/ec_iddp.cpp
             src/utils/ec_utils.cpp
-            src/utils/ec_common_step.cpp)
+            src/utils/ec_wrapper.cpp)
 
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                   "$<INSTALL_INTERFACE:include/ecat-client-advr/${PROJECT_NAME}>")            

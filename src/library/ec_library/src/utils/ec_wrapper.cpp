@@ -1,4 +1,4 @@
-#include "utils/ec_common_step.h"
+#include "utils/ec_wrapper.h"
 
 //Power board
 PwrStatusMap pow_status_map;
@@ -17,7 +17,7 @@ MotorReferenceMap motors_ref;
 
 using namespace std::chrono;
 
-EcUtils::EC_CONFIG EcCommonStep::retrieve_ec_cfg()
+EcUtils::EC_CONFIG EcWrapper::retrieve_ec_cfg()
 {
     try{
         _ec_utils=std::make_shared<EcUtils>();
@@ -29,7 +29,7 @@ EcUtils::EC_CONFIG EcCommonStep::retrieve_ec_cfg()
     return _ec_cfg;
 }
 
-void EcCommonStep::create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg)
+void EcWrapper::create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg)
 {
     try{
         ec_cfg=retrieve_ec_cfg();
@@ -52,13 +52,13 @@ void EcCommonStep::create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg)
     }
 }
 
-std::shared_ptr<EcUtils> EcCommonStep::get_ec_utils()
+std::shared_ptr<EcUtils> EcWrapper::get_ec_utils()
 {
     return _ec_utils;
 }
                 
 
-void EcCommonStep::autodetection()   
+void EcWrapper::autodetection()   
 {
     DPRINTF("Try autodetection\n");
     if(_client->retrieve_slaves_info(_slave_info)){   
@@ -78,7 +78,7 @@ void EcCommonStep::autodetection()
     }
 }
 
-void EcCommonStep::find_motors()   
+void EcWrapper::find_motors()   
 {
     if(_motor_id_vector.empty()){
         throw std::runtime_error("Got an empty motor id vector for scanning");
@@ -101,7 +101,7 @@ void EcCommonStep::find_motors()
     }
 }
 
-void EcCommonStep::prepare_motors()
+void EcWrapper::prepare_motors()
 {
     _motors_start.clear();
     for(const auto& id:_motor_id_vector){
@@ -118,12 +118,12 @@ void EcCommonStep::prepare_motors()
     }
 }
 
-void EcCommonStep::set_motors_id(std::vector<int> motor_start_vector)
+void EcWrapper::set_motors_id(std::vector<int> motor_start_vector)
 {
     _motor_start_vector=motor_start_vector;
 }
 
-bool EcCommonStep::start_ec_motors(void)
+bool EcWrapper::start_ec_motors(void)
 {
     bool motor_started=false;
     bool motor_ctrl=motor_started;
@@ -180,7 +180,7 @@ bool EcCommonStep::start_ec_motors(void)
 
 
     
-void EcCommonStep::stop_ec_motors(void)
+void EcWrapper::stop_ec_motors(void)
 {
     bool stop_motors=false;
     const int max_pdo_aux_cmd_attemps=3;
@@ -225,7 +225,7 @@ void EcCommonStep::stop_ec_motors(void)
     // ************************* STOP Motors ***********************************//
 }
 
-void EcCommonStep::find_valves()
+void EcWrapper::find_valves()
 {
     if(_valve_id_vector.empty()){
         throw std::runtime_error("Got an empty valve id vector for scanning");
@@ -250,12 +250,12 @@ void EcCommonStep::find_valves()
 
 
 
-void EcCommonStep::set_valves_id(std::vector<int> valve_start_vector)
+void EcWrapper::set_valves_id(std::vector<int> valve_start_vector)
 {
     _valve_start_vector=valve_start_vector;
 }
 
-bool EcCommonStep::start_ec_valves(void)
+bool EcWrapper::start_ec_valves(void)
 {
     WR_SDO start_valve={std::make_tuple("ctrl_status_cmd","165")};
     bool valve_started=true;
@@ -273,7 +273,7 @@ bool EcCommonStep::start_ec_valves(void)
     return valve_started;
 }
 
-void EcCommonStep::stop_ec_valves(void)
+void EcWrapper::stop_ec_valves(void)
 {
     WR_SDO stop_valve= {std::make_tuple("ctrl_status_cmd","90")};
     bool valve_stopped=true;
@@ -289,10 +289,12 @@ void EcCommonStep::stop_ec_valves(void)
     }
 }
 
-bool EcCommonStep::start_ec_sys(void)
+bool EcWrapper::start_ec_sys(void)
 {
     bool ec_sts_started=true;
     try{
+        _client->start_client(_ec_cfg.period_ms,_ec_cfg.logging); // IMPORTANT: moved here for UDP protocol
+        
         autodetection();
 
         if(_start_motor){
@@ -318,10 +320,13 @@ bool EcCommonStep::start_ec_sys(void)
         ec_sts_started = true;
 #endif       
         if(ec_sts_started){
-            _client->start_client(_ec_cfg.period_ms,_ec_cfg.logging);
+            //_client->start_client(_ec_cfg.period_ms,_ec_cfg.logging);
             _client->read();
             telemetry();
             init_ref_map();
+        }
+        else{
+            stop_ec_sys();
         }
     }catch(std::exception &ex){
         ec_sts_started=false;
@@ -330,7 +335,7 @@ bool EcCommonStep::start_ec_sys(void)
     return ec_sts_started;
 }
 
-void EcCommonStep::stop_ec_sys(void)
+void EcWrapper::stop_ec_sys(void)
 {
     if(_start_motor){
         stop_ec_motors();
@@ -345,7 +350,7 @@ void EcCommonStep::stop_ec_sys(void)
 
 }
 
-void EcCommonStep::telemetry()
+void EcWrapper::telemetry()
 {
     _client->get_pow_status(pow_status_map);
     _client->get_imu_status(imu_status_map);
@@ -441,7 +446,7 @@ void EcCommonStep::telemetry()
     //******************* Motor Telemetry **************
 }
 
-void EcCommonStep::init_ref_map()
+void EcWrapper::init_ref_map()
 {
     
     // init motor reference map 
@@ -471,4 +476,41 @@ void EcCommonStep::init_ref_map()
     for (const auto &[esc_id, press_ref] : pump_status_map){
         pumps_ref[esc_id] = std::make_tuple(0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
+}
+
+void EcWrapper::ec_self_sched(std::string thread_name)
+{
+    if(_ec_cfg.protocol == "iddp"){
+        #if defined(PREEMPT_RT) || defined(__COBALT__)
+            DPRINTF("Real-time process....\n");
+        #endif
+    }
+
+    if(_client != nullptr){
+        auto client_thread_info = _client->get_client_thread_info();
+        int priority=std::max(0,client_thread_info.priority-1);
+        struct sched_param  schedparam;
+        schedparam.sched_priority = std::max(0,priority);
+        int ret= pthread_setschedparam ( pthread_self(), client_thread_info.policy, &schedparam );
+        if (ret < 0){
+            throw std::runtime_error("fatal error on ec_self_sched, got an error on pthread_setschedparam");
+        }
+        
+        if(client_thread_info.cpu>=0){
+            cpu_set_t cpu_set;
+            CPU_ZERO ( &cpu_set );
+            CPU_SET ( client_thread_info.cpu,&cpu_set );
+            pthread_setaffinity_np( pthread_self(), sizeof ( cpu_set ), &cpu_set );
+        }
+        if (ret < 0){
+            throw std::runtime_error("fatal error on ec_self_sched, got an error on pthread_setaffinity_np");
+        }
+        
+        DPRINTF("%s initialized, ",thread_name.c_str());
+        DPRINTF("id: %ld cpu: %d, priority %d\n",pthread_self(),sched_getcpu(),priority);
+    }
+    else{
+        throw std::runtime_error("fatal error on ec_self_sched function got an empty client!");
+    }
+    
 }

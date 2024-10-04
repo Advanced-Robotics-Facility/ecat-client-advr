@@ -10,6 +10,9 @@ EcUDP::EcUDP(std::string host_address,uint32_t host_port) :
        EcBoost("EcUDP",host_address,host_port)
 {
     _actual_server_status= ServerStatus::IDLE;
+
+    _client_thread_info.policy=SCHED_OTHER;
+    _client_thread_info.priority=sched_get_priority_max ( _client_thread_info.policy ) / 2;
 }
 
 EcUDP::~EcUDP()
@@ -46,6 +49,20 @@ void EcUDP::start_client(uint32_t period_ms,bool logging)
     if(_ec_udp_thread == nullptr){
         _client_status.run_loop=true;
         _ec_udp_thread = std::make_shared<std::thread>(std::thread{[&]{run();}});
+        
+        sched_param sch;
+        sch.sched_priority = _client_thread_info.priority;
+        if (pthread_setschedparam(_ec_udp_thread->native_handle(), _client_thread_info.policy, &sch)){
+            std::string error_code(std::strerror(errno));
+            throw std::runtime_error("Failed to setschedparam: " + error_code);
+        }
+        
+        std::stringstream udp_thread_id;
+        udp_thread_id << _ec_udp_thread->get_id();
+        _client_thread_info.cpu=sched_getcpu();
+        DPRINTF("Client thread initialized, ");
+        DPRINTF("id: %s cpu: %d, priority %d\n",udp_thread_id.str().c_str(),_client_thread_info.cpu,_client_thread_info.priority);
+  
     }
     else{
         // leave the periodicActivity alive with a period changed

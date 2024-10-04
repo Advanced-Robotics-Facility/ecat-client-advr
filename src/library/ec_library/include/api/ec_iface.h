@@ -24,11 +24,18 @@ public:
         bool run_loop;
         std::vector<bool> devices_started;
     }CLIENT_STATUS;
+
+    typedef struct CLIENT_THREAD_INFO_t{
+        int cpu;
+        int priority;
+        int policy;
+    }CLIENT_THREAD_INFO;
     
     EcIface();
     virtual ~EcIface();
 
     CLIENT_STATUS get_client_status(void);
+    CLIENT_THREAD_INFO get_client_thread_info();
     
     // EtherCAT Client ADVR Facilty logger
     void start_logging(void);
@@ -82,6 +89,7 @@ protected:
     uint64_t _period_ns;
 
     CLIENT_STATUS _client_status;
+    CLIENT_THREAD_INFO _client_thread_info;
 
     SSI _fake_slave_info;
     // last received motor data

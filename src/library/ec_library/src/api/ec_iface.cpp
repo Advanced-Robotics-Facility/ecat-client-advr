@@ -8,6 +8,10 @@ EcIface::EcIface()
     _client_status.status=ClientStatusEnum::IDLE;
     _client_status.run_loop=false;
 
+    _client_thread_info.cpu=-1;
+    _client_thread_info.priority=0;
+    _client_thread_info.policy=SCHED_OTHER;
+
     for(uint8_t i=0;i<NUM_DEVICES_CTRL;i++){
         _client_status.devices_started.push_back(false);
     }
@@ -71,6 +75,11 @@ EcIface::~EcIface()
 EcIface::CLIENT_STATUS EcIface::get_client_status()
 {
     return _client_status;
+}
+
+EcIface::CLIENT_THREAD_INFO EcIface::get_client_thread_info()
+{
+    return _client_thread_info;
 }
 
 void EcIface::start_logging()
