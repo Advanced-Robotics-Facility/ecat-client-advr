@@ -87,6 +87,7 @@ void EcIface::stop_logging()
 void EcIface::log()
 {
     _ec_logger->log_motors_sts(_motor_status_map);
+    _ec_logger->log_pow_sts(_pow_status_map);
     _ec_logger->log_ft_sts(_ft_status_map);
     _ec_logger->log_imu_sts(_imu_status_map);
     _ec_logger->log_valve_sts(_valve_status_map);
