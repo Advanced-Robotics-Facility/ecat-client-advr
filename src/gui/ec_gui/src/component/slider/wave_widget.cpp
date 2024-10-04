@@ -34,9 +34,9 @@ WaveWidget::WaveWidget(QDoubleSpinBox *valuebox,
                        uint8_t decimal_value,
                        const QString& unit,
                        QWidget *parent) :
+    QWidget(parent),
     _valuebox(valuebox),
-    _valuebox_property(valuebox_property),
-    QWidget(parent)
+    _valuebox_property(valuebox_property)
 {
     /* Create GUI layout */
     auto * ui = ::LoadUiFile(this);

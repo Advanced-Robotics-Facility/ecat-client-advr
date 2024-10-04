@@ -155,7 +155,8 @@ bool Reading::getReadings(const blockfactory::core::BlockInformation* blockInfo,
             
             // check the auxiliary vector size with output signal size
             // NOTE this allow to avoid the checks (bool return) on getting function
-            if(aux_vector.size() != output->getWidth())
+            size_t aux_vector_size=static_cast<size_t>(aux_vector.size());
+            if(aux_vector_size != output->getWidth())
             {
                 error_info = "Different dimension of output port: " + std::to_string(output->getWidth()) +" and joint readings vector: " + std::to_string(aux_vector.size());
                 return false;

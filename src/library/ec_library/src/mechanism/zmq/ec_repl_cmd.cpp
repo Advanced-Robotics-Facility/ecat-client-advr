@@ -45,7 +45,7 @@ void EcReplCmd::zmq_do_cmd(iit::advr::Repl_cmd  pb_cmd,
             zmq_cmd_recv(msg,pb_cmd.type(),req_sock,fault);
         }
 
-    }catch (zmq::error_t err){
+    }catch (const zmq::error_t &err){
         std::string zmq_exception=zmq_strerror(err.num());
         fault.set_type(EC_REPL_CMD_STATUS::WRONG_FB_MSG);
         fault.set_info("Bad communication: " + zmq_exception);
@@ -89,7 +89,7 @@ bool EcReplCmd::zmq_cmd_send(iit::advr::Repl_cmd  pb_cmd,
             fault.set_recovery_info("Retry command");
             return false;
         }
-    }catch (zmq::error_t err){
+    }catch (const zmq::error_t &err){
         std::string zmq_exception=zmq_strerror(err.num());
         fault.set_type(EC_REPL_CMD_STATUS::NACK);
         fault.set_info("Bad communication: " + zmq_exception);
@@ -156,7 +156,7 @@ void EcReplCmd::zmq_cmd_recv(string& msg,
             fault.set_recovery_info("Restart the master or verify its status");
         }
     }
-    catch (zmq::error_t err){
+    catch (const zmq::error_t &err){
         std::string zmq_exception=zmq_strerror(err.num());
         fault.set_type(EC_REPL_CMD_STATUS::NACK);
         fault.set_info("Bad communication: " + zmq_exception);
@@ -287,9 +287,9 @@ EcReplFault EcReplCmd::Slave_SDO_cmd(long int board_id,
         /***** Read SDO */////
        if(!rd_sdo.empty())
        {
-           for(int i=0; i<rd_sdo.size();i++)
+           for(const auto &rd_sdo_value:rd_sdo)
            {
-                pb_cmd.mutable_slave_sdo_cmd()->add_rd_sdo(rd_sdo.at(i));   // REQUIRED VALUE IF NOT WD  
+                pb_cmd.mutable_slave_sdo_cmd()->add_rd_sdo(rd_sdo_value);   // REQUIRED VALUE IF NOT WD  
            }
        }
        else if(!wr_sdo.empty())
@@ -438,9 +438,9 @@ EcReplFault EcReplCmd::Trajectory_Cmd(Trajectory_cmd_Type type,
         {
             Trajectory_cmd_Homing_par *homing_par_send= new Trajectory_cmd_Homing_par();
             
-            for(int i=0;i<homing_par.x.size();i++)
+            for(const auto &homing_par_x_value:homing_par.x)
             {
-                homing_par_send->add_x(homing_par.x[i]);  
+                homing_par_send->add_x(homing_par_x_value);  
             }
             
             pb_cmd.mutable_trajectory_cmd()->set_allocated_homing_par(homing_par_send);
@@ -476,7 +476,7 @@ EcReplFault EcReplCmd::Trajectory_Cmd(Trajectory_cmd_Type type,
         else
         {
             Trajectory_cmd_Smooth_par *smooth_par_send= new Trajectory_cmd_Smooth_par();
-            for(int i=0;i<smooth_par.x.size();i++)
+            for(size_t i=0;i<smooth_par.x.size();i++)
             {
                 smooth_par_send->add_x(smooth_par.x[i]);
                 smooth_par_send->add_y(smooth_par.y[i]); 
@@ -504,9 +504,9 @@ EcReplFault EcReplCmd::Trj_queue_cmd(Trj_queue_cmd_Type type,
     
     if(!trj_names.empty())                                    //REQUIRED VALUE
     {
-        for(int i=0; i < trj_names.size() ; i++)
+        for(const auto &trj_names_value:trj_names)
         {
-            pb_cmd.mutable_trj_queue_cmd()->add_trj_names(trj_names.at(i));
+            pb_cmd.mutable_trj_queue_cmd()->add_trj_names(trj_names_value);
         }
     }
     else
@@ -544,11 +544,9 @@ EcReplFault EcReplCmd::PDOs_aux_cmd(std::vector<aux_cmd_message_t> aux_cmds,
      /***** set protocol buffer command */////
     pb_cmd.set_type(CmdType::PDO_AUX_CMD);
     
-    for(size_t i=0 ; i < aux_cmds.size() ; i++)
+    for(const auto& aux_cmd:aux_cmds)
     {
         PDOs_aux_cmd_Aux_cmd *aux_cmd_send = pb_cmd.mutable_pdos_aux_cmd()->add_aux_cmds();
-        
-        aux_cmd_message_t aux_cmd = aux_cmds[i];
         
         aux_cmd_send->set_board_id(aux_cmd.board_id); //REQUIRED VALUE 
         aux_cmd_send->set_type(aux_cmd.type); //REQUIRED VALUE 

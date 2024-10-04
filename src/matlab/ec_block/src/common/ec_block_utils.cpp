@@ -82,9 +82,8 @@ bool EcBlockUtils::start_robot(std::string &error_info)
     }
     
     _motors_ref.clear();
-    for(size_t i=0; i < _joint_id.size();i++)
+    for(const auto &id:_joint_id)
     {
-        auto id = _joint_id[i];
         if(motors_status_map.count(id) >0)
         {
             auto motor_pos = std::get<1>(motors_status_map[id]);
@@ -139,9 +138,8 @@ void EcBlockUtils::stop_robot()
         _robot_started=false;
         PAC brake_cmds = {};
 
-        for(size_t i=0; i < _joint_id.size();i++)
+        for (const auto &id : _joint_id)
         {
-            auto id = _joint_id[i];
             brake_cmds.push_back(std::make_tuple(id,to_underlying(PdoAuxCmdType::BRAKE_ENGAGE)));
         }
         
@@ -187,8 +185,7 @@ void EcBlockUtils::retrieve_motor_info(std::vector<int> &joint_id,
 //         ctrl_mode= ec_client_utils->get_ec_cfg().control_mode_type;
 //         gains= ec_client_utils->get_ec_cfg().gains;
 
-        for ( int i=0;i<motor_id_v.size();i++) {
-            int motor_id = motor_id_v[i];
+        for (const auto &motor_id : motor_id_v){
             joint_id.push_back(motor_id);
             q_home.push_back(home_map[motor_id]);
             q_trj.push_back(trj_map[motor_id]);

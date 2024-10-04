@@ -24,13 +24,13 @@ _start_port(start_port)
 // Memory persistency is guaranteed starting from the initialize() method.
 bool Imu::configureSizeAndPorts(blockfactory::core::OutputPortsInfo &outputPortInfo)
 {
-    
-    for(size_t i=0; i < _imu_list.size();i++)
+    int i=0;
+    for(const auto& imu_s:_imu_list)
     {
-        if(_imu_option.count(_imu_list[i]) > 0)
+        if(_imu_option.count(imu_s) > 0)
         {
             std::vector<int> port_size;
-            switch(_imu_option.at(_imu_list[i]))
+            switch(_imu_option.at(imu_s))
             {
 
                 case imu_id:{
@@ -55,7 +55,7 @@ bool Imu::configureSizeAndPorts(blockfactory::core::OutputPortsInfo &outputPortI
                                                   port_size,
                                                   blockfactory::core::Port::DataType::DOUBLE};
             outputPortInfo.push_back(output);
-            
+            i++;
         }
         else
         {
@@ -77,17 +77,19 @@ bool Imu::getImu(const blockfactory::core::BlockInformation* blockInfo,ImuStatus
         return false;
     }
     
-    for(size_t port=0; port < _imu_list.size();port++)
+    int port=0;
+    for(const auto& imu:_imu_list)
     {
         // get ouput signal
         blockfactory::core::OutputSignalPtr output= blockInfo->getOutputPortSignal(/*index=*/port + _start_port);
+        port++;
         // Check the signal validity
         if (!output) {
             error_info = "Signal not valid";
             return false;
         }
         // verify if the element of the list exists like option
-        if(_imu_option.count(_imu_list[port]) > 0)
+        if(_imu_option.count(imu) > 0)
         {
             for(int imu_id_index=0;imu_id_index<_imu_number;imu_id_index++)
             {
@@ -99,7 +101,7 @@ bool Imu::getImu(const blockfactory::core::BlockInformation* blockInfo,ImuStatus
                 }
                     
                 auto imu_status_id = imu_status_map[imu_id_read];
-                switch(_imu_option.at(_imu_list[port]))
+                switch(_imu_option.at(imu))
                 {
                     case imu_id:    {
                                         output->set(imu_id_index, imu_id_read);

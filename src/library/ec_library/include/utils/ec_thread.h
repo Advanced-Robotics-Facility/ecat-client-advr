@@ -113,7 +113,7 @@ inline void EcThread::join() {
                 DPRINTF( "Unsuccess join on thread, reason: %d\n",ret);
             }
         }
-    }catch(std::exception e){
+    }catch(const std::exception &e){
         DPRINTF( "Join error on thread, reason: %s\n",e.what());
     }
 }

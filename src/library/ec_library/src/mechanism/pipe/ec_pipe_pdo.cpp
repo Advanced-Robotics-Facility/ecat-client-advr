@@ -11,7 +11,7 @@ EcPipePdo::EcPipePdo( int32_t id, uint32_t type, const std::string robot_name) :
 }
 
 EcPipePdo::EcPipePdo( int32_t id, const std::string esc_name, const std::string robot_name) :
-    id(id), type(type)
+    id(id)
 {
     rd_pp_name = make_pipe_name(robot_name,esc_name,id,"tx");
     wr_pp_name = make_pipe_name(robot_name,esc_name,id,"rx");

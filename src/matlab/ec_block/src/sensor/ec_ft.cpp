@@ -24,13 +24,13 @@ _start_port(start_port)
 // Memory persistency is guaranteed starting from the initialize() method.
 bool Ft::configureSizeAndPorts(blockfactory::core::OutputPortsInfo &outputPortInfo)
 {
-    
-    for(size_t i=0; i < _ft_list.size();i++)
+    int i=0;
+    for(const auto& ft_s:_ft_list)
     {
-        if(_ft_option.count(_ft_list[i]) > 0)
+        if(_ft_option.count(ft_s) > 0)
         {
             std::vector<int> port_size;
-            switch(_ft_option.at(_ft_list[i]))
+            switch(_ft_option.at(ft_s))
             {
 
                 case ft_id:{
@@ -51,7 +51,7 @@ bool Ft::configureSizeAndPorts(blockfactory::core::OutputPortsInfo &outputPortIn
                                                   port_size,
                                                   blockfactory::core::Port::DataType::DOUBLE};
             outputPortInfo.push_back(output);
-            
+            i++;
         }
         else
         {
@@ -73,17 +73,19 @@ bool Ft::getFt(const blockfactory::core::BlockInformation* blockInfo,FtStatusMap
         return false;
     }
     
-    for(size_t port=0; port < _ft_list.size();port++)
+    int port=0;
+    for(const auto& ft:_ft_list)
     {
         // get ouput signal
         blockfactory::core::OutputSignalPtr output= blockInfo->getOutputPortSignal(/*index=*/port + _start_port);
+        port++;
         // Check the signal validity
         if (!output) {
             error_info = "Signal not valid";
             return false;
         }
         // verify if the element of the list exists like option
-        if(_ft_option.count(_ft_list[port]) > 0)
+        if(_ft_option.count(ft) > 0)
         {
             for(int ft_id_index=0;ft_id_index<_ft_number;ft_id_index++)
             {
@@ -95,7 +97,7 @@ bool Ft::getFt(const blockfactory::core::BlockInformation* blockInfo,FtStatusMap
                 }
                     
                 auto ft_status_id = ft_status_map[ft_id_read];
-                switch(_ft_option.at(_ft_list[port]))
+                switch(_ft_option.at(ft))
                 {
                     case ft_id:    {
                                         output->set(ft_id_index, ft_id_read);

@@ -28,7 +28,7 @@ void EcBoostCmd::server_replies_handler(char*buf, size_t size)
     size_t offset {};
     auto reply = proto.getCliReqSrvRep(buf, size, offset);
     _consoleLog->info( " SRV REP : {}", magic_enum::enum_name(reply));
-    int64_t ts;
+    int64_t ts=0;
     int64_t usecs_since_epoch = getTsEpoch<std::chrono::microseconds>();
     SCA server_args;
     uint32_t hash;

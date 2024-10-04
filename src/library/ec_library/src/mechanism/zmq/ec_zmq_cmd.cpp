@@ -168,7 +168,7 @@ bool EcZmqCmd::retrieve_rr_sdo(uint32_t esc_id,
             for(auto &[sdo_name,sdo_value]:rr_sdo_check){
                 try{
                     rr_sdo[sdo_name]=std::stof(sdo_value);
-                }catch(std::exception e){
+                }catch(const std::exception &e){
                     rr_sdo[sdo_name]=0xffffffff;
                 }
             }

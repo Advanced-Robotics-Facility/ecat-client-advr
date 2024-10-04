@@ -111,8 +111,8 @@ QList<QString> EcGuiPdo::get_pdo_fields(const std::vector<std::string> pdo_name)
 {
     QList<QString> list;
     list.reserve(pdo_name.size());
-    for(int i=0;i<pdo_name.size();i++){
-        list.push_back(QString::fromStdString(pdo_name[i]));
+    for(const auto &pdo_name_v:pdo_name){
+        list.push_back(QString::fromStdString(pdo_name_v));
     }
     return list;
 }
@@ -125,15 +125,15 @@ QTreeWidgetItem * EcGuiPdo::initial_setup(std::string esc_id_name,QList<QString>
       topLevelrtn->setText(2,"");
       topLevelrtn->setText(3,"Rx");
 
-      for(int index=0; index<pdo_fields.size(); index++)
+      for(const auto &pdo_fields_value:pdo_fields)
       {
-          std::string esc_id_pdo = esc_id_name + "_" + pdo_fields.at(index).toStdString();
+          std::string esc_id_pdo = esc_id_name + "_" + pdo_fields_value.toStdString();
           create_color(esc_id_pdo);
           
           QTreeWidgetItem * item = new QTreeWidgetItem();
           item->setFlags(item->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable);
           item->setCheckState(1,Qt::Unchecked);
-          item->setText(1,pdo_fields.at(index));
+          item->setText(1,pdo_fields_value);
           topLevelrtn->addChild(item);
       }
       
@@ -149,19 +149,20 @@ void EcGuiPdo::fill_data(std::string esc_id_name,QTreeWidgetItem * topLevel,QLis
     topLevel->setText(0,QString::number(_s_receive_time, 'f', 3));
     /************************************* TIME ***********************************************/
 
-    for(int k=0; k < pdo.size();k++)
+    for(const auto &pdo_value:pdo)
     {
         try{
             /************************************* DATA ***********************************************/
             QString raw_data="";
-            for(int k=0; k<pdo_fields.size(); k++)
+            int k=0;
+            for(const auto &pdo_fields_value:pdo_fields)
             {
                 QTreeWidgetItem * item = topLevel->child(k);
-                QString data=QString::number(pdo[k], 'f', 6);
+                QString data=QString::number(pdo_value, 'f', 6);
                 item->setText(2,data);
                 raw_data=raw_data+data+ " ";
                 
-                std::string esc_id_pdo = esc_id_name + "_" + pdo_fields.at(k).toStdString();
+                std::string esc_id_pdo = esc_id_name + "_" + pdo_fields_value.toStdString();
                 QCPGraph * graph_pdo=_graph_pdo_map[esc_id_pdo];
                 
                 if(item->checkState(1)==Qt::Checked)
@@ -180,6 +181,7 @@ void EcGuiPdo::fill_data(std::string esc_id_name,QTreeWidgetItem * topLevel,QLis
                     //update plot
                     _update_plot |= true;
                 }
+                k++;
             }
             /************************************* DATA ************************************************/
 
@@ -187,7 +189,7 @@ void EcGuiPdo::fill_data(std::string esc_id_name,QTreeWidgetItem * topLevel,QLis
             topLevel->setText(4,raw_data);
             /************************************* RAW DATA ********************************************/
             
-        }catch (std::out_of_range oor) {}
+        }catch (const std::out_of_range &oor) {}
     }
 }
 

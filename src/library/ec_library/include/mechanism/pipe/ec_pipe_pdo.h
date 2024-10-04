@@ -82,8 +82,8 @@ public:
     iit::advr::Ec_slave_pdo* pb_rx() { return &pb_rx_pdos; }
     iit::advr::Ec_slave_pdo* pb_tx() { return &pb_tx_pdos; }
 
-    const std::string get_name()  { return name; }
-    const uint32_t get_type()     { return type; }
+    std::string get_name() const    { return name; }
+    uint32_t get_type() const       { return type; }
 
     SH_IDP get_rd_iddp() { return std::make_shared<IDDP_pipe>(rd_iddp); }
     SH_IDP get_wr_iddp() { return std::make_shared<IDDP_pipe>(wr_iddp); }

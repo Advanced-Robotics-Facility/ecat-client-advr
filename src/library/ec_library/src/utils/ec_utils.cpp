@@ -228,8 +228,7 @@ void EcUtils::generate_fake_slave_info()
 {
     int slave_pos=0;
     // MOTOR
-    for(int i=0;i<_ec_cfg.motor_id.size();i++){
-        int motor_id=_ec_cfg.motor_id[i];
+    for(const auto &motor_id:_ec_cfg.motor_id){
         if(_ec_cfg.motor_config_map.count(motor_id)>0){
             _ec_cfg.fake_slave_info.push_back(std::make_tuple(motor_id,_ec_cfg.motor_config_map[motor_id].type,slave_pos));
             slave_pos++;
@@ -238,40 +237,35 @@ void EcUtils::generate_fake_slave_info()
     
     // IMU
     slave_pos++;
-    for(int i=0;i<_ec_cfg.imu_id.size();i++){
-        int imu_id=_ec_cfg.imu_id[i];
+    for(const auto &imu_id:_ec_cfg.imu_id){
         _ec_cfg.fake_slave_info.push_back(std::make_tuple(imu_id,iit::ecat::IMU_ANY,slave_pos));
         slave_pos++;
     }
     
     // FT
     slave_pos++;
-    for(int i=0;i<_ec_cfg.ft_id.size();i++){
-        int ft_id=_ec_cfg.ft_id[i];
+    for(const auto &ft_id:_ec_cfg.ft_id){
         _ec_cfg.fake_slave_info.push_back(std::make_tuple(ft_id,iit::ecat::FT6_MSP432,slave_pos));
         slave_pos++;
     }
     
     // POW
     slave_pos++;
-    for(int i=0;i<_ec_cfg.pow_id.size();i++){
-        int pow_id=_ec_cfg.pow_id[i];
+    for(const auto &pow_id:_ec_cfg.pow_id){
         _ec_cfg.fake_slave_info.push_back(std::make_tuple(pow_id,iit::ecat::POW_F28M36_BOARD,slave_pos));
         slave_pos++;
     }
     
     // VALVE
     slave_pos++;
-    for(int i=0;i<_ec_cfg.valve_id.size();i++){
-        int valve_id=_ec_cfg.valve_id[i];
+    for(const auto &valve_id:_ec_cfg.valve_id){
         _ec_cfg.fake_slave_info.push_back(std::make_tuple(valve_id,iit::ecat::HYQ_KNEE,slave_pos));
         slave_pos++;
     }
     
     // PUMP
     slave_pos++;
-    for(int i=0;i<_ec_cfg.pump_id.size();i++){
-        int pump_id=_ec_cfg.pump_id[i];
+    for(const auto &pump_id:_ec_cfg.pump_id){
         _ec_cfg.fake_slave_info.push_back(std::make_tuple(pump_id,iit::ecat::HYQ_HPU,slave_pos));
         slave_pos++;
     }

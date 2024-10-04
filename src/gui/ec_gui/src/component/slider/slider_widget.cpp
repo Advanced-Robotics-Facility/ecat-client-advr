@@ -55,7 +55,7 @@ SliderWidget::SliderWidget (const QString&  name,
 
     _tab_name_wid = new QTabWidget();
     
-    for(int i=0;i<slider_info_s.slider_name.size();i++){
+    for(size_t i=0;i<slider_info_s.slider_name.size();i++){
 
         QLabel *slider_label = new QLabel(this);
         QDoubleSpinBox *value_box = new QDoubleSpinBox(this);
@@ -116,8 +116,8 @@ void SliderWidget::align_spinbox(int i,double value)
 
 void SliderWidget::align_all_spinbox(double value)
 {
-    for(int i=0;i<_wave_v.size();i++){
-        _wave_v[i]->align_spinbox(value);
+    for(auto &wave_v:_wave_v){
+        wave_v->align_spinbox(value);
     }
 }
 
@@ -128,23 +128,23 @@ void SliderWidget::align_spinbox(int i)
 
 void SliderWidget::align_all_spinbox()
 {
-    for(int i=0;i<_wave_v.size();i++){
-        _wave_v[i]->align_spinbox();
+    for(auto &wave_v:_wave_v){
+        wave_v->align_spinbox();
     }
 }
 
 
 void SliderWidget::disable_slider()
 {
-    for(int i=0;i<_wave_v.size();i++){
-        _wave_v[i]->disable_slider();
+    for(auto &wave_v:_wave_v){
+        wave_v->disable_slider();
     }
 }
 void SliderWidget::enable_slider()
 {
     if(_slider_enabled->isChecked()){
-        for(int i=0;i<_wave_v.size();i++){
-            _wave_v[i]->enable_slider();
+        for(auto &wave_v:_wave_v){
+            wave_v->enable_slider();
         }
     }
 }
@@ -201,8 +201,8 @@ std::string SliderWidget::get_slider_name()
 
 void SliderWidget::set_filter(double st)
 {
-    for(int i=0;i<_wave_v.size();i++){
-        _wave_v[i]->set_filter(st);
+    for(auto &wave_v:_wave_v){
+        wave_v->set_filter(st);
     }
 }
 

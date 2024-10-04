@@ -63,7 +63,8 @@ bool Reference::setReferences(const blockfactory::core::BlockInformation* blockI
         
         // check dimesion of the input signal with the joint number
         // NOTE this allow to avoid the checks (bool return) on setting function
-        if(input->getWidth() != _joint_number)
+        int input_width = static_cast<int>(input->getWidth());
+        if(input_width != _joint_number)
         {
             error_info = "Different dimension of input port: " + std::to_string(input->getWidth()) +" and joint number: " + std::to_string(_joint_number);
             return false;
@@ -72,7 +73,7 @@ bool Reference::setReferences(const blockfactory::core::BlockInformation* blockI
         // use an auxiliary vectory to save the input signal values
         Eigen::VectorXd aux_vector;
         aux_vector.resize(_joint_number);
-        for (size_t  k=0; k < aux_vector.size(); ++k)
+        for (int  k=0; k < aux_vector.size(); ++k)
         {
             aux_vector[k]=input->get<double>(k);
         }

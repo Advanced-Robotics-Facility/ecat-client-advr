@@ -262,13 +262,13 @@ bool EcGuiCmd::braking_cmd_req()
     //********** USE SDO /***********
     bool braking_cmd_ack=false;
     RD_SDO rd_sdo{};
-    for(int i=0;i<_brake_cmds.size();i++){
+    for(const auto &brake_cmd:_brake_cmds){
         int esc_id; 
         int brake_req;
         int brake_req_sdo=0;
         WR_SDO wr_sdo{};
                 
-        std::tie(esc_id,brake_req) = _brake_cmds[i];
+        std::tie(esc_id,brake_req) = brake_cmd;
 
         if(brake_req == to_underlying(PdoAuxCmdType::BRAKE_RELEASE)){
             brake_req_sdo=0x00BD;

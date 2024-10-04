@@ -5,6 +5,7 @@ cmake_minimum_required(VERSION 3.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -O3")
 
 # avoid installing catkin-related files
 set(CATKIN_BUILD_BINARY_PACKAGE TRUE)
@@ -13,6 +14,17 @@ set(ENABLE_PREEMPT_RT OFF CACHE BOOL "Enable preempt-rt real-time features")
 option(COMPILE_EXAMPLE "Enable to compile examples" ON)
 option(COMPILE_GUI "Enable to compile the GUI" OFF)
 option(COMPILE_MATLAB "Enable to compile the matlab" OFF)
+
+
+add_compile_options(-Wall -Wextra -Werror)
+#add_compile_options(-Wno-unused)
+add_compile_options(-Wno-unused-but-set-variable
+                    -Wno-unused-variable
+                    -Wno-unused-parameter
+                    -Wno-unused-function)
+# suppress warning: ‘int google::protobuf::MessageLite::ByteSize() const’ is deprecated
+# Please use ByteSizeLong() instead [-Wdeprecated-declarations]
+add_compile_options(-Wno-deprecated-declarations)
 
 find_package(Boost REQUIRED system)
 

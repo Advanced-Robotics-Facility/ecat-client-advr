@@ -24,10 +24,10 @@ _start_port(start_port)
 // Memory persistency is guaranteed starting from the initialize() method.
 bool Pow::configureSizeAndPorts(blockfactory::core::OutputPortsInfo &outputPortInfo)
 {
-    
-    for(size_t i=0; i < _pow_list.size();i++)
+    int i=0;
+    for(const auto& pow_s:_pow_list)
     {
-        if(_pow_option.count(_pow_list[i]) > 0)
+        if(_pow_option.count(pow_s) > 0)
         {
             std::vector<int> port_size;
             
@@ -39,7 +39,7 @@ bool Pow::configureSizeAndPorts(blockfactory::core::OutputPortsInfo &outputPortI
                                                   port_size,
                                                   blockfactory::core::Port::DataType::DOUBLE};
             outputPortInfo.push_back(output);
-            
+            i++;
         }
         else
         {
@@ -61,17 +61,19 @@ bool Pow::getPow(const blockfactory::core::BlockInformation* blockInfo,PwrStatus
         return false;
     }
     
-    for(size_t port=0; port < _pow_list.size();port++)
+    int port=0;
+    for(const auto& pow:_pow_list)
     {
         // get ouput signal
         blockfactory::core::OutputSignalPtr output= blockInfo->getOutputPortSignal(/*index=*/port + _start_port);
+        port++;
         // Check the signal validity
         if (!output) {
             error_info = "Signal not valid";
             return false;
         }
         // verify if the element of the list exists like option
-        if(_pow_option.count(_pow_list[port]) > 0)
+        if(_pow_option.count(pow) > 0)
         {
             for(int pow_id_index=0;pow_id_index<_pow_number;pow_id_index++)
             {
@@ -83,7 +85,7 @@ bool Pow::getPow(const blockfactory::core::BlockInformation* blockInfo,PwrStatus
                 }
                     
                 auto pow_status_id = pow_status_map[pow_id_read];
-                switch(_pow_option.at(_pow_list[port]))
+                switch(_pow_option.at(pow))
                 {
                     case pow_id:    {
                                         output->set(pow_id_index, pow_id_read);

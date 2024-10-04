@@ -84,8 +84,7 @@ void EcCommonStep::find_motors()
         throw std::runtime_error("Got an empty motor id vector for scanning");
     }
 
-    for(int motor_id_index=0;motor_id_index<_motor_id_vector.size();motor_id_index++){
-        int motor_id = _motor_id_vector[motor_id_index];
+    for(const auto& motor_id:_motor_id_vector){
         bool motor_found=false;
         for ( auto &[id, type, pos] : _slave_info ) {
             if(ec_motors.count(type)>0){
@@ -105,9 +104,7 @@ void EcCommonStep::find_motors()
 void EcCommonStep::prepare_motors()
 {
     _motors_start.clear();
-    for(int i=0; i< _motor_id_vector.size();i++)
-    {
-        int id = _motor_id_vector[i];
+    for(const auto& id:_motor_id_vector){
         if(_ec_cfg.motor_config_map.count(id)==0){
             throw std::runtime_error("Cannot retrieve a motor configuration for the ID: " + std::to_string(id) + " ,please setup the control mode");
         }
@@ -234,8 +231,7 @@ void EcCommonStep::find_valves()
         throw std::runtime_error("Got an empty valve id vector for scanning");
     }
 
-    for(int valve_id_index=0;valve_id_index<_valve_id_vector.size();valve_id_index++){
-        int valve_id = _valve_id_vector[valve_id_index];
+    for(const auto &valve_id :_valve_id_vector){
         bool valve_found=false;
         for ( auto &[id, type, pos] : _slave_info ) {
             if(type==iit::ecat::HYQ_KNEE){
@@ -263,8 +259,7 @@ bool EcCommonStep::start_ec_valves(void)
 {
     WR_SDO start_valve={std::make_tuple("ctrl_status_cmd","165")};
     bool valve_started=true;
-    for(int i=0;i<_valve_id_vector.size();i++){
-        int valve_id=_valve_id_vector[i];
+    for(const auto &valve_id :_valve_id_vector){
         valve_started &=_client->set_wr_sdo(valve_id,{},start_valve);
     }
 
@@ -282,8 +277,7 @@ void EcCommonStep::stop_ec_valves(void)
 {
     WR_SDO stop_valve= {std::make_tuple("ctrl_status_cmd","90")};
     bool valve_stopped=true;
-    for(int i=0;i<_valve_id_vector.size();i++){
-        int valve_id=_valve_id_vector[i];
+    for(const auto &valve_id :_valve_id_vector){
         valve_stopped &=_client->set_wr_sdo(valve_id,{},stop_valve);
     }
 

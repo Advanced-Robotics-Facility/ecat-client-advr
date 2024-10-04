@@ -98,11 +98,11 @@ int main(int argc, char * const argv[])
             throw std::runtime_error("fatal error: motors references structure empty!");
         }
 
-        int join_num=model->getJointNum();
+        size_t join_num= static_cast<size_t>(model->getJointNum());
         if(model->isFloatingBase()){
             join_num=join_num-6;
         }
-        if(q.size() != model->getJointNum()-6){
+        if(q.size() != join_num){
             throw std::runtime_error("fatal error: different size of initial position from joint of the model");
         }
 
@@ -153,8 +153,10 @@ int main(int argc, char * const argv[])
                 
                 // interpolate
                 for ( auto &[esc_id, gain_ref] : gain_ref_map){
-                    for(int i=0;i<gain_ref.size();i++){
-                        gain_ref[i] = gain_start_map[esc_id][i] + alpha * (gain_trj_map[esc_id][i] - gain_start_map[esc_id][i]);
+                    uint8_t i=0;
+                    for(auto &gain_ref_value:gain_ref){
+                        gain_ref_value = gain_start_map[esc_id][i] + alpha * (gain_trj_map[esc_id][i] - gain_start_map[esc_id][i]);
+                        i++;
                     }
                 }
             }

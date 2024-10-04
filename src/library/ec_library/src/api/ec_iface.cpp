@@ -8,7 +8,7 @@ EcIface::EcIface()
     _client_status.status=ClientStatusEnum::IDLE;
     _client_status.run_loop=false;
 
-    for(int i=0;i<NUM_DEVICES_CTRL;i++){
+    for(uint8_t i=0;i<NUM_DEVICES_CTRL;i++){
         _client_status.devices_started.push_back(false);
     }
 
@@ -269,8 +269,8 @@ void EcIface::wake_client_thread()
 }
 
 bool EcIface::all_devices_stopped(){
-    for(int i=0;i<_client_status.devices_started.size();i++){
-        if(_client_status.devices_started[i]){
+    for(const auto& device_started:_client_status.devices_started){
+        if(device_started){
             return false;
         }
     }
