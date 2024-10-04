@@ -148,49 +148,52 @@ void EcGuiPdo::fill_data(std::string esc_id_name,QTreeWidgetItem * topLevel,QLis
     /************************************* TIME ************************************************/
     topLevel->setText(0,QString::number(_s_receive_time, 'f', 3));
     /************************************* TIME ***********************************************/
-
-    for(const auto &pdo_value:pdo)
-    {
-        try{
-            /************************************* DATA ***********************************************/
-            QString raw_data="";
-            int k=0;
-            for(const auto &pdo_fields_value:pdo_fields)
-            {
-                QTreeWidgetItem * item = topLevel->child(k);
-                QString data=QString::number(pdo_value, 'f', 6);
-                item->setText(2,data);
-                raw_data=raw_data+data+ " ";
-                
-                std::string esc_id_pdo = esc_id_name + "_" + pdo_fields_value.toStdString();
-                QCPGraph * graph_pdo=_graph_pdo_map[esc_id_pdo];
-                
-                if(item->checkState(1)==Qt::Checked)
-                {
-                    if(!graph_pdo)
-                    {
-                        graph_pdo = _custom_plot->addGraph();
-                        graph_pdo->setPen(QPen(_color_pdo_map[esc_id_pdo]));
-                        graph_pdo->setName(QString::fromStdString(esc_id_pdo));
-                        graph_pdo->addToLegend();
-                        _graph_pdo_map[esc_id_pdo]=graph_pdo;
-                    }
-                    
-                    // add data to lines:
-                    graph_pdo->addData(_s_receive_time,data.toDouble());
-                    //update plot
-                    _update_plot |= true;
-                }
-                k++;
-            }
-            /************************************* DATA ************************************************/
-
-            /************************************* RAW DATA ********************************************/
-            topLevel->setText(4,raw_data);
-            /************************************* RAW DATA ********************************************/
-            
-        }catch (const std::out_of_range &oor) {}
+    size_t pdo_fields_size = static_cast<size_t>(pdo_fields.size());
+    if(pdo_fields_size!=pdo.size()){
+        std::cout << "pdo fields size: " << std::to_string(pdo_fields_size) 
+                  << " pdo value size: " << std::to_string(pdo.size()) << std::endl;
+        throw std::runtime_error("fatal error: on pdo size fields!");
     }
+
+    try{
+        /************************************* DATA ***********************************************/
+        QString raw_data="";
+        int k=0;
+        for(const auto &pdo_fields_value:pdo_fields)
+        {
+            QTreeWidgetItem * item = topLevel->child(k);
+            QString data=QString::number(pdo[k], 'f', 6);
+            item->setText(2,data);
+            raw_data=raw_data+data+ " ";
+            
+            std::string esc_id_pdo = esc_id_name + "_" + pdo_fields_value.toStdString();
+            QCPGraph * graph_pdo=_graph_pdo_map[esc_id_pdo];
+            
+            if(item->checkState(1)==Qt::Checked)
+            {
+                if(!graph_pdo)
+                {
+                    graph_pdo = _custom_plot->addGraph();
+                    graph_pdo->setPen(QPen(_color_pdo_map[esc_id_pdo]));
+                    graph_pdo->setName(QString::fromStdString(esc_id_pdo));
+                    graph_pdo->addToLegend();
+                    _graph_pdo_map[esc_id_pdo]=graph_pdo;
+                }
+                
+                // add data to lines:
+                graph_pdo->addData(_s_receive_time,data.toDouble());
+                //update plot
+                _update_plot |= true;
+            }
+            k++;
+        }
+        /************************************* DATA ************************************************/
+
+        /************************************* RAW DATA ********************************************/
+        topLevel->setText(4,raw_data);
+        /************************************* RAW DATA ********************************************/
+        
+    }catch (const std::out_of_range &oor) {}
 }
 
 void EcGuiPdo::read()
