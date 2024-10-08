@@ -114,17 +114,13 @@ public:
             {
                 case iit::ecat::CENT_AC :
                 case iit::ecat::LO_PWR_DC_MC:{
-                    auto hhcm_motor_pb= std::make_shared<HhcmMotor>();
-                    esc_pb[id]=std::static_pointer_cast<EscPb>(hhcm_motor_pb);
+                    auto advrf_motor_pb= std::make_shared<AdvrfMotor>();
+                    esc_pb[id]=std::static_pointer_cast<EscPb>(advrf_motor_pb);
                 }break;
                 case iit::ecat::SYNAPTICON_v5_0:
                 case iit::ecat::SYNAPTICON_v5_1:{
-                    auto circulo_motor_pb= std::make_shared<CirculoMotor>();
-                    esc_pb[id]=std::static_pointer_cast<EscPb>(circulo_motor_pb);
-                }break;
-                case iit::ecat::AMC_FLEXPRO:{
-                    auto flexpro_motor_pb= std::make_shared<FlexProMotor>();
-                    esc_pb[id]=std::static_pointer_cast<EscPb>(flexpro_motor_pb);
+                    auto synapticon_motor_pb= std::make_shared<SynapticonMotor>();
+                    esc_pb[id]=std::static_pointer_cast<EscPb>(synapticon_motor_pb);
                 }break;
                 case iit::ecat::FT6_MSP432:{
                     auto ft_pb= std::make_shared<FtPb>();

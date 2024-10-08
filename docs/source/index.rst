@@ -19,7 +19,7 @@ It's possible to compile and run the EtherCAT client and server in real-time wit
 .. image:: _static/Real_Time_OS/Real_Time_OS_Img_0.png
 .. image:: _static/Real_Time_OS/Real_Time_OS_Img_1.png
 
-Compatible with different types of motor drivers, IIT HHCM Research Line, Somanet Circulo-Node and AMC FlexPro:
+Compatible with different types of motor drivers, IIT HHCM Research Line and Synapticon Somanet Circulo-Node:
 
 `HHCM motor documentation <https://hhcm.iit.it/it/robot-hardware>`__ 
 
@@ -29,14 +29,9 @@ Compatible with different types of motor drivers, IIT HHCM Research Line, Somane
 
 .. image:: _static/EtherCAT_Client_Img/EtherCAT_Client_Img_4.png
 
-`Somanet node 400 documentation <https://doc.synapticon.com/node/technical_specs/tech_specs_node.html>`__ 
+`Somanet Node documentation <https://doc.synapticon.com/node/technical_specs/tech_specs_node.html>`__ 
 
 .. image:: _static/EtherCAT_Client_Img/EtherCAT_Client_Img_5.png
-
-
-`AMC Flex-Pro documentation <https://www.a-m-c.com/experience/products/servo-drives/flexpro/>`__ 
-
-.. image:: _static/EtherCAT_Client_Img/EtherCAT_Client_Img_6.png
 
 Contents:
 

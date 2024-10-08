@@ -1,16 +1,16 @@
-#ifndef __HHCM_PDO__
-#define __HHCM_PDO__
+#ifndef __ADVRF_PDO__
+#define __ADVRF_PDO__
 
 #include "mechanism/protobuf/motor/motor_pdo.h"
 
 template <class T>
-class HhcmPdo: public MotorPdo<T>{
+class AdvrfPdo: public MotorPdo<T>{
 
 public:
 
-    HhcmPdo(const std::string ,int32_t id);
-    HhcmPdo(const std::string ,int32_t id, uint32_t type);
-    ~HhcmPdo();
+    AdvrfPdo(const std::string ,int32_t id);
+    AdvrfPdo(const std::string ,int32_t id, uint32_t type);
+    ~AdvrfPdo();
 
     void get_from_pb(void) override;
 
@@ -18,28 +18,28 @@ public:
 };
 
 template < class T >
-inline HhcmPdo<T>::HhcmPdo(std::string value,int id):
+inline AdvrfPdo<T>::AdvrfPdo(std::string value,int id):
                            MotorPdo<T>(value,id)
 {
     MotorPdo<T>::init_pb();
 };
 
 template < class T >
-inline HhcmPdo<T>::HhcmPdo(std::string value,int32_t id, uint32_t type):
+inline AdvrfPdo<T>::AdvrfPdo(std::string value,int32_t id, uint32_t type):
                            MotorPdo<T>(value,id,type)
 {
     MotorPdo<T>::init_pb();
 };
 
 template < class T >
-inline HhcmPdo<T>::~HhcmPdo()
+inline AdvrfPdo<T>::~AdvrfPdo()
 {
 
 };
 
 
 template < class T >
-inline void HhcmPdo<T>::get_from_pb() 
+inline void AdvrfPdo<T>::get_from_pb() 
 {
     std::get<0>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->link_pos();
     std::get<1>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->motor_pos();
@@ -64,7 +64,7 @@ inline void HhcmPdo<T>::get_from_pb()
 }
 
 template < class T >
-inline void HhcmPdo<T>::set_to_pb() 
+inline void AdvrfPdo<T>::set_to_pb() 
 {
     set_pbHeader(T::pb_tx_pdos.mutable_header(), T::name, 0);
     // Type

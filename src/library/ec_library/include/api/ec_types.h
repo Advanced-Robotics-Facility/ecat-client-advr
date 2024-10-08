@@ -6,20 +6,18 @@
 #include <tuple>
 
 #include <esc_info.h>
-#include "mechanism/protobuf/motor/hhcm/hhcm_pdo.h"
-#include "mechanism/protobuf/motor/circulo9/circulo9_pdo.h"
-#include "mechanism/protobuf/motor/flexpro/flexpro_pdo.h"
+#include "mechanism/protobuf/motor/advrf/advrf_pdo.h"
+#include "mechanism/protobuf/motor/synapticon/synapticon_pdo.h"
 #include "mechanism/protobuf/imu/imu_pdo.h"
 #include "mechanism/protobuf/ft/ft_pdo.h"
 #include "mechanism/protobuf/pow/pow_pdo.h"
 #include "mechanism/protobuf/valve/valve_pdo.h"
 #include "mechanism/protobuf/pump/pump_pdo.h"
 
-static std::map<uint32_t,std::string>ec_motors={{iit::ecat::CENT_AC,"HHCM_HP_Motor"},
-                                                {iit::ecat::LO_PWR_DC_MC,"HHCM_LP_Motor"},
+static std::map<uint32_t,std::string>ec_motors={{iit::ecat::CENT_AC,"ADVRF_Motor"},
+                                                {iit::ecat::LO_PWR_DC_MC,"ADVRF_Motor"},
                                                 {iit::ecat::SYNAPTICON_v5_0,"Synapticon_Motor"},
-                                                {iit::ecat::SYNAPTICON_v5_1,"Synapticon_Motor"},
-                                                {iit::ecat::AMC_FLEXPRO,"AMC_flex_pro_Motor"}};
+                                                {iit::ecat::SYNAPTICON_v5_1,"Synapticon_Motor"}};
                                             
 using MotorStatusMap =   std::map<int32_t, MotorPdoRx::pdo_t>;
 using MotorReferenceMap= std::map<int32_t, MotorPdoTx::pdo_t>; 

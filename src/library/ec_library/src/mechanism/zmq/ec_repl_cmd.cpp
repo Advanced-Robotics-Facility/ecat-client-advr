@@ -336,7 +336,7 @@ EcReplFault EcReplCmd::Flash_cmd(Flash_cmd_Type type,
     return fault;
 }
 
-void EcReplCmd::check_hhcm_motor_gains(iit::advr::Gains_Type ctrl_type,std::vector<float> &gains)
+void EcReplCmd::check_advrf_motor_gains(iit::advr::Gains_Type ctrl_type,std::vector<float> &gains)
 {
     if((ctrl_type == iit::advr::Gains_Type_POSITION ||
         ctrl_type == iit::advr::Gains_Type_VELOCITY)) {
@@ -388,8 +388,8 @@ EcReplFault EcReplCmd::Ctrl_cmd(Ctrl_cmd_Type type,
         auto ctrl_type_cast = static_cast<iit::advr::Gains_Type>(value);
         
         gains_send->set_type(ctrl_type_cast);
-        if(_hhcm_motor_map.count(board_id)>0){
-           check_hhcm_motor_gains(ctrl_type_cast,gains);
+        if(_advrf_motor_map.count(board_id)>0){
+           check_advrf_motor_gains(ctrl_type_cast,gains);
         }
         gains_send->set_pos_kp(gains[0]);
         gains_send->set_pos_kd(gains[1]);
@@ -589,8 +589,8 @@ EcReplFault EcReplCmd::Motors_PDO_cmd(motors_ref_map motors_references)
             motor_pdo_cmd->mutable_gains()->set_type(ctrl_type_cast);
             
             std::vector<float> gains_check={g0,g1,g2,g3,g4};
-            if(_hhcm_motor_map.count(bId)>0){
-                check_hhcm_motor_gains(ctrl_type_cast,gains_check);
+            if(_advrf_motor_map.count(bId)>0){
+                check_advrf_motor_gains(ctrl_type_cast,gains_check);
             }
                 
             motor_pdo_cmd->mutable_gains()->set_pos_kp(gains_check[0]);
@@ -614,14 +614,11 @@ EcReplFault EcReplCmd::Motors_PDO_cmd(motors_ref_map motors_references)
 void EcReplCmd::set_motor_type_map(std::map<int32_t,std::string> motor_type_map)
 {
     for ( const auto &[motor_id,motor_type] : motor_type_map ) {
-        if(motor_type=="HHCM_MOTOR"){
-            _hhcm_motor_map[motor_id]=motor_type;
+        if(motor_type=="ADVRF_MOTOR"){
+            _advrf_motor_map[motor_id]=motor_type;
         }
-        else if(motor_type=="CIRCULO9_MOTOR"){
-            _circulo9_motor_map[motor_id]=motor_type;
-        }
-        else if(motor_type=="AMC_FLEXPRO_MOTOR"){
-            _amc_flexpro_motor_map[motor_id]=motor_type;
+        else if(motor_type=="SYNAPTICON_MOTOR"){
+            _synapticon_motor_map[motor_id]=motor_type;
         }
     }
 }

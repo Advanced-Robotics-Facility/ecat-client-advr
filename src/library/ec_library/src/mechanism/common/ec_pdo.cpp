@@ -49,23 +49,17 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
         {
                 case iit::ecat::CENT_AC :
                 case iit::ecat::LO_PWR_DC_MC:{
-                    auto hhcm_pdo = std::make_shared<HhcmPdo<T>>(_ec_pdo_start, id, esc_type);
-                    _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(hhcm_pdo);
-                    _internal_motor_status_map[id]=_motor_status_map[id]=  hhcm_pdo->rx_pdo;
-                    _internal_motors_references[id]=_motors_references[id]= hhcm_pdo->tx_pdo;
+                    auto advrf_pdo = std::make_shared<AdvrfPdo<T>>(_ec_pdo_start, id, esc_type);
+                    _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(advrf_pdo);
+                    _internal_motor_status_map[id]=_motor_status_map[id]=  advrf_pdo->rx_pdo;
+                    _internal_motors_references[id]=_motors_references[id]= advrf_pdo->tx_pdo;
                 }break;
                 case iit::ecat::SYNAPTICON_v5_0:
                 case iit::ecat::SYNAPTICON_v5_1:{
-                    auto circulo9_pdo = std::make_shared<Circulo9Pdo<T>>(_ec_pdo_start, id, esc_type);
-                    _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(circulo9_pdo);
-                    _internal_motor_status_map[id]=_motor_status_map[id]=  circulo9_pdo->rx_pdo;
-                    _internal_motors_references[id]=_motors_references[id]= circulo9_pdo->tx_pdo;
-                }break;
-                case iit::ecat::AMC_FLEXPRO:{
-                    auto flex_pdo = std::make_shared<FlexproPdo<T>>(_ec_pdo_start, id, esc_type);
-                    _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(flex_pdo);
-                    _internal_motor_status_map[id]=_motor_status_map[id]= flex_pdo->rx_pdo;
-                    _internal_motors_references[id]=_motors_references[id]= flex_pdo->tx_pdo;
+                    auto synapticon_pdo = std::make_shared<SynapticonPdo<T>>(_ec_pdo_start, id, esc_type);
+                    _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(synapticon_pdo);
+                    _internal_motor_status_map[id]=_motor_status_map[id]=  synapticon_pdo->rx_pdo;
+                    _internal_motors_references[id]=_motors_references[id]= synapticon_pdo->tx_pdo;
                 }break;
                 case iit::ecat::FT6_MSP432:{
                     auto ft_pdo = std::make_shared<FtPdo<T>>(_ec_pdo_start, id);

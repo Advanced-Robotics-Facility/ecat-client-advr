@@ -319,20 +319,14 @@ std::map<int,EcUtils::MOTOR_CONFIG> EcUtils::get_motor_config_map(const YAML::No
                 if(motor_config_node[esc_name]["motor_type"]){
                     std::string type_str=motor_config_node[esc_name]["motor_type"].as<std::string>();
                     
-                    if(type_str=="HHCM"){
+                    if(type_str=="ADVRF"){
                         motor_config_map[esc_id].type=iit::ecat::CENT_AC;
                     }
-                    else if(type_str=="Synapticon_v5_0"){
-                        motor_config_map[esc_id].type=iit::ecat::SYNAPTICON_v5_0;
-                    }
-                    else if(type_str=="Synapticon_v5_1"){
+                    else if(type_str=="Synapticon"){
                         motor_config_map[esc_id].type=iit::ecat::SYNAPTICON_v5_1;
                     }
-                    else if(type_str=="FlexPro"){
-                        motor_config_map[esc_id].type=iit::ecat::AMC_FLEXPRO;
-                    }
                     else{
-                    
+                        motor_config_map[esc_id].type=iit::ecat::CENT_AC;
                     }
                 }
                 

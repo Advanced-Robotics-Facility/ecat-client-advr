@@ -1,16 +1,16 @@
-#ifndef __CIRCULO9_PDO__
-#define __CIRCULO9_PDO__
+#ifndef __SYNAPTICON_PDO__
+#define __SYNAPTICON_PDO__
 
 #include "mechanism/protobuf/motor/motor_pdo.h"
 
 template <class T>
-class Circulo9Pdo: public MotorPdo<T>{
+class SynapticonPdo: public MotorPdo<T>{
 
 public:
 
-    Circulo9Pdo(const std::string ,int32_t id);
-    Circulo9Pdo(const std::string ,int32_t id, uint32_t type);
-    ~Circulo9Pdo();
+    SynapticonPdo(const std::string ,int32_t id);
+    SynapticonPdo(const std::string ,int32_t id, uint32_t type);
+    ~SynapticonPdo();
 
     void get_from_pb(void) override;
 
@@ -18,35 +18,35 @@ public:
 };
 
 template < class T >
-inline Circulo9Pdo<T>::Circulo9Pdo(std::string value,int id):
+inline SynapticonPdo<T>::SynapticonPdo(std::string value,int id):
                                    MotorPdo<T>(value,id)
 {
     MotorPdo<T>::init_pb();
 };
 
 template < class T >
-inline Circulo9Pdo<T>::Circulo9Pdo(std::string value,int32_t id, uint32_t type):
+inline SynapticonPdo<T>::SynapticonPdo(std::string value,int32_t id, uint32_t type):
                                    MotorPdo<T>(value,id,type)
 {
     MotorPdo<T>::init_pb();
 };
 
 template < class T >
-inline Circulo9Pdo<T>::~Circulo9Pdo()
+inline SynapticonPdo<T>::~SynapticonPdo()
 {
 
 };
 
 
 template < class T >
-inline void Circulo9Pdo<T>::get_from_pb() 
+inline void SynapticonPdo<T>::get_from_pb() 
 {
     std::get<0>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->link_pos();
     std::get<1>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->motor_pos();
     std::get<2>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->link_vel();
     std::get<3>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->motor_vel();
     std::get<4>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->torque(); 
-    std::get<5>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->drive_temp();
+    std::get<5>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->motor_temp();
     std::get<6>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->drive_temp();
     std::get<7>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_circulo9_rx_pdo()->statusword();
     std::get<8>(MotorPdo<T>::rx_pdo)    = 0; //rtt
@@ -65,7 +65,7 @@ inline void Circulo9Pdo<T>::get_from_pb()
 }
 
 template < class T >
-inline void Circulo9Pdo<T>::set_to_pb() 
+inline void SynapticonPdo<T>::set_to_pb() 
 {
     set_pbHeader(T::pb_tx_pdos.mutable_header(), T::name, 0);
     // Type

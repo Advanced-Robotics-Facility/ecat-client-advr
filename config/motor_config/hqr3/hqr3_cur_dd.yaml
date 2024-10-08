@@ -2,60 +2,67 @@
 # LEG 1 
 #############################
 leg_1_joint_1:
-  motor_type: HHCM #allowed HHCM, Circulo, FlexPro, default HHCM
+  motor_type: ADVRF #allowed ADVRF, Synapticon default ADVRF
   brake_present: false
   control_mode: 0xDD
-  gains: [2000.0,2000.0,0.0,0.0,0.0]
-
+  #gains: [3500.0,2000.0,0.0,0.0,0.0] # damping, settling time synapticon
+  gains: [0.18,0.01,0.0,0.0,0.0]    # propotional, integral advrf
 
 leg_1_joint_2:
-  motor_type: HHCM #allowed HHCM, Circulo, FlexPro, default HHCM
+  motor_type: ADVRF #allowed ADVRF, Synapticon default ADVRF
   brake_present: false
   control_mode: 0xDD
-  gains: [200.0,0.0,10.0,0.0,0.0]
+  #gains: [3500.0,2000.0,0.0,0.0,0.0] # damping, settling time synapticon
+  gains: [0.18,0.01,0.0,0.0,0.0]    # propotional, integral advrf
 
 #############################
 # LEG 2
 #############################
 leg_2_joint_1:
-  motor_type: HHCM #allowed HHCM, Circulo, FlexPro, default HHCM
+  motor_type: ADVRF #allowed ADVRF, Synapticon default ADVRF
   brake_present: false
   control_mode: 0xDD
-  gains: [200.0,0.0,10.0,0.0,0.0]
-  
+  #gains: [3500.0,2000.0,0.0,0.0,0.0] # damping, settling time synapticon
+  gains: [0.18,0.01,0.0,0.0,0.0]    # propotional, integral advrf
 
 leg_2_joint_2:
-  motor_type: HHCM #allowed HHCM, Circulo, FlexPro, default HHCM
+  motor_type: ADVRF #allowed ADVRF, Synapticon default ADVRF
   brake_present: false
   control_mode: 0xDD
-  gains: [200.0,0.0,10.0,0.0,0.0]
+  #gains: [3500.0,2000.0,0.0,0.0,0.0] # damping, settling time synapticon
+  gains: [0.18,0.01,0.0,0.0,0.0]    # propotional, integral advrf
 
 #############################
 # LEG 3
 #############################
 leg_3_joint_1:
-  motor_type: HHCM #allowed HHCM, Circulo, FlexPro, default HHCM
+  motor_type: ADVRF #allowed ADVRF, Synapticon default ADVRF
   brake_present: false
   control_mode: 0xDD
-  gains: [200.0,0.0,10.0,0.0,0.0]
+  #gains: [3500.0,2000.0,0.0,0.0,0.0] # damping, settling time synapticon
+  gains: [0.18,0.01,0.0,0.0,0.0]    # propotional, integral advrf
   
 leg_3_joint_2:
-  motor_type: HHCM #allowed HHCM, Circulo, FlexPro, default HHCM
+  motor_type: ADVRF #allowed ADVRF, Synapticon default ADVRF
   brake_present: false
   control_mode: 0xDD
-  gains: [200.0,0.0,10.0,0.0,0.0]
+  #gains: [3500.0,2000.0,0.0,0.0,0.0] # damping, settling time synapticon
+  gains: [0.18,0.01,0.0,0.0,0.0]    # propotional, integral advrf
 
 #############################
 # LEG 4
 #############################
 leg_4_joint_1:
-  motor_type: HHCM #allowed HHCM, Circulo, FlexPro, default HHCM
+  motor_type: ADVRF #allowed ADVRF, Synapticon default ADVRF
   brake_present: false
   control_mode: 0xDD
-  gains: [200.0,0.0,10.0,0.0,0.0]
+  #gains: [3500.0,2000.0,0.0,0.0,0.0] # damping, settling time synapticon
+  gains: [0.18,0.01,0.0,0.0,0.0]    # propotional, integral advrf
   
 leg_4_joint_2:
-  motor_type: HHCM #allowed HHCM, Circulo, FlexPro, default HHCM
+  motor_type: ADVRF #allowed ADVRF, Synapticon default ADVRF
   brake_present: false
   control_mode: 0xDD
-  gains: [200.0,0.0,10.0,0.0,0.0]
+  #gains: [3500.0,2000.0,0.0,0.0,0.0] # damping, settling time synapticon
+  gains: [0.18,0.01,0.0,0.0,0.0]    # propotional, integral advrf
+
