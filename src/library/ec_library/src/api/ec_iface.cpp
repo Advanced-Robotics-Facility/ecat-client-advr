@@ -84,7 +84,6 @@ EcIface::CLIENT_THREAD_INFO EcIface::get_client_thread_info()
 
 void EcIface::start_logging()
 {
-    stop_logging();
     _ec_logger->start_mat_logger();
 }
 

@@ -7,6 +7,7 @@
 #include <map>
 
 #include <matlogger2/matlogger2.h>
+#include <matlogger2/utils/mat_appender.h>
 #include "api/ec_types.h"
 
 class EcLogger
@@ -31,35 +32,20 @@ public:
     void log_pump_sts(const PumpStatusMap& pump_sts_map);
     void log_pump_ref(const PumpReferenceMap& pumps_ref);
     
-    
 private: 
-    XBot::MatLogger2::Ptr _motors_references_logger;
-    XBot::MatLogger2::Ptr _valves_references_logger;
-    XBot::MatLogger2::Ptr _pumps_references_logger;
-    XBot::MatLogger2::Ptr _motors_status_logger;
-    XBot::MatLogger2::Ptr _ft_status_logger;
-    XBot::MatLogger2::Ptr _pow_status_logger;
-    XBot::MatLogger2::Ptr _imu_status_logger;
-    XBot::MatLogger2::Ptr _valve_status_logger;
-    XBot::MatLogger2::Ptr _pump_status_logger;
-    
-    std::vector<float> _motor_rx_v,_motor_tx_v;
-    std::vector<float> _pow_rx_v;
-    std::vector<float> _ft_rx_v;
-    std::vector<float> _imu_rx_v;
-    std::vector<float> _pump_rx_v,_pump_tx_v;
-    std::vector<float> _valve_rx_v,_valve_tx_v;
-    
+    void create_logger(std::string log_name,
+                       int esc_id,
+                       std::string log_esc_type,
+                       int log_row);
+
+    std::map<std::string,XBot::MatLogger2::Ptr> _log_map;
+    XBot::MatAppender::Ptr _log_appender;
+    XBot::MatLogger2::Options _log_opt;
+
+    std::map<int,std::string> _log_stsEsc_map,_log_refEsc_map;
+    std::map<int,std::vector<float>> _log_stsRow_map,_log_refRow_map;
+    std::string _log_dir;
     SSI _slave_descr;
-    std::map<int,std::string> _log_motor_ref_map;
-    std::map<int,std::string> _log_valve_ref_map;
-    std::map<int,std::string> _log_pump_ref_map;
-    std::map<int,std::string> _log_motor_sts_map;
-    std::map<int,std::string> _log_ft_map;
-    std::map<int,std::string> _log_imu_map;
-    std::map<int,std::string> _log_pow_map;
-    std::map<int,std::string> _log_valve_map;
-    std::map<int,std::string> _log_pump_map;
 };
 
 #endif // EC_LOGGER_H
