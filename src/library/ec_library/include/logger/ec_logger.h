@@ -13,6 +13,12 @@
 class EcLogger
 {
 public:
+
+    typedef struct LOGGER_INFO_t{
+        XBot::MatLogger2::Ptr logger;
+        std::map<int,std::string> logger_entry;
+        std::map<int,std::vector<float>> logger_row;
+    }LOGGER_INFO;
     
     typedef std::shared_ptr<EcLogger> Ptr;
     
@@ -33,18 +39,16 @@ public:
     void log_pump_ref(const PumpReferenceMap& pumps_ref);
     
 private: 
-    void create_logger(std::string log_name,
+    void create_logger(std::string logger_name,
                        int esc_id,
-                       std::string log_esc_type,
-                       int log_row);
+                       std::string logger_entry_type,
+                       int logger_row);
 
-    std::map<std::string,XBot::MatLogger2::Ptr> _log_map;
-    XBot::MatAppender::Ptr _log_appender;
-    XBot::MatLogger2::Options _log_opt;
+    std::string _logger_dir;
+    XBot::MatLogger2::Options _logger_opt;
+    std::map<std::string,std::shared_ptr<EcLogger::LOGGER_INFO>> _logger_map;
+    XBot::MatAppender::Ptr _appender;
 
-    std::map<int,std::string> _log_stsEsc_map,_log_refEsc_map;
-    std::map<int,std::vector<float>> _log_stsRow_map,_log_refRow_map;
-    std::string _log_dir;
     SSI _slave_descr;
 };
 
