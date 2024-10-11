@@ -16,31 +16,31 @@ namespace PumpPdoRx{
                            uint16_t,uint16_t,float,uint16_t,uint16_t,uint8_t,uint8_t,uint8_t,
                            uint32_t,uint32_t,float,float,uint32_t,uint32_t>;
     template <typename T>
-    inline bool make_vector_from_tuple(const pdo_t pdo_tuple,std::vector<T>& pdo_vector){
+    inline bool make_vector_from_tuple(const pdo_t &pdo_tuple,std::vector<T> &pdo_vector){
         if(pdo_vector.size()!=pdo_size){
            return false;
         }
-        pdo_vector[0]= std::get<0>(pdo_tuple);
-        pdo_vector[1]= std::get<1>(pdo_tuple);
-        pdo_vector[2]= std::get<2>(pdo_tuple);
-        pdo_vector[3]= std::get<3>(pdo_tuple);
-        pdo_vector[4]= std::get<4>(pdo_tuple);
-        pdo_vector[5]= std::get<5>(pdo_tuple);
-        pdo_vector[6]= std::get<6>(pdo_tuple);
-        pdo_vector[7]= std::get<7>(pdo_tuple);
-        pdo_vector[8]= std::get<8>(pdo_tuple);
-        pdo_vector[9]= std::get<9>(pdo_tuple);
-        pdo_vector[10]= std::get<10>(pdo_tuple);
-        pdo_vector[11]= std::get<11>(pdo_tuple);
-        pdo_vector[12]= std::get<12>(pdo_tuple);
-        pdo_vector[13]= std::get<13>(pdo_tuple);
-        pdo_vector[14]= std::get<14>(pdo_tuple);
-        pdo_vector[15]= std::get<15>(pdo_tuple);
-        pdo_vector[16]= std::get<16>(pdo_tuple);
-        pdo_vector[17]= std::get<17>(pdo_tuple);
-        pdo_vector[18]= std::get<18>(pdo_tuple);
-        pdo_vector[19]= std::get<19>(pdo_tuple);
-        pdo_vector[20]= std::get<20>(pdo_tuple);
+        pdo_vector[0]= static_cast<T>(std::get<0>(pdo_tuple));
+        pdo_vector[1]= static_cast<T>(std::get<1>(pdo_tuple));
+        pdo_vector[2]= static_cast<T>(std::get<2>(pdo_tuple));
+        pdo_vector[3]= static_cast<T>(std::get<3>(pdo_tuple));
+        pdo_vector[4]= static_cast<T>(std::get<4>(pdo_tuple));
+        pdo_vector[5]= static_cast<T>(std::get<5>(pdo_tuple));
+        pdo_vector[6]= static_cast<T>(std::get<6>(pdo_tuple));
+        pdo_vector[7]= static_cast<T>(std::get<7>(pdo_tuple));
+        pdo_vector[8]= static_cast<T>(std::get<8>(pdo_tuple));
+        pdo_vector[9]= static_cast<T>(std::get<9>(pdo_tuple));
+        pdo_vector[10]= static_cast<T>(std::get<10>(pdo_tuple));
+        pdo_vector[11]= static_cast<T>(std::get<11>(pdo_tuple));
+        pdo_vector[12]= static_cast<T>(std::get<12>(pdo_tuple));
+        pdo_vector[13]= static_cast<T>(std::get<13>(pdo_tuple));
+        pdo_vector[14]= static_cast<T>(std::get<14>(pdo_tuple));
+        pdo_vector[15]= static_cast<T>(std::get<15>(pdo_tuple));
+        pdo_vector[16]= static_cast<T>(std::get<16>(pdo_tuple));
+        pdo_vector[17]= static_cast<T>(std::get<17>(pdo_tuple));
+        pdo_vector[18]= static_cast<T>(std::get<18>(pdo_tuple));
+        pdo_vector[19]= static_cast<T>(std::get<19>(pdo_tuple));
+        pdo_vector[20]= static_cast<T>(std::get<20>(pdo_tuple));
         return true;
     }
 };
@@ -51,19 +51,19 @@ namespace PumpPdoTx{
     static const int pdo_size=9;
     using pdo_t=std::tuple<uint8_t, uint8_t, uint8_t, uint16_t, uint8_t,uint8_t,uint8_t,uint8_t,uint8_t>;
     template <typename T>
-    inline bool make_vector_from_tuple(const pdo_t pdo_tuple,std::vector<T>& pdo_vector){
+    inline bool make_vector_from_tuple(const pdo_t &pdo_tuple,std::vector<T> &pdo_vector){
         if(pdo_vector.size()!=pdo_size){
            return false;
         }
-        pdo_vector[0]= std::get<0>(pdo_tuple);
-        pdo_vector[1]= std::get<1>(pdo_tuple);
-        pdo_vector[2]= std::get<2>(pdo_tuple);
-        pdo_vector[3]= std::get<3>(pdo_tuple);
-        pdo_vector[4]= std::get<4>(pdo_tuple);
-        pdo_vector[5]= std::get<5>(pdo_tuple);
-        pdo_vector[6]= std::get<6>(pdo_tuple);
-        pdo_vector[7]= std::get<7>(pdo_tuple);
-        pdo_vector[8]= std::get<8>(pdo_tuple);
+        pdo_vector[0]= static_cast<T>(std::get<0>(pdo_tuple));
+        pdo_vector[1]= static_cast<T>(std::get<1>(pdo_tuple));
+        pdo_vector[2]= static_cast<T>(std::get<2>(pdo_tuple));
+        pdo_vector[3]= static_cast<T>(std::get<3>(pdo_tuple));
+        pdo_vector[4]= static_cast<T>(std::get<4>(pdo_tuple));
+        pdo_vector[5]= static_cast<T>(std::get<5>(pdo_tuple));
+        pdo_vector[6]= static_cast<T>(std::get<6>(pdo_tuple));
+        pdo_vector[7]= static_cast<T>(std::get<7>(pdo_tuple));
+        pdo_vector[8]= static_cast<T>(std::get<8>(pdo_tuple));
         return true;
     }
 };
