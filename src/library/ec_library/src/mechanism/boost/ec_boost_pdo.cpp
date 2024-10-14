@@ -22,8 +22,8 @@ void EcBoostPdo::esc_factory(SSI slave_descr)
                     _internal_pow_status_map[id]=_pow_status_map[id]={0,0,0,0,0,0,0,0,0,0};
                 }break;
                 case iit::ecat::HYQ_KNEE:{
-                    _internal_valve_status_map[id]=_valve_status_map[id]={0,0,0,0,0,0,0,0,0};
-                    _internal_valves_references[id]=_valves_references[id]={0,0,0,0,0,0,0,0};
+                    _internal_valve_status_map[id]=_valve_status_map[id]={0,0,0,0,0,0,0,0,0,0,0,0,0};
+                    _internal_valves_references[id]=_valves_references[id]={0,0,0,0,0,0,0,0,0,0,0,0};
                 }break;
                 case iit::ecat::HYQ_HPU:{
                     _internal_pump_status_map[id]=_pump_status_map[id]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};

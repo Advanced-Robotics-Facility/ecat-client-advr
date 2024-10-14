@@ -405,12 +405,12 @@ void EcWrapper::telemetry()
     //******************* Valve Telemetry ********
     for (const auto &[esc_id, valve_rx_pdo] : valve_status_map){
         auto encoder_position = std::get<0>(valve_rx_pdo);
-        auto tor_valve = std::get<1>(valve_rx_pdo);
+        auto force_valve = std::get<1>(valve_rx_pdo);
         auto pressure1 = std::get<2>(valve_rx_pdo);
         auto pressure2 = std::get<3>(valve_rx_pdo);
         auto temperature = std::get<4>(valve_rx_pdo);
             
-        DPRINTF("VALVE ID: [%d], Encoder pos: [%f], Torque: [%f]\n",esc_id,encoder_position,tor_valve);
+        DPRINTF("VALVE ID: [%d], Encoder pos: [%f], Torque: [%f]\n",esc_id,encoder_position,force_valve);
         DPRINTF("VALVE ID: [%d], Press1: [%f], Press2: [%f],Temp: [%f]\n",esc_id,pressure1,pressure2,temperature);
     }
     //******************* Valve Telemetry ********
@@ -469,7 +469,7 @@ void EcWrapper::init_ref_map()
 
     // init valve reference map 
     for (const auto &[esc_id, curr_ref] : valve_status_map){
-        valves_ref[esc_id] = std::make_tuple(0, 0, 0, 0, 0, 0, 0, 0);
+        valves_ref[esc_id] = std::make_tuple(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
 
     // init valve reference ma

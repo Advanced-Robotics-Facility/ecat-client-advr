@@ -556,7 +556,11 @@ void EcGuiPdo::write_valve_pdo()
                                        _slider_map.valve_sw_map[slave_id]->get_spinbox_value(4),
                                        _slider_map.valve_sw_map[slave_id]->get_spinbox_value(5),
                                        _slider_map.valve_sw_map[slave_id]->get_spinbox_value(6),
-                                       _slider_map.valve_sw_map[slave_id]->get_spinbox_value(7)};
+                                       _slider_map.valve_sw_map[slave_id]->get_spinbox_value(7),
+                                       _slider_map.valve_sw_map[slave_id]->get_spinbox_value(8),
+                                       _slider_map.valve_sw_map[slave_id]->get_spinbox_value(9),
+                                       _slider_map.valve_sw_map[slave_id]->get_spinbox_value(10),
+                                       _slider_map.valve_sw_map[slave_id]->get_spinbox_value(11)};
         _valves_ref[slave_id]=references;
     }
 
@@ -627,8 +631,7 @@ void EcGuiPdo::write_pump_pdo()
                                       _slider_map.pump_sw_map[slave_id]->get_spinbox_value(5),
                                       _slider_map.pump_sw_map[slave_id]->get_spinbox_value(6),
                                       _slider_map.pump_sw_map[slave_id]->get_spinbox_value(7),
-                                      _slider_map.pump_sw_map[slave_id]->get_spinbox_value(8),
-                                     };
+                                      _slider_map.pump_sw_map[slave_id]->get_spinbox_value(8)};
 
         _pumps_ref[slave_id]=references;
     }
