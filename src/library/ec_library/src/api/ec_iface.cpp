@@ -11,11 +11,7 @@ EcIface::EcIface()
     _client_thread_info.cpu=-1;
     _client_thread_info.priority=0;
     _client_thread_info.policy=SCHED_OTHER;
-
-    for(uint8_t i=0;i<NUM_DEVICES_CTRL;i++){
-        _client_status.devices_started.push_back(false);
-    }
-
+    
     pthread_mutexattr_t mutex_update_attr;
 
     pthread_mutexattr_init(&mutex_update_attr);
@@ -278,15 +274,6 @@ void EcIface::wake_client_thread()
     pthread_cond_signal(&_update_cond);
     pthread_mutex_unlock(&_mutex_update);
 
-}
-
-bool EcIface::all_devices_stopped(){
-    for(const auto& device_started:_client_status.devices_started){
-        if(device_started){
-            return false;
-        }
-    }
-    return true;
 }
 
 template <typename T>

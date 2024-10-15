@@ -134,7 +134,6 @@ int main(int argc, char * const argv[])
         
         while (run_loop && client->get_client_status().run_loop){
             client->read();
-            ec_wrapper.telemetry();
 
             time_elapsed_ms = std::chrono::duration<float, std::milli>(time - start_time).count();
             //DPRINTF("Time elapsed ms: [%f]\n",time_elapsed_ms);

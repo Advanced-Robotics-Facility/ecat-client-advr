@@ -208,28 +208,29 @@ bool EcZmqCmd::set_wr_sdo(uint32_t esc_id,
     return false;
 }
 
-bool EcZmqCmd::start_motors(const MST &motors_start)
+bool EcZmqCmd::start_devices(const DST &devices_start)
 {
     
     int attemps_cnt = 0; 
     while(_client_status.status!=ClientStatusEnum::NOT_ALIVE && attemps_cnt < _max_cmd_attemps){
-        bool motors_started=true;
-        for (auto &[motor_id ,ctrl_type, gains] : motors_start) {
+        bool devices_started=true;
+        for (auto &[device_id ,ctrl_type, gains] : devices_start) {
             std::string msg="";
             auto fault=_ec_repl_cmd->Ctrl_cmd(iit::advr::Ctrl_cmd_Type::Ctrl_cmd_Type_CTRL_CMD_START,
-                                             motor_id,
+                                             device_id,
                                              ctrl_type,
                                              gains,
                                              msg);   
-            if(cmd_error_status(fault, "start_motors",msg)){
-                motors_started &= false; 
+            if(cmd_error_status(fault, "start_devices",msg)){
+                devices_started &= false; 
             }
         }
         
-        if(motors_started){
+        if(devices_started){
             _client_status.status=ClientStatusEnum::DEVICES_STARTED;
-            _client_status.devices_started[DeviceType::MOTOR]=motors_started;
-            return motors_started;
+            _devices_started.clear();
+            _devices_started = devices_start;
+            return devices_started;
         }
         else{
             attemps_cnt++;
@@ -241,37 +242,35 @@ bool EcZmqCmd::start_motors(const MST &motors_start)
 }
 
 
-bool EcZmqCmd::stop_motors()
+bool EcZmqCmd::stop_devices()
 {
     int attemps_cnt = 0; 
-    while(_client_status.status!=ClientStatusEnum::NOT_ALIVE  && attemps_cnt < _max_cmd_attemps){
-        bool motors_stopped=true;
-        for ( auto &[esc_id, type, pos] : _slave_info ) {
-            if(ec_motors.count(type)>0){
+    if(!_devices_started.empty()){
+        while(_client_status.status!=ClientStatusEnum::NOT_ALIVE  && attemps_cnt < _max_cmd_attemps){
+            bool devices_stopped=true;
+            for (auto &[device_id ,ctrl_type, gains] : _devices_started) {
                 std::string msg="";
                 auto fault=_ec_repl_cmd->Ctrl_cmd(iit::advr::Ctrl_cmd_Type::Ctrl_cmd_Type_CTRL_CMD_STOP,
-                                                esc_id,
-                                                0.0,  // ignored
-                                                {},  // ignored
-                                                msg);
-                if(cmd_error_status(fault, "stop_motors",msg))
-                {
-                    motors_stopped &= false; 
+                                                  device_id,
+                                                  0.0,  // ignored
+                                                  {},  // ignored
+                                                  msg);
+                if(cmd_error_status(fault, "stop_devices",msg)){
+                    devices_stopped &= false; 
                 }
             }
-        }
         
-        if(motors_stopped){
-            _client_status.devices_started[DeviceType::MOTOR]=false;
-            if(all_devices_stopped()){
+            if(devices_stopped){
                 _client_status.status=ClientStatusEnum::DEVICES_STOPPED;
+                _devices_started.clear();
+                return devices_stopped;
             }
-            return motors_stopped;
-        }
-        else{
-            attemps_cnt++;
+            else{
+                attemps_cnt++;
+            }
         }
     }
+
     return false;
 }
 

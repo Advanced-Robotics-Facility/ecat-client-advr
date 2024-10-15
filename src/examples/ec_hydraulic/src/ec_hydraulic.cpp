@@ -154,9 +154,10 @@ int main(int argc, char *const argv[])
         // memory allocation
         
         if (ec_cfg.protocol == "iddp"){
+            //avoid map swap
             main_common(&argc, (char *const **)&argv, 0);
         }
-        
+        // process scheduling
         ec_wrapper.ec_self_sched(argv[0]);
 
         auto start_time = std::chrono::high_resolution_clock::now();
@@ -165,8 +166,7 @@ int main(int argc, char *const argv[])
 
         while (run_loop && client->get_client_status().run_loop){
             client->read();
-            ec_wrapper.telemetry();
-
+            
             time_elapsed_ms = std::chrono::duration<float, std::milli>(time - start_time).count();
             //DPRINTF("Time elapsed ms: [%f]\n",time_elapsed_ms);
 

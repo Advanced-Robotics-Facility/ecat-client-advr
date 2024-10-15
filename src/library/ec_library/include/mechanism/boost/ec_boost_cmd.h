@@ -15,8 +15,8 @@ public:
     virtual void stop_client() = 0;
     virtual void set_loop_time(uint32_t period_ms) = 0;
 
-    bool start_motors(const MST &) final;
-    bool stop_motors() final;
+    bool start_devices(const DST &) final;
+    bool stop_devices() final;
     bool pdo_aux_cmd(const PAC & pac) final;
     bool retrieve_slaves_info(SSI &slave_info) final;
     bool retrieve_all_sdo(uint32_t esc_id,RR_SDO &rr_sdo) final;

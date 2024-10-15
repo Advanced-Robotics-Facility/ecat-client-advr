@@ -300,30 +300,27 @@ bool EcBoostCmd::set_wr_sdo(uint32_t esc_id,
     return ret_cmd_status;
 }
 
-bool EcBoostCmd::start_motors(const MST &motors_start)
+bool EcBoostCmd::start_devices(const DST &devices_start)
 {
     bool ret_cmd_status=false;
-    if(_client_status.devices_started[DeviceType::MOTOR])
-    {
-        _consoleLog->error("Motors already started, stop the motors before performing start motors command");
+    if(_client_status.status==ClientStatusEnum::DEVICES_STARTED){
+        _consoleLog->error("Devices already started, stop the devices before performing start devices command");
         return ret_cmd_status;
     }
-    else if(_client_status.status==ClientStatusEnum::DEVICES_CTRL)
-    {
-        _consoleLog->error("Devices are controlled, stop the devices before performing start motors command");
+    else if(_client_status.status==ClientStatusEnum::DEVICES_CTRL){
+        _consoleLog->error("Devices are controlled, stop the devices before performing start devices command");
         return ret_cmd_status;
     }
-    else
-    {
+    else{
         int attemps_cnt=0;
         restore_wait_reply_time(); //restore default wait reply time.
-        uint32_t extend_wait_reply_time = _wait_reply_time + 1000 * (motors_start.size() / 10 );
+        uint32_t extend_wait_reply_time = _wait_reply_time + 1000 * (devices_start.size() / 10 );
         set_wait_reply_time(extend_wait_reply_time);
 
         while(attemps_cnt < _max_cmd_attemps){
             if(_client_status.status!=ClientStatusEnum::NOT_ALIVE){
                 CBuffT<4096u> sendBuffer{};
-                auto sizet = proto.packReplRequestMotorsStart(sendBuffer, motors_start);
+                auto sizet = proto.packReplRequestMotorsStart(sendBuffer, devices_start);
                 do_send(sendBuffer.data(), sendBuffer.size() );
                 _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
                 ret_cmd_status = get_reply_from_server(ReplReqRep::START_MOTOR);
@@ -331,7 +328,6 @@ bool EcBoostCmd::start_motors(const MST &motors_start)
                 if(ret_cmd_status){
                     attemps_cnt = _max_cmd_attemps;
                     _client_status.status=ClientStatusEnum::DEVICES_STARTED;
-                    _client_status.devices_started[DeviceType::MOTOR]=true;
                 }
                 else{
                     attemps_cnt++;
@@ -350,7 +346,7 @@ bool EcBoostCmd::start_motors(const MST &motors_start)
 }
 
 
-bool EcBoostCmd::stop_motors()
+bool EcBoostCmd::stop_devices()
 {
     int attemps_cnt=0;
     bool ret_cmd_status=false;
@@ -364,10 +360,7 @@ bool EcBoostCmd::stop_motors()
             ret_cmd_status = get_reply_from_server(ReplReqRep::STOP_MOTOR);
             if(ret_cmd_status){
                 attemps_cnt = _max_cmd_attemps;
-                _client_status.devices_started[DeviceType::MOTOR]=false;
-                if(all_devices_stopped()){
-                    _client_status.status=ClientStatusEnum::DEVICES_STOPPED;
-                }
+                _client_status.status=ClientStatusEnum::DEVICES_STOPPED;
             }
             else{
                 attemps_cnt++;
@@ -435,7 +428,7 @@ void EcBoostCmd::send_pdo()
 void EcBoostCmd::feed_motors()
 {
     if(_client_status.status!=ClientStatusEnum::NOT_ALIVE){
-        if(_client_status.devices_started[DeviceType::MOTOR]||
+        if(_client_status.status==ClientStatusEnum::DEVICES_STARTED||
            _client_status.status==ClientStatusEnum::DEVICES_CTRL){
             if(_motors_references_queue.read_available()>0){
                 

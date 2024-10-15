@@ -14,11 +14,16 @@
 #include "mechanism/protobuf/valve/valve_pdo.h"
 #include "mechanism/protobuf/pump/pump_pdo.h"
 
-static std::map<uint32_t,std::string>ec_motors={{iit::ecat::CENT_AC,"ADVRF_Motor"},
-                                                {iit::ecat::LO_PWR_DC_MC,"ADVRF_Motor"},
-                                                {iit::ecat::SYNAPTICON_v5_0,"Synapticon_Motor"},
-                                                {iit::ecat::SYNAPTICON_v5_1,"Synapticon_Motor"}};
-                                            
+static std::map<uint32_t,std::string>ec_motors={
+    {iit::ecat::CENT_AC,"ADVRF_Motor"},
+    {iit::ecat::LO_PWR_DC_MC,"ADVRF_Motor"},
+    {iit::ecat::SYNAPTICON_v5_0,"Synapticon_Motor"},
+    {iit::ecat::SYNAPTICON_v5_1,"Synapticon_Motor"}
+};
+static std::map<uint32_t,std::string>ec_valves={
+    {iit::ecat::HYQ_KNEE,"ADVRF_Valve"}
+};   
+
 using MotorStatusMap =   std::map<int32_t, MotorPdoRx::pdo_t>;
 using MotorReferenceMap= std::map<int32_t, MotorPdoTx::pdo_t>; 
 using PwrStatusMap=      std::map<int32_t, PowPdoRx::pdo_t>;
@@ -29,8 +34,8 @@ using ValveReferenceMap= std::map<int32_t, ValvePdoTx::pdo_t>;
 using PumpStatusMap =    std::map<int32_t, PumpPdoRx::pdo_t>;
 using PumpReferenceMap=  std::map<int32_t, PumpPdoTx::pdo_t >;     
                       
-// MotorsStarT
-using MST = std::vector<std::tuple<int32_t, int32_t, std::vector<float>>>;
+// DevicesStarT
+using DST = std::vector<std::tuple<int32_t, int32_t, std::vector<float>>>;
 
 // Sdo commands
 using RD_SDO = std::vector<std::string>;
@@ -63,14 +68,6 @@ enum class ClientStatusEnum : uint32_t
     DEVICES_STARTED  = 1 << 4,   
     DEVICES_CTRL     = 1 << 5,   
     DEVICES_STOPPED  = 1 << 6,   
-};
-
-static const uint8_t NUM_DEVICES_CTRL=3; // motors,valves,pumps
-enum DeviceType: int
-{
-    MOTOR            = 0,  
-    VALVE            = 1,
-    PUMP             = 2,   
 };
 
 

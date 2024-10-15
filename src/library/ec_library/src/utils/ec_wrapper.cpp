@@ -35,18 +35,6 @@ void EcWrapper::create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg)
         ec_cfg=retrieve_ec_cfg();
         _client=_ec_utils->make_ec_iface();
         client=_client;
-
-        _motor_start_vector.clear();
-        for (auto &[id, pos] : _ec_cfg.homing_position){
-            _motor_start_vector.push_back(id);
-        }
-
-        _valve_start_vector.clear();
-        _valve_start_vector=_ec_cfg.valve_id;
-
-        _start_motor=_ec_cfg.start_motor;
-        _start_valve=_ec_cfg.start_valve;
-
     }catch(std::exception &ex){
         throw std::runtime_error(ex.what());
     }
@@ -56,59 +44,48 @@ std::shared_ptr<EcUtils> EcWrapper::get_ec_utils()
 {
     return _ec_utils;
 }
+
+void EcWrapper::set_start_devices(std::vector<int> start_devices_vector)
+{
+    _start_devices_vector=start_devices_vector;
+}
                 
 
 void EcWrapper::autodetection()   
 {
-    DPRINTF("Try autodetection\n");
     if(_client->retrieve_slaves_info(_slave_info)){   
         if(!_slave_info.empty()){
             DPRINTF("Retrieved slaves\n");
-            _motor_id_vector.clear();
-            _valve_id_vector.clear();
-            for ( auto &[id, type, pos] : _slave_info ) {
-                if(ec_motors.count(type)>0){
-                    _motor_id_vector.push_back(id);
-                }
-                else if(type==iit::ecat::HYQ_KNEE){
-                    _valve_id_vector.push_back(id);
-                }
-            }
         }
     }
 }
 
-void EcWrapper::find_motors()   
-{
-    if(_motor_id_vector.empty()){
-        throw std::runtime_error("Got an empty motor id vector for scanning");
-    }
 
-    for(const auto& motor_id:_motor_id_vector){
-        bool motor_found=false;
+void EcWrapper::find_devices()   
+{
+    for(const auto& device_id:_start_devices_vector){
+        bool device_found=false;
         for ( auto &[id, type, pos] : _slave_info ) {
-            if(ec_motors.count(type)>0){
-                if(id == motor_id){
-                    motor_found=true;
+            if(ec_motors.count(type)>0 || ec_valves.count(type)){
+                if(id == device_id){
+                    device_found=true;
                     break;
                 }
             }
         }
-    
-        if(!motor_found){
-            throw std::runtime_error("Motor ID: " + std::to_string(motor_id) + " not found");
+        if(!device_found){
+            throw std::runtime_error("Device ID: " + std::to_string(device_id) + " not found");
         }
     }
 }
 
-void EcWrapper::prepare_motors()
+void EcWrapper::prepare_devices()
 {
-    _motors_start.clear();
-    for(const auto& id:_motor_id_vector){
+    for(const auto& id:_start_devices_vector){
         if(_ec_cfg.motor_config_map.count(id)==0){
             throw std::runtime_error("Cannot retrieve a motor configuration for the ID: " + std::to_string(id) + " ,please setup the control mode");
         }
-        _motors_start.push_back(std::make_tuple(id,_ec_cfg.motor_config_map[id].control_mode_type,_ec_cfg.motor_config_map[id].gains));
+        _start_devices.push_back(std::make_tuple(id,_ec_cfg.motor_config_map[id].control_mode_type,_ec_cfg.motor_config_map[id].gains));
         
         if(_ec_cfg.motor_config_map[id].brake_present){
             // queue release/engage brake commands for all motors 
@@ -118,176 +95,60 @@ void EcWrapper::prepare_motors()
     }
 }
 
-void EcWrapper::set_motors_id(std::vector<int> motor_start_vector)
+bool EcWrapper::start_devices(void)
 {
-    _motor_start_vector=motor_start_vector;
-}
+    bool devices_started=false;
 
-bool EcWrapper::start_ec_motors(void)
-{
-    bool motor_started=false;
-    bool motor_ctrl=motor_started;
-    const int max_pdo_aux_cmd_attemps=3;
-    int pdo_aux_cmd_attemps=0;
+    find_devices();
 
-    prepare_motors();
+    prepare_devices();
     
-    if(!_motors_start.empty())
-    {
+    if(!_start_devices.empty()){
         // ************************* Start Motors ***********************************//
-        DPRINTF("Start motors\n");
-        motor_started=_client->start_motors(_motors_start);
+        devices_started=_client->start_devices(_start_devices);
 
-        if(motor_started)
-        {
-            if(!_release_brake_cmds.empty()){
-                // ************************* Release brakes ***********************************//
-                while(pdo_aux_cmd_attemps<max_pdo_aux_cmd_attemps)
-                {
-                    pdo_aux_cmd_attemps++;
-                    if(!_client->pdo_aux_cmd(_release_brake_cmds))
-                    {
-                        DPRINTF("Cannot perform the release brake command of the motors\n");
-                        pdo_aux_cmd_attemps=max_pdo_aux_cmd_attemps;
-                    }
-                    else
-                    {
-                        std::this_thread::sleep_for(1000ms); //wait 1s to check if the brakes are released
-                        if(_client->pdo_aux_cmd_sts(_release_brake_cmds))
-                        {
-                            motor_ctrl=true;
-                            pdo_aux_cmd_attemps=max_pdo_aux_cmd_attemps;
-                        }
-                    }
-                }
-                // ************************* Release brakes ***********************************//
-            }
-            else{
-                motor_ctrl=true;
-            }
-            
+        if(devices_started){
+            //release brakes 
+            DPRINTF("Devices started\n");
         }
-        else
-        {
-            DPRINTF("Motors not started\n");
+        else{
+            DPRINTF("Problem of devices starting phase\n");
         }
             
         // ************************* Start Motors ***********************************//
     }
     
-    return motor_ctrl;
+    return devices_started;
 }
 
 
     
-void EcWrapper::stop_ec_motors(void)
+void EcWrapper::stop_devices(void)
 {
-    bool stop_motors=false;
-    const int max_pdo_aux_cmd_attemps=3;
-    int pdo_aux_cmd_attemps=0;
+    bool stop_devices=false;
     // ************************* Engage brakes BRAKES ***********************************//
     if(!_engage_brake_cmds.empty()){
-        pdo_aux_cmd_attemps=0;
-        while(pdo_aux_cmd_attemps<max_pdo_aux_cmd_attemps)
-        {
-            pdo_aux_cmd_attemps++;
-            if(!_client->pdo_aux_cmd(_engage_brake_cmds))
-            {
-                DPRINTF("Cannot perform the engage brake command of the motors\n");
-                pdo_aux_cmd_attemps=max_pdo_aux_cmd_attemps;
-            }
-            else
-            {
-                std::this_thread::sleep_for(1000ms); //wait 1s to check if the brakes are released
-                if(_client->pdo_aux_cmd_sts(_engage_brake_cmds))
-                {
-                    pdo_aux_cmd_attemps=max_pdo_aux_cmd_attemps;
-                    stop_motors=true;
-                }
-            }
-        }
+        // engage brakes
     }
     else{
-        stop_motors=true;
+        stop_devices=true;
     }
     // ************************* Engage brakes ***********************************//
 
     // ************************* STOP Motors ***********************************//
-    if(stop_motors){
-        if(!_client->stop_motors()){
-            DPRINTF("Not all motors are stopped\n");
+    if(stop_devices){
+        if(!_client->stop_devices()){
+            DPRINTF("Problem of devices stopping phase\n");
         }
         else{
-            DPRINTF("All Motors stopped\n");
+            DPRINTF("Devices stopped\n");
         }
             
     }
     // ************************* STOP Motors ***********************************//
 }
 
-void EcWrapper::find_valves()
-{
-    if(_valve_id_vector.empty()){
-        throw std::runtime_error("Got an empty valve id vector for scanning");
-    }
 
-    for(const auto &valve_id :_valve_id_vector){
-        bool valve_found=false;
-        for ( auto &[id, type, pos] : _slave_info ) {
-            if(type==iit::ecat::HYQ_KNEE){
-                if(id == valve_id){
-                    valve_found=true;
-                    break;
-                }
-            }
-        }
-    
-        if(!valve_found){
-            throw std::runtime_error("Valve ID: " + std::to_string(valve_id) + " not found");
-        }
-    }
-}
-
-
-
-void EcWrapper::set_valves_id(std::vector<int> valve_start_vector)
-{
-    _valve_start_vector=valve_start_vector;
-}
-
-bool EcWrapper::start_ec_valves(void)
-{
-    WR_SDO start_valve={std::make_tuple("ctrl_status_cmd","165")};
-    bool valve_started=true;
-    for(const auto &valve_id :_valve_id_vector){
-        valve_started &=_client->set_wr_sdo(valve_id,{},start_valve);
-    }
-
-    if(!valve_started) {
-        DPRINTF("Not all valves are started\n");
-    }
-    else{
-        DPRINTF("All Valves started\n");
-    }
-
-    return valve_started;
-}
-
-void EcWrapper::stop_ec_valves(void)
-{
-    WR_SDO stop_valve= {std::make_tuple("ctrl_status_cmd","90")};
-    bool valve_stopped=true;
-    for(const auto &valve_id :_valve_id_vector){
-        valve_stopped &=_client->set_wr_sdo(valve_id,{},stop_valve);
-    }
-
-    if(!valve_stopped) {
-        DPRINTF("Not all valves are stopped\n");
-    }
-    else{
-        DPRINTF("All Valves stopped\n");
-    }
-}
 
 bool EcWrapper::start_ec_sys(void)
 {
@@ -297,32 +158,16 @@ bool EcWrapper::start_ec_sys(void)
         
         autodetection();
 
-        if(_start_motor){
-            if(!_motor_start_vector.empty()){
-                _motor_id_vector=_motor_start_vector;
-                find_motors();
-            }
-
-            ec_sts_started &= start_ec_motors();
+        if(!_start_devices_vector.empty()){
+            ec_sts_started &= start_devices();
         }
-        
-        if(_start_valve){
 
-            if(!_valve_start_vector.empty()){
-                _valve_id_vector=_valve_start_vector;
-                find_valves();
-            }
-
-            ec_sts_started &= start_ec_valves();
-        }
 
 #ifdef TEST_LIBRARY
         ec_sts_started = true;
 #endif       
         if(ec_sts_started){
-            //_client->start_client(_ec_cfg.period_ms,_ec_cfg.logging);
             _client->read();
-            telemetry();
             init_ref_map();
         }
         else{
@@ -337,116 +182,14 @@ bool EcWrapper::start_ec_sys(void)
 
 void EcWrapper::stop_ec_sys(void)
 {
-    if(_start_motor){
-        stop_ec_motors();
-    }
-
-    if(_start_valve){
-        stop_ec_valves();
-    }
+    stop_devices();
 
     // STOP CLIENT
     _client->stop_client();
 
 }
 
-void EcWrapper::telemetry()
-{
-    _client->get_pow_status(pow_status_map);
-    _client->get_imu_status(imu_status_map);
-    _client->get_pump_status(pump_status_map);
-    _client->get_valve_status(valve_status_map);
-    _client->get_motors_status(motors_status_map);
-    
-    if(!_print_telemetry){
-        return;
-    }
-
-    //******************* Power Board Telemetry ********
-    for (const auto &[esc_id, pow_rx_pdo] : pow_status_map){
-        auto v_batt =        std::get<0>(pow_rx_pdo);
-        auto v_load =        std::get<1>(pow_rx_pdo);
-        auto i_load =        std::get<2>(pow_rx_pdo);
-        auto temp_pcb =      std::get<3>(pow_rx_pdo);
-        auto temp_heatsink = std::get<4>(pow_rx_pdo);
-        auto temp_batt =     std::get<5>(pow_rx_pdo);
- 
-        DPRINTF("POW ID: [%d], VBATT: [%f], VLOAD: [%f], ILOAD: [%f]\n",esc_id,v_batt,v_load,i_load);
-        DPRINTF("POW ID: [%d], Temp_pcb: [%f], Temp_heatsink: [%f], Temp_batt: [%f]\n",esc_id,temp_pcb,temp_heatsink,temp_batt);
-    }
-    //******************* Power Board Telemetry ********
-
-    //******************* IMU Telemetry ********
-
-    for (const auto &[esc_id, imu_rx_pdo] : imu_status_map){
-        auto x_rate = std::get<0>(imu_rx_pdo);
-        auto y_rate = std::get<1>(imu_rx_pdo);
-        auto z_rate = std::get<2>(imu_rx_pdo);
-        auto x_acc =  std::get<3>(imu_rx_pdo);
-        auto y_acc =  std::get<4>(imu_rx_pdo);
-        auto z_acc =  std::get<5>(imu_rx_pdo);
-        auto x_quat = std::get<6>(imu_rx_pdo);
-        auto y_quat = std::get<7>(imu_rx_pdo);
-        auto z_quat = std::get<8>(imu_rx_pdo);
-        auto w_quat = std::get<9>(imu_rx_pdo);
-
-        DPRINTF("IMU ID: [%d], X_RATE: [%f], Y_RATE: [%f], Z_RATE: [%f]\n",esc_id,x_rate,y_rate,z_rate);
-        DPRINTF("IMU ID: [%d], X_ACC: [%f], Y_ACC: [%f], Z_ACC: [%f]\n",esc_id,x_acc,y_acc,z_acc);
-        DPRINTF("IMU ID: [%d], X_QUAT: [%f], Y_QUAT: [%f], Z_QUAT: [%f], W_QUAT: [%f]\n",esc_id,x_quat,y_quat,z_quat,w_quat);
-    }
-    //******************* IMU Telemetry ********
-
-    //******************* Pump Telemetry ********
-    for (const auto &[esc_id, pump_rx_pdo] : pump_status_map){
-        DPRINTF("PUMP ID: [%d], Pressure: [%hhu] \n",esc_id,std::get<0>(pump_rx_pdo));
-    }
-    //******************* Pump Telemetry ********
-
-    //******************* Valve Telemetry ********
-    for (const auto &[esc_id, valve_rx_pdo] : valve_status_map){
-        auto encoder_position = std::get<0>(valve_rx_pdo);
-        auto force_valve = std::get<1>(valve_rx_pdo);
-        auto pressure1 = std::get<2>(valve_rx_pdo);
-        auto pressure2 = std::get<3>(valve_rx_pdo);
-        auto temperature = std::get<4>(valve_rx_pdo);
-            
-        DPRINTF("VALVE ID: [%d], Encoder pos: [%f], Torque: [%f]\n",esc_id,encoder_position,force_valve);
-        DPRINTF("VALVE ID: [%d], Press1: [%f], Press2: [%f],Temp: [%f]\n",esc_id,pressure1,pressure2,temperature);
-    }
-    //******************* Valve Telemetry ********
-
-
-     //******************* Motor Telemetry **************
-    for (const auto &[esc_id, motor_rx_pdo] : motors_status_map)
-    {
-        auto link_pos =     std::get<0>(motor_rx_pdo);
-        auto motor_pos =    std::get<1>(motor_rx_pdo);
-        auto link_vel =     std::get<2>(motor_rx_pdo);
-        auto motor_vel =    std::get<3>(motor_rx_pdo);
-        auto torque =       std::get<4>(motor_rx_pdo);
-        auto motor_temp =   std::get<5>(motor_rx_pdo);
-        auto board_temp =   std::get<6>(motor_rx_pdo);
-        auto fault =        std::get<7>(motor_rx_pdo);
-        auto rtt =          std::get<8>(motor_rx_pdo);
-        auto op_idx_ack =   std::get<9>(motor_rx_pdo);       
-        auto aux =          std::get<10>(motor_rx_pdo);
-        auto cmd_aux_sts =  std::get<11>(motor_rx_pdo);
-
-        // PRINT OUT Brakes and LED get_motors_status @ NOTE To be tested.
-        auto brake_sts = cmd_aux_sts & 3; // 00 unknown
-                                          // 01 release brake
-                                          // 10 enganged brake
-                                          // 11 error
-        auto led_sts = (cmd_aux_sts & 4) / 4; // 1 or 0 LED  ON/OFF
-
-
-        DPRINTF("MOTOR ID: [%d], Link pos: [%f], Motor pos: [%f]\n",esc_id,link_pos,motor_pos);
-
-    }
-    //******************* Motor Telemetry **************
-}
-
-void EcWrapper::init_ref_map()
+void EcWrapper::init_references_maps()
 {
     
     // init motor reference map 

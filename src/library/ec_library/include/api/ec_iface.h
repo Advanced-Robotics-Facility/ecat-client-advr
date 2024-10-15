@@ -22,7 +22,6 @@ public:
     typedef struct CLIENT_STATUS_t{
         ClientStatusEnum status;
         bool run_loop;
-        std::vector<bool> devices_started;
     }CLIENT_STATUS;
 
     typedef struct CLIENT_THREAD_INFO_t{
@@ -66,8 +65,8 @@ public:
     virtual void set_loop_time(uint32_t period_ms) = 0;
     
     // EtherCAT Client ADVR Facilty commands
-    virtual bool start_motors(const MST &) = 0;
-    virtual bool stop_motors(void) = 0;
+    virtual bool start_devices(const DST &) = 0;
+    virtual bool stop_devices() = 0;
     virtual bool pdo_aux_cmd(const PAC & pac) = 0;
 
     virtual bool retrieve_slaves_info(SSI &slave_info) = 0;
@@ -129,8 +128,7 @@ protected:
     
     void sync_client_thread();
     void wake_client_thread();
-    bool all_devices_stopped();
-
+    
 private:
     template <typename T>
     bool check_maps(const std::map<int32_t,T>& map1,const std::map<int32_t,T>& map2,std::string map_type);
