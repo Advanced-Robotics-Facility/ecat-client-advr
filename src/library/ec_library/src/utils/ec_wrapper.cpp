@@ -170,7 +170,8 @@ void EcWrapper::init_references_maps()
     // init valve reference map 
     _client->get_valve_status(valve_status_map);
     for (const auto &[esc_id, valve_rx_pdo] : valve_status_map){
-        valves_ref[esc_id] = std::make_tuple(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        auto enc_pos =    std::get<0>(valve_rx_pdo);
+        valves_ref[esc_id] = std::make_tuple(0, enc_pos, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
 
     // init valve reference map
