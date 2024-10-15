@@ -85,7 +85,7 @@ int main(int argc, char * const argv[])
         std::map<int,std::vector<float>> imp_gains_map,imp_zero_gains_map;
         for (const auto &[esc_id, motor_rx_pdo] : motors_status_map){
             if(ec_cfg.homing_position.count(esc_id)>0){
-                imp_gains_map[esc_id]=ec_cfg.motor_config_map[esc_id].gains;
+                imp_gains_map[esc_id]=ec_cfg.device_config_map[esc_id].gains;
                 imp_zero_gains_map[esc_id]=imp_gains_map[esc_id];
                 imp_zero_gains_map[esc_id][0]=0.0;
                 imp_zero_gains_map[esc_id][1]=0.0;

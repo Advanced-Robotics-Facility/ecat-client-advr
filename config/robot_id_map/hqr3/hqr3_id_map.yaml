@@ -1,9 +1,13 @@
 joint_map:
   1: leg_1_joint_1
   2: leg_1_joint_2
+  120: leg_1_joint_3
   3: leg_2_joint_1
   4: leg_2_joint_2
+  121: leg_2_joint_3
   5: leg_3_joint_1
   6: leg_3_joint_2
+  121: leg_3_joint_3
   7: leg_4_joint_1
   8: leg_4_joint_2
+  122: leg_2_joint_4

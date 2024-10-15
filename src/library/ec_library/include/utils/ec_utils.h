@@ -12,13 +12,13 @@ class EcUtils
 {
 public:
     
-    typedef struct MOTOR_CONFIG_t{
-        std::string motor_name;
+    typedef struct DEVICE_CONFIG_t{
+        std::string device_name;
         uint32_t type;
         int control_mode_type;
         std::vector<float> gains;
-        bool brake_present;
-    }MOTOR_CONFIG;
+        bool brake_present; // only for motor
+    }DEVICE_CONFIG;
         
     typedef struct EC_CONFIG_t{
         
@@ -30,7 +30,7 @@ public:
         std::map<int,double> homing_position,trajectory;
         double homing_time_sec,trajectory_time_sec;
         int repeat_trj;
-        std::map<int,MOTOR_CONFIG> motor_config_map;
+        std::map<int,DEVICE_CONFIG> device_config_map;
 
         std::vector<int> slave_id_led;
         std::vector<int> motor_id;
@@ -51,8 +51,6 @@ public:
     
     ~EcUtils();
     
-    std::map<int,MOTOR_CONFIG> get_motor_config_map(const YAML::Node & motor_config_node,
-                                                    const YAML::Node & id_map_node);
     EC_CONFIG get_ec_cfg();
     std::string get_ec_cfg_file();
     EcIface::Ptr make_ec_iface(); // EtherCAT Client Interface
@@ -64,6 +62,8 @@ private:
     
     void compute_absolute_path(std::string dir_path,std::string &file_path);
     void generate_fake_slave_info();
+    void device_config_map(const YAML::Node & device_config_node,const YAML::Node & robot_id_map_node);
+
 };
 
 #endif

@@ -35,6 +35,10 @@ void EcWrapper::create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg)
         ec_cfg=retrieve_ec_cfg();
         _client=_ec_utils->make_ec_iface();
         client=_client;
+        _start_devices_vector.clear();
+        _start_devices_vector = _ec_cfg.motor_id;
+        _start_devices_vector.insert(_start_devices_vector.end(), _ec_cfg.valve_id.begin(), _ec_cfg.valve_id.end());
+
     }catch(std::exception &ex){
         throw std::runtime_error(ex.what());
     }
@@ -82,12 +86,12 @@ void EcWrapper::find_devices()
 void EcWrapper::prepare_devices()
 {
     for(const auto& id:_start_devices_vector){
-        if(_ec_cfg.motor_config_map.count(id)==0){
-            throw std::runtime_error("Cannot retrieve a motor configuration for the ID: " + std::to_string(id) + " ,please setup the control mode");
+        if(_ec_cfg.device_config_map.count(id)==0){
+            throw std::runtime_error("Cannot retrieve a device configuration for the ID: " + std::to_string(id) + " ,please setup the control mode");
         }
-        _start_devices.push_back(std::make_tuple(id,_ec_cfg.motor_config_map[id].control_mode_type,_ec_cfg.motor_config_map[id].gains));
+        _start_devices.push_back(std::make_tuple(id,_ec_cfg.device_config_map[id].control_mode_type,_ec_cfg.device_config_map[id].gains));
         
-        if(_ec_cfg.motor_config_map[id].brake_present){
+        if(_ec_cfg.device_config_map[id].brake_present){
             // queue release/engage brake commands for all motors 
             _release_brake_cmds.push_back(std::make_tuple(id,to_underlying(PdoAuxCmdType::BRAKE_RELEASE)));
             _engage_brake_cmds.push_back(std::make_tuple(id,to_underlying(PdoAuxCmdType::BRAKE_ENGAGE)));
@@ -148,30 +152,30 @@ void EcWrapper::init_references_maps()
     _client->get_motors_status(motors_status_map);
     for (const auto &[esc_id, motor_rx_pdo] : motors_status_map){
         auto motor_pos =    std::get<1>(motor_rx_pdo);
-        motors_ref[esc_id] = std::make_tuple(   _ec_cfg.motor_config_map[esc_id].control_mode_type,  // ctrl_type
-                                                motor_pos,                                           // pos_ref
-                                                0.0,                                                 // vel_ref
-                                                0.0,                                                 // tor_ref
-                                                _ec_cfg.motor_config_map[esc_id].gains[0],           // gain_1
-                                                _ec_cfg.motor_config_map[esc_id].gains[1],           // gain_2
-                                                _ec_cfg.motor_config_map[esc_id].gains[2],           // gain_3
-                                                _ec_cfg.motor_config_map[esc_id].gains[3],           // gain_4
-                                                _ec_cfg.motor_config_map[esc_id].gains[4],           // gain_5
-                                                1,                                                   // op means NO_OP
-                                                0,                                                   // idx
-                                                0                                                    // aux
+        motors_ref[esc_id] = std::make_tuple(   _ec_cfg.device_config_map[esc_id].control_mode_type,  // ctrl_type
+                                                motor_pos,                                            // pos_ref
+                                                0.0,                                                  // vel_ref
+                                                0.0,                                                  // tor_ref
+                                                _ec_cfg.device_config_map[esc_id].gains[0],           // gain_1
+                                                _ec_cfg.device_config_map[esc_id].gains[1],           // gain_2
+                                                _ec_cfg.device_config_map[esc_id].gains[2],           // gain_3
+                                                _ec_cfg.device_config_map[esc_id].gains[3],           // gain_4
+                                                _ec_cfg.device_config_map[esc_id].gains[4],           // gain_5
+                                                1,                                                    // op means NO_OP
+                                                0,                                                    // idx
+                                                0                                                     // aux
                                             );
     }
 
     // init valve reference map 
     _client->get_valve_status(valve_status_map);
-    for (const auto &[esc_id, curr_ref] : valve_status_map){
+    for (const auto &[esc_id, valve_rx_pdo] : valve_status_map){
         valves_ref[esc_id] = std::make_tuple(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
 
     // init valve reference map
     _client->get_pump_status(pump_status_map);
-    for (const auto &[esc_id, press_ref] : pump_status_map){
+    for (const auto &[esc_id, pump_rx_pdo] : pump_status_map){
         pumps_ref[esc_id] = std::make_tuple(0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
 }
