@@ -53,27 +53,31 @@ EcUtils::EcUtils()
         _ec_cfg.logging=ec_cfg_node["logging"].as<bool>();
     
     
-    //****** Trajectory **************//
+    //****** Control **************//
     if(ec_cfg_node["control"])
     {
-        std::string id_map_path="";
-        if(ec_cfg_node["control"]["id_map_path"])
-        {
-            id_map_path=ec_cfg_node["control"]["id_map_path"].as<std::string>();
+        std::string robot_id_map_path="";
+        if(ec_cfg_node["control"]["robot_id_map_path"]){
+            robot_id_map_path=ec_cfg_node["control"]["robot_id_map_path"].as<std::string>();
             try{
-                compute_absolute_path(id_map_path);
+                compute_absolute_path(_ec_cfg_file,robot_id_map_path);
+                if(robot_id_map_path==""){
+                    throw std::runtime_error("Wrong robot id map path!");
+                }
             }
             catch(std::exception& e){
                 throw std::runtime_error(e.what());
             }
         }
         
-        std::string motor_config_path="";
-        if(ec_cfg_node["control"]["motor_config_path"])
-        {
-            motor_config_path=ec_cfg_node["control"]["motor_config_path"].as<std::string>();
+        std::string robot_config_path="";
+        if(ec_cfg_node["control"]["robot_config_path"]){
+            robot_config_path=ec_cfg_node["control"]["robot_config_path"].as<std::string>();
             try{
-                compute_absolute_path(motor_config_path);
+                compute_absolute_path(_ec_cfg_file,robot_config_path);
+                if(robot_config_path==""){
+                    throw std::runtime_error("Wrong robot configuration path!");
+                }
             }
             catch(std::exception& e){
                 throw std::runtime_error(e.what());
@@ -81,30 +85,40 @@ EcUtils::EcUtils()
         }
     
         
-        if(id_map_path!="")
-        {
-            auto id_map_node = YAML::LoadFile(id_map_path);
-            if(motor_config_path!="")
-            {
-                std::cout << "Motor configuration: " << motor_config_path << std::endl;
-                auto motor_config_node = YAML::LoadFile(motor_config_path);
-                _ec_cfg.motor_config_map= get_motor_config_map(motor_config_node,id_map_node);
+        if(robot_id_map_path!="" && robot_config_path!=""){
+
+            auto robot_id_map_node = YAML::LoadFile(robot_id_map_path);
+            std::cout << "Robot configuration: " << robot_config_path << std::endl;
+            auto robot_config_node = YAML::LoadFile(robot_config_path);
+            std::string motor_config_path="",valve_config_path="";
+
+            if(robot_config_node["robot_cfg"]["motor_config_path"]){
+                motor_config_path=robot_config_node["robot_cfg"]["motor_config_path"].as<std::string>();
+                compute_absolute_path(robot_config_path,motor_config_path);
+                if(motor_config_path!=""){
+                    std::cout << "Motor configuration: " << motor_config_path << std::endl;
+                    auto motor_config_node = YAML::LoadFile(motor_config_path);
+                    _ec_cfg.motor_config_map= get_motor_config_map(motor_config_node,robot_id_map_node);
+                }
+                else{
+                    throw std::runtime_error("Wrong motor configuration path!");
+                }
             }
-            else
-            {
-                throw std::runtime_error("Wrong Motor configuration path!");
+
+            if(robot_config_node["robot_cfg"]["valve_config_path"]){
+                valve_config_path=robot_config_node["robot_cfg"]["valve_config_path"].as<std::string>();
+                compute_absolute_path(robot_config_path,valve_config_path);
+                if(valve_config_path!=""){
+                    std::cout << "Valve configuration: " << valve_config_path << std::endl;
+                    auto valve_config_node = YAML::LoadFile(valve_config_path);
+                    //_ec_cfg.motor_config_map= get_motor_config_map(motor_config_node,robot_id_map_node);
+                }
+                else{
+                    throw std::runtime_error("Wrong valve configuration path!");
+                }
             }
-        }
-        else
-        {
-            throw std::runtime_error("Wrong Id map path!");
         }
 
-        if(!ec_cfg_node["control"]["start_motor"])
-        _ec_cfg.start_motor=false;
-        else
-            _ec_cfg.start_motor=ec_cfg_node["control"]["start_motor"].as<bool>();
-        
         std::vector<int> homing_position_id;
         if(ec_cfg_node["control"]["homing_position"])
         {
@@ -202,13 +216,7 @@ EcUtils::EcUtils()
             _ec_cfg.pow_id.clear();
         else
             _ec_cfg.pow_id=ec_cfg_node["control"]["pow_id"].as<std::vector<int>>();
-        
-
-        if(!ec_cfg_node["control"]["start_valve"])
-            _ec_cfg.start_valve=false;
-        else
-            _ec_cfg.start_valve=ec_cfg_node["control"]["start_valve"].as<bool>();
-
+    
         if(!ec_cfg_node["control"]["valve_id"])
             _ec_cfg.valve_id.clear();
         else
@@ -266,9 +274,9 @@ void EcUtils::generate_fake_slave_info()
     }
 }
 
-void EcUtils::compute_absolute_path(std::string &file_path)
+void EcUtils::compute_absolute_path(std::string dir_path,std::string &file_path)
 {
-    char * dir = strdup(_ec_cfg_file.c_str());
+    char * dir = strdup(dir_path.c_str());
     std::string dirn_name= dirname(dir);
     std::string cmd = "set -eu; cd " + dirn_name + "; /bin/echo " + file_path;
 

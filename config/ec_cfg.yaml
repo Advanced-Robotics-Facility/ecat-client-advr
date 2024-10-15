@@ -11,20 +11,17 @@ period_ms: 1
 logging: true
 
 control:
-  id_map_path: &id_map_path '${PWD}/id_map/hqr3/hqr3_id_map.yaml' 
-
-  start_motor: true
-  motor_config_path: ${PWD}/motor_config/hqr3/hqr3_pos3b.yaml 
+  robot_id_map_path: &robot_id_map_path '${PWD}/robot_id_map/hqr3/hqr3_id_map.yaml' 
+  robot_config_path: ${PWD}/robot_config/hqr3/robot_cfg.yaml
   homing_position: {1: -0.75, 2: -1.0, 3: -1.0, 4: -0.75, 5: 1.0, 6: -0.75, 7: -1.0, 8: -1.0}
   homing_time_sec: 1
   trajectory: {1: 0.0, 2: -1.9, 3: -2.3, 4: 0.0, 5: -0.4, 6: 0.0, 7: -1.9, 8: -2.3}
   trajectory_time_sec: 1
   repeat_trj: 2
 
-  #imu_id: [102]
-  #ft_id: [110,111]
-  #pow_id: [201]
-  start_valve: true
+  imu_id: [102]
+  ft_id: [110,111]
+  pow_id: [201]
   valve_id: [120]
   #pump_id: [202]
 

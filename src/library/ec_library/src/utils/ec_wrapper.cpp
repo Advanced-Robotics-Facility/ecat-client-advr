@@ -104,7 +104,6 @@ bool EcWrapper::start_devices(void)
     prepare_devices();
     
     if(!_start_devices.empty()){
-        // ************************* Start Motors ***********************************//
         devices_started=_client->start_devices(_start_devices);
 
         if(devices_started){
@@ -114,8 +113,6 @@ bool EcWrapper::start_devices(void)
         else{
             DPRINTF("Problem of devices starting phase\n");
         }
-            
-        // ************************* Start Motors ***********************************//
     }
     
     return devices_started;
@@ -126,16 +123,13 @@ bool EcWrapper::start_devices(void)
 void EcWrapper::stop_devices(void)
 {
     bool stop_devices=false;
-    // ************************* Engage brakes BRAKES ***********************************//
     if(!_engage_brake_cmds.empty()){
         // engage brakes
     }
     else{
         stop_devices=true;
     }
-    // ************************* Engage brakes ***********************************//
 
-    // ************************* STOP Motors ***********************************//
     if(stop_devices){
         if(!_client->stop_devices()){
             DPRINTF("Problem of devices stopping phase\n");
@@ -145,9 +139,42 @@ void EcWrapper::stop_devices(void)
         }
             
     }
-    // ************************* STOP Motors ***********************************//
 }
 
+void EcWrapper::init_references_maps()
+{
+    
+    // init motor reference map 
+    _client->get_motors_status(motors_status_map);
+    for (const auto &[esc_id, motor_rx_pdo] : motors_status_map){
+        auto motor_pos =    std::get<1>(motor_rx_pdo);
+        motors_ref[esc_id] = std::make_tuple(   _ec_cfg.motor_config_map[esc_id].control_mode_type,  // ctrl_type
+                                                motor_pos,                                           // pos_ref
+                                                0.0,                                                 // vel_ref
+                                                0.0,                                                 // tor_ref
+                                                _ec_cfg.motor_config_map[esc_id].gains[0],           // gain_1
+                                                _ec_cfg.motor_config_map[esc_id].gains[1],           // gain_2
+                                                _ec_cfg.motor_config_map[esc_id].gains[2],           // gain_3
+                                                _ec_cfg.motor_config_map[esc_id].gains[3],           // gain_4
+                                                _ec_cfg.motor_config_map[esc_id].gains[4],           // gain_5
+                                                1,                                                   // op means NO_OP
+                                                0,                                                   // idx
+                                                0                                                    // aux
+                                            );
+    }
+
+    // init valve reference map 
+    _client->get_valve_status(valve_status_map);
+    for (const auto &[esc_id, curr_ref] : valve_status_map){
+        valves_ref[esc_id] = std::make_tuple(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    }
+
+    // init valve reference map
+    _client->get_pump_status(pump_status_map);
+    for (const auto &[esc_id, press_ref] : pump_status_map){
+        pumps_ref[esc_id] = std::make_tuple(0, 0, 0, 0, 0, 0, 0, 0, 0);
+    }
+}
 
 
 bool EcWrapper::start_ec_sys(void)
@@ -168,7 +195,7 @@ bool EcWrapper::start_ec_sys(void)
 #endif       
         if(ec_sts_started){
             _client->read();
-            init_ref_map();
+            init_references_maps();
         }
         else{
             stop_ec_sys();
@@ -189,37 +216,6 @@ void EcWrapper::stop_ec_sys(void)
 
 }
 
-void EcWrapper::init_references_maps()
-{
-    
-    // init motor reference map 
-    for (const auto &[esc_id, motor_rx_pdo] : motors_status_map){
-        auto motor_pos =    std::get<1>(motor_rx_pdo);
-        motors_ref[esc_id] = std::make_tuple(   _ec_cfg.motor_config_map[esc_id].control_mode_type,  // ctrl_type
-                                                motor_pos,                                           // pos_ref
-                                                0.0,                                                 // vel_ref
-                                                0.0,                                                 // tor_ref
-                                                _ec_cfg.motor_config_map[esc_id].gains[0],           // gain_1
-                                                _ec_cfg.motor_config_map[esc_id].gains[1],           // gain_2
-                                                _ec_cfg.motor_config_map[esc_id].gains[2],           // gain_3
-                                                _ec_cfg.motor_config_map[esc_id].gains[3],           // gain_4
-                                                _ec_cfg.motor_config_map[esc_id].gains[4],           // gain_5
-                                                1,                                                   // op means NO_OP
-                                                0,                                                   // idx
-                                                0                                                    // aux
-                                            );
-    }
-
-    // init valve reference map 
-    for (const auto &[esc_id, curr_ref] : valve_status_map){
-        valves_ref[esc_id] = std::make_tuple(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-    }
-
-    // init valve reference ma
-    for (const auto &[esc_id, press_ref] : pump_status_map){
-        pumps_ref[esc_id] = std::make_tuple(0, 0, 0, 0, 0, 0, 0, 0, 0);
-    }
-}
 
 void EcWrapper::ec_self_sched(std::string thread_name)
 {

@@ -27,8 +27,6 @@ public:
         uint32_t host_port;
         int period_ms; 
         bool logging;
-        bool start_motor;
-        bool start_valve;
         std::map<int,double> homing_position,trajectory;
         double homing_time_sec,trajectory_time_sec;
         int repeat_trj;
@@ -64,7 +62,7 @@ private:
     EC_CONFIG _ec_cfg;
     std::string _ec_cfg_file;
     
-    void compute_absolute_path(std::string &file_path);
+    void compute_absolute_path(std::string dir_path,std::string &file_path);
     void generate_fake_slave_info();
 };
 

@@ -36,7 +36,7 @@ private:
     void find_devices();
     void prepare_devices();
     bool start_devices(void);
-    void stop_devices(void)
+    void stop_devices(void);
     void init_references_maps();
 
 
