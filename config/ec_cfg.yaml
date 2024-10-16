@@ -13,7 +13,7 @@ general:
 
 control:
   robot_id_map_path: &robot_id_map_path '${PWD}/robot_id_map/hqr3/hqr3_id_map.yaml' 
-  robot_config_path: ${PWD}/robot_config/hqr3/robot_cfg.yaml
+  robot_config_path: ${PWD}/robot_config/hqr3/hqr3_cfg.yaml
   homing_position: {1: -0.75, 2: -1.0, 3: -1.0, 4: -0.75, 5: 1.0, 6: -0.75, 7: -1.0, 8: -1.0}
   trajectory: {1: 0.0, 2: -1.9, 3: -2.3, 4: 0.0, 5: -0.4, 6: 0.0, 7: -1.9, 8: -2.3}
   valve_id: [120]
