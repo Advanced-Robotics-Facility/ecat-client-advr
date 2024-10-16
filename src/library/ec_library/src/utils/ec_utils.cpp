@@ -17,8 +17,7 @@ EcUtils::EcUtils()
 {   
     _ec_cfg_file= getenv ("EC_CFG");
     
-    if (_ec_cfg_file.c_str()==NULL)
-    {
+    if (_ec_cfg_file.c_str()==NULL){
         throw std::runtime_error("EtherCAT Client configuration not found, setup the environment variable: EC_CFG ");
     }
     
@@ -26,41 +25,45 @@ EcUtils::EcUtils()
     
     // Read the EC Client configuration.
     
-    //****** Protocol **************//
-    if(!ec_cfg_node["network"]["protocol"]){
-        _ec_cfg.protocol="";
-    }else{
-        _ec_cfg.protocol=ec_cfg_node["network"]["protocol"].as<std::string>();
-    }
+    //****** Network **************//
+    if(ec_cfg_node["network"]){
+        if(!ec_cfg_node["network"]["protocol"]){
+            _ec_cfg.protocol="";
+        }else{
+            _ec_cfg.protocol=ec_cfg_node["network"]["protocol"].as<std::string>();
+        }
 
-    if(!ec_cfg_node["network"]["hostname"]){
-        _ec_cfg.host_name="localhost";
-    } else{
-        _ec_cfg.host_name=ec_cfg_node["network"]["hostname"].as<std::string>();
-    }
+        if(!ec_cfg_node["network"]["hostname"]){
+            _ec_cfg.host_name="localhost";
+        } else{
+            _ec_cfg.host_name=ec_cfg_node["network"]["hostname"].as<std::string>();
+        }
 
-    if(!ec_cfg_node["network"]["port"]){
-        _ec_cfg.host_port=0;
-    }else{
-        _ec_cfg.host_port=ec_cfg_node["network"]["port"].as<std::uint32_t>();
+        if(!ec_cfg_node["network"]["port"]){
+            _ec_cfg.host_port=0;
+        }else{
+            _ec_cfg.host_port=ec_cfg_node["network"]["port"].as<std::uint32_t>();
+        }
+    }
+    else{
+        throw std::runtime_error("Missing network setup!");
     }
     
-    if(!ec_cfg_node["period_ms"]){
+    //****** General **************//
+    if(!ec_cfg_node["general"]["period_ms"]){
         _ec_cfg.period_ms=100;
     }else{
-        _ec_cfg.period_ms=ec_cfg_node["period_ms"].as<int>();
+        _ec_cfg.period_ms=ec_cfg_node["general"]["period_ms"].as<int>();
     }
     
-    if(!ec_cfg_node["logging"]){
+    if(!ec_cfg_node["general"]["logging"]){
             _ec_cfg.logging=false;
     }else{
-        _ec_cfg.logging=ec_cfg_node["logging"].as<bool>();
+        _ec_cfg.logging=ec_cfg_node["general"]["logging"].as<bool>();
     }
-    
-    
+
     //****** Control **************//
-    if(ec_cfg_node["control"])
-    {
+    if(ec_cfg_node["control"]) {
         std::string robot_id_map_path="";
         if(ec_cfg_node["control"]["robot_id_map_path"]){
             robot_id_map_path=ec_cfg_node["control"]["robot_id_map_path"].as<std::string>();
@@ -120,6 +123,7 @@ EcUtils::EcUtils()
                 }
             }
         }
+        
         if(ec_cfg_node["control"]["homing_position"]){
            auto homing_position = ec_cfg_node["control"]["homing_position"];
            for(YAML::const_iterator it=homing_position.begin();it != homing_position.end();++it) {
@@ -187,31 +191,7 @@ EcUtils::EcUtils()
         if(_ec_cfg.repeat_trj<=0){
             _ec_cfg.repeat_trj=1;
         }
-        
-        if(!ec_cfg_node["control"]["slave_id_led"]){
-            _ec_cfg.slave_id_led.clear();
-        }else{
-            _ec_cfg.slave_id_led=ec_cfg_node["control"]["slave_id_led"].as<std::vector<int>>();
-        }
-        
-        if(!ec_cfg_node["control"]["imu_id"]){
-            _ec_cfg.imu_id.clear();
-        }else{
-            _ec_cfg.imu_id=ec_cfg_node["control"]["imu_id"].as<std::vector<int>>();
-        }
-    
-        if(!ec_cfg_node["control"]["ft_id"]){
-            _ec_cfg.ft_id.clear();
-        }else{
-            _ec_cfg.ft_id=ec_cfg_node["control"]["ft_id"].as<std::vector<int>>();
-        }
-        
-        if(!ec_cfg_node["control"]["pow_id"]){
-            _ec_cfg.pow_id.clear();
-        }else{
-            _ec_cfg.pow_id=ec_cfg_node["control"]["pow_id"].as<std::vector<int>>();
-        }
-    
+
         if(!ec_cfg_node["control"]["valve_id"]){
             _ec_cfg.valve_id.clear();
         }else{
@@ -228,9 +208,30 @@ EcUtils::EcUtils()
         }else{
             _ec_cfg.pump_id=ec_cfg_node["control"]["pump_id"].as<std::vector<int>>();
         }
-        
-        generate_fake_slave_info();
     }
+    
+    //****** Simulation **************//
+    if(ec_cfg_node["simulation"]) {
+        if(!ec_cfg_node["simulation"]["imu_id"]){
+            _ec_cfg.imu_id.clear();
+        }else{
+            _ec_cfg.imu_id=ec_cfg_node["simulation"]["imu_id"].as<std::vector<int>>();
+        }
+
+        if(!ec_cfg_node["simulation"]["ft_id"]){
+            _ec_cfg.ft_id.clear();
+        }else{
+            _ec_cfg.ft_id=ec_cfg_node["simulation"]["ft_id"].as<std::vector<int>>();
+        }
+        
+        if(!ec_cfg_node["simulation"]["pow_id"]){
+            _ec_cfg.pow_id.clear();
+        }else{
+            _ec_cfg.pow_id=ec_cfg_node["simulation"]["pow_id"].as<std::vector<int>>();
+        }
+    }
+
+    generate_fake_slave_info();
 
 };
 
