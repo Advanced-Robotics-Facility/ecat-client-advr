@@ -68,7 +68,6 @@ private:
   EcIface::Ptr _client;
   EcGuiSlider::Ptr _ec_gui_slider;
   EcGuiSlider::slider_map_t _slider_map;
-  std::vector<int> _slave_id_led;
 };
 
 #endif // EC_GUI:CMD_H

@@ -1,0 +1,18 @@
+trajectory:
+  type: polynomial #step, sine, cosine, chirp
+  frequency: 1
+  repeat: 2
+  
+motor:
+  id: [1,2,3,4,5,6,7,8]
+  set_point:  {position: 1.0, velocity: 2.0, torque: 10.0, current: 2}
+  homing:     [-0.75,-1.0,-1.0,-0.75, 1.0,-0.75,-1.0,-1.0]
+  trajectory: [ 0.00,-1.9,-2.3, 0.00,-0.4, 0.00,-1.9,-2.3]
+
+valve:
+  id: [120,121,122,123]
+  set_point:  {current: 2.5, position: 0.0, force: 10.0}
+
+pump:
+  id: [210,220]
+  set_point:  {pressure: 128.0}

@@ -44,12 +44,12 @@ int main(int argc, char * const argv[])
         DPRINTF("%s\n",ex.what());
         return 1;
     }
-    
-    if(ec_cfg.homing_position.empty()){
-        DPRINTF("Got an homing position map\n");
-        return 1;
+
+    std::map<int,double> homing,trajectory;
+    if(ec_cfg.trj_config_map.count("Motor")>0){
+        std::map<int,double> homing=ec_cfg.trj_config_map["Motor"].homing;     
     }
-    
+
     bool ec_sys_started = true;
     try{
         ec_sys_started = ec_wrapper.start_ec_sys();
@@ -84,7 +84,7 @@ int main(int argc, char * const argv[])
         // memory allocation
         std::map<int,std::vector<float>> imp_gains_map,imp_zero_gains_map;
         for (const auto &[esc_id, motor_rx_pdo] : motors_status_map){
-            if(ec_cfg.homing_position.count(esc_id)>0){
+            if(homing.count(esc_id)>0){
                 imp_gains_map[esc_id]=ec_cfg.device_config_map[esc_id].gains;
                 imp_zero_gains_map[esc_id]=imp_gains_map[esc_id];
                 imp_zero_gains_map[esc_id][0]=0.0;
@@ -125,8 +125,13 @@ int main(int argc, char * const argv[])
             sa.sa_flags = 0;  // receive will return EINTR on CTRL+C!
             sigaction(SIGINT,&sa, nullptr);
         }
+
         // process scheduling
-        ec_wrapper.ec_self_sched(argv[0]);
+        try{
+            ec_wrapper.ec_self_sched(argv[0]);
+        }catch(std::exception& e){
+            throw std::runtime_error(e.what());
+        }
         
         auto start_time = std::chrono::high_resolution_clock::now();
         auto time = start_time;
@@ -156,7 +161,7 @@ int main(int argc, char * const argv[])
             }
 
             for (const auto &[esc_id, motor_rx_pdo] : motors_status_map){
-                if(ec_cfg.homing_position.count(esc_id)>0){
+                if(homing.count(esc_id)>0){
                     q[esc_id]=std::get<1>(motor_rx_pdo); //motor pos
                     q_ref[esc_id]=q[esc_id];
                 }
@@ -169,7 +174,7 @@ int main(int argc, char * const argv[])
             model->eigenToMap(tau_g,tau_ref);
 
             for ( const auto &[esc_id, tor_ref] : tau_ref){
-                if(ec_cfg.homing_position.count(esc_id)>0){
+                if(homing.count(esc_id)>0){
                     double pos_ref = q_ref[esc_id];
                     std::get<1>(motors_ref[esc_id]) = pos_ref;
                     std::get<3>(motors_ref[esc_id]) = tor_ref;

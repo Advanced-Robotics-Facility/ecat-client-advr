@@ -22,7 +22,7 @@ EcUtils::EcUtils()
     }
     
     auto ec_cfg_node=YAML::LoadFile(_ec_cfg_file);
-    
+
     // Read the EC Client configuration.
     
     //****** Network **************//
@@ -64,214 +64,122 @@ EcUtils::EcUtils()
 
     //****** Control **************//
     if(ec_cfg_node["control"]) {
-        std::string robot_id_map_path="";
-        if(ec_cfg_node["control"]["robot_id_map_path"]){
-            robot_id_map_path=ec_cfg_node["control"]["robot_id_map_path"].as<std::string>();
-            try{
-                compute_absolute_path(_ec_cfg_file,robot_id_map_path);
-                if(robot_id_map_path==""){
-                    throw std::runtime_error("Wrong robot id map path!");
-                }
-            }catch(std::exception& e){
-                throw std::runtime_error(e.what());
-            }
-        }
-        
-        std::string robot_config_path="";
-        if(ec_cfg_node["control"]["robot_config_path"]){
-            robot_config_path=ec_cfg_node["control"]["robot_config_path"].as<std::string>();
-            try{
-                compute_absolute_path(_ec_cfg_file,robot_config_path);
-                if(robot_config_path==""){
-                    throw std::runtime_error("Wrong robot configuration path!");
-                }
-            }catch(std::exception& e){
-                throw std::runtime_error(e.what());
-            }
-        }
-    
-        
-        if(robot_id_map_path!="" && robot_config_path!=""){
+        std::vector<std::string> ctrl_path_vector={"robot_id_map_path","robot_config_path","robot_trajectory_path"};
+        std::vector<std::string> ctrl_abs_path={"","",""};
 
-            auto robot_id_map_node = YAML::LoadFile(robot_id_map_path);
-            std::cout << "Robot configuration: " << robot_config_path << std::endl;
-            auto robot_config_node = YAML::LoadFile(robot_config_path);
-            std::string motor_config_path="",valve_config_path="";
+        int i=0;
+        for(const auto &ctrl_path:ctrl_path_vector){
+            if(ec_cfg_node["control"][ctrl_path]){
+                ctrl_abs_path[i]=ec_cfg_node["control"][ctrl_path].as<std::string>();
+                try{
+                    compute_absolute_path(_ec_cfg_file,ctrl_abs_path[i]);
+                    if(ctrl_abs_path[i]==""){
+                        throw std::runtime_error("Wrong "+ctrl_path+"!");
+                    }
+                    i++;
+                }catch(std::exception& e){
+                    throw std::runtime_error(e.what());
+                }
+            }
+        }
+       
+        if(ctrl_abs_path[0]!="" && ctrl_abs_path[1]!=""){
+
+            auto robot_id_map_node = YAML::LoadFile(ctrl_abs_path[0]);
+            std::cout << "Robot configuration: " << ctrl_abs_path[1] << std::endl;
+            auto robot_config_node = YAML::LoadFile(ctrl_abs_path[1]);
+
             _ec_cfg.device_config_map.clear();
+            std::vector<std::string> config_path_vector={"motor_config_path","valve_config_path"};
+            std::vector<std::string> config_abs_path={"",""};
 
-            if(robot_config_node["robot_cfg"]["motor_config_path"]){
-                motor_config_path=robot_config_node["robot_cfg"]["motor_config_path"].as<std::string>();
-                compute_absolute_path(robot_config_path,motor_config_path);
-                if(motor_config_path!=""){
-                    std::cout << "Motor configuration: " << motor_config_path << std::endl;
-                    auto motor_config_node = YAML::LoadFile(motor_config_path);
-                    device_config_map(motor_config_node,robot_id_map_node);
-                }else{
-                    throw std::runtime_error("Wrong motor configuration path!");
-                }
-            }
-
-            if(robot_config_node["robot_cfg"]["valve_config_path"]){
-                valve_config_path=robot_config_node["robot_cfg"]["valve_config_path"].as<std::string>();
-                compute_absolute_path(robot_config_path,valve_config_path);
-                if(valve_config_path!=""){
-                    std::cout << "Valve configuration: " << valve_config_path << std::endl;
-                    auto valve_config_node = YAML::LoadFile(valve_config_path);
-                    device_config_map(valve_config_node,robot_id_map_node);
-                }else{
-                    throw std::runtime_error("Wrong valve configuration path!");
-                }
-            }
-        }
-        
-        if(ec_cfg_node["control"]["homing_position"]){
-           auto homing_position = ec_cfg_node["control"]["homing_position"];
-           for(YAML::const_iterator it=homing_position.begin();it != homing_position.end();++it) {
-                int id = it->first.as<int>();   // <- key
-                double pos = it->second.as<double>(); // <- value
-                if(_ec_cfg.homing_position.count(id) == 0){
-                    if(_ec_cfg.device_config_map.count(id)>0){
-                        _ec_cfg.homing_position[id]=pos;
-                        _ec_cfg.motor_id.push_back(id);
+            int i=0;
+            for(const auto &config_path:config_path_vector){
+                if(robot_config_node["robot_cfg"][config_path]){
+                    config_abs_path[i]=robot_config_node["robot_cfg"][config_path].as<std::string>();
+                    compute_absolute_path(ctrl_abs_path[1],config_abs_path[i]);
+                    if(config_abs_path[i]!=""){
+                        std::cout <<  config_path+": " << config_abs_path[i] << std::endl;
+                        auto config_node = YAML::LoadFile(config_abs_path[i]);
+                        device_config_map(config_node,robot_id_map_node);
+                        i++;
                     }else{
-                        throw std::runtime_error("The ID: " + std::to_string(id) + " hasn't a motor configuration, please setup the control mode");
-                    }     
-                }else{
-                    throw std::runtime_error("The ID: " + std::to_string(id) + " already exists in the homing vector");
+                        throw std::runtime_error("Wrong "+config_path+"!");
+                    }
                 }
             }
-        }
 
-        if(!ec_cfg_node["control"]["homing_time_sec"]){
-            _ec_cfg.homing_time_sec=60.0; // 60second
-        }else{
-            _ec_cfg.homing_time_sec=ec_cfg_node["control"]["homing_time_sec"].as<double>();
-        }
-        
-        
-        if(2*_ec_cfg.period_ms> (_ec_cfg.homing_time_sec*1000)){
-            throw std::runtime_error("The time of homing time should be at least two times higher then the period_ms variable");
-        }
-        
-        
-        if(ec_cfg_node["control"]["trajectory"]){
-           _ec_cfg.trajectory=ec_cfg_node["control"]["trajectory"].as<map<int,double>>();
-           auto trajectory = ec_cfg_node["control"]["trajectory"];
-           int motor_id_index=0;
-           for(YAML::const_iterator it=trajectory.begin();it != trajectory.end();++it) {
-                int id = it->first.as<int>(); // <- key
-                if(id != _ec_cfg.motor_id[motor_id_index]){
-                    throw std::runtime_error("The ID: " + std::to_string(id) + " in the trajectory vector doesn't exist or has different position in the homing vector");
-                }
-                motor_id_index++;
-            }
-            
-            if(_ec_cfg.homing_position.size() != _ec_cfg.trajectory.size()){
-                throw std::runtime_error("Size of homing position vector and trajectory vector is different, please setup the same dimension"); 
-            }
-        }
-        
-        if(!ec_cfg_node["control"]["trajectory_time_sec"]){
-            _ec_cfg.trajectory_time_sec=60.0; // 60 second
-        }else{
-            _ec_cfg.trajectory_time_sec=ec_cfg_node["control"]["trajectory_time_sec"].as<double>();
-        }
-        
-        if(2*_ec_cfg.period_ms> (_ec_cfg.trajectory_time_sec*1000)){
-            throw std::runtime_error("The time of homing time should be at least two times higher then the period_ms variable");
-        }
-        
-        
-        if(!ec_cfg_node["control"]["repeat_trj"]){
-            _ec_cfg.repeat_trj=1;
-        }else{
-            _ec_cfg.repeat_trj=ec_cfg_node["control"]["repeat_trj"].as<int>();
-        }
-        
-        if(_ec_cfg.repeat_trj<=0){
-            _ec_cfg.repeat_trj=1;
-        }
-
-        if(!ec_cfg_node["control"]["valve_id"]){
-            _ec_cfg.valve_id.clear();
-        }else{
-            _ec_cfg.valve_id=ec_cfg_node["control"]["valve_id"].as<std::vector<int>>();
-            for (const auto &valve_id:_ec_cfg.valve_id){
-                if(_ec_cfg.device_config_map.count(valve_id)==0){
-                    throw std::runtime_error("The ID: " + std::to_string(valve_id) + " hasn't a valve configuration, please setup the control mode");
+            if(ctrl_abs_path[2]!=""){
+                std::cout << "Robot trajectory: " << ctrl_abs_path[2] << std::endl;
+                auto robot_trajectory_node = YAML::LoadFile(ctrl_abs_path[2]);
+                try{
+                    config_trj(robot_trajectory_node);
+                }catch(std::exception& e){
+                    throw std::runtime_error(e.what());
                 }
             }
-        }
-        
-        if(!ec_cfg_node["control"]["pump_id"]){
-            _ec_cfg.pump_id.clear();
-        }else{
-            _ec_cfg.pump_id=ec_cfg_node["control"]["pump_id"].as<std::vector<int>>();
         }
     }
     
-    //****** Simulation **************//
-    if(ec_cfg_node["simulation"]) {
-        if(!ec_cfg_node["simulation"]["imu_id"]){
-            _ec_cfg.imu_id.clear();
-        }else{
-            _ec_cfg.imu_id=ec_cfg_node["simulation"]["imu_id"].as<std::vector<int>>();
-        }
-
-        if(!ec_cfg_node["simulation"]["ft_id"]){
-            _ec_cfg.ft_id.clear();
-        }else{
-            _ec_cfg.ft_id=ec_cfg_node["simulation"]["ft_id"].as<std::vector<int>>();
-        }
-        
-        if(!ec_cfg_node["simulation"]["pow_id"]){
-            _ec_cfg.pow_id.clear();
-        }else{
-            _ec_cfg.pow_id=ec_cfg_node["simulation"]["pow_id"].as<std::vector<int>>();
-        }
-    }
-
-    generate_fake_slave_info();
+    generate_fake_slave_info(ec_cfg_node);
 
 };
 
-void EcUtils::generate_fake_slave_info()
+void EcUtils::generate_fake_slave_info(const YAML::Node & ec_cfg_node)
 {
     int slave_pos=1;
-    // MOTOR
-    for(const auto &motor_id:_ec_cfg.motor_id){
-        _ec_cfg.fake_slave_info.push_back(std::make_tuple(motor_id,_ec_cfg.device_config_map[motor_id].type,slave_pos));
-        slave_pos++;
-    }
     
-    // IMU
-    for(const auto &imu_id:_ec_cfg.imu_id){
-        _ec_cfg.fake_slave_info.push_back(std::make_tuple(imu_id,iit::ecat::IMU_ANY,slave_pos));
-        slave_pos++;
+    // Motor
+    if(_ec_cfg.trj_config_map.count("motor")>0){
+        for(const auto &id:_ec_cfg.trj_config_map["motor"].id){
+            _ec_cfg.fake_slave_info.push_back(std::make_tuple(id,_ec_cfg.device_config_map[id].type,slave_pos));
+            slave_pos++;
+        }
     }
-    
-    // FT
-    for(const auto &ft_id:_ec_cfg.ft_id){
-        _ec_cfg.fake_slave_info.push_back(std::make_tuple(ft_id,iit::ecat::FT6_MSP432,slave_pos));
-        slave_pos++;
+
+    // Valve
+    if(_ec_cfg.trj_config_map.count("valve")>0){
+        for(const auto &id:_ec_cfg.trj_config_map["valve"].id){
+            _ec_cfg.fake_slave_info.push_back(std::make_tuple(id,iit::ecat::HYQ_KNEE,slave_pos));
+            slave_pos++;
+        }
     }
-    
-    // POW
-    for(const auto &pow_id:_ec_cfg.pow_id){
-        _ec_cfg.fake_slave_info.push_back(std::make_tuple(pow_id,iit::ecat::POW_F28M36_BOARD,slave_pos));
-        slave_pos++;
+
+    // Pump
+    if(_ec_cfg.trj_config_map.count("pump")>0){
+        for(const auto &id:_ec_cfg.trj_config_map["pump"].id){
+            _ec_cfg.fake_slave_info.push_back(std::make_tuple(id,iit::ecat::HYQ_HPU,slave_pos));
+            slave_pos++;
+        }
     }
-    
-    // VALVE
-    for(const auto &valve_id:_ec_cfg.valve_id){
-        _ec_cfg.fake_slave_info.push_back(std::make_tuple(valve_id,iit::ecat::HYQ_KNEE,slave_pos));
-        slave_pos++;
-    }
-    
-    // PUMP
-    for(const auto &pump_id:_ec_cfg.pump_id){
-        _ec_cfg.fake_slave_info.push_back(std::make_tuple(pump_id,iit::ecat::HYQ_HPU,slave_pos));
-        slave_pos++;
+
+    if(ec_cfg_node["simulation"]) {
+        if(ec_cfg_node["simulation"]["imu_id"]){
+            // IMU
+            auto imu_id_v=ec_cfg_node["simulation"]["imu_id"].as<std::vector<int>>();
+            for(const auto &imu_id:imu_id_v){
+                _ec_cfg.fake_slave_info.push_back(std::make_tuple(imu_id,iit::ecat::IMU_ANY,slave_pos));
+                slave_pos++;
+            }
+        }
+
+        if(ec_cfg_node["simulation"]["ft_id"]){
+            // FT
+            auto ft_id_v=ec_cfg_node["simulation"]["ft_id"].as<std::vector<int>>();
+            for(const auto &ft_id:ft_id_v){
+                _ec_cfg.fake_slave_info.push_back(std::make_tuple(ft_id,iit::ecat::FT6_MSP432,slave_pos));
+                slave_pos++;
+            }
+        }
+        
+        if(ec_cfg_node["simulation"]["pow_id"]){
+            // POW
+            auto pow_id_v=ec_cfg_node["simulation"]["pow_id"].as<std::vector<int>>();
+            for(const auto &pow_id:pow_id_v){
+                _ec_cfg.fake_slave_info.push_back(std::make_tuple(pow_id,iit::ecat::POW_F28M36_BOARD,slave_pos));
+                slave_pos++;
+            }
+        }
     }
 }
 
@@ -301,8 +209,7 @@ void EcUtils::compute_absolute_path(std::string dir_path,std::string &file_path)
 
     int retcode = pclose(pipe);
 
-    if(retcode != 0)
-    {
+    if(retcode != 0){
         throw std::runtime_error("child process '" + std::string(cmd) + "' exited with code " + std::to_string(retcode));
     }
     
@@ -361,6 +268,72 @@ void EcUtils::device_config_map(const YAML::Node & device_config_node,const YAML
                 throw std::runtime_error("Error: found a duplicated device configuration on id: "+std::to_string(esc_id));
             }
             
+        }
+    }
+}
+
+void EcUtils::config_trj(const YAML::Node & robot_trajectory_node)
+{
+    if(robot_trajectory_node["trajectory"]["type"]){
+        _ec_cfg.trj_type=robot_trajectory_node["trajectory"]["type"].as<std::string>();
+    }
+    if(robot_trajectory_node["trajectory"]["frequency"]){
+        _ec_cfg.trj_time=1/(robot_trajectory_node["trajectory"]["frequency"].as<float>());
+        if(2*_ec_cfg.period_ms> (_ec_cfg.trj_time*1000)){
+            throw std::runtime_error("The trajectoy time should be at least two times higher then the period_ms variable");
+        }
+    }
+    if(robot_trajectory_node["trajectory"]["repeat"]){
+        _ec_cfg.repeat_trj=robot_trajectory_node["trajectory"]["repeat"].as<int>();
+    }
+
+    std::vector<std::string> device_type_vector={"motor","valve","pump"};          
+    for(const auto &device_type:device_type_vector){
+        if(robot_trajectory_node[device_type]["id"]){
+            auto id_vector = robot_trajectory_node[device_type]["id"].as<std::vector<int>>();
+
+            for(const auto &id: id_vector){
+                if(_ec_cfg.device_config_map.count(id)==0 && device_type!="pump"){
+                    throw std::runtime_error("The ID: " + std::to_string(id) + " hasn't a " +  device_type + " configuration, please setup the control mode");
+                }
+            }
+
+            std::map<std::string,double> set_point;
+            if(robot_trajectory_node[device_type]["set_point"]){
+                set_point = robot_trajectory_node[device_type]["set_point"].as<std::map<std::string,double>>();
+            }
+            else{
+                throw std::runtime_error("Fatal error: cannot find the set point for the device");
+            }
+
+            std::vector<double> homing,trajectory;
+            if(robot_trajectory_node[device_type]["homing"]){
+                homing = robot_trajectory_node[device_type]["homing"].as<std::vector<double>>();
+            }
+
+            if(robot_trajectory_node[device_type]["trajectory"]){
+                trajectory = robot_trajectory_node[device_type]["trajectory"].as<std::vector<double>>();
+            }
+
+            if(id_vector.size() != homing.size() && !homing.empty()){
+                throw std::runtime_error("Motor id size has different size of homing vector");
+            }
+            else{
+                if(homing.size() != trajectory.size() ){
+                    throw std::runtime_error("Homing vector size has different size of trajectory vector");
+                }
+            }
+
+            _ec_cfg.trj_config_map[device_type].id=id_vector;
+            _ec_cfg.trj_config_map[device_type].set_point=set_point;
+            if(!homing.empty() && !trajectory.empty()){
+                int i=0;
+                for(const auto &id:id_vector){
+                    _ec_cfg.trj_config_map[device_type].homing[id]=homing[i];
+                    _ec_cfg.trj_config_map[device_type].trajectory[id]=trajectory[i];
+                    i++;
+                }
+            }
         }
     }
 }

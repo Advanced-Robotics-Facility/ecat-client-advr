@@ -17,6 +17,12 @@ int main(int argc, char *const argv[])
     EcIface::Ptr client;
     EcWrapper ec_wrapper;
 
+    std::map<int,double> homing,trajectory;
+    if(ec_cfg.trj_config_map.count("Motor")>0){
+        std::map<int,double> homing=ec_cfg.trj_config_map["Motor"].homing;    
+        std::map<int,double> trajectory=ec_cfg.trj_config_map["Motor"].trajectory;    
+    }
+
     try{
         ec_wrapper.create_ec(client, ec_cfg);
     }
@@ -25,12 +31,6 @@ int main(int argc, char *const argv[])
         return 1;
     }
 
-    if (!ec_cfg.homing_position.empty()){
-        if (ec_cfg.trajectory.empty()){
-            DPRINTF("Please setup a trajectory map!\n");
-            return 1;
-        }
-    }
 
     bool ec_sys_started = true;
     try{
@@ -44,25 +44,23 @@ int main(int argc, char *const argv[])
     if (ec_sys_started){
         int overruns = 0;
         float time_elapsed_ms;
-        float hm_time_ms = ec_cfg.homing_time_sec * 1000;
-        float trj_time_ms = ec_cfg.trajectory_time_sec * 1000;
+        float hm_time_ms = ec_cfg.trj_time * 1000;
+        float trj_time_ms = hm_time_ms;
         float pressure_time_ms = 1000; // 2minutes.
         float set_trj_time_ms = hm_time_ms;
 
         std::string STM_sts;
         bool run_loop = true;
 
-        std::map<int, double> q_set_trj = ec_cfg.homing_position;
+        std::map<int, double> q_set_trj = homing;
         std::map<int, double> q_ref, q_start, qdot;
-        double qdot_ref_k = 1.0; // [rad/s]
+
         std::map<int, double> qdot_ref, qdot_start,qdot_set_trj;
         std::map<int, double> qdot_set_trj_1,qdot_set_trj_2,qdot_set_zero;
 
-        double taur_ref_k = 1.0; // [Nm]
         std::map<int, double> tor_ref, tor_start, tor_set_trj;
         std::map<int, double> tor_set_trj_1,tor_set_trj_2,tor_set_zero;
 
-        uint8_t pump_pressure_ref = 180; // bar
         std::map<int, uint8_t> pumps_trj_1, pumps_set_trj;
         std::map<int, uint8_t> pumps_set_ref, pumps_start, pumps_actual_read;
         uint16_t pump_status_word;
@@ -70,7 +68,6 @@ int main(int argc, char *const argv[])
         double error_pressure_set;
         bool pump_req_sts, pump_in_pressure;
 
-        double valve_curr_ref = 2.5; // mA
         std::map<int, double> valves_trj_1, valves_trj_2, valves_set_zero, valves_set_trj;
         std::map<int, double> valves_set_ref, valves_start;
 
@@ -79,45 +76,53 @@ int main(int argc, char *const argv[])
 
         // memory allocation
         for (const auto &[esc_id, pump_rx_pdo] : pump_status_map){
-            for (auto pump_id : ec_cfg.pump_id){
-                if(pump_id==esc_id){
-                    pumps_trj_1[esc_id] = pump_pressure_ref;
-                    pumps_set_ref[esc_id] = pumps_start[esc_id] = pumps_actual_read[esc_id] = std::get<0>(pump_rx_pdo);
-                    break;
+            if(ec_cfg.trj_config_map.count("Pump")>0){
+                for (const auto & pump_id:ec_cfg.trj_config_map["Pump"].id){
+                    if(pump_id==esc_id){
+                        pumps_trj_1[esc_id] = static_cast<uint8_t>(ec_cfg.trj_config_map["Pump"].set_point["pressure"]);
+                        pumps_set_ref[esc_id] = pumps_start[esc_id] = pumps_actual_read[esc_id] = std::get<0>(pump_rx_pdo);
+                        break;
+                    }
                 }
             }
         }
 
         for (const auto &[esc_id, valve_rx_pdo] : valve_status_map){
-            for (auto valve_id : ec_cfg.valve_id){
-                if(valve_id==esc_id){
-                    valves_trj_1[esc_id] = valve_curr_ref;
-                    valves_trj_2[esc_id] = -valve_curr_ref;
-                    valves_set_zero[esc_id] = 0.0;
-                    valves_set_ref[esc_id] = valves_start[esc_id] = valves_set_zero[esc_id];
-                    break;
+            if(ec_cfg.trj_config_map.count("Valve")>0){
+                for (const auto & valve_id:ec_cfg.trj_config_map["Valve"].id){
+                    if(valve_id==esc_id){
+                        valves_trj_1[esc_id] =    ec_cfg.trj_config_map["Valve"].set_point["force"];
+                        valves_trj_2[esc_id] = -1*ec_cfg.trj_config_map["Valve"].set_point["force"];
+                        valves_set_zero[esc_id] = 0.0;
+                        break;
+                    }
                 }
             }
         }
 
         for (const auto &[esc_id, motor_rx_pdo] : motors_status_map){
-            if(ec_cfg.homing_position.count(esc_id)>0){
-                q_start[esc_id] = std::get<1>(motors_status_map[esc_id]); // motor pos
-                qdot[esc_id] = std::get<3>(motors_status_map[esc_id]);    // motor vel
-                q_ref[esc_id] = q_start[esc_id];
+            if(ec_cfg.trj_config_map.count("Motor")>0){
+                for (const auto & motor_id:ec_cfg.trj_config_map["Motor"].id){
+                    if(motor_id==esc_id){
+                        q_start[esc_id] = std::get<1>(motors_status_map[esc_id]); // motor pos
+                        qdot[esc_id] = std::get<3>(motors_status_map[esc_id]);    // motor vel
+                        q_ref[esc_id] = q_start[esc_id];
 
-                qdot_ref[esc_id] = qdot_start[esc_id] = 0.0;
-                qdot_set_trj_1[esc_id] = qdot_ref_k;
-                qdot_set_trj_2[esc_id] = -qdot_ref_k;
-                qdot_set_trj[esc_id] = qdot_set_trj_1[esc_id];
-                qdot_set_zero[esc_id]=0.0;
+                        qdot_ref[esc_id] = qdot_start[esc_id] = 0.0;
+                        qdot_set_trj_1[esc_id] =    ec_cfg.trj_config_map["Motor"].set_point["velocity"];
+                        qdot_set_trj_2[esc_id] = -1*ec_cfg.trj_config_map["Motor"].set_point["velocity"];
+                        qdot_set_trj[esc_id] = qdot_set_trj_1[esc_id];
+                        qdot_set_zero[esc_id]=0.0;
 
-                tor_start[esc_id] = std::get<4>(motors_status_map[esc_id]);    // torque actual
-                tor_ref[esc_id] = tor_start[esc_id];
-                tor_set_trj_1[esc_id] = taur_ref_k;
-                tor_set_trj_2[esc_id] = -taur_ref_k;
-                tor_set_trj[esc_id] = tor_set_trj_1[esc_id];
-                tor_set_zero[esc_id]=0.0;
+                        tor_start[esc_id] = std::get<4>(motors_status_map[esc_id]);    // torque actual
+                        tor_ref[esc_id] = tor_start[esc_id];
+                        tor_set_trj_1[esc_id] =       ec_cfg.trj_config_map["Motor"].set_point["torque"];
+                        tor_set_trj_2[esc_id] = -1.0* ec_cfg.trj_config_map["Motor"].set_point["torque"];
+                        tor_set_trj[esc_id] = tor_set_trj_1[esc_id];
+                        tor_set_zero[esc_id]=0.0;
+                        break;
+                    }
+                }
             }
         }
 
@@ -132,12 +137,6 @@ int main(int argc, char *const argv[])
         // valves references check
         for (const auto &[esc_id, curr_ref] : valves_set_ref){
             std::get<0>(valves_ref[esc_id])=curr_ref;
-        }
-        // motors references check
-        if (!q_ref.empty()){
-            if (motors_ref.empty()){
-                throw std::runtime_error("fatal error: motors references structure empty!");
-            }
         }
 
         if (q_ref.empty() && valves_set_ref.empty() && pumps_set_ref.empty()){
@@ -157,8 +156,13 @@ int main(int argc, char *const argv[])
             //avoid map swap
             main_common(&argc, (char *const **)&argv, 0);
         }
+
         // process scheduling
-        ec_wrapper.ec_self_sched(argv[0]);
+        try{
+            ec_wrapper.ec_self_sched(argv[0]);
+        }catch(std::exception& e){
+            throw std::runtime_error(e.what());
+        }
 
         auto start_time = std::chrono::high_resolution_clock::now();
         auto time = start_time;
@@ -329,7 +333,7 @@ int main(int argc, char *const argv[])
                             start_time = time;
                             set_trj_time_ms = hm_time_ms;
 
-                            q_set_trj = ec_cfg.homing_position;
+                            q_set_trj = homing;
                             q_start = q_ref;
 
                             qdot_set_trj = qdot_set_trj_1;
@@ -351,7 +355,7 @@ int main(int argc, char *const argv[])
                 start_time = time;
                 set_trj_time_ms = trj_time_ms;
 
-                q_set_trj = ec_cfg.trajectory;
+                q_set_trj = trajectory;
                 q_start = q_ref;
 
                 
@@ -395,7 +399,7 @@ int main(int argc, char *const argv[])
                     start_time = time;
                     set_trj_time_ms = hm_time_ms;            
 
-                    q_set_trj = ec_cfg.homing_position;
+                    q_set_trj = homing;
                     q_start = q_ref;
 
                     qdot_set_trj = qdot_set_trj_1;

@@ -14,21 +14,22 @@ int main(int argc, char * const argv[])
     EcUtils::EC_CONFIG ec_cfg;
     EcIface::Ptr client;
     EcWrapper ec_wrapper;
-    
+ 
+    std::map<int,double> homing,trajectory;
+    if(ec_cfg.trj_config_map.count("Motor")>0){
+        std::map<int,double> homing=ec_cfg.trj_config_map["Motor"].homing;    
+        std::map<int,double> trajectory=ec_cfg.trj_config_map["Motor"].trajectory;    
+    }
+
+    if(homing.empty()){
+        DPRINTF("Got an homing position map\n");
+        return 1;
+    }
+
     try{
         ec_wrapper.create_ec(client,ec_cfg);
     }catch(std::exception &ex){
         DPRINTF("%s\n",ex.what());
-        return 1;
-    }
-     
-    if(ec_cfg.homing_position.empty()){
-        DPRINTF("Got an homing position map\n");
-        return 1;
-    }
-    
-    if(ec_cfg.trajectory.empty()){
-        DPRINTF("Got an empty general trajectory map\n");
         return 1;
     }
     
@@ -44,14 +45,14 @@ int main(int argc, char * const argv[])
     if(ec_sys_started){                       
         int overruns = 0;
         float time_elapsed_ms, sample_time_ms;
-        float hm_time_ms = ec_cfg.homing_time_sec * 1000;
-        float trj_time_ms = ec_cfg.trajectory_time_sec * 1000;
+        float hm_time_ms = ec_cfg.trj_time * 1000;
+        float trj_time_ms = hm_time_ms;
         float set_trj_time_ms = hm_time_ms;
         
         bool run_loop=true;        
         std::string STM_sts="Homing";
 
-        std::map<int, double> q_set_trj = ec_cfg.homing_position;
+        std::map<int, double> q_set_trj = homing;
         std::map<int, double> q_ref, q_start, qdot;
         double qdot_ref_k = 1.0; // [rad/s]
         std::map<int, double> qdot_ref, qdot_start,qdot_set_trj;
@@ -65,7 +66,7 @@ int main(int argc, char * const argv[])
         float tau=0,alpha=0;
 
         for (const auto &[esc_id, motor_rx_pdo] : motors_status_map){
-            if(ec_cfg.homing_position.count(esc_id)>0){
+            if(homing.count(esc_id)>0){
                 q_start[esc_id] = std::get<1>(motors_status_map[esc_id]); // motor pos
                 qdot[esc_id] = std::get<3>(motors_status_map[esc_id]);    // motor vel
                 q_ref[esc_id] = q_start[esc_id];
@@ -93,8 +94,13 @@ int main(int argc, char * const argv[])
             //avoid map swap
             main_common(&argc, (char *const **)&argv, 0);
         }
+
         // process scheduling
-        ec_wrapper.ec_self_sched(argv[0]);
+        try{
+            ec_wrapper.ec_self_sched(argv[0]);
+        }catch(std::exception& e){
+            throw std::runtime_error(e.what());
+        }
 
         auto start_time = std::chrono::high_resolution_clock::now();
         auto time = start_time;
@@ -141,7 +147,7 @@ int main(int argc, char * const argv[])
                 start_time = time;
                 set_trj_time_ms = trj_time_ms;
 
-                q_set_trj = ec_cfg.trajectory;
+                q_set_trj = trajectory;
                 q_start = q_ref;
 
                 
@@ -171,7 +177,7 @@ int main(int argc, char * const argv[])
                     start_time = time;
                     set_trj_time_ms = hm_time_ms;
 
-                    q_set_trj = ec_cfg.homing_position;
+                    q_set_trj = homing;
                     q_start = q_ref;
 
                     qdot_set_trj = qdot_set_trj_1;

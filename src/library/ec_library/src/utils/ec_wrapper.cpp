@@ -36,9 +36,9 @@ void EcWrapper::create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg)
         _client=_ec_utils->make_ec_iface();
         client=_client;
         _start_devices_vector.clear();
-        _start_devices_vector = _ec_cfg.motor_id;
-        _start_devices_vector.insert(_start_devices_vector.end(), _ec_cfg.valve_id.begin(), _ec_cfg.valve_id.end());
-
+        for(const auto&[id,device_cfg]:_ec_cfg.device_config_map){
+            _start_devices_vector.push_back(id);
+        }
     }catch(std::exception &ex){
         throw std::runtime_error(ex.what());
     }

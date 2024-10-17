@@ -19,6 +19,13 @@ public:
         std::vector<float> gains;
         bool brake_present; // only for motor
     }DEVICE_CONFIG;
+
+    typedef struct TRAJECTORY_CONFIG_t{
+        std::vector<int> id;
+        std::map<std::string,double> set_point;
+        std::map<int,double> homing;
+        std::map<int,double> trajectory;
+    }TRAJECTORY_CONFIG_t;
         
     typedef struct EC_CONFIG_t{
         
@@ -27,19 +34,13 @@ public:
         uint32_t host_port;
         int period_ms; 
         bool logging;
-        std::map<int,double> homing_position,trajectory;
-        double homing_time_sec,trajectory_time_sec;
-        int repeat_trj;
-        std::map<int,DEVICE_CONFIG> device_config_map;
 
-        std::vector<int> slave_id_led;
-        std::vector<int> motor_id;
-        std::vector<int> imu_id;
-        std::vector<int> ft_id;
-        std::vector<int> pow_id;
-        std::vector<int> valve_id;
-        std::vector<int> pump_id;
+        std::map<int,DEVICE_CONFIG> device_config_map;
         
+        std::string trj_type="";
+        float trj_time=0;
+        int repeat_trj=1;
+        std::map<std::string,TRAJECTORY_CONFIG_t> trj_config_map;
         SSI fake_slave_info;
         
     }EC_CONFIG;
@@ -61,8 +62,9 @@ private:
     std::string _ec_cfg_file;
     
     void compute_absolute_path(std::string dir_path,std::string &file_path);
-    void generate_fake_slave_info();
+    void generate_fake_slave_info(const YAML::Node & ec_cfg_node);
     void device_config_map(const YAML::Node & device_config_node,const YAML::Node & robot_id_map_node);
+    void config_trj(const YAML::Node & robot_trajectory_node);
 
 };
 
