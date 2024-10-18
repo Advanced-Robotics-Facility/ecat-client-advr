@@ -125,8 +125,9 @@ int main(int argc, char *const argv[])
                     if(ec_cfg.trj_config_map["motor"].set_point[esc_id].count(set_point_type)>0){
                         if(set_point_type=="position"){
                             motors_trj_1[esc_id]=homing[esc_id];
-                            motors_trj_2[esc_id]=trajectory[esc_id];                 }
-                        else{
+                            motors_trj_2[esc_id]=trajectory[esc_id];  
+                            motors_set_zero[esc_id]=motors_trj_1[esc_id];              
+                        }else{
                             motors_trj_1[esc_id]=ec_cfg.trj_config_map["motor"].set_point[esc_id][set_point_type];
                             motors_trj_2[esc_id]=-1*motors_trj_1[esc_id];
                         }
