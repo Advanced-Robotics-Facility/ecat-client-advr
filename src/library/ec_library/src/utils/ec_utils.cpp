@@ -131,7 +131,7 @@ void EcUtils::generate_fake_slave_info(const YAML::Node & ec_cfg_node)
     
     // Motor
     if(_ec_cfg.trj_config_map.count("motor")>0){
-        for(const auto &id:_ec_cfg.trj_config_map["motor"].id){
+        for(const auto &[id,set_point]:_ec_cfg.trj_config_map["motor"].set_point){
             _ec_cfg.fake_slave_info.push_back(std::make_tuple(id,_ec_cfg.device_config_map[id].type,slave_pos));
             slave_pos++;
         }
@@ -139,7 +139,7 @@ void EcUtils::generate_fake_slave_info(const YAML::Node & ec_cfg_node)
 
     // Valve
     if(_ec_cfg.trj_config_map.count("valve")>0){
-        for(const auto &id:_ec_cfg.trj_config_map["valve"].id){
+        for(const auto &[id,set_point]:_ec_cfg.trj_config_map["valve"].set_point){
             _ec_cfg.fake_slave_info.push_back(std::make_tuple(id,iit::ecat::HYQ_KNEE,slave_pos));
             slave_pos++;
         }
@@ -147,7 +147,7 @@ void EcUtils::generate_fake_slave_info(const YAML::Node & ec_cfg_node)
 
     // Pump
     if(_ec_cfg.trj_config_map.count("pump")>0){
-        for(const auto &id:_ec_cfg.trj_config_map["pump"].id){
+        for(const auto &[id,set_point]:_ec_cfg.trj_config_map["pump"].set_point){
             _ec_cfg.fake_slave_info.push_back(std::make_tuple(id,iit::ecat::HYQ_HPU,slave_pos));
             slave_pos++;
         }
@@ -234,8 +234,7 @@ void EcUtils::device_config_map(const YAML::Node & device_config_node,const YAML
 
                 if(_ec_cfg.device_config_map[esc_id].control_mode_type==0x00){
                     _ec_cfg.device_config_map[esc_id].gains={0,0,0,0,0};
-                }
-                else{
+                }else{
                     if(device_config_node[esc_name]["gains"]){
                         _ec_cfg.device_config_map[esc_id].gains=device_config_node[esc_name]["gains"].as<std::vector<float>>();
                     }
@@ -250,11 +249,9 @@ void EcUtils::device_config_map(const YAML::Node & device_config_node,const YAML
                     
                     if(type_str=="ADVRF"){
                         _ec_cfg.device_config_map[esc_id].type=iit::ecat::CENT_AC;
-                    }
-                    else if(type_str=="Synapticon"){
+                    }else if(type_str=="Synapticon"){
                         _ec_cfg.device_config_map[esc_id].type=iit::ecat::SYNAPTICON_v5_1;
-                    }
-                    else{
+                    }else{
                         _ec_cfg.device_config_map[esc_id].type=iit::ecat::CENT_AC;
                     }
                 }
@@ -263,11 +260,9 @@ void EcUtils::device_config_map(const YAML::Node & device_config_node,const YAML
                 if(device_config_node[esc_name]["brake_present"]){
                     _ec_cfg.device_config_map[esc_id].brake_present=device_config_node[esc_name]["brake_present"].as<bool>();
                 }
-            }
-            else{
+            }else{
                 throw std::runtime_error("Error: found a duplicated device configuration on id: "+std::to_string(esc_id));
             }
-            
         }
     }
 }
@@ -324,14 +319,17 @@ void EcUtils::config_trj(const YAML::Node & robot_trajectory_node)
                 }
             }
 
-            _ec_cfg.trj_config_map[device_type].id=id_vector;
-            _ec_cfg.trj_config_map[device_type].set_point=set_point;
-            if(!homing.empty() && !trajectory.empty()){
-                int i=0;
-                for(const auto &id:id_vector){
-                    _ec_cfg.trj_config_map[device_type].homing[id]=homing[i];
-                    _ec_cfg.trj_config_map[device_type].trajectory[id]=trajectory[i];
-                    i++;
+            int i=0;
+            for(const auto &id:id_vector){
+                if(_ec_cfg.trj_config_map[device_type].set_point.count(id)==0){
+                    _ec_cfg.trj_config_map[device_type].set_point[id]=set_point;
+                    if(!homing.empty() && !trajectory.empty()){
+                        _ec_cfg.trj_config_map[device_type].homing[id]=homing[i];
+                        _ec_cfg.trj_config_map[device_type].trajectory[id]=trajectory[i];
+                        i++;
+                    }
+                }else{
+                    throw std::runtime_error(device_type + " id duplicated!");     
                 }
             }
         }
@@ -351,37 +349,27 @@ std::string EcUtils::get_ec_cfg_file()
 EcIface::Ptr EcUtils::make_ec_iface()
 {
     EcIface::Ptr ec_iface_ptr;
-    if(_ec_cfg.protocol == "udp")
-    {
+    if(_ec_cfg.protocol == "udp"){
        auto ec_udp_ptr = std::make_shared<EcUDP>(_ec_cfg.host_name,_ec_cfg.host_port);
        ec_iface_ptr = ec_udp_ptr;
        
-    }
-    else if(_ec_cfg.protocol == "tcp")
-    {
+    }else if(_ec_cfg.protocol == "tcp"){
        auto ec_tcp_ptr = std::make_shared<EcTCP>(_ec_cfg.host_name,_ec_cfg.host_port);
        ec_iface_ptr = ec_tcp_ptr;
        
-    }
-    else if(_ec_cfg.protocol == "iddp")
-    {
+    }else if(_ec_cfg.protocol == "iddp"){
        auto ec_iddp_ptr = std::make_shared<EcIDDP>(_ec_cfg.host_name,_ec_cfg.host_port);
        ec_iface_ptr = ec_iddp_ptr;
        
-    }
-    else if(_ec_cfg.protocol == "zipc")
-    {
+    }else if(_ec_cfg.protocol == "zipc"){
        auto ec_zipc_ptr = std::make_shared<EcZipc>(_ec_cfg.host_name,_ec_cfg.host_port);
        ec_iface_ptr = ec_zipc_ptr;
        
-    }
-    else
-    {
+    }else{
         throw std::runtime_error("EtherCAT client protocol not recognized, protocols allowed are tcp, udp, ros2, iddp, zipc");
     }
     
-    if(ec_iface_ptr != nullptr)
-    {
+    if(ec_iface_ptr != nullptr){
 #ifdef TEST_LIBRARY 
         ec_iface_ptr->set_slaves_info(_ec_cfg.fake_slave_info);
 #endif 

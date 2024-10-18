@@ -35,8 +35,8 @@ int main(int argc, char * const argv[])
     EcWrapper ec_wrapper;
 
     std::map<int,double> homing;
-    if(ec_cfg.trj_config_map.count("Motor")>0){
-        std::map<int,double> homing=ec_cfg.trj_config_map["Motor"].homing;    
+    if(ec_cfg.trj_config_map.count("motor")>0){
+        std::map<int,double> homing=ec_cfg.trj_config_map["motor"].homing;    
     }
 
     if(homing.empty()){

@@ -21,8 +21,7 @@ public:
     }DEVICE_CONFIG;
 
     typedef struct TRAJECTORY_CONFIG_t{
-        std::vector<int> id;
-        std::map<std::string,double> set_point;
+        std::map<int,std::map<std::string,double>> set_point;
         std::map<int,double> homing;
         std::map<int,double> trajectory;
     }TRAJECTORY_CONFIG_t;
