@@ -17,18 +17,18 @@ int main(int argc, char *const argv[])
     EcIface::Ptr client;
     EcWrapper ec_wrapper;
 
-    std::map<int,double> homing,trajectory;
-    if(ec_cfg.trj_config_map.count("motor")>0){
-        std::map<int,double> homing=ec_cfg.trj_config_map["motor"].homing;    
-        std::map<int,double> trajectory=ec_cfg.trj_config_map["motor"].trajectory;    
-    }
-
     try{
         ec_wrapper.create_ec(client, ec_cfg);
     }
     catch (std::exception &ex){
         DPRINTF("%s\n", ex.what());
         return 1;
+    }
+
+    std::map<int,double> homing,trajectory;
+    if(ec_cfg.trj_config_map.count("valve")>0){
+        homing=ec_cfg.trj_config_map["motor"].homing;    
+        trajectory=ec_cfg.trj_config_map["motor"].trajectory;    
     }
 
 
@@ -87,8 +87,7 @@ int main(int argc, char *const argv[])
                         valves_start[esc_id] = std::get<0>(valve_rx_pdo); // actual encoder position
                     }else if(ec_cfg.device_config_map[esc_id].control_mode_type==iit::advr::Gains_Type_IMPEDANCE){
                         set_point_type="force";
-                        valves_start[esc_id] = std::get<1>(valve_rx_pdo); // actual force
-                        valves_set_zero[esc_id]=0.0;
+                        valves_set_zero[esc_id]=valves_start[esc_id] = 0.0;
                     }else{
                         set_point_type="current";
                         valves_set_zero[esc_id]=valves_start[esc_id] = 0.0;
@@ -114,24 +113,22 @@ int main(int argc, char *const argv[])
                         motors_start[esc_id]=std::get<1>(motor_rx_pdo); // actual motor pos
                     }else if(ec_cfg.device_config_map[esc_id].control_mode_type==iit::advr::Gains_Type_VELOCITY){
                         set_point_type="velocity";
-                        motors_start[esc_id]=0.0;
+                        motors_set_zero[esc_id]=motors_start[esc_id]=0.0;
                     }else if(ec_cfg.device_config_map[esc_id].control_mode_type==iit::advr::Gains_Type_TORQUE){
                         set_point_type="torque";
-                        motors_start[esc_id]=std::get<4>(motor_rx_pdo); // torque
+                        motors_set_zero[esc_id]=motors_start[esc_id]=0.0;
                     }else{
                         set_point_type="current";
-                        motors_start[esc_id]=0.0;
+                        motors_set_zero[esc_id]=motors_start[esc_id]=0.0;
                     }
 
                     if(ec_cfg.trj_config_map["motor"].set_point[esc_id].count(set_point_type)>0){
                         if(set_point_type=="position"){
                             motors_trj_1[esc_id]=homing[esc_id];
-                            motors_trj_2[esc_id]=trajectory[esc_id];
-                        }
+                            motors_trj_2[esc_id]=trajectory[esc_id];                 }
                         else{
                             motors_trj_1[esc_id]=ec_cfg.trj_config_map["motor"].set_point[esc_id][set_point_type];
                             motors_trj_2[esc_id]=-1*motors_trj_1[esc_id];
-                            motors_set_zero[esc_id]=0.0;
                         }
                         motors_set_trj[esc_id]= motors_trj_1[esc_id];
                         motors_set_ref[esc_id]= motors_start[esc_id];
@@ -243,7 +240,6 @@ int main(int argc, char *const argv[])
                     for (const auto &[esc_id, target] : motors_set_trj){
                         int ctrl_mode= ec_cfg.device_config_map[esc_id].control_mode_type;
                         motors_set_ref[esc_id] = motors_start[esc_id] + alpha * (target - motors_start[esc_id]);
-
                         if(ctrl_mode != iit::advr::Gains_Type_VELOCITY){
                             if(ctrl_mode == iit::advr::Gains_Type_POSITION ||
                                ctrl_mode == iit::advr::Gains_Type_IMPEDANCE){

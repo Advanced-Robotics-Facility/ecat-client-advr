@@ -284,52 +284,54 @@ void EcUtils::config_trj(const YAML::Node & robot_trajectory_node)
 
     std::vector<std::string> device_type_vector={"motor","valve","pump"};          
     for(const auto &device_type:device_type_vector){
-        if(robot_trajectory_node[device_type]["id"]){
-            auto id_vector = robot_trajectory_node[device_type]["id"].as<std::vector<int>>();
+        if(robot_trajectory_node[device_type]){
+            if(robot_trajectory_node[device_type]["id"]){
+                auto id_vector = robot_trajectory_node[device_type]["id"].as<std::vector<int>>();
 
-            for(const auto &id: id_vector){
-                if(_ec_cfg.device_config_map.count(id)==0 && device_type!="pump"){
-                    throw std::runtime_error("The ID: " + std::to_string(id) + " hasn't a " +  device_type + " configuration, please setup the control mode");
-                }
-            }
-
-            std::map<std::string,double> set_point;
-            if(robot_trajectory_node[device_type]["set_point"]){
-                set_point = robot_trajectory_node[device_type]["set_point"].as<std::map<std::string,double>>();
-            }
-            else{
-                throw std::runtime_error("Fatal error: cannot find the set point for the device");
-            }
-
-            std::vector<double> homing,trajectory;
-            if(robot_trajectory_node[device_type]["homing"]){
-                homing = robot_trajectory_node[device_type]["homing"].as<std::vector<double>>();
-            }
-
-            if(robot_trajectory_node[device_type]["trajectory"]){
-                trajectory = robot_trajectory_node[device_type]["trajectory"].as<std::vector<double>>();
-            }
-
-            if(id_vector.size() != homing.size() && !homing.empty()){
-                throw std::runtime_error("Motor id size has different size of homing vector");
-            }
-            else{
-                if(homing.size() != trajectory.size() ){
-                    throw std::runtime_error("Homing vector size has different size of trajectory vector");
-                }
-            }
-
-            int i=0;
-            for(const auto &id:id_vector){
-                if(_ec_cfg.trj_config_map[device_type].set_point.count(id)==0){
-                    _ec_cfg.trj_config_map[device_type].set_point[id]=set_point;
-                    if(!homing.empty() && !trajectory.empty()){
-                        _ec_cfg.trj_config_map[device_type].homing[id]=homing[i];
-                        _ec_cfg.trj_config_map[device_type].trajectory[id]=trajectory[i];
-                        i++;
+                for(const auto &id: id_vector){
+                    if(_ec_cfg.device_config_map.count(id)==0 && device_type!="pump"){
+                        throw std::runtime_error("The ID: " + std::to_string(id) + " hasn't a " +  device_type + " configuration, please setup the control mode");
                     }
-                }else{
-                    throw std::runtime_error(device_type + " id duplicated!");     
+                }
+
+                std::map<std::string,double> set_point;
+                if(robot_trajectory_node[device_type]["set_point"]){
+                    set_point = robot_trajectory_node[device_type]["set_point"].as<std::map<std::string,double>>();
+                }
+                else{
+                    throw std::runtime_error("Fatal error: cannot find the set point for the device");
+                }
+
+                std::vector<double> homing,trajectory;
+                if(robot_trajectory_node[device_type]["homing"]){
+                    homing = robot_trajectory_node[device_type]["homing"].as<std::vector<double>>();
+                }
+
+                if(robot_trajectory_node[device_type]["trajectory"]){
+                    trajectory = robot_trajectory_node[device_type]["trajectory"].as<std::vector<double>>();
+                }
+
+                if(id_vector.size() != homing.size() && !homing.empty()){
+                    throw std::runtime_error("Motor id size has different size of homing vector");
+                }
+                else{
+                    if(homing.size() != trajectory.size() ){
+                        throw std::runtime_error("Homing vector size has different size of trajectory vector");
+                    }
+                }
+
+                int i=0;
+                for(const auto &id:id_vector){
+                    if(_ec_cfg.trj_config_map[device_type].set_point.count(id)==0){
+                        _ec_cfg.trj_config_map[device_type].set_point[id]=set_point;
+                        if(!homing.empty() && !trajectory.empty()){
+                            _ec_cfg.trj_config_map[device_type].homing[id]=homing[i];
+                            _ec_cfg.trj_config_map[device_type].trajectory[id]=trajectory[i];
+                            i++;
+                        }
+                    }else{
+                        throw std::runtime_error(device_type + " id duplicated!");     
+                    }
                 }
             }
         }

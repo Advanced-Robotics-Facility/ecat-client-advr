@@ -15,10 +15,17 @@ int main(int argc, char * const argv[])
     EcIface::Ptr client;
     EcWrapper ec_wrapper;
  
+    try{
+        ec_wrapper.create_ec(client,ec_cfg);
+    }catch(std::exception &ex){
+        DPRINTF("%s\n",ex.what());
+        return 1;
+    }
+
     std::map<int,double> homing,trajectory;
-    if(ec_cfg.trj_config_map.count("Motor")>0){
-        std::map<int,double> homing=ec_cfg.trj_config_map["Motor"].homing;    
-        std::map<int,double> trajectory=ec_cfg.trj_config_map["Motor"].trajectory;    
+    if(ec_cfg.trj_config_map.count("valve")>0){
+        homing=ec_cfg.trj_config_map["motor"].homing;    
+        trajectory=ec_cfg.trj_config_map["motor"].trajectory;    
     }
 
     if(homing.empty()){
@@ -26,12 +33,6 @@ int main(int argc, char * const argv[])
         return 1;
     }
 
-    try{
-        ec_wrapper.create_ec(client,ec_cfg);
-    }catch(std::exception &ex){
-        DPRINTF("%s\n",ex.what());
-        return 1;
-    }
     
     bool ec_sys_started = true;
     try{

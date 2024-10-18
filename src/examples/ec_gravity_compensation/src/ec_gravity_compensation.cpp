@@ -45,9 +45,14 @@ int main(int argc, char * const argv[])
         return 1;
     }
 
-    std::map<int,double> homing,trajectory;
-    if(ec_cfg.trj_config_map.count("Motor")>0){
-        std::map<int,double> homing=ec_cfg.trj_config_map["Motor"].homing;     
+    std::map<int,double> homing;
+    if(ec_cfg.trj_config_map.count("valve")>0){
+        homing=ec_cfg.trj_config_map["motor"].homing;      
+    }
+
+    if(homing.empty()){
+        DPRINTF("Got an homing position map\n");
+        return 1;
     }
 
     bool ec_sys_started = true;
