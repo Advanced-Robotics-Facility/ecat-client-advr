@@ -55,6 +55,23 @@ int main(int argc, char * const argv[])
         return 1;
     }
 
+    bool all_motor_imp_mode=true;
+    std::map<int,bool> exclude_motors;
+    for(const auto &[id,device_cg]:ec_cfg.device_config_map){
+        if(device_cg.control_mode_type!=iit::advr::Gains_Type_IMPEDANCE){
+            if(exclude_motors.count(id)==0){
+                all_motor_imp_mode=false;
+            }
+            break;
+        }
+    }
+    
+    if(!all_motor_imp_mode){
+        DPRINTF("Not all motors requested have an impendace control mode\n");
+        return 1;
+    }
+
+
     bool ec_sys_started = true;
     try{
         ec_sys_started = ec_wrapper.start_ec_sys();
@@ -190,7 +207,6 @@ int main(int argc, char * const argv[])
                     std::get<8>(motors_ref[esc_id]) = gain_ref_map[esc_id][4];
                 }
             }
-            
             // ************************* SEND ALWAYS REFERENCES***********************************//
             client->set_motors_references(motors_ref);
             // ************************* SEND ALWAYS REFERENCES***********************************//

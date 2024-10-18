@@ -33,17 +33,6 @@ int main(int argc, char * const argv[])
     EcUtils::EC_CONFIG ec_cfg;
     EcIface::Ptr client;
     EcWrapper ec_wrapper;
-
-    std::map<int,double> homing;
-    if(ec_cfg.trj_config_map.count("motor")>0){
-        std::map<int,double> homing=ec_cfg.trj_config_map["motor"].homing;    
-    }
-
-    if(homing.empty()){
-        DPRINTF("Got an homing position map\n");
-        return 1;
-    }
-  
     
     try{
         ec_wrapper.create_ec(client,ec_cfg);
@@ -52,6 +41,16 @@ int main(int argc, char * const argv[])
         return 1;
     }
 
+    std::map<int,double> homing;
+    if(ec_cfg.trj_config_map.count("motor")>0){
+        homing=ec_cfg.trj_config_map["motor"].homing;    
+    }
+
+    if(homing.empty()){
+        DPRINTF("Got an homing position map\n");
+        return 1;
+    }
+  
     bool ec_sys_started = true;
     try{
         ec_sys_started = ec_wrapper.start_ec_sys();
@@ -66,15 +65,15 @@ int main(int argc, char * const argv[])
         float time_elapsed_ms;
         
         bool run=true;        
-        std::map<int, double> q_ref;
+        std::map<int, double> motors_set_ref;
 
         for (const auto &[esc_id, motor_rx_pdo] : motors_status_map){
             if(homing.count(esc_id)){
-                q_ref[esc_id] = std::get<1>(motors_status_map[esc_id]); // motor pos];
+                motors_set_ref[esc_id] = std::get<1>(motors_status_map[esc_id]); // motor pos];
             }
         }
 
-        if(q_ref.empty()){
+        if(motors_set_ref.empty()){
             throw std::runtime_error("fatal error: motors references structure empty!");
         }
         // memory allocation
@@ -115,10 +114,9 @@ int main(int argc, char * const argv[])
             
 
             // ************************* SEND ALWAYS REFERENCES***********************************//
-            for ( const auto &[esc_id, pos_ref] : q_ref){
+            for ( const auto &[esc_id, pos_ref] : motors_set_ref){
                 std::get<1>(motors_ref[esc_id]) = pos_ref;
             }
-            
             // ************************* SEND ALWAYS REFERENCES***********************************//
             client->set_motors_references(motors_ref);
             // ************************* SEND ALWAYS REFERENCES***********************************//
