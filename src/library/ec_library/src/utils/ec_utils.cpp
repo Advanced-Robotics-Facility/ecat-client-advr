@@ -63,18 +63,15 @@ EcUtils::EcUtils()
     }
 
     //****** Control **************//
-    if(ec_cfg_node["control"]) {
-        std::vector<std::string> ctrl_path_vector={"robot_id_map_path","robot_control_path"};
-        std::vector<std::string> ctrl_abs_path={"",""};
-
+    if(ec_cfg_node["robot"]) {
         int i=0;
-        for(const auto &ctrl_path:ctrl_path_vector){
-            if(ec_cfg_node["control"][ctrl_path]){
-                ctrl_abs_path[i]=ec_cfg_node["control"][ctrl_path].as<std::string>();
+        for(const auto &robot_path:_robot_path_v){
+            if(ec_cfg_node["robot"][robot_path]){
+                _robot_abs_path[i]=ec_cfg_node["robot"][robot_path].as<std::string>();
                 try{
-                    compute_absolute_path(_ec_cfg_file,ctrl_abs_path[i]);
-                    if(ctrl_abs_path[i]==""){
-                        throw std::runtime_error("Wrong "+ctrl_path+" path!");
+                    compute_absolute_path(_ec_cfg_file,_robot_abs_path[i]);
+                    if(_robot_abs_path[i]==""){
+                        throw std::runtime_error("Wrong "+robot_path+" path!");
                     }
                     i++;
                 }catch(std::exception& e){
@@ -83,106 +80,23 @@ EcUtils::EcUtils()
             }
         }
        
-        if(ctrl_abs_path[0]!="" && ctrl_abs_path[1]!=""){
-
-            auto robot_id_map_node = YAML::LoadFile(ctrl_abs_path[0]);
-            std::cout << "Robot control: " << ctrl_abs_path[1] << std::endl;
-            auto robot_control_node = YAML::LoadFile(ctrl_abs_path[1]);
-
-            _ec_cfg.device_config_map.clear();
-
-            for(const auto &device_type:_device_type_vector){
-                std::cout << device_type << std::endl;
-                if(robot_control_node[device_type]){
-                    if(robot_control_node[device_type]["config_path"]){
-                        try{
-                            std::cout << device_type << std::endl;
-                            std::string config_path=robot_control_node[device_type]["config_path"].as<std::string>();
-                            std::string config_path_abs=config_path;
-                            compute_absolute_path(ctrl_abs_path[1],config_path_abs);
-                            if(config_path_abs!=""){
-                                std::cout <<  device_type +" configuration path: " << config_path_abs<< std::endl;
-                                auto config_node = YAML::LoadFile(config_path_abs);
-                                device_config_map(config_node,robot_id_map_node);
-                            }else{
-                                throw std::runtime_error("Wrong "+config_path+" path!");
-                            }
-                        }catch(std::exception& e){
-                            throw std::runtime_error(e.what());
-                        }
-                    }
-                }
-            }
-
+        if(_robot_abs_path[0]!="" && _robot_abs_path[1]!=""){
             try{
-                config_trajectory(robot_control_node);
+                std::cout << "Robot id map: " << _robot_abs_path[0] << std::endl;
+                _robot_id_map_node = YAML::LoadFile(_robot_abs_path[0]);
+                std::cout << "Robot control: " << _robot_abs_path[1] << std::endl;
+                _robot_control_node = YAML::LoadFile(_robot_abs_path[1]);
+
+                config_device();
+                config_trajectory();
+                generate_fake_slave_info();
+
             }catch(std::exception& e){
                 throw std::runtime_error(e.what());
             }
         }
     }
-    
-    generate_fake_slave_info(ec_cfg_node);
-
 };
-
-void EcUtils::generate_fake_slave_info(const YAML::Node & ec_cfg_node)
-{
-    int slave_pos=1;
-    
-    // Motor
-    if(_ec_cfg.trj_config_map.count("motor")>0){
-        for(const auto &[id,set_point]:_ec_cfg.trj_config_map["motor"].set_point){
-            _ec_cfg.fake_slave_info.push_back(std::make_tuple(id,_ec_cfg.device_config_map[id].type,slave_pos));
-            slave_pos++;
-        }
-    }
-
-    // Valve
-    if(_ec_cfg.trj_config_map.count("valve")>0){
-        for(const auto &[id,set_point]:_ec_cfg.trj_config_map["valve"].set_point){
-            _ec_cfg.fake_slave_info.push_back(std::make_tuple(id,iit::ecat::HYQ_KNEE,slave_pos));
-            slave_pos++;
-        }
-    }
-
-    // Pump
-    if(_ec_cfg.trj_config_map.count("pump")>0){
-        for(const auto &[id,set_point]:_ec_cfg.trj_config_map["pump"].set_point){
-            _ec_cfg.fake_slave_info.push_back(std::make_tuple(id,iit::ecat::HYQ_HPU,slave_pos));
-            slave_pos++;
-        }
-    }
-
-    if(ec_cfg_node["simulation"]) {
-        if(ec_cfg_node["simulation"]["imu_id"]){
-            // IMU
-            auto imu_id_v=ec_cfg_node["simulation"]["imu_id"].as<std::vector<int>>();
-            for(const auto &imu_id:imu_id_v){
-                _ec_cfg.fake_slave_info.push_back(std::make_tuple(imu_id,iit::ecat::IMU_ANY,slave_pos));
-                slave_pos++;
-            }
-        }
-
-        if(ec_cfg_node["simulation"]["ft_id"]){
-            // FT
-            auto ft_id_v=ec_cfg_node["simulation"]["ft_id"].as<std::vector<int>>();
-            for(const auto &ft_id:ft_id_v){
-                _ec_cfg.fake_slave_info.push_back(std::make_tuple(ft_id,iit::ecat::FT6_MSP432,slave_pos));
-                slave_pos++;
-            }
-        }
-        
-        if(ec_cfg_node["simulation"]["pow_id"]){
-            // POW
-            auto pow_id_v=ec_cfg_node["simulation"]["pow_id"].as<std::vector<int>>();
-            for(const auto &pow_id:pow_id_v){
-                _ec_cfg.fake_slave_info.push_back(std::make_tuple(pow_id,iit::ecat::POW_F28M36_BOARD,slave_pos));
-                slave_pos++;
-            }
-        }
-    }
-}
 
 void EcUtils::compute_absolute_path(std::string dir_path,std::string &file_path)
 {
@@ -219,9 +133,9 @@ void EcUtils::compute_absolute_path(std::string dir_path,std::string &file_path)
     file_path=result;
 }
 
-void EcUtils::device_config_map(const YAML::Node & device_config_node,const YAML::Node & robot_id_map_node)
+void EcUtils::device_config_map(const YAML::Node & device_config_node)
 {
-    auto robot_id_map=robot_id_map_node["joint_map"].as<map<int,std::string>>(); // for xbotinterface
+    auto robot_id_map=_robot_id_map_node["joint_map"].as<map<int,std::string>>(); // for xbotinterface
     for ( const auto &[esc_id, esc_name] : robot_id_map){
         if(device_config_node[esc_name]){
             if(_ec_cfg.device_config_map.count(esc_id)==0){
@@ -268,25 +182,52 @@ void EcUtils::device_config_map(const YAML::Node & device_config_node,const YAML
     }
 }
 
-void EcUtils::config_trajectory(const YAML::Node & robot_control_node)
+void EcUtils::config_device()
 {
-    if(robot_control_node["trajectory"]["type"]){
-        _ec_cfg.trj_type=robot_control_node["trajectory"]["type"].as<std::string>();
+    _ec_cfg.device_config_map.clear();
+
+    for(const auto &device_type:_device_type_vector){
+        if(_robot_control_node[device_type]){
+            if(_robot_control_node[device_type]["config_path"]){
+                try{
+                    std::cout << device_type << std::endl;
+                    std::string config_path=_robot_control_node[device_type]["config_path"].as<std::string>();
+                    std::string config_path_abs=config_path;
+                    compute_absolute_path(_robot_abs_path[1],config_path_abs);
+                    if(config_path_abs!=""){
+                        std::cout <<  device_type +" configuration path: " << config_path_abs<< std::endl;
+                        auto config_node = YAML::LoadFile(config_path_abs);
+                        device_config_map(config_node);
+                    }else{
+                        throw std::runtime_error("Wrong "+config_path+" path!");
+                    }
+                }catch(std::exception& e){
+                    throw std::runtime_error(e.what());
+                }
+            }
+        }
     }
-    if(robot_control_node["trajectory"]["frequency"]){
-        _ec_cfg.trj_time=1/(robot_control_node["trajectory"]["frequency"].as<float>());
+}
+
+void EcUtils::config_trajectory()
+{
+    if(_robot_control_node["trajectory"]["type"]){
+        _ec_cfg.trj_type=_robot_control_node["trajectory"]["type"].as<std::string>();
+    }
+    if(_robot_control_node["trajectory"]["frequency"]){
+        _ec_cfg.trj_time=1/(_robot_control_node["trajectory"]["frequency"].as<float>());
         if(2*_ec_cfg.period_ms> (_ec_cfg.trj_time*1000)){
             throw std::runtime_error("The trajectoy time should be at least two times higher then the period_ms variable");
         }
     }
-    if(robot_control_node["trajectory"]["repeat"]){
-        _ec_cfg.repeat_trj=robot_control_node["trajectory"]["repeat"].as<int>();
+    if(_robot_control_node["trajectory"]["repeat"]){
+        _ec_cfg.repeat_trj=_robot_control_node["trajectory"]["repeat"].as<int>();
     }
     
     for(const auto &device_type:_device_type_vector){
-        if(robot_control_node[device_type]){
-            if(robot_control_node[device_type]["id"]){
-                auto id_vector = robot_control_node[device_type]["id"].as<std::vector<int>>();
+        if(_robot_control_node[device_type]){
+            if(_robot_control_node[device_type]["id"]){
+                auto id_vector = _robot_control_node[device_type]["id"].as<std::vector<int>>();
 
                 for(const auto &id: id_vector){
                     if(_ec_cfg.device_config_map.count(id)==0 && device_type!="pump"){
@@ -295,20 +236,20 @@ void EcUtils::config_trajectory(const YAML::Node & robot_control_node)
                 }
 
                 std::map<std::string,double> set_point;
-                if(robot_control_node[device_type]["set_point"]){
-                    set_point = robot_control_node[device_type]["set_point"].as<std::map<std::string,double>>();
+                if(_robot_control_node[device_type]["set_point"]){
+                    set_point = _robot_control_node[device_type]["set_point"].as<std::map<std::string,double>>();
                 }
                 else{
                     throw std::runtime_error("Fatal error: cannot find the set point for the device");
                 }
 
                 std::vector<double> homing,trajectory;
-                if(robot_control_node[device_type]["homing"]){
-                    homing = robot_control_node[device_type]["homing"].as<std::vector<double>>();
+                if(_robot_control_node[device_type]["homing"]){
+                    homing = _robot_control_node[device_type]["homing"].as<std::vector<double>>();
                 }
 
-                if(robot_control_node[device_type]["trajectory"]){
-                    trajectory = robot_control_node[device_type]["trajectory"].as<std::vector<double>>();
+                if(_robot_control_node[device_type]["trajectory"]){
+                    trajectory = _robot_control_node[device_type]["trajectory"].as<std::vector<double>>();
                 }
 
                 if(id_vector.size() != homing.size() && !homing.empty()){
@@ -333,6 +274,64 @@ void EcUtils::config_trajectory(const YAML::Node & robot_control_node)
                         throw std::runtime_error(device_type + " id duplicated!");     
                     }
                 }
+            }
+        }
+    }
+}
+
+void EcUtils::generate_fake_slave_info()
+{
+    int slave_pos=1;
+    
+    // Motor
+    if(_ec_cfg.trj_config_map.count("motor")>0){
+        for(const auto &[id,set_point]:_ec_cfg.trj_config_map["motor"].set_point){
+            _ec_cfg.fake_slave_info.push_back(std::make_tuple(id,_ec_cfg.device_config_map[id].type,slave_pos));
+            slave_pos++;
+        }
+    }
+
+    // Valve
+    if(_ec_cfg.trj_config_map.count("valve")>0){
+        for(const auto &[id,set_point]:_ec_cfg.trj_config_map["valve"].set_point){
+            _ec_cfg.fake_slave_info.push_back(std::make_tuple(id,iit::ecat::HYQ_KNEE,slave_pos));
+            slave_pos++;
+        }
+    }
+
+    // Pump
+    if(_ec_cfg.trj_config_map.count("pump")>0){
+        for(const auto &[id,set_point]:_ec_cfg.trj_config_map["pump"].set_point){
+            _ec_cfg.fake_slave_info.push_back(std::make_tuple(id,iit::ecat::HYQ_HPU,slave_pos));
+            slave_pos++;
+        }
+    }
+
+    if(_robot_control_node["simulation"]) {
+        if(_robot_control_node["simulation"]["imu_id"]){
+            // IMU
+            auto imu_id_v=_robot_control_node["simulation"]["imu_id"].as<std::vector<int>>();
+            for(const auto &imu_id:imu_id_v){
+                _ec_cfg.fake_slave_info.push_back(std::make_tuple(imu_id,iit::ecat::IMU_ANY,slave_pos));
+                slave_pos++;
+            }
+        }
+
+        if(_robot_control_node["simulation"]["ft_id"]){
+            // FT
+            auto ft_id_v=_robot_control_node["simulation"]["ft_id"].as<std::vector<int>>();
+            for(const auto &ft_id:ft_id_v){
+                _ec_cfg.fake_slave_info.push_back(std::make_tuple(ft_id,iit::ecat::FT6_MSP432,slave_pos));
+                slave_pos++;
+            }
+        }
+        
+        if(_robot_control_node["simulation"]["pow_id"]){
+            // POW
+            auto pow_id_v=_robot_control_node["simulation"]["pow_id"].as<std::vector<int>>();
+            for(const auto &pow_id:pow_id_v){
+                _ec_cfg.fake_slave_info.push_back(std::make_tuple(pow_id,iit::ecat::POW_F28M36_BOARD,slave_pos));
+                slave_pos++;
             }
         }
     }
@@ -379,8 +378,6 @@ EcIface::Ptr EcUtils::make_ec_iface()
     
     return ec_iface_ptr;    
 }
-
-
 
 EcUtils::~EcUtils()
 {

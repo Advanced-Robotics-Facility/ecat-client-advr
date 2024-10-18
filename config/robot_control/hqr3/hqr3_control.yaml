@@ -1,3 +1,8 @@
+trajectory:
+  type: polynomial #step, sine, cosine, chirp
+  frequency: 1
+  repeat: 2
+  
 motor:
   config_path: ${PWD}/motor/hqr3_pos3b.yaml
   id: [1,2,3,4,5,6,7,8]
@@ -14,7 +19,7 @@ valve:
   #id: [210,220]
   #set_point:  {pressure: 128.0}
 
-trajectory:
-  type: polynomial #step, sine, cosine, chirp
-  frequency: 1
-  repeat: 2
+simulation:
+  imu_id: [102]
+  ft_id: [110,111]
+  pow_id: [201]

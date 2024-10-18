@@ -11,12 +11,7 @@ general:
   period_ms: 1
   logging: true
 
-control:
+robot:
   robot_id_map_path: &robot_id_map_path '${PWD}/robot_id_map/hqr3/hqr3_id_map.yaml' 
   robot_control_path: ${PWD}/robot_control/hqr3/hqr3_control.yaml
-
-simulation:
-  imu_id: [102]
-  ft_id: [110,111]
-  pow_id: [201]
 

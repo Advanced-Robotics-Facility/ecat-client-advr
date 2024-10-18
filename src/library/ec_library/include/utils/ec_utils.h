@@ -61,10 +61,15 @@ private:
     std::string _ec_cfg_file;
     
     void compute_absolute_path(std::string dir_path,std::string &file_path);
-    void generate_fake_slave_info(const YAML::Node & ec_cfg_node);
-    void device_config_map(const YAML::Node & device_config_node,const YAML::Node & robot_id_map_node);
-    void config_trajectory(const YAML::Node & robot_control_node);      
+    void generate_fake_slave_info();
+    void device_config_map(const YAML::Node & device_config_node);
+    void config_trajectory();      
+    void config_device();
     std::vector<std::string> _device_type_vector={"motor","valve","pump"};  
+    std::vector<std::string> _robot_path_v={"robot_id_map_path","robot_control_path"};
+    std::vector<std::string> _robot_abs_path={"",""};
+    YAML::Node _robot_id_map_node;
+    YAML::Node _robot_control_node;
 };
 
 #endif
