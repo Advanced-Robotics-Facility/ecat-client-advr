@@ -203,7 +203,6 @@ int main(int argc, char *const argv[])
                         std::get<8>(pumps_ref[esc_id]) = pump_req_op;
                     }
                 }
-
                 // ************************* SEND ALWAYS REFERENCES***********************************//
                 client->set_pumps_references(pumps_ref);
                 // ************************* SEND ALWAYS REFERENCES***********************************//
@@ -226,7 +225,6 @@ int main(int argc, char *const argv[])
                         }
                     }
                 }
-
                 // ************************* SEND ALWAYS REFERENCES***********************************//
                 client->set_valves_references(valves_ref);
                 // ************************* SEND ALWAYS REFERENCES***********************************//
@@ -254,7 +252,6 @@ int main(int argc, char *const argv[])
                         }
                     }
                 }
-
                 // ************************* SEND ALWAYS REFERENCES***********************************//
                 client->set_motors_references(motors_ref);
                 // ************************* SEND ALWAYS REFERENCES***********************************//

@@ -53,40 +53,47 @@ int main(int argc, char * const argv[])
         bool run_loop=true;        
         std::string STM_sts="Homing";
 
-        std::map<int, double> q_set_trj = homing;
-        std::map<int, double> q_ref, q_start, qdot;
-        double qdot_ref_k = 1.0; // [rad/s]
-        std::map<int, double> qdot_ref, qdot_start,qdot_set_trj;
-        std::map<int, double> qdot_set_trj_1,qdot_set_trj_2,qdot_set_zero;
-
-        double taur_ref_k = 1.0; // [Nm]
-        std::map<int, double> tor_ref, tor_start, tor_set_trj;
-        std::map<int, double> tor_set_trj_1,tor_set_trj_2,tor_set_zero;
+        std::map<int, double> motors_trj_1,motors_trj_2, motors_set_zero, motors_set_trj;
+        std::map<int, double> motors_set_ref, motors_start;
 
         int trajectory_counter=0;
         float tau=0,alpha=0;
 
         for (const auto &[esc_id, motor_rx_pdo] : motors_status_map){
-            if(homing.count(esc_id)>0){
-                q_start[esc_id] = std::get<1>(motors_status_map[esc_id]); // motor pos
-                qdot[esc_id] = std::get<3>(motors_status_map[esc_id]);    // motor vel
-                q_ref[esc_id] = q_start[esc_id];
+            if(ec_cfg.trj_config_map.count("motor")>0){
+                if(ec_cfg.trj_config_map["motor"].set_point.count(esc_id)>0){
+                    std::string set_point_type="";
+                    if(ec_cfg.device_config_map[esc_id].control_mode_type==iit::advr::Gains_Type_POSITION ||
+                       ec_cfg.device_config_map[esc_id].control_mode_type==iit::advr::Gains_Type_IMPEDANCE){
+                        set_point_type="position";
+                        motors_start[esc_id]=std::get<1>(motor_rx_pdo); // actual motor pos
+                    }else if(ec_cfg.device_config_map[esc_id].control_mode_type==iit::advr::Gains_Type_VELOCITY){
+                        set_point_type="velocity";
+                        motors_set_zero[esc_id]=motors_start[esc_id]=0.0;
+                    }else if(ec_cfg.device_config_map[esc_id].control_mode_type==iit::advr::Gains_Type_TORQUE){
+                        set_point_type="torque";
+                        motors_set_zero[esc_id]=motors_start[esc_id]=0.0;
+                    }else{
+                        set_point_type="current";
+                        motors_set_zero[esc_id]=motors_start[esc_id]=0.0;
+                    }
 
-                qdot_ref[esc_id] = qdot_start[esc_id] = 0.0;
-                qdot_set_trj_1[esc_id] = qdot_ref_k;
-                qdot_set_trj_2[esc_id] = -qdot_ref_k;
-                qdot_set_trj[esc_id] = qdot_set_trj_1[esc_id];
-                qdot_set_zero[esc_id]=0.0;
-
-                tor_ref[esc_id] = tor_start[esc_id] = 0.0;
-                tor_set_trj_1[esc_id] = taur_ref_k;
-                tor_set_trj_2[esc_id] = -taur_ref_k;
-                tor_set_trj[esc_id] = tor_set_trj_1[esc_id];
-                tor_set_zero[esc_id]=0.0;
+                    if(ec_cfg.trj_config_map["motor"].set_point[esc_id].count(set_point_type)>0){
+                        if(set_point_type=="position"){
+                            motors_trj_1[esc_id]=homing[esc_id];
+                            motors_trj_2[esc_id]=trajectory[esc_id];                 }
+                        else{
+                            motors_trj_1[esc_id]=ec_cfg.trj_config_map["motor"].set_point[esc_id][set_point_type];
+                            motors_trj_2[esc_id]=-1*motors_trj_1[esc_id];
+                        }
+                        motors_set_trj[esc_id]= motors_trj_1[esc_id];
+                        motors_set_ref[esc_id]= motors_start[esc_id];
+                    }
+                }
             }
         }
 
-        if(q_ref.empty()){
+        if(motors_set_ref.empty()){
             throw std::runtime_error("fatal error: motors references structure empty!");
         }
         // memory allocation
@@ -117,26 +124,23 @@ int main(int argc, char * const argv[])
             tau= time_elapsed_ms / set_trj_time_ms;
             // quintic poly 6t^5 - 15t^4 + 10t^3
             alpha = ((6*tau - 15)*tau + 10)*tau*tau*tau;
-            // interpolate
-            for (const auto &[esc_id, target] : q_set_trj){
-                int ctrl_mode= std::get<0>(motors_ref[esc_id]);
+           // interpolate
+            for (const auto &[esc_id, target] : motors_set_trj){
+                int ctrl_mode= ec_cfg.device_config_map[esc_id].control_mode_type;
+                motors_set_ref[esc_id] = motors_start[esc_id] + alpha * (target - motors_start[esc_id]);
                 if(ctrl_mode != iit::advr::Gains_Type_VELOCITY){
                     if(ctrl_mode == iit::advr::Gains_Type_POSITION ||
                         ctrl_mode == iit::advr::Gains_Type_IMPEDANCE){
-                        q_ref[esc_id] = q_start[esc_id] + alpha * (q_set_trj[esc_id] - q_start[esc_id]);
-                        std::get<1>(motors_ref[esc_id]) = q_ref[esc_id];
+                        std::get<1>(motors_ref[esc_id]) = motors_set_ref[esc_id];
                     }
-                    if(ctrl_mode != iit::advr::Gains_Type_POSITION ){
-                        tor_ref[esc_id] = tor_start[esc_id] + alpha * (tor_set_trj[esc_id] - tor_start[esc_id]);
-                        std::get<3>(motors_ref[esc_id]) = tor_ref[esc_id]; // current mode (0xCC or oxDD) or impedance
+                    if(ctrl_mode != iit::advr::Gains_Type_POSITION &&
+                        ctrl_mode != iit::advr::Gains_Type_IMPEDANCE){
+                        std::get<3>(motors_ref[esc_id]) = motors_set_ref[esc_id]; // current mode (0xCC or oxDD) or impedance
                     }
+                }else{
+                    std::get<2>(motors_ref[esc_id]) = motors_set_ref[esc_id];
                 }
-                else{
-                    qdot_ref[esc_id] = qdot_start[esc_id] + alpha * (qdot_set_trj[esc_id] - qdot_start[esc_id]);
-                    std::get<2>(motors_ref[esc_id]) = qdot_ref[esc_id];
-                }
-            }
-            
+            }            
             // ************************* SEND ALWAYS REFERENCES***********************************//
             client->set_motors_references(motors_ref);
             // ************************* SEND ALWAYS REFERENCES***********************************//
@@ -148,20 +152,13 @@ int main(int argc, char * const argv[])
                 start_time = time;
                 set_trj_time_ms = trj_time_ms;
 
-                q_set_trj = trajectory;
-                q_start = q_ref;
+                motors_start =   motors_set_ref;
+                motors_set_trj = motors_trj_2;
 
-                
-                qdot_start = qdot_ref;
-                tor_start = tor_ref;
-
-                if (trajectory_counter == ec_cfg.repeat_trj - 1){ // second last references
-                    qdot_set_trj = qdot_set_zero;
-                    tor_set_trj = tor_set_zero;
-                }
-                else{
-                    qdot_set_trj = qdot_set_trj_2;
-                    tor_set_trj = tor_set_trj_2;
+                if (trajectory_counter == ec_cfg.repeat_trj - 1){
+                    if(!motors_set_zero.empty()){
+                        motors_set_trj = motors_set_zero;
+                    }
                 }
 
                 tau = alpha = 0;
@@ -177,15 +174,9 @@ int main(int argc, char * const argv[])
                     STM_sts = "Homing";
                     start_time = time;
                     set_trj_time_ms = hm_time_ms;
-
-                    q_set_trj = homing;
-                    q_start = q_ref;
-
-                    qdot_set_trj = qdot_set_trj_1;
-                    qdot_start = qdot_ref;
-
-                    tor_set_trj = tor_set_trj_1;
-                    tor_start = tor_ref;
+                    
+                    motors_set_trj = motors_trj_1;
+                    motors_start =   motors_set_ref;
 
                     tau = alpha = 0;
                 }
