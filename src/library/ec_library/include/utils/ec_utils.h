@@ -63,8 +63,8 @@ private:
     void compute_absolute_path(std::string dir_path,std::string &file_path);
     void generate_fake_slave_info(const YAML::Node & ec_cfg_node);
     void device_config_map(const YAML::Node & device_config_node,const YAML::Node & robot_id_map_node);
-    void config_trj(const YAML::Node & robot_trajectory_node);
-
+    void config_trajectory(const YAML::Node & robot_control_node);      
+    std::vector<std::string> _device_type_vector={"motor","valve","pump"};  
 };
 
 #endif

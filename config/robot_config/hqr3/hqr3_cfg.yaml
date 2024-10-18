@@ -1,3 +1,0 @@
-robot_cfg:
-  motor_config_path: ${PWD}/motor/hqr3_pos3b.yaml 
-  valve_config_path: ${PWD}/valve/hqr3_force4d.yaml

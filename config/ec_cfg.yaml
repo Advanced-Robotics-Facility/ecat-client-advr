@@ -13,8 +13,7 @@ general:
 
 control:
   robot_id_map_path: &robot_id_map_path '${PWD}/robot_id_map/hqr3/hqr3_id_map.yaml' 
-  robot_config_path: ${PWD}/robot_config/hqr3/hqr3_cfg.yaml
-  robot_trajectory_path: ${PWD}/robot_trajectory/hqr3/hqr3_trajectory.yaml
+  robot_control_path: ${PWD}/robot_control/hqr3/hqr3_control.yaml
 
 simulation:
   imu_id: [102]
