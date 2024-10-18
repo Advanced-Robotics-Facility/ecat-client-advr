@@ -36,8 +36,10 @@ void EcWrapper::create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg)
         _client=_ec_utils->make_ec_iface();
         client=_client;
         _start_devices_vector.clear();
-        for(const auto&[id,device_cfg]:_ec_cfg.device_config_map){
-            _start_devices_vector.push_back(id);
+        for(const auto&[device_type,trj_cfg]:_ec_cfg.trj_config_map){
+            for(const auto&[id,set_point]:trj_cfg.set_point){
+                _start_devices_vector.push_back(id);
+            }
         }
     }catch(std::exception &ex){
         throw std::runtime_error(ex.what());
