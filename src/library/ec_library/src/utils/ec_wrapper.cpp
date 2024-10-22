@@ -159,9 +159,9 @@ void EcWrapper::stop_devices(void)
     }
 }
 
-void EcWrapper::init_references_maps()
+void EcWrapper::safe_init()
 {
-    
+    _client->read();
     // init motor reference map 
     _client->get_motor_status(motor_status_map);
     for (const auto &[esc_id, motor_rx_pdo] : motor_status_map){
@@ -204,6 +204,8 @@ void EcWrapper::init_references_maps()
     for (const auto &[esc_id, pump_rx_pdo] : pump_status_map){
         pump_reference_map[esc_id] = std::make_tuple(0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
+
+    _client->write();
 }
 
 void EcWrapper::read_devices_status()
@@ -223,6 +225,8 @@ bool EcWrapper::start_ec_sys(void)
     try{
         _client->start_client(_ec_cfg.period_ms); // IMPORTANT: moved here for UDP protocol
         
+        safe_init(); // safe initializaion of the references.
+
         autodetection();
 
         if(_ec_cfg.logging){
@@ -238,11 +242,7 @@ bool EcWrapper::start_ec_sys(void)
 #ifdef TEST_LIBRARY
         _ec_sys_started = true;
 #endif       
-        if(_ec_sys_started){
-            _client->read();
-            init_references_maps();
-        }
-        else{
+        if(!_ec_sys_started){
             stop_ec_sys();
         }
     }catch(std::exception &ex){

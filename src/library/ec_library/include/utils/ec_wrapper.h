@@ -43,7 +43,7 @@ private:
     bool start_devices(void);
     void stop_devices(void);
     void read_devices_status();
-    void init_references_maps();
+    void safe_init();
 
 
     EcUtils::EC_CONFIG _ec_cfg;
