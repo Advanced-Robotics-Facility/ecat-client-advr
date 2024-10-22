@@ -103,7 +103,7 @@ void EcGuiStart::create_ec_iface()
         _ec_wrapper_info.client.reset();
         try{
             _ec_wrapper_info.client = ec_utils->make_ec_iface();
-            _ec_wrapper_info.client->start_client(ec_cfg.period_ms,ec_cfg.logging);
+            _ec_wrapper_info.client->start_client(ec_cfg.period_ms);
         }
         catch ( std::exception &e ){
             QMessageBox msgBox;

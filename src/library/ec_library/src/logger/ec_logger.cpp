@@ -93,26 +93,11 @@ void EcLogger::stop_mat_logger()
     _appender.reset();
 }
 
-
-void EcLogger::log_motors_ref(const MotorReferenceMap& motors_ref)
-{
-    if(_logger_map.count("motor_reference_logger")>0){
-        auto logger_info = _logger_map["motor_reference_logger"];
-        for ( const auto &[esc_id,motor_tx_pdo] : motors_ref) {
-            if(logger_info->logger_entry.count(esc_id)>0){
-                if(MotorPdoTx::make_vector_from_tuple(motor_tx_pdo,logger_info->logger_row[esc_id])){
-                    logger_info->logger->add(logger_info->logger_entry[esc_id],logger_info->logger_row[esc_id]);
-                }
-            }
-        }
-    }
-}
-
-void EcLogger::log_motors_sts(const MotorStatusMap& motors_sts_map)
+void EcLogger::log_motor_status(const MotorStatusMap& motor_status_map)
 {
     if(_logger_map.count("motor_status_logger")>0){
         auto logger_info = _logger_map["motor_status_logger"];
-        for ( const auto &[esc_id,motor_rx_pdo] : motors_sts_map) {
+        for ( const auto &[esc_id,motor_rx_pdo] : motor_status_map) {
             if(logger_info->logger_entry.count(esc_id)>0){
                 if(MotorPdoRx::make_vector_from_tuple(motor_rx_pdo,logger_info->logger_row[esc_id])){
                     logger_info->logger->add(logger_info->logger_entry[esc_id],logger_info->logger_row[esc_id]);
@@ -122,11 +107,26 @@ void EcLogger::log_motors_sts(const MotorStatusMap& motors_sts_map)
     }
 }
 
-void EcLogger::log_pow_sts(const PwrStatusMap& pow_sts_map)
+void EcLogger::log_motor_reference(const MotorReferenceMap& motor_reference_map)
+{
+    if(_logger_map.count("motor_reference_logger")>0){
+        auto logger_info = _logger_map["motor_reference_logger"];
+        for ( const auto &[esc_id,motor_tx_pdo] : motor_reference_map) {
+            if(logger_info->logger_entry.count(esc_id)>0){
+                if(MotorPdoTx::make_vector_from_tuple(motor_tx_pdo,logger_info->logger_row[esc_id])){
+                    logger_info->logger->add(logger_info->logger_entry[esc_id],logger_info->logger_row[esc_id]);
+                }
+            }
+        }
+    }
+}
+
+
+void EcLogger::log_pow_status(const PwrStatusMap& pow_status_map)
 {
     if(_logger_map.count("pow_status_logger")>0){
         auto logger_info = _logger_map["pow_status_logger"];
-        for ( const auto &[esc_id,pow_rx_pdo] : pow_sts_map) {
+        for ( const auto &[esc_id,pow_rx_pdo] : pow_status_map) {
             if(logger_info->logger_entry.count(esc_id)>0){
                 if(PowPdoRx::make_vector_from_tuple(pow_rx_pdo,logger_info->logger_row[esc_id])){
                     logger_info->logger->add(logger_info->logger_entry[esc_id],logger_info->logger_row[esc_id]);
@@ -136,11 +136,11 @@ void EcLogger::log_pow_sts(const PwrStatusMap& pow_sts_map)
     }
 }
 
-void EcLogger::log_ft_sts(const FtStatusMap& ft_sts_map)
+void EcLogger::log_ft_status(const FtStatusMap& ft_status_map)
 {
     if(_logger_map.count("ft_status_logger")>0){
         auto logger_info = _logger_map["ft_status_logger"];
-        for ( const auto &[esc_id,ft_rx_pdo] : ft_sts_map) {
+        for ( const auto &[esc_id,ft_rx_pdo] : ft_status_map) {
             if(logger_info->logger_entry.count(esc_id)>0){
                 if(FtPdoRx::make_vector_from_tuple(ft_rx_pdo,logger_info->logger_row[esc_id])){
                     logger_info->logger->add(logger_info->logger_entry[esc_id],logger_info->logger_row[esc_id]);
@@ -150,11 +150,11 @@ void EcLogger::log_ft_sts(const FtStatusMap& ft_sts_map)
     }
 }
 
-void EcLogger::log_imu_sts(const ImuStatusMap& imu_sts_map)
+void EcLogger::log_imu_status(const ImuStatusMap& imu_status_map)
 {
     if(_logger_map.count("imu_status_logger")>0){
         auto logger_info = _logger_map["imu_status_logger"];
-        for ( const auto &[esc_id,imu_rx_pdo] : imu_sts_map) {
+        for ( const auto &[esc_id,imu_rx_pdo] : imu_status_map) {
             if(logger_info->logger_entry.count(esc_id)>0){
                 if(ImuPdoRx::make_vector_from_tuple(imu_rx_pdo,logger_info->logger_row[esc_id])){
                     logger_info->logger->add(logger_info->logger_entry[esc_id],logger_info->logger_row[esc_id]);
@@ -164,25 +164,11 @@ void EcLogger::log_imu_sts(const ImuStatusMap& imu_sts_map)
     }
 }
 
-void EcLogger::log_valve_ref(const ValveReferenceMap& valves_ref)
-{
-    if(_logger_map.count("valve_reference_logger")>0){
-        auto logger_info = _logger_map["valve_reference_logger"];
-        for ( const auto &[esc_id,valve_tx_pdo] : valves_ref) {
-            if(logger_info->logger_entry.count(esc_id)>0){
-                if(ValvePdoTx::make_vector_from_tuple(valve_tx_pdo,logger_info->logger_row[esc_id])){
-                    logger_info->logger->add(logger_info->logger_entry[esc_id],logger_info->logger_row[esc_id]);
-                }
-            }
-        }
-    }
-}
-
-void EcLogger::log_valve_sts(const ValveStatusMap& valve_sts_map)
+void EcLogger::log_valve_status(const ValveStatusMap& valve_status_map)
 {
     if(_logger_map.count("valve_status_logger")>0){
         auto logger_info = _logger_map["valve_status_logger"];
-        for ( const auto &[esc_id,valve_rx_pdo] : valve_sts_map) {
+        for ( const auto &[esc_id,valve_rx_pdo] : valve_status_map) {
             if(logger_info->logger_entry.count(esc_id)>0){
                 if(ValvePdoRx::make_vector_from_tuple(valve_rx_pdo,logger_info->logger_row[esc_id])){
                     logger_info->logger->add(logger_info->logger_entry[esc_id],logger_info->logger_row[esc_id]);
@@ -192,13 +178,13 @@ void EcLogger::log_valve_sts(const ValveStatusMap& valve_sts_map)
     }
 }
 
-void EcLogger::log_pump_ref(const PumpReferenceMap& pumps_ref)
+void EcLogger::log_valve_reference(const ValveReferenceMap& valve_reference_map)
 {
-    if(_logger_map.count("pump_reference_logger")>0){
-        auto logger_info = _logger_map["pump_reference_logger"];
-        for ( const auto &[esc_id,pump_tx_pdo] : pumps_ref) {
+    if(_logger_map.count("valve_reference_logger")>0){
+        auto logger_info = _logger_map["valve_reference_logger"];
+        for ( const auto &[esc_id,valve_tx_pdo] : valve_reference_map) {
             if(logger_info->logger_entry.count(esc_id)>0){
-                if(PumpPdoTx::make_vector_from_tuple(pump_tx_pdo,logger_info->logger_row[esc_id])){
+                if(ValvePdoTx::make_vector_from_tuple(valve_tx_pdo,logger_info->logger_row[esc_id])){
                     logger_info->logger->add(logger_info->logger_entry[esc_id],logger_info->logger_row[esc_id]);
                 }
             }
@@ -206,13 +192,27 @@ void EcLogger::log_pump_ref(const PumpReferenceMap& pumps_ref)
     }
 }
 
-void EcLogger::log_pump_sts(const PumpStatusMap& pump_sts_map)
+void EcLogger::log_pump_status(const PumpStatusMap& pump_status_map)
 {
     if(_logger_map.count("pump_status_logger")>0){
         auto logger_info = _logger_map["pump_status_logger"];
-        for ( const auto &[esc_id,pump_rx_pdo] : pump_sts_map) {
+        for ( const auto &[esc_id,pump_rx_pdo] : pump_status_map) {
             if(logger_info->logger_entry.count(esc_id)>0){
                 if(PumpPdoRx::make_vector_from_tuple(pump_rx_pdo,logger_info->logger_row[esc_id])){
+                    logger_info->logger->add(logger_info->logger_entry[esc_id],logger_info->logger_row[esc_id]);
+                }
+            }
+        }
+    }
+}
+
+void EcLogger::log_pump_reference(const PumpReferenceMap& pump_reference_map)
+{
+    if(_logger_map.count("pump_reference_logger")>0){
+        auto logger_info = _logger_map["pump_reference_logger"];
+        for ( const auto &[esc_id,pump_tx_pdo] : pump_reference_map) {
+            if(logger_info->logger_entry.count(esc_id)>0){
+                if(PumpPdoTx::make_vector_from_tuple(pump_tx_pdo,logger_info->logger_row[esc_id])){
                     logger_info->logger->add(logger_info->logger_entry[esc_id],logger_info->logger_row[esc_id]);
                 }
             }

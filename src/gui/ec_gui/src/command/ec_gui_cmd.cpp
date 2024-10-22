@@ -199,7 +199,6 @@ void EcGuiCmd::launch_cmd_message(QString message)
 
 void EcGuiCmd::fill_start_stop_motor()
 {
-    _motors_start.clear();
     _brake_cmds.clear();
     _motors_selected = false;
     for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
@@ -218,7 +217,7 @@ void EcGuiCmd::fill_start_stop_motor()
                     _gains.push_back(_slider_map.motor_sw_map[slave_id]->get_spinbox_value(6));
                     _gains.push_back(_slider_map.motor_sw_map[slave_id]->get_spinbox_value(7));
                     _gains.push_back(_slider_map.motor_sw_map[slave_id]->get_spinbox_value(8));
-                    _motors_start.push_back(std::make_tuple(slave_id,_ctrl_cmd,_gains));
+                    _start_devices.push_back(std::make_tuple(slave_id,_ctrl_cmd,_gains));
                 }
                 
                 if(false){
@@ -231,19 +230,7 @@ void EcGuiCmd::fill_start_stop_motor()
 
 void EcGuiCmd::fill_start_stop_valve()
 {
-    _start_stop_valve.clear();
     _valves_selected = false;
-    for (auto& [slave_id, slider_wid]:_slider_map.valve_sw_map){
-        if(slider_wid->is_slider_enabled()){
-            _valves_selected |= true;
-            if(_ctrl_cmd_type==ClientCmdType::STOP){
-                _start_stop_valve[slave_id]={std::make_tuple("ctrl_status_cmd","90")};
-            }
-            else{
-                _start_stop_valve[slave_id]={std::make_tuple("ctrl_status_cmd","165")};
-            }
-        }
-    }
 }
 
 void EcGuiCmd::fill_start_stop_pump()
@@ -289,10 +276,10 @@ bool EcGuiCmd::braking_cmd_req()
 
 void EcGuiCmd::onApplyCmdMotors()
 {
-    if(_motors_selected){
+    if(!_start_devices.empty()){
     //********** START MOTORS **********//
-        if(!_motors_start.empty()){
-            _device_start_req =_client->start_motors(_motors_start);
+        if(!_start_devices.empty()){
+            _device_start_req =_client->start_devices(_start_devices);
 #ifdef TEST_GUI 
             _device_start_req=true;
 #endif 
@@ -325,7 +312,7 @@ void EcGuiCmd::onApplyCmdMotors()
         
         if(!_device_start_req){
             //********** STOP MOTORS **********//
-            if(!_client->stop_motors()){
+            if(!_client->stop_devices()){
                 _cmd_message.clear();
                 _cmd_message="Cannot perform the stop command on the motor(s) requested";
             }
@@ -339,11 +326,8 @@ void EcGuiCmd::onApplyCmdValves()
 {
     if(_valves_selected){
     //********** START/STOP VALVES **********//
-        if(!_start_stop_valve.empty()){
-            bool valve_cmd_req = true;
-            for (auto& [slave_id, wr_sdo]:_start_stop_valve){
-                valve_cmd_req &= _client->set_wr_sdo(slave_id,{},wr_sdo);
-            }
+        if(false){
+            bool valve_cmd_req = false;
 #ifdef TEST_GUI 
             valve_cmd_req=true;
 #endif 
@@ -392,11 +376,12 @@ void EcGuiCmd::onApplyCmdReleased()
         // @NOTE to be tested.
         _ec_gui_slider->reset_sliders();
         
+        _start_devices.clear();
         _device_start_req=false;
         _send_ref=false;
         
         fill_start_stop_motor();
-        fill_start_stop_valve();
+        //fill_start_stop_valve();
         fill_start_stop_pump();
         
         if(!_motors_selected && 
@@ -408,7 +393,7 @@ void EcGuiCmd::onApplyCmdReleased()
         else{
             
             onApplyCmdMotors();
-            onApplyCmdValves();
+            //onApplyCmdValves();
             onApplyCmdPumps();
 
             if(_device_start_req){

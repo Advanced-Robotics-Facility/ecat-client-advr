@@ -16,7 +16,7 @@ public:
     EcUDP(std::string host_address,uint32_t host_port);
     ~EcUDP();
 
-    void start_client(uint32_t period_ms,bool logging) final;
+    void start_client(uint32_t period_ms) final;
     void stop_client() final ;
     void set_loop_time(uint32_t period_ms) final;
     

@@ -2,8 +2,6 @@
 
 EcIface::EcIface()
 {
-    _logging=false;
-
     _client_status.status=ClientStatusEnum::IDLE;
     _client_status.run_loop=false;
 
@@ -77,31 +75,6 @@ EcIface::CLIENT_THREAD_INFO EcIface::get_client_thread_info()
     return _client_thread_info;
 }
 
-void EcIface::start_logging()
-{
-
-}
-
-void EcIface::stop_logging()
-{
-
-}
-
-void EcIface::log()
-{
-    /*_ec_logger->log_motors_sts(_motor_status_map);
-    _ec_logger->log_pow_sts(_pow_status_map);
-    _ec_logger->log_ft_sts(_ft_status_map);
-    _ec_logger->log_imu_sts(_imu_status_map);
-    _ec_logger->log_valve_sts(_valve_status_map);
-    _ec_logger->log_pump_sts(_pump_status_map);
-
-
-    _ec_logger->log_motors_ref(_motors_references); 
-    _ec_logger->log_valve_ref(_valves_references);
-    _ec_logger->log_pump_ref(_pumps_references);*/
-}
-
 void EcIface::set_slaves_info(SSI slave_info)
 {
     _fake_slave_info=slave_info;
@@ -133,22 +106,22 @@ void EcIface::read()
 void EcIface::write()
 {
     ///note: only one thread is allowed to push data
-    _motors_references_queue.push(_motors_references);
-    _valves_references_queue.push(_valves_references);
-    _pumps_references_queue.push(_pumps_references);
+    _motor_reference_queue.push(_motor_reference_map);
+    _valve_reference_queue.push(_valve_reference_map);
+    _pump_reference_queue.push(_pump_reference_map);
 
     wake_client_thread();
 }
 
-void EcIface::get_motors_status(MotorStatusMap &motor_status_map)
+void EcIface::get_motor_status(MotorStatusMap &motor_status_map)
 {
     motor_status_map= _motor_status_map;
 }
 
-void EcIface::set_motors_references(const MotorReferenceMap motors_references)
+void EcIface::set_motor_reference(const MotorReferenceMap motor_reference_map)
 {
-    if(check_maps(_motors_references,motors_references,"motor")){
-        _motors_references = motors_references;
+    if(check_maps(_motor_reference_map,motor_reference_map,"motor")){
+        _motor_reference_map = motor_reference_map;
     }
 }
 
@@ -173,10 +146,10 @@ void EcIface::get_valve_status(ValveStatusMap &valve_status_map)
     valve_status_map= _valve_status_map;
 }
 
-void EcIface::set_valves_references(const ValveReferenceMap valves_references)
+void EcIface::set_valve_reference(const ValveReferenceMap valve_reference_map)
 {
-    if(check_maps(_valves_references,valves_references,"valve")){
-        _valves_references=valves_references;
+    if(check_maps(_valve_reference_map,valve_reference_map,"valve")){
+        _valve_reference_map=valve_reference_map;
     }
 }
 
@@ -185,10 +158,10 @@ void EcIface::get_pump_status(PumpStatusMap &pump_status_map)
     pump_status_map= _pump_status_map;
 }
 
-void EcIface::set_pumps_references(const PumpReferenceMap pumps_references)
+void EcIface::set_pump_reference(const PumpReferenceMap pump_reference_map)
 {
-    if(check_maps(_pumps_references,pumps_references,"pump")){
-        _pumps_references=pumps_references;
+    if(check_maps(_pump_reference_map,pump_reference_map,"pump")){
+        _pump_reference_map=pump_reference_map;
     }
 }
  

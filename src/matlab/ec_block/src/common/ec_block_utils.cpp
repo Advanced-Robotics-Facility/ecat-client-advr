@@ -100,7 +100,7 @@ bool EcBlockUtils::start_robot(std::string &error_info)
     _robot_started = true;
     if(!motors_start.empty())
     {
-        if(_client->start_motors(motors_start))
+        if(_client->start_devices(motors_start))
         {
             if(!brake_cmds.empty())
             {
@@ -177,18 +177,12 @@ void EcBlockUtils::retrieve_motor_info(std::vector<int> &joint_id,
 {
     try{
         auto ec_client_utils=retrieve_cfg();
-       
-        auto motor_id_v = ec_client_utils->get_ec_cfg().motor_id;
-        auto home_map= ec_client_utils->get_ec_cfg().homing_position;
-        auto trj_map = ec_client_utils->get_ec_cfg().trajectory;
-        
-//         ctrl_mode= ec_client_utils->get_ec_cfg().control_mode_type;
-//         gains= ec_client_utils->get_ec_cfg().gains;
-
-        for (const auto &motor_id : motor_id_v){
-            joint_id.push_back(motor_id);
-            q_home.push_back(home_map[motor_id]);
-            q_trj.push_back(trj_map[motor_id]);
+        for(const auto&[id,type,pos]:ec_client_utils->get_ec_cfg().fake_slave_info){
+            if(ec_motors.count(id)){
+                joint_id.push_back(id);
+                q_home.push_back(ec_client_utils->get_ec_cfg().trj_config_map["motor"].homing[id]);
+                q_trj.push_back (ec_client_utils->get_ec_cfg().trj_config_map["motor"].trajectory[id]);
+            }
         }
     }catch(std::exception &ex){
         error_info= ex.what();
@@ -200,7 +194,11 @@ void EcBlockUtils::retrieve_imu_info(std::vector<int> &imu_id,std::string &error
 {
     try{
         auto ec_client_utils=retrieve_cfg();
-        imu_id = ec_client_utils->get_ec_cfg().imu_id;
+        for(const auto&[id,type,pos]:ec_client_utils->get_ec_cfg().fake_slave_info){
+            if(type==iit::ecat::IMU_ANY){
+                imu_id.push_back(id);
+            }
+        }
     }catch(std::exception &ex){
         error_info= ex.what();
     }
@@ -210,7 +208,11 @@ void EcBlockUtils::retrieve_ft_info(std::vector<int> &ft_id,std::string &error_i
 {
     try{
         auto ec_client_utils=retrieve_cfg();
-        ft_id = ec_client_utils->get_ec_cfg().ft_id;
+        for(const auto&[id,type,pos]:ec_client_utils->get_ec_cfg().fake_slave_info){
+            if(type==iit::ecat::FT6_MSP432){
+                ft_id.push_back(id);
+            }
+        }
     }catch(std::exception &ex){
         error_info= ex.what();
     }
@@ -220,7 +222,11 @@ void EcBlockUtils::retrieve_pow_info(std::vector<int> &pow_id,std::string &error
 {
     try{
         auto ec_client_utils=retrieve_cfg();
-        pow_id = ec_client_utils->get_ec_cfg().pow_id;
+        for(const auto&[id,type,pos]:ec_client_utils->get_ec_cfg().fake_slave_info){
+            if(type==iit::ecat::POW_F28M36_BOARD){
+                pow_id.push_back(id);
+            }
+        }
     }catch(std::exception &ex){
         error_info= ex.what();
     }
@@ -239,7 +245,7 @@ bool EcBlockUtils::ec_sense(MotorStatusMap &motors_status_map,
     }
     
     motors_status_map.clear();
-    _client->get_motors_status(motors_status_map);
+    _client->get_motor_status(motors_status_map);
     
     ft6_status_map.clear();
     _client->get_ft_status(ft6_status_map);
@@ -265,7 +271,7 @@ bool EcBlockUtils::ec_move(RefFlags flag,MotorReferenceMap motors_ref)
     }
     
     _motors_ref = motors_ref;
-    _client->set_motors_references(_motors_ref);
+    _client->set_motor_reference(_motors_ref);
     
     return true;
 }

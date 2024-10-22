@@ -37,7 +37,7 @@ void EcUDP::set_loop_time(uint32_t period_ms)
     set_period(period_ms_time);
 }
 
-void EcUDP::start_client(uint32_t period_ms,bool logging)
+void EcUDP::start_client(uint32_t period_ms)
 {
 
     _consoleLog->info(" EtherCAT Client UDP Started " + make_daytime_string());
@@ -68,14 +68,10 @@ void EcUDP::start_client(uint32_t period_ms,bool logging)
         // leave the periodicActivity alive with a period changed
     }
 
-    _logging=logging;
     SSI slave_info;
     if(retrieve_slaves_info(slave_info)){
         try{
             esc_factory(slave_info);
-            if(_logging){
-                start_logging();
-            }
         } catch ( std::exception &e ) {
             DPRINTF ( "Fatal Error: %s\n", e.what() );
             stop_client();
@@ -91,8 +87,6 @@ void EcUDP::stop_client()
         
         disconnect();
         
-        stop_logging();
-
         _client_status.run_loop=false;
         _client_status.status=ClientStatusEnum::NOT_ALIVE;
     }

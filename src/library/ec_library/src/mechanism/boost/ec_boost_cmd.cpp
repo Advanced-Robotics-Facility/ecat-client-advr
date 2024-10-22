@@ -428,13 +428,13 @@ void EcBoostCmd::feed_motors()
     if(_client_status.status!=ClientStatusEnum::NOT_ALIVE){
         if(_client_status.status==ClientStatusEnum::DEVICES_STARTED||
            _client_status.status==ClientStatusEnum::DEVICES_CTRL){
-            if(_motors_references_queue.read_available()>0){
+            if(_motor_reference_queue.read_available()>0){
                 
-                while(_motors_references_queue.pop(_internal_motors_references))
+                while(_motor_reference_queue.pop(_internal_motor_reference_map))
                 {}
          
                 std::vector<MR> mot_ref_v;
-                for ( const auto &[bId,motor_tx] : _internal_motors_references ) {
+                for ( const auto &[bId,motor_tx] : _internal_motor_reference_map ) {
                     auto ctrl_type=std::get<0>(motor_tx);
                     if(ctrl_type!=0x00){
                         mot_ref_v.push_back(std::tuple_cat(std::make_tuple(bId),motor_tx));

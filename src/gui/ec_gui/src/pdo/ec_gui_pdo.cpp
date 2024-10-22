@@ -215,7 +215,7 @@ void EcGuiPdo::read()
 
 void EcGuiPdo::read_motor_status()
 {
-    _client->get_motors_status(_motor_status_map);
+    _client->get_motor_status(_motor_status_map);
     if(!_motor_status_map.empty()){
         for ( const auto &[esc_id, motor_rx_pdo] : _motor_status_map){
             std::string esc_id_name="motor_id_"+std::to_string(esc_id);
@@ -492,7 +492,7 @@ void EcGuiPdo::write_motor_pdo()
     }
 
     if(!_motors_ref.empty()){
-       _client->set_motors_references(_motors_ref);
+       _client->set_motor_reference(_motors_ref);
     }
 }
 
@@ -526,7 +526,7 @@ void EcGuiPdo::clear_motor_ref()
     }
 
     if(!_motors_ref.empty()){
-       _client->set_motors_references(_motors_ref);
+       _client->set_motor_reference(_motors_ref);
     }
     _motors_ref.clear();
 }
@@ -565,7 +565,7 @@ void EcGuiPdo::write_valve_pdo()
     }
 
     if(!_valves_ref.empty()){
-       _client->set_valves_references(_valves_ref);
+       _client->set_valve_reference(_valves_ref);
     }
 }
 
@@ -599,7 +599,7 @@ void EcGuiPdo::clear_valve_ref()
     }
 
     if(!_valves_ref.empty()){
-       _client->set_valves_references(_valves_ref);
+       _client->set_valve_reference(_valves_ref);
     }
     _valves_ref.clear();
 }
@@ -637,7 +637,7 @@ void EcGuiPdo::write_pump_pdo()
     }
 
     if(!_pumps_ref.empty()){
-       _client->set_pumps_references(_pumps_ref);
+       _client->set_pump_reference(_pumps_ref);
     }
 }
 
@@ -672,7 +672,7 @@ void EcGuiPdo::clear_pump_ref()
     }
 
     if(!_pumps_ref.empty()){
-       _client->set_pumps_references(_pumps_ref);
+       _client->set_pump_reference(_pumps_ref);
     }
     _pumps_ref.clear();
 }

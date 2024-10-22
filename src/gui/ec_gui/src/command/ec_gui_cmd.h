@@ -45,7 +45,7 @@ private:
 
   ClientCmdType _ctrl_cmd_type;
 
-  MST _motors_start = {};
+  DST _start_devices = {};
   PAC _brake_cmds = {};
   std::vector<float> _gains;
   float _ctrl_cmd;
@@ -54,7 +54,6 @@ private:
   QString _cmd_message;
   bool _device_start_req,_send_ref;
   bool _motors_selected,_valves_selected,_pumps_selected;
-  std::map<int,WR_SDO> _start_stop_valve;
 
   QComboBox * _fieldtype_combobox;
   QComboBox * _mode_type_combobox;

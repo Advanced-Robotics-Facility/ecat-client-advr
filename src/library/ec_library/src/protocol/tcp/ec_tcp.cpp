@@ -35,9 +35,6 @@ void EcTCP::th_init ( void * )
         stop_client();
     }
     else{
-        if(_logging){
-            start_logging();
-        }
         _client_thread_info.cpu=sched_getcpu();
         DPRINTF("Client thread initialized, ");
         DPRINTF("id: %ld cpu: %d, priority %d\n",pthread_self(),_client_thread_info.cpu,_client_thread_info.priority);
@@ -53,14 +50,12 @@ void EcTCP::set_loop_time(uint32_t period_ms)
 {
    stop_client();
    
-   start_client(period_ms,_logging);
+   start_client(period_ms);
 }
 
-void EcTCP::start_client(uint32_t period_ms,bool logging)
+void EcTCP::start_client(uint32_t period_ms)
 {
     _period_ns = 1000000*period_ms;
-
-    _logging=logging;
 
     SSI slave_info;
     if(retrieve_slaves_info(slave_info)){
@@ -80,8 +75,6 @@ void EcTCP::stop_client()
     stop();
     
     join();
-    
-    stop_logging();
 
     _client_status.run_loop=_run_loop;
 }

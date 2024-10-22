@@ -28,15 +28,15 @@ public:
     void start_mat_logger();
     void stop_mat_logger();
     
-    void log_motors_ref(const MotorReferenceMap& motors_ref);
-    void log_motors_sts(const MotorStatusMap& motors_sts_map);
-    void log_pow_sts(const PwrStatusMap& pow_sts_map);
-    void log_ft_sts(const FtStatusMap& ft_sts_map);
-    void log_imu_sts(const ImuStatusMap& imu_sts_map);
-    void log_valve_sts(const ValveStatusMap& valve_sts_map);
-    void log_valve_ref(const ValveReferenceMap& valves_ref);
-    void log_pump_sts(const PumpStatusMap& pump_sts_map);
-    void log_pump_ref(const PumpReferenceMap& pumps_ref);
+    void log_motor_status(const MotorStatusMap& motor_status_map);
+    void log_motor_reference(const MotorReferenceMap& motor_reference_map);
+    void log_pow_status(const PwrStatusMap& pow_status_map);
+    void log_ft_status(const FtStatusMap& ft_status_map);
+    void log_imu_status(const ImuStatusMap& imu_status_map);
+    void log_valve_status(const ValveStatusMap& valve_status_map);
+    void log_valve_reference(const ValveReferenceMap& valve_reference_map);
+    void log_pump_status(const PumpStatusMap& pump_status_map);
+    void log_pump_reference(const PumpReferenceMap& pump_reference_map);
     
 private: 
     void create_logger(std::string logger_name,

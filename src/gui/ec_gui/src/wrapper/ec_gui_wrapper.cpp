@@ -264,7 +264,7 @@ void EcGuiWrapper::start_record()
         }
         else{
             _record_started = true;
-            _ec_wrapper_info.client->start_logging();
+            //_ec_wrapper_info.client->start_logging();
         }
     }
 }
@@ -276,7 +276,7 @@ void EcGuiWrapper::stop_record()
     
     if(_record_started){
         _record_started = false;
-        _ec_wrapper_info.client->stop_logging();
+        //_ec_wrapper_info.client->stop_logging();
     }
 }
 
@@ -318,7 +318,7 @@ void EcGuiWrapper::receive()
 {
     if(_ec_wrapper_info.client->get_client_status().run_loop){
         _ec_wrapper_info.client->read();
-        _ec_wrapper_info.client->log();
+        //_ec_wrapper_info.client->log();
         _ec_gui_pdo->read();
     }
     else{

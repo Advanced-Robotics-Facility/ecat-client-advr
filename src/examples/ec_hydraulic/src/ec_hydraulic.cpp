@@ -205,7 +205,7 @@ int main(int argc, char *const argv[])
                     }
                 }
                 // ************************* SEND ALWAYS REFERENCES***********************************//
-                client->set_pumps_references(pump_reference_map);
+                client->set_pump_reference(pump_reference_map);
                 // ************************* SEND ALWAYS REFERENCES***********************************//
             }
 
@@ -227,7 +227,7 @@ int main(int argc, char *const argv[])
                     }
                 }
                 // ************************* SEND ALWAYS REFERENCES***********************************//
-                client->set_valves_references(valve_reference_map);
+                client->set_valve_reference(valve_reference_map);
                 // ************************* SEND ALWAYS REFERENCES***********************************//
             }
 
@@ -254,7 +254,7 @@ int main(int argc, char *const argv[])
                     }
                 }
                 // ************************* SEND ALWAYS REFERENCES***********************************//
-                client->set_motors_references(motor_reference_map);
+                client->set_motor_reference(motor_reference_map);
                 // ************************* SEND ALWAYS REFERENCES***********************************//
             }
 
@@ -403,7 +403,7 @@ int main(int argc, char *const argv[])
             }
 
             client->write();
-            client->log();
+            //ec_wrapper.log_ec_sys();
             
             const auto now = std::chrono::high_resolution_clock::now();
 

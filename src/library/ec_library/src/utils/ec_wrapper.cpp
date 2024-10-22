@@ -153,7 +153,7 @@ void EcWrapper::init_references_maps()
 {
     
     // init motor reference map 
-    _client->get_motors_status(motor_status_map);
+    _client->get_motor_status(motor_status_map);
     for (const auto &[esc_id, motor_rx_pdo] : motor_status_map){
         auto motor_pos =    std::get<1>(motor_rx_pdo);
         motor_reference_map[esc_id] = std::make_tuple(  _ec_cfg.device_config_map[esc_id].control_mode_type,  // ctrl_type
@@ -174,8 +174,19 @@ void EcWrapper::init_references_maps()
     // init valve reference map 
     _client->get_valve_status(valve_status_map);
     for (const auto &[esc_id, valve_rx_pdo] : valve_status_map){
-        auto enc_pos =    std::get<0>(valve_rx_pdo);
-        valve_reference_map[esc_id] = std::make_tuple(0, enc_pos, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        auto enc_pos =    std::get<0>(valve_rx_pdo);            
+        valve_reference_map[esc_id] = std::make_tuple(  0,                                                    // current_ref
+                                                        enc_pos,                                              // position_ref
+                                                        0,                                                    // force_ref
+                                                        _ec_cfg.device_config_map[esc_id].gains[0],           // gain_1
+                                                        _ec_cfg.device_config_map[esc_id].gains[1],           // gain_2
+                                                        _ec_cfg.device_config_map[esc_id].gains[2],           // gain_3
+                                                        _ec_cfg.device_config_map[esc_id].gains[3],           // gain_4
+                                                        _ec_cfg.device_config_map[esc_id].gains[4],           // gain_5 
+                                                        0,                                                    // fault_ack
+                                                        0,                                                    // ts
+                                                        0,                                                    // op_idx_aux
+                                                        0);                                                   // aux
     }
 
     // init valve reference map
@@ -190,7 +201,7 @@ bool EcWrapper::start_ec_sys(void)
 {
     bool ec_sts_started=true;
     try{
-        _client->start_client(_ec_cfg.period_ms,_ec_cfg.logging); // IMPORTANT: moved here for UDP protocol
+        _client->start_client(_ec_cfg.period_ms); // IMPORTANT: moved here for UDP protocol
         
         autodetection();
 
@@ -226,17 +237,17 @@ void EcWrapper::stop_ec_sys(void)
 
 void EcWrapper::log_ec_sys()
 {
-    _ec_logger->log_motors_sts(motor_status_map);
-    _ec_logger->log_pow_sts(pow_status_map);
-    _ec_logger->log_ft_sts(ft_status_map);
-    _ec_logger->log_imu_sts(imu_status_map);
-    _ec_logger->log_valve_sts(valve_status_map);
-    _ec_logger->log_pump_sts(pump_status_map);
+    _ec_logger->log_motor_status(motor_status_map);
+    _ec_logger->log_pow_status(pow_status_map);
+    _ec_logger->log_ft_status(ft_status_map);
+    _ec_logger->log_imu_status(imu_status_map);
+    _ec_logger->log_valve_status(valve_status_map);
+    _ec_logger->log_pump_status(pump_status_map);
 
 
-    _ec_logger->log_motors_ref(motor_reference_map); 
-    _ec_logger->log_valve_ref(valve_reference_map);
-    _ec_logger->log_pump_ref(pump_reference_map);
+    _ec_logger->log_motor_reference(motor_reference_map); 
+    _ec_logger->log_valve_reference(valve_reference_map);
+    _ec_logger->log_pump_reference(pump_reference_map);
 }
 
 

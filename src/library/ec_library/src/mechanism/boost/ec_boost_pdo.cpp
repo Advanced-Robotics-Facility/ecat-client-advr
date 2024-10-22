@@ -10,7 +10,7 @@ void EcBoostPdo::esc_factory(SSI slave_descr)
                 case iit::ecat::SYNAPTICON_v5_0:
                 case iit::ecat::SYNAPTICON_v5_1:{
                     _internal_motor_status_map[id]=_motor_status_map[id]={0,0,0,0,0,0,0,0,0,0,0,0};
-                    _internal_motors_references[id]=_motors_references[id]={0,0,0,0,0,0,0,0,0,0,0,0};
+                    _internal_motor_reference_map[id]=_motor_reference_map[id]={0,0,0,0,0,0,0,0,0,0,0,0};
                 }break;
                 case iit::ecat::FT6_MSP432:{
                     _internal_ft_status_map[id]=_ft_status_map[id]={0,0,0,0,0,0,0,0};
@@ -23,11 +23,11 @@ void EcBoostPdo::esc_factory(SSI slave_descr)
                 }break;
                 case iit::ecat::HYQ_KNEE:{
                     _internal_valve_status_map[id]=_valve_status_map[id]={0,0,0,0,0,0,0,0,0,0,0,0,0};
-                    _internal_valves_references[id]=_valves_references[id]={0,0,0,0,0,0,0,0,0,0,0,0};
+                    _internal_valve_reference_map[id]=_valve_reference_map[id]={0,0,0,0,0,0,0,0,0,0,0,0};
                 }break;
                 case iit::ecat::HYQ_HPU:{
                     _internal_pump_status_map[id]=_pump_status_map[id]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-                    _internal_pumps_references[id]=_pumps_references[id]={0,0,0,0,0,0,0,0,0};
+                    _internal_pump_reference_map[id]=_pump_reference_map[id]={0,0,0,0,0,0,0,0,0};
                 }break;
                 
                 default:

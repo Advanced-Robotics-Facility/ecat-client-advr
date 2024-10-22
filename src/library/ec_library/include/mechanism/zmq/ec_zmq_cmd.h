@@ -11,7 +11,7 @@ public:
     EcZmqCmd(std::string protocol,std::string host_address,uint32_t host_port);
     ~EcZmqCmd();
 
-    virtual void start_client(uint32_t period_ms,bool logging) = 0;
+    virtual void start_client(uint32_t period_ms) = 0;
     virtual void stop_client(void) = 0;
     virtual void set_loop_time(uint32_t period_ms) = 0;
 

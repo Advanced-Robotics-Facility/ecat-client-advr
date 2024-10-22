@@ -36,17 +36,12 @@ public:
     CLIENT_STATUS get_client_status(void);
     CLIENT_THREAD_INFO get_client_thread_info();
     
-    // EtherCAT Client ADVR Facilty logger
-    void start_logging(void);
-    void stop_logging(void);
-    void log(void);
-
     // EtherCAT Client ADVR Facilty update getters/setters
     void read(void);
     void write(void);
     
     // EtherCAT Client ADVR Facilty getters
-    void get_motors_status(MotorStatusMap &motor_status_map);
+    void get_motor_status(MotorStatusMap &motor_status_map);
     void get_ft_status(FtStatusMap &ft_status_map);
     void get_pow_status(PwrStatusMap &pow_status_map);
     void get_imu_status(ImuStatusMap &imu_status_map);
@@ -55,12 +50,12 @@ public:
     bool pdo_aux_cmd_sts(const PAC & pac);
     
     // EtherCAT Client ADVR Facilty setters
-    void set_motors_references(const MotorReferenceMap motors_references);
-    void set_valves_references(const ValveReferenceMap valves_references);
-    void set_pumps_references(const PumpReferenceMap pumps_references);
+    void set_motor_reference(const MotorReferenceMap motor_reference);
+    void set_valve_reference(const ValveReferenceMap valve_reference);
+    void set_pump_reference(const PumpReferenceMap pump_reference);
     
     // EtherCAT Client ADVR Facilty manager
-    virtual void start_client(uint32_t period_ms,bool logging) = 0;
+    virtual void start_client(uint32_t period_ms) = 0;
     virtual void stop_client(void) = 0;
     virtual void set_loop_time(uint32_t period_ms) = 0;
     
@@ -82,8 +77,7 @@ public:
 protected:
     std::shared_ptr<spdlog::logger> _consoleLog;
     struct timespec _client_ts;
-    
-    bool _logging;
+
     uint64_t _period_ns;
 
     CLIENT_STATUS _client_status;
@@ -110,14 +104,14 @@ protected:
     PumpStatusMap _pump_status_map,_internal_pump_status_map;
     spsc_queue<PumpStatusMap,fixed_sized<true>> _pump_status_queue{128};
     
-    MotorReferenceMap _motors_references,_internal_motors_references;
-    spsc_queue<MotorReferenceMap,fixed_sized<true>> _motors_references_queue{128};
+    MotorReferenceMap _motor_reference_map,_internal_motor_reference_map;
+    spsc_queue<MotorReferenceMap,fixed_sized<true>> _motor_reference_queue{128};
     
-    ValveReferenceMap _valves_references,_internal_valves_references;
-    spsc_queue<ValveReferenceMap,fixed_sized<true>> _valves_references_queue{128};
+    ValveReferenceMap _valve_reference_map,_internal_valve_reference_map;
+    spsc_queue<ValveReferenceMap,fixed_sized<true>> _valve_reference_queue{128};
     
-    PumpReferenceMap _pumps_references,_internal_pumps_references;
-    spsc_queue<PumpReferenceMap,fixed_sized<true>> _pumps_references_queue{128};
+    PumpReferenceMap _pump_reference_map,_internal_pump_reference_map;
+    spsc_queue<PumpReferenceMap,fixed_sized<true>> _pump_reference_queue{128};
     
     pthread_mutex_t _mutex_update,_mutex_client_thread;
     pthread_cond_t _update_cond,_client_thread_cond;

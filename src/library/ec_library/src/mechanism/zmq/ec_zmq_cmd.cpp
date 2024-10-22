@@ -317,10 +317,10 @@ void EcZmqCmd::feed_motors()
         return;
     }
     else{
-        if(_motors_references_queue.read_available()>0){
-            while(_motors_references_queue.pop(_internal_motors_references))
+        if(_motor_reference_queue.read_available()>0){
+            while(_motor_reference_queue.pop(_internal_motor_reference_map))
             {}
-            auto fault=_ec_repl_cmd->Motors_PDO_cmd(_internal_motors_references);
+            auto fault=_ec_repl_cmd->Motors_PDO_cmd(_internal_motor_reference_map);
         }
     }
 }
@@ -332,8 +332,8 @@ void EcZmqCmd::feed_valves()
         return;
     }
     else{
-        if(_valves_references_queue.read_available()>0){
-            while(_valves_references_queue.pop(_internal_valves_references))
+        if(_valve_reference_queue.read_available()>0){
+            while(_valve_reference_queue.pop(_internal_valve_reference_map))
             {}
         }
     }
@@ -346,8 +346,8 @@ void EcZmqCmd::feed_pumps()
         return;
     }
     else{
-        if(_pumps_references_queue.read_available()>0){
-            while(_pumps_references_queue.pop(_internal_pumps_references))
+        if(_pump_reference_queue.read_available()>0){
+            while(_pump_reference_queue.pop(_internal_pump_reference_map))
             {}
         }
     }
