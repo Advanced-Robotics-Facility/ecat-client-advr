@@ -18,11 +18,11 @@ static const SliderWidget::slider_info_s motor_info={
 
 static const SliderWidget::slider_info_s valve_info= {
   ValvePdoTx::name,
-  {"[mA]", "[uless]", "[uless]","[uless]", "[uless]","[s]","[uless]","[arbu]"},
-  {2,0,0,0,0,0,0,2},
-  {"-25.0","0","0","0","0","0","0","0.0"},
-  {"25.0","100.0","100.0","5.0","100","100","10","10000"},
-  {1,1,1,1,1,1,1,1}
+  {"[mA]", "[um]", "[N]","[arbu]", "[arbu]","[arbu]","[arbu]","[arbu]","[uless]","[uless]","[uless]","[arbu]"},
+  {2,2,2,4,4,4,4,4,0,0,0,2},
+  {"-25.0","-2000.0","-100","-100.0","-100","-100","-100","-100","0","0","0","-10000"},
+  {"25.0","2000.0","100","100.0","100","100","100","100","1","1","1","-10000"},
+  {1,1,1,2,2,2,2,2,1,1,1,1}
 };
 
 static const SliderWidget::slider_info_s pump_info= {
