@@ -190,7 +190,6 @@ void EcUtils::config_device()
         if(_robot_control_node[device_type]){
             if(_robot_control_node[device_type]["config_path"]){
                 try{
-                    std::cout << device_type << std::endl;
                     std::string config_path=_robot_control_node[device_type]["config_path"].as<std::string>();
                     std::string config_path_abs=config_path;
                     compute_absolute_path(_robot_abs_path[1],config_path_abs);
