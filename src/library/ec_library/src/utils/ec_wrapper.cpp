@@ -19,6 +19,16 @@ MotorReferenceMap motor_reference_map;
 
 using namespace std::chrono;
 
+EcWrapper::EcWrapper()
+{
+    _ec_logger=std::make_shared<EcLogger>();
+}
+
+EcWrapper::~EcWrapper()
+{
+    stop_ec_sys();
+}
+
 EcUtils::EC_CONFIG EcWrapper::retrieve_ec_cfg()
 {
     try{
@@ -196,24 +206,39 @@ void EcWrapper::init_references_maps()
     }
 }
 
+void EcWrapper::read_devices_status()
+{
+    _client->get_motor_status(motor_status_map);
+    _client->get_ft_status(ft_status_map);
+    _client->get_imu_status(imu_status_map);
+    _client->get_pow_status(pow_status_map);
+    _client->get_valve_status(valve_status_map);
+    _client->get_pump_status(pump_status_map);
+}
+
 
 bool EcWrapper::start_ec_sys(void)
 {
-    bool ec_sts_started=true;
+    _ec_sys_started=true;
     try{
         _client->start_client(_ec_cfg.period_ms); // IMPORTANT: moved here for UDP protocol
         
         autodetection();
 
+        if(_ec_cfg.logging){
+            _ec_logger->init_mat_logger(_slave_info);
+            _ec_logger->start_mat_logger();
+        }
+
         if(!_start_devices_vector.empty()){
-            ec_sts_started &= start_devices();
+            _ec_sys_started &= start_devices();
         }
 
 
 #ifdef TEST_LIBRARY
-        ec_sts_started = true;
+        _ec_sys_started = true;
 #endif       
-        if(ec_sts_started){
+        if(_ec_sys_started){
             _client->read();
             init_references_maps();
         }
@@ -221,22 +246,30 @@ bool EcWrapper::start_ec_sys(void)
             stop_ec_sys();
         }
     }catch(std::exception &ex){
-        ec_sts_started=false;
+        _ec_sys_started=false;
         throw std::runtime_error(ex.what());
     }
-    return ec_sts_started;
+    return _ec_sys_started;
 }
 
 void EcWrapper::stop_ec_sys(void)
 {
-    stop_devices();
+    if(_ec_sys_started){
+        stop_devices();
 
-    // STOP CLIENT
-    _client->stop_client();
+        _ec_logger->stop_mat_logger();
+
+        // STOP CLIENT
+        _client->stop_client();
+
+        _ec_sys_started=false;
+    }
 }
 
 void EcWrapper::log_ec_sys()
 {
+    read_devices_status();
+
     _ec_logger->log_motor_status(motor_status_map);
     _ec_logger->log_pow_status(pow_status_map);
     _ec_logger->log_ft_status(ft_status_map);

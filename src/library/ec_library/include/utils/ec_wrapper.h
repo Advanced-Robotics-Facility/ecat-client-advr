@@ -23,7 +23,9 @@ extern MotorReferenceMap motor_reference_map;
 class EcWrapper
 {
 public:
-
+    
+    EcWrapper();
+    ~EcWrapper();
     EcUtils::EC_CONFIG retrieve_ec_cfg();
     void create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg);
     void set_start_devices(std::vector<int> start_devices_vector);
@@ -40,6 +42,7 @@ private:
     void prepare_devices();
     bool start_devices(void);
     void stop_devices(void);
+    void read_devices_status();
     void init_references_maps();
 
 
@@ -56,6 +59,7 @@ private:
     
     SSI _slave_info;
     std::vector<int> _start_devices_vector;
+    bool _ec_sys_started=false;
 };
 
 #endif

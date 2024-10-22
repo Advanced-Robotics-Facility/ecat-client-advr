@@ -403,7 +403,7 @@ int main(int argc, char *const argv[])
             }
 
             client->write();
-            //ec_wrapper.log_ec_sys();
+            ec_wrapper.log_ec_sys();
             
             const auto now = std::chrono::high_resolution_clock::now();
 
