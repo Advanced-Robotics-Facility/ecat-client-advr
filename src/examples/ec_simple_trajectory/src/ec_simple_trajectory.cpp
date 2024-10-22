@@ -59,7 +59,7 @@ int main(int argc, char * const argv[])
         int trajectory_counter=0;
         float tau=0,alpha=0;
 
-        for (const auto &[esc_id, motor_rx_pdo] : motors_status_map){
+        for (const auto &[esc_id, motor_rx_pdo] : motor_status_map){
             if(ec_cfg.trj_config_map.count("motor")>0){
                 if(ec_cfg.trj_config_map["motor"].set_point.count(esc_id)>0){
                     std::string set_point_type="";
@@ -132,18 +132,18 @@ int main(int argc, char * const argv[])
                 if(ctrl_mode != iit::advr::Gains_Type_VELOCITY){
                     if(ctrl_mode == iit::advr::Gains_Type_POSITION ||
                         ctrl_mode == iit::advr::Gains_Type_IMPEDANCE){
-                        std::get<1>(motors_ref[esc_id]) = motors_set_ref[esc_id];
+                        std::get<1>(motor_reference_map[esc_id]) = motors_set_ref[esc_id];
                     }
                     if(ctrl_mode != iit::advr::Gains_Type_POSITION &&
                         ctrl_mode != iit::advr::Gains_Type_IMPEDANCE){
-                        std::get<3>(motors_ref[esc_id]) = motors_set_ref[esc_id]; // current mode (0xCC or oxDD) or impedance
+                        std::get<3>(motor_reference_map[esc_id]) = motors_set_ref[esc_id]; // current mode (0xCC or oxDD) or impedance
                     }
                 }else{
-                    std::get<2>(motors_ref[esc_id]) = motors_set_ref[esc_id];
+                    std::get<2>(motor_reference_map[esc_id]) = motors_set_ref[esc_id];
                 }
             }            
             // ************************* SEND ALWAYS REFERENCES***********************************//
-            client->set_motors_references(motors_ref);
+            client->set_motors_references(motor_reference_map);
             // ************************* SEND ALWAYS REFERENCES***********************************//
 
             time = time + period;

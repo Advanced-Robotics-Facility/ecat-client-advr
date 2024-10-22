@@ -4,15 +4,17 @@
 PwrStatusMap pow_status_map;
 //IMU
 ImuStatusMap imu_status_map;
+//Force-Torque sensor
+FtStatusMap ft_status_map;
 // Pump
 PumpStatusMap pump_status_map;
-PumpReferenceMap pumps_ref;
+PumpReferenceMap pump_reference_map;
 // Valve
 ValveStatusMap valve_status_map;
-ValveReferenceMap valves_ref;
+ValveReferenceMap valve_reference_map;
 // Motor
-MotorStatusMap motors_status_map;
-MotorReferenceMap motors_ref;
+MotorStatusMap motor_status_map;
+MotorReferenceMap motor_reference_map;
 
 
 using namespace std::chrono;
@@ -151,35 +153,35 @@ void EcWrapper::init_references_maps()
 {
     
     // init motor reference map 
-    _client->get_motors_status(motors_status_map);
-    for (const auto &[esc_id, motor_rx_pdo] : motors_status_map){
+    _client->get_motors_status(motor_status_map);
+    for (const auto &[esc_id, motor_rx_pdo] : motor_status_map){
         auto motor_pos =    std::get<1>(motor_rx_pdo);
-        motors_ref[esc_id] = std::make_tuple(   _ec_cfg.device_config_map[esc_id].control_mode_type,  // ctrl_type
-                                                motor_pos,                                            // pos_ref
-                                                0.0,                                                  // vel_ref
-                                                0.0,                                                  // tor_ref
-                                                _ec_cfg.device_config_map[esc_id].gains[0],           // gain_1
-                                                _ec_cfg.device_config_map[esc_id].gains[1],           // gain_2
-                                                _ec_cfg.device_config_map[esc_id].gains[2],           // gain_3
-                                                _ec_cfg.device_config_map[esc_id].gains[3],           // gain_4
-                                                _ec_cfg.device_config_map[esc_id].gains[4],           // gain_5
-                                                1,                                                    // op means NO_OP
-                                                0,                                                    // idx
-                                                0                                                     // aux
-                                            );
+        motor_reference_map[esc_id] = std::make_tuple(  _ec_cfg.device_config_map[esc_id].control_mode_type,  // ctrl_type
+                                                        motor_pos,                                            // pos_ref
+                                                        0.0,                                                  // vel_ref
+                                                        0.0,                                                  // tor_ref
+                                                        _ec_cfg.device_config_map[esc_id].gains[0],           // gain_1
+                                                        _ec_cfg.device_config_map[esc_id].gains[1],           // gain_2
+                                                        _ec_cfg.device_config_map[esc_id].gains[2],           // gain_3
+                                                        _ec_cfg.device_config_map[esc_id].gains[3],           // gain_4
+                                                        _ec_cfg.device_config_map[esc_id].gains[4],           // gain_5
+                                                        1,                                                    // op means NO_OP
+                                                        0,                                                    // idx
+                                                        0                                                     // aux
+                                                    );
     }
 
     // init valve reference map 
     _client->get_valve_status(valve_status_map);
     for (const auto &[esc_id, valve_rx_pdo] : valve_status_map){
         auto enc_pos =    std::get<0>(valve_rx_pdo);
-        valves_ref[esc_id] = std::make_tuple(0, enc_pos, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        valve_reference_map[esc_id] = std::make_tuple(0, enc_pos, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
 
     // init valve reference map
     _client->get_pump_status(pump_status_map);
     for (const auto &[esc_id, pump_rx_pdo] : pump_status_map){
-        pumps_ref[esc_id] = std::make_tuple(0, 0, 0, 0, 0, 0, 0, 0, 0);
+        pump_reference_map[esc_id] = std::make_tuple(0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
 }
 
@@ -220,7 +222,21 @@ void EcWrapper::stop_ec_sys(void)
 
     // STOP CLIENT
     _client->stop_client();
+}
 
+void EcWrapper::log_ec_sys()
+{
+    _ec_logger->log_motors_sts(motor_status_map);
+    _ec_logger->log_pow_sts(pow_status_map);
+    _ec_logger->log_ft_sts(ft_status_map);
+    _ec_logger->log_imu_sts(imu_status_map);
+    _ec_logger->log_valve_sts(valve_status_map);
+    _ec_logger->log_pump_sts(pump_status_map);
+
+
+    _ec_logger->log_motors_ref(motor_reference_map); 
+    _ec_logger->log_valve_ref(valve_reference_map);
+    _ec_logger->log_pump_ref(pump_reference_map);
 }
 
 

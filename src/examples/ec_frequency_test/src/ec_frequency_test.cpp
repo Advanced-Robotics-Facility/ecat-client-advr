@@ -67,9 +67,9 @@ int main(int argc, char * const argv[])
         bool run=true;        
         std::map<int, double> motors_set_ref;
 
-        for (const auto &[esc_id, motor_rx_pdo] : motors_status_map){
+        for (const auto &[esc_id, motor_rx_pdo] : motor_status_map){
             if(homing.count(esc_id)){
-                motors_set_ref[esc_id] = std::get<1>(motors_status_map[esc_id]); // motor pos];
+                motors_set_ref[esc_id] = std::get<1>(motor_status_map[esc_id]); // motor pos];
             }
         }
 
@@ -115,10 +115,10 @@ int main(int argc, char * const argv[])
 
             // ************************* SEND ALWAYS REFERENCES***********************************//
             for ( const auto &[esc_id, pos_ref] : motors_set_ref){
-                std::get<1>(motors_ref[esc_id]) = pos_ref;
+                std::get<1>(motor_reference_map[esc_id]) = pos_ref;
             }
             // ************************* SEND ALWAYS REFERENCES***********************************//
-            client->set_motors_references(motors_ref);
+            client->set_motors_references(motor_reference_map);
             // ************************* SEND ALWAYS REFERENCES***********************************//
 
             time = time + period + incrementat_freq;

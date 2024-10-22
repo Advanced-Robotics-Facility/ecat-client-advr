@@ -219,9 +219,7 @@ bool EcBoostCmd::retrieve_slaves_info(SSI &slave_info)
             ret_cmd_status=true;
         }     
     }
-    
-    _ec_logger->init_mat_logger(_slave_info);
-    
+
     return ret_cmd_status;
 }
 

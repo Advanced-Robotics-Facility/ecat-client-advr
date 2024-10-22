@@ -103,7 +103,7 @@ int main(int argc, char *const argv[])
             }
         }
 
-        for (const auto &[esc_id, motor_rx_pdo] : motors_status_map){
+        for (const auto &[esc_id, motor_rx_pdo] : motor_status_map){
             if(ec_cfg.trj_config_map.count("motor")>0){
                 if(ec_cfg.trj_config_map["motor"].set_point.count(esc_id)>0){
                     std::string set_point_type="";
@@ -142,7 +142,7 @@ int main(int argc, char *const argv[])
             throw std::runtime_error("fatal error: motor references, pump reference and valves references are both empty");
         }
 
-        if (!pumps_ref.empty()){
+        if (!pump_reference_map.empty()){
             STM_sts = "PumpPreOp";
         }
         else{
@@ -195,22 +195,22 @@ int main(int argc, char *const argv[])
             alpha = ((6 * tau - 15) * tau + 10) * tau * tau * tau;
 
             // Pump references
-            if (!pumps_ref.empty()){
+            if (!pump_reference_map.empty()){
                 if (STM_sts == "Pressure"){
                     // interpolate
                     for (const auto &[esc_id, target] : pumps_set_trj){
                         pumps_set_ref[esc_id] = pumps_start[esc_id] + alpha * (target - pumps_start[esc_id]);
-                        std::get<0>(pumps_ref[esc_id]) = pumps_set_ref[esc_id];
-                        std::get<8>(pumps_ref[esc_id]) = pump_req_op;
+                        std::get<0>(pump_reference_map[esc_id]) = pumps_set_ref[esc_id];
+                        std::get<8>(pump_reference_map[esc_id]) = pump_req_op;
                     }
                 }
                 // ************************* SEND ALWAYS REFERENCES***********************************//
-                client->set_pumps_references(pumps_ref);
+                client->set_pumps_references(pump_reference_map);
                 // ************************* SEND ALWAYS REFERENCES***********************************//
             }
 
             // Valves references
-            if (!valves_ref.empty()){
+            if (!valve_reference_map.empty()){
                 if (STM_sts == "Homing" || STM_sts == "Trajectory"){
                     // interpolate
                     for (const auto &[esc_id, target] : valves_set_trj){
@@ -218,21 +218,21 @@ int main(int argc, char *const argv[])
                         valves_set_ref[esc_id] = valves_start[esc_id] + alpha * (target - valves_start[esc_id]);
 
                         if(ctrl_mode == iit::advr::Gains_Type_POSITION){
-                            std::get<1>(valves_ref[esc_id]) = valves_set_ref[esc_id];
+                            std::get<1>(valve_reference_map[esc_id]) = valves_set_ref[esc_id];
                         }else if(ctrl_mode == iit::advr::Gains_Type_IMPEDANCE){
-                            std::get<2>(valves_ref[esc_id]) = valves_set_ref[esc_id];
+                            std::get<2>(valve_reference_map[esc_id]) = valves_set_ref[esc_id];
                         }else{
-                            std::get<0>(valves_ref[esc_id]) = valves_set_ref[esc_id];
+                            std::get<0>(valve_reference_map[esc_id]) = valves_set_ref[esc_id];
                         }
                     }
                 }
                 // ************************* SEND ALWAYS REFERENCES***********************************//
-                client->set_valves_references(valves_ref);
+                client->set_valves_references(valve_reference_map);
                 // ************************* SEND ALWAYS REFERENCES***********************************//
             }
 
             // Motors references
-            if (!motors_ref.empty())
+            if (!motor_reference_map.empty())
             {
                 if (STM_sts == "Homing" || STM_sts == "Trajectory"){
                     // interpolate
@@ -242,19 +242,19 @@ int main(int argc, char *const argv[])
                         if(ctrl_mode != iit::advr::Gains_Type_VELOCITY){
                             if(ctrl_mode == iit::advr::Gains_Type_POSITION ||
                                ctrl_mode == iit::advr::Gains_Type_IMPEDANCE){
-                                std::get<1>(motors_ref[esc_id]) = motors_set_ref[esc_id];
+                                std::get<1>(motor_reference_map[esc_id]) = motors_set_ref[esc_id];
                             }
                             if(ctrl_mode != iit::advr::Gains_Type_POSITION &&
                                ctrl_mode != iit::advr::Gains_Type_IMPEDANCE){
-                                std::get<3>(motors_ref[esc_id]) = motors_set_ref[esc_id]; // current mode (0xCC or oxDD) or impedance
+                                std::get<3>(motor_reference_map[esc_id]) = motors_set_ref[esc_id]; // current mode (0xCC or oxDD) or impedance
                             }
                         }else{
-                            std::get<2>(motors_ref[esc_id]) = motors_set_ref[esc_id];
+                            std::get<2>(motor_reference_map[esc_id]) = motors_set_ref[esc_id];
                         }
                     }
                 }
                 // ************************* SEND ALWAYS REFERENCES***********************************//
-                client->set_motors_references(motors_ref);
+                client->set_motors_references(motor_reference_map);
                 // ************************* SEND ALWAYS REFERENCES***********************************//
             }
 
@@ -319,7 +319,7 @@ int main(int argc, char *const argv[])
                         tau = alpha = 0;
                     }
                     else{
-                        if (motors_ref.empty() && valves_ref.empty()){
+                        if (motor_reference_map.empty() && valve_reference_map.empty()){
                             STM_sts = "Pressure";
                             start_time = time;
                             set_trj_time_ms = pressure_time_ms;
@@ -373,7 +373,7 @@ int main(int argc, char *const argv[])
             else if ((time_elapsed_ms >= trj_time_ms) && (STM_sts == "Trajectory"))
             {
                 if (trajectory_counter == ec_cfg.repeat_trj){
-                    if (!pumps_ref.empty()){
+                    if (!pump_reference_map.empty()){
                         STM_sts = "Pressure";
                         start_time = time;
                         set_trj_time_ms = pressure_time_ms;

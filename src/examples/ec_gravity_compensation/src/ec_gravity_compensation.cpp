@@ -105,7 +105,7 @@ int main(int argc, char * const argv[])
         
         // memory allocation
         std::map<int,std::vector<float>> imp_gains_map,imp_zero_gains_map;
-        for (const auto &[esc_id, motor_rx_pdo] : motors_status_map){
+        for (const auto &[esc_id, motor_rx_pdo] : motor_status_map){
             if(homing.count(esc_id)>0){
                 imp_gains_map[esc_id]=ec_cfg.device_config_map[esc_id].gains;
                 imp_zero_gains_map[esc_id]=imp_gains_map[esc_id];
@@ -182,7 +182,7 @@ int main(int argc, char * const argv[])
                 }
             }
 
-            for (const auto &[esc_id, motor_rx_pdo] : motors_status_map){
+            for (const auto &[esc_id, motor_rx_pdo] : motor_status_map){
                 if(homing.count(esc_id)>0){
                     q[esc_id]=std::get<1>(motor_rx_pdo); //motor pos
                     q_ref[esc_id]=q[esc_id];
@@ -198,17 +198,17 @@ int main(int argc, char * const argv[])
             for ( const auto &[esc_id, tor_ref] : tau_ref){
                 if(homing.count(esc_id)>0){
                     double pos_ref = q_ref[esc_id];
-                    std::get<1>(motors_ref[esc_id]) = pos_ref;
-                    std::get<3>(motors_ref[esc_id]) = tor_ref;
-                    std::get<4>(motors_ref[esc_id]) = gain_ref_map[esc_id][0];
-                    std::get<5>(motors_ref[esc_id]) = gain_ref_map[esc_id][1];
-                    std::get<6>(motors_ref[esc_id]) = gain_ref_map[esc_id][2];
-                    std::get<7>(motors_ref[esc_id]) = gain_ref_map[esc_id][3];
-                    std::get<8>(motors_ref[esc_id]) = gain_ref_map[esc_id][4];
+                    std::get<1>(motor_reference_map[esc_id]) = pos_ref;
+                    std::get<3>(motor_reference_map[esc_id]) = tor_ref;
+                    std::get<4>(motor_reference_map[esc_id]) = gain_ref_map[esc_id][0];
+                    std::get<5>(motor_reference_map[esc_id]) = gain_ref_map[esc_id][1];
+                    std::get<6>(motor_reference_map[esc_id]) = gain_ref_map[esc_id][2];
+                    std::get<7>(motor_reference_map[esc_id]) = gain_ref_map[esc_id][3];
+                    std::get<8>(motor_reference_map[esc_id]) = gain_ref_map[esc_id][4];
                 }
             }
             // ************************* SEND ALWAYS REFERENCES***********************************//
-            client->set_motors_references(motors_ref);
+            client->set_motors_references(motor_reference_map);
             // ************************* SEND ALWAYS REFERENCES***********************************//
 
             time = time + period;

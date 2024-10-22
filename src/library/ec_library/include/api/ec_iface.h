@@ -80,7 +80,6 @@ public:
                             const RD_SDO &rd_sdo,
                             const WR_SDO &wr_sdo) = 0;
 protected:
-    EcLogger::Ptr _ec_logger;
     std::shared_ptr<spdlog::logger> _consoleLog;
     struct timespec _client_ts;
     

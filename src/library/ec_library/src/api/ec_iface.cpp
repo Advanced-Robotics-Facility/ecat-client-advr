@@ -2,7 +2,6 @@
 
 EcIface::EcIface()
 {
-    _ec_logger = std::make_shared<EcLogger>();
     _logging=false;
 
     _client_status.status=ClientStatusEnum::IDLE;
@@ -80,17 +79,17 @@ EcIface::CLIENT_THREAD_INFO EcIface::get_client_thread_info()
 
 void EcIface::start_logging()
 {
-    _ec_logger->start_mat_logger();
+
 }
 
 void EcIface::stop_logging()
 {
-    _ec_logger->stop_mat_logger();
+
 }
 
 void EcIface::log()
 {
-    _ec_logger->log_motors_sts(_motor_status_map);
+    /*_ec_logger->log_motors_sts(_motor_status_map);
     _ec_logger->log_pow_sts(_pow_status_map);
     _ec_logger->log_ft_sts(_ft_status_map);
     _ec_logger->log_imu_sts(_imu_status_map);
@@ -100,7 +99,7 @@ void EcIface::log()
 
     _ec_logger->log_motors_ref(_motors_references); 
     _ec_logger->log_valve_ref(_valves_references);
-    _ec_logger->log_pump_ref(_pumps_references);
+    _ec_logger->log_pump_ref(_pumps_references);*/
 }
 
 void EcIface::set_slaves_info(SSI slave_info)
