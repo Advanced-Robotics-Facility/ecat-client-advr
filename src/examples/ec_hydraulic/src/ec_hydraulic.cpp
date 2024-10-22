@@ -11,6 +11,14 @@
 
 using namespace std::chrono;
 
+static bool run_loop = true;
+// /* signal handler*/
+static void sig_handler(int sig) 
+{
+    printf("got signal %d\n", sig);
+    run_loop=false;
+}
+
 int main(int argc, char *const argv[])
 {
     EcUtils::EC_CONFIG ec_cfg;
@@ -50,7 +58,6 @@ int main(int argc, char *const argv[])
         float set_trj_time_ms = hm_time_ms;
 
         std::string STM_sts;
-        bool run_loop = true;
 
         std::map<int, double> motors_trj_1,motors_trj_2, motors_set_zero, motors_set_trj;
         std::map<int, double> motors_set_ref, motors_start;
@@ -152,10 +159,17 @@ int main(int argc, char *const argv[])
         // memory allocation
         
         if (ec_cfg.protocol == "iddp"){
+            // add SIGALRM
+            signal ( SIGALRM, sig_handler );
             //avoid map swap
-            main_common(&argc, (char *const **)&argv, 0);
+            main_common (&argc, (char*const**)&argv, sig_handler);
         }
-
+        else{
+            struct sigaction sa;
+            sa.sa_handler = sig_handler;
+            sa.sa_flags = 0;  // receive will return EINTR on CTRL+C!
+            sigaction(SIGINT,&sa, nullptr);
+        }
         // process scheduling
         try{
             ec_wrapper.ec_self_sched(argv[0]);
