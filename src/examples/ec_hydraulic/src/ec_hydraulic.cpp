@@ -34,7 +34,7 @@ int main(int argc, char *const argv[])
     }
 
     std::map<int,double> homing,trajectory;
-    if(ec_cfg.trj_config_map.count("valve")>0){
+    if(ec_cfg.trj_config_map.count("motor")>0){
         homing=ec_cfg.trj_config_map["motor"].homing;    
         trajectory=ec_cfg.trj_config_map["motor"].trajectory;    
     }
