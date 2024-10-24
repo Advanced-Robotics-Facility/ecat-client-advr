@@ -7,6 +7,7 @@
 #include "protocol/tcp/ec_tcp.h"
 #include "protocol/ipc/iddp/ec_iddp.h"
 #include "protocol/ipc/zipc/ec_zipc.h"
+#include <ecat_core/trajectory.h>
 
 class EcUtils
 {
@@ -24,6 +25,7 @@ public:
         std::map<int,std::map<std::string,double>> set_point;
         std::map<int,double> homing;
         std::map<int,double> trajectory;
+        std::map<int,std::map<std::string,Trj_ptr>> trj_generator;
     }TRAJECTORY_CONFIG_t;
         
     typedef struct EC_CONFIG_t{
@@ -65,6 +67,8 @@ private:
     void device_config_map(const YAML::Node & device_config_node);
     void config_trajectory();      
     void config_device();
+    void trajectory_generator();
+    
     std::vector<std::string> _device_type_vector={"motor","valve","pump"};  
     std::vector<std::string> _robot_path_v={"robot_id_map_path","robot_control_path"};
     std::vector<std::string> _robot_abs_path={"",""};

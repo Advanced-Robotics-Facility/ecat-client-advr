@@ -89,6 +89,7 @@ EcUtils::EcUtils()
 
                 config_device();
                 config_trajectory();
+                trajectory_generator();
                 generate_fake_slave_info();
 
             }catch(std::exception& e){
@@ -271,6 +272,61 @@ void EcUtils::config_trajectory()
                         }
                     }else{
                         throw std::runtime_error(device_type + " id duplicated!");     
+                    }
+                }
+            }
+        }
+    }
+}
+
+void EcUtils::trajectory_generator()
+{
+    double trj_time = _ec_cfg.trj_time * _ec_cfg.repeat_trj;
+    for(const auto &device_type:_device_type_vector){
+        for(const auto &[id,set_poit_map]:_ec_cfg.trj_config_map[device_type].set_point){
+            for(const auto &[ctrl_type,set_poit]:set_poit_map){
+                if ( _ec_cfg.trj_type=="polynomial"){
+                    return;
+                }
+                else{
+                    // Spline trajectory
+                    if ( _ec_cfg.trj_type=="spline"){
+                        std::vector<double> time =  {0,trj_time};
+                        std::vector<double> value = {0,set_poit};
+                        //_ec_cfg.trj_config_map[device_type].trj_generator[id][ctrl_type] = std::make_shared<Spline_trajectory>(time, value);
+                    } 
+                    // Smoother trajectory
+                    else if ( _ec_cfg.trj_type=="smoother"){
+                        std::vector<double> time =  {0,trj_time};
+                        std::vector<double> value = {0,set_poit};
+                        _ec_cfg.trj_config_map[device_type].trj_generator[id][ctrl_type] = std::make_shared<Smoother_trajectory>(time, value);
+                    } 
+                    // Smooth step
+                    else if ( _ec_cfg.trj_type=="step"){
+                        std::vector<double> time =  {0,trj_time};
+                        double amplitude = set_poit;
+                        double freq = 1/_ec_cfg.trj_time;
+                        double theta = 0.0;
+                        _ec_cfg.trj_config_map[device_type].trj_generator[id][ctrl_type] = std::make_shared<Steps_trajectory>(freq, amplitude,theta,time);
+                    } 
+                    // Sine trajectory
+                    else if ( _ec_cfg.trj_type=="sine"){
+                        std::vector<double> time =  {0,trj_time};
+                        double amplitude = set_poit;
+                        double freq = 1/_ec_cfg.trj_time;
+                        double theta = 0.0;
+                        _ec_cfg.trj_config_map[device_type].trj_generator[id][ctrl_type] = std::make_shared<Sine_trajectory>(freq, amplitude, theta, time);
+                    } 
+                    // Stair trajectory
+                    else if ( _ec_cfg.trj_type=="stair"){
+
+                    } 
+                    // Chirp trajectory
+                    else if ( _ec_cfg.trj_type=="chirp"){
+
+                    }
+                    else{
+                        throw std::runtime_error("Trajectory type not recognized!");
                     }
                 }
             }

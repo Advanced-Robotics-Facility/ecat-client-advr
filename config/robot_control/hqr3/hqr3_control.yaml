@@ -1,5 +1,5 @@
 trajectory:
-  type: polynomial #step, sine, cosine, chirp
+  type: sine #sine, step, smoother
   frequency: 1
   repeat: 2
   
