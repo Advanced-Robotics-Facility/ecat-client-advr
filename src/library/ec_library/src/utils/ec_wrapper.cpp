@@ -165,7 +165,7 @@ void EcWrapper::safe_init()
     // init motor reference map 
     _client->get_motor_status(motor_status_map);
     for (const auto &[esc_id, motor_rx_pdo] : motor_status_map){
-        auto motor_pos =    std::get<1>(motor_rx_pdo);
+        auto motor_pos =    std::get<2>(motor_rx_pdo);
         motor_reference_map[esc_id] = std::make_tuple(  _ec_cfg.device_config_map[esc_id].control_mode_type,  // ctrl_type
                                                         motor_pos,                                            // pos_ref
                                                         0.0,                                                  // vel_ref

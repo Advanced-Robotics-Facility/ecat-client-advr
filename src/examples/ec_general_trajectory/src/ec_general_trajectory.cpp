@@ -167,7 +167,7 @@ int main(int argc, char * const argv[])
                         if(ctrl_mode == iit::advr::Gains_Type_POSITION ||
                             ctrl_mode == iit::advr::Gains_Type_IMPEDANCE){
                             client->get_motor_status(motor_status_map);
-                            target=std::get<1>(motor_status_map[esc_id]); // actual motor pos
+                            target=std::get<2>(motor_status_map[esc_id]); // actual motor pos
                         }
                     }
                     if(ctrl_mode != iit::advr::Gains_Type_VELOCITY){

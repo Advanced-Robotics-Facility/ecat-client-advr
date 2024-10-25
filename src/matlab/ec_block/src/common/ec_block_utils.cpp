@@ -86,7 +86,7 @@ bool EcBlockUtils::start_robot(std::string &error_info)
     {
         if(motors_status_map.count(id) >0)
         {
-            auto motor_pos = std::get<1>(motors_status_map[id]);
+            auto motor_pos = std::get<2>(motors_status_map[id]);
             _motors_ref[id]=std::make_tuple(ctrl_mode,motor_pos,0.0,0.0,gains[0],gains[1],gains[2],gains[3],gains[4],1,0,0);
             //motors_start.push_back(std::make_tuple(id,ctrl_mode,gains));
             //brake_cmds.push_back(std::make_tuple(id,to_underlying(PdoAuxCmdType::BRAKE_RELEASE)));

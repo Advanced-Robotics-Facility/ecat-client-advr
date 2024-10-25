@@ -31,25 +31,22 @@ public:
         // Type
         pb.set_type(iit::advr::Ec_slave_pdo::RX_XT_MOTOR);
         // Motor_xt_tx_pdo
+        // no status word
         pb.mutable_motor_xt_rx_pdo()->set_link_pos(pos_ref);
         pb.mutable_motor_xt_rx_pdo()->set_motor_pos(pos_ref);
         pb.mutable_motor_xt_rx_pdo()->set_link_vel(vel_ref);
         pb.mutable_motor_xt_rx_pdo()->set_motor_vel(vel_ref);
         pb.mutable_motor_xt_rx_pdo()->set_torque(tor_ref);
-        pb.mutable_motor_xt_rx_pdo()->set_temperature(0.0);
-        pb.mutable_motor_xt_rx_pdo()->set_fault(0);
-        pb.mutable_motor_xt_rx_pdo()->set_rtt(0);
-        // optional
-        pb.mutable_motor_xt_rx_pdo()->set_op_idx_ack(0);
-        pb.mutable_motor_xt_rx_pdo()->set_aux(0);
+        pb.mutable_motor_xt_rx_pdo()->set_aux(curr_ref);
         pb.mutable_motor_xt_rx_pdo()->set_motor_temp(temp(gen));
         pb.mutable_motor_xt_rx_pdo()->set_board_temp(temp(gen));
-        //
-        pb.mutable_motor_xt_rx_pdo()->set_cmd_aux_sts(0.0);
-        
+        pb.mutable_motor_xt_rx_pdo()->set_fault(0);
+        pb.mutable_motor_xt_rx_pdo()->set_rtt(0);
         pb.mutable_motor_xt_rx_pdo()->set_pos_ref(pos_ref);
         pb.mutable_motor_xt_rx_pdo()->set_vel_ref(vel_ref);
         pb.mutable_motor_xt_rx_pdo()->set_tor_ref(tor_ref);
+        // no current feedback
+        pb.mutable_motor_xt_rx_pdo()->set_temperature(0.0); //added here!!! it's not optional
     } 
 };
 
@@ -81,6 +78,7 @@ public:
         // Type
         pb.set_type(iit::advr::Ec_slave_pdo::TX_CIRCULO9);
         
+        pb.mutable_circulo9_rx_pdo()->set_statusword(0);
         pb.mutable_circulo9_rx_pdo()->set_link_pos(pos_ref);
         pb.mutable_circulo9_rx_pdo()->set_motor_pos(pos_ref);
         pb.mutable_circulo9_rx_pdo()->set_link_vel(vel_ref);
@@ -89,7 +87,11 @@ public:
         pb.mutable_circulo9_rx_pdo()->set_current(curr_ref);
         pb.mutable_circulo9_rx_pdo()->set_motor_temp(temp(gen));
         pb.mutable_circulo9_rx_pdo()->set_drive_temp(temp(gen));
-        pb.mutable_circulo9_rx_pdo()->set_statusword(0);
+        pb.mutable_circulo9_rx_pdo()->set_error_code(0);
+        pb.mutable_circulo9_rx_pdo()->set_demanded_pos(pos_ref);
+        pb.mutable_circulo9_rx_pdo()->set_demanded_vel(vel_ref);
+        pb.mutable_circulo9_rx_pdo()->set_demanded_torque(tor_ref);
+        pb.mutable_circulo9_rx_pdo()->set_demanded_current(curr_ref);
     } 
 };
 

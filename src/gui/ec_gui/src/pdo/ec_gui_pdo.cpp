@@ -231,7 +231,7 @@ void EcGuiPdo::read_motor_status()
             }
             
             /************************************* ALIGN POSITION SLIDERS with the motor position ********************************************/
-            double motor_pos=std::get<1>(motor_rx_pdo);
+            double motor_pos=std::get<2>(motor_rx_pdo);
             if(_slider_map.motor_sw_map.count(esc_id)>0){
                 _slider_map.motor_sw_map[esc_id]->set_spinbox_value(1,motor_pos);
             }

@@ -6,11 +6,13 @@
 #include "mechanism/pipe/ec_pipe_pdo.h"
 #include "mechanism/zmq/ec_zmq_pdo.h"
 namespace MotorPdoRx{
-    static const std::vector<std::string>name = {"link_pos", "motor_pos", "link_vel",
-                                                 "motor_vel", "torque", "motor_temp",
-                                                 "board_temp","fault","rtt","op_idx_ack","aux","cmd_aux_sts"};
-    static const int pdo_size=12;
-    using pdo_t= std::tuple<float, float, float, float,float,float,float,uint32_t, uint32_t,uint32_t, float, uint32_t>;
+    static const std::vector<std::string>name = {"status_word",
+                                                 "link_pos", "motor_pos", "link_vel",
+                                                 "motor_vel", "torque","current","motor_temp",
+                                                 "board_temp","fault","rtt",
+                                                 "pos_ref_fb","vel_ref_fb","tor_ref_fb","curr_ref_fb"};
+    static const int pdo_size=15;
+    using pdo_t= std::tuple<uint32_t,float, float, float, float,float,float,float,float,uint32_t, uint32_t,float, float, float,float>;
     template <typename T>
     inline bool make_vector_from_tuple(const pdo_t &pdo_tuple,std::vector<T> &pdo_vector){
         if(pdo_vector.size()!=pdo_size){
@@ -28,6 +30,9 @@ namespace MotorPdoRx{
         pdo_vector[9]= static_cast<T>(std::get<9>(pdo_tuple));
         pdo_vector[10]= static_cast<T>(std::get<10>(pdo_tuple));
         pdo_vector[11]= static_cast<T>(std::get<11>(pdo_tuple));
+        pdo_vector[12]= static_cast<T>(std::get<12>(pdo_tuple));
+        pdo_vector[13]= static_cast<T>(std::get<13>(pdo_tuple));
+        pdo_vector[14]= static_cast<T>(std::get<14>(pdo_tuple));
         return true;
     }
 };
@@ -72,12 +77,10 @@ public:
 
     virtual void set_to_pb(void)=0;
     
-    MotorPdoRx::pdo_t rx_pdo={0,0,0,0,0,0,0,0,0,0,0,0};
-    float read_pos_ref,read_vel_ref,read_torque_ref,read_curr_ref; // should be added in rx_pdo
+    MotorPdoRx::pdo_t rx_pdo={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     bool init_rx_pdo=false;
 
-    MotorPdoRx::pdo_t tx_pdo={0,0,0,0,0,0,0,0,0,0,0,0};
-    float curr_ref; // should be added in tx_pdo
+    MotorPdoTx::pdo_t tx_pdo={0,0,0,0,0,0,0,0,0,0,0,0};
 protected:
     virtual void init_pb();
 };

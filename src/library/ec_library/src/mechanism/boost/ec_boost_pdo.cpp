@@ -9,7 +9,7 @@ void EcBoostPdo::esc_factory(SSI slave_descr)
                 case iit::ecat::LO_PWR_DC_MC:
                 case iit::ecat::SYNAPTICON_v5_0:
                 case iit::ecat::SYNAPTICON_v5_1:{
-                    _internal_motor_status_map[id]=_motor_status_map[id]={0,0,0,0,0,0,0,0,0,0,0,0};
+                    _internal_motor_status_map[id]=_motor_status_map[id]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
                     _internal_motor_reference_map[id]=_motor_reference_map[id]={0,0,0,0,0,0,0,0,0,0,0,0};
                 }break;
                 case iit::ecat::FT6_MSP432:{
@@ -69,9 +69,10 @@ void EcBoostPdo::motor_status_handler(char *buf, size_t size)
     static MSS motors_status;
     auto ret = proto.getEscStatus(buf,size,UdpPackMsg::MSG_MOTOR_STS, motors_status);
 
+    // NOTE add extra PDO like pos_ref, vel_ref, tor_ref, curr_ref feedback
     for ( const auto &[id,link_pos,motor_pos,link_vel,motor_vel,torque,motor_temp,board_temp,fault,rtt,op_idx_ack,aux,cmd_aux_sts] : motors_status) {
         if(_internal_motor_status_map.count(id)>0){
-            _internal_motor_status_map[id] = std::make_tuple(link_pos,motor_pos,link_vel,motor_vel,torque,motor_temp,board_temp,fault,rtt,op_idx_ack,aux,cmd_aux_sts);
+            _internal_motor_status_map[id] = std::make_tuple(0,link_pos,motor_pos,link_vel,motor_vel,torque,aux,motor_temp,board_temp,fault,rtt,0,0,0,0);
         }
         else{
             _consoleLog->error( "Id {} is not a motor",id);

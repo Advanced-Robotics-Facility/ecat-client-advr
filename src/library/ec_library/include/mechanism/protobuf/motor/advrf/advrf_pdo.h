@@ -41,23 +41,22 @@ inline AdvrfPdo<T>::~AdvrfPdo()
 template < class T >
 inline void AdvrfPdo<T>::get_from_pb() 
 {
-    std::get<0>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->link_pos();
-    std::get<1>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->motor_pos();
-    std::get<2>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->link_vel();
-    std::get<3>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->motor_vel();
-    std::get<4>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->torque();
-    std::get<5>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->motor_temp();
-    std::get<6>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->board_temp();
-    std::get<7>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->fault();
-    std::get<8>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->rtt();
-    std::get<9>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->op_idx_ack();
-    std::get<10>(MotorPdo<T>::rx_pdo)   = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->aux();
-    std::get<11>(MotorPdo<T>::rx_pdo)   = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->cmd_aux_sts();
+    std::get<0>(MotorPdo<T>::rx_pdo)    = 0; // status word NOT YET implemented!!!!
+    std::get<1>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->link_pos();
+    std::get<2>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->motor_pos();
+    std::get<3>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->link_vel();
+    std::get<4>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->motor_vel();
+    std::get<5>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->torque();
+    std::get<6>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->aux();
+    std::get<7>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->motor_temp();
+    std::get<8>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->board_temp();
+    std::get<9>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->fault();
+    std::get<10>(MotorPdo<T>::rx_pdo)   = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->rtt();
+    std::get<11>(MotorPdo<T>::rx_pdo)   = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->pos_ref();
+    std::get<12>(MotorPdo<T>::rx_pdo)   = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->vel_ref();
+    std::get<13>(MotorPdo<T>::rx_pdo)   = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->tor_ref();
+    std::get<14>(MotorPdo<T>::rx_pdo)   = 0;
     
-    MotorPdo<T>::read_pos_ref           = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->pos_ref();
-    MotorPdo<T>::read_vel_ref           = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->vel_ref();
-    MotorPdo<T>::read_torque_ref        = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->tor_ref();
-
     if(!MotorPdo<T>::init_rx_pdo){
         MotorPdo<T>::init_rx_pdo=true;   
     }
