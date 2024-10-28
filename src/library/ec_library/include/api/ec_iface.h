@@ -12,6 +12,8 @@
 #include <boost/lockfree/queue.hpp>
 #include <boost/lockfree/stack.hpp>
 
+#define MAX_QUEUE_PDO 64
+
 using namespace boost::lockfree;
 class EcIface
 {
@@ -86,32 +88,32 @@ protected:
     SSI _fake_slave_info;
     // last received motor data
     MotorStatusMap _motor_status_map,_internal_motor_status_map;
-    spsc_queue<MotorStatusMap,fixed_sized<true>> _motor_status_queue{128};
+    spsc_queue<MotorStatusMap,fixed_sized<true>> _motor_status_queue{MAX_QUEUE_PDO};
 
     // last received ft data
     FtStatusMap _ft_status_map,_internal_ft_status_map;
-    spsc_queue<FtStatusMap,fixed_sized<true>> _ft_status_queue{128};
+    spsc_queue<FtStatusMap,fixed_sized<true>> _ft_status_queue{MAX_QUEUE_PDO};
     // last received pow data
     PwrStatusMap _pow_status_map,_internal_pow_status_map;
-    spsc_queue<PwrStatusMap,fixed_sized<true>> _pow_status_queue{128};
+    spsc_queue<PwrStatusMap,fixed_sized<true>> _pow_status_queue{MAX_QUEUE_PDO};
     // last received imu data
     ImuStatusMap _imu_status_map,_internal_imu_status_map;
-    spsc_queue<ImuStatusMap,fixed_sized<true>> _imu_status_queue{128};
+    spsc_queue<ImuStatusMap,fixed_sized<true>> _imu_status_queue{MAX_QUEUE_PDO};
     // last received valve data
     ValveStatusMap _valve_status_map,_internal_valve_status_map;
-    spsc_queue<ValveStatusMap,fixed_sized<true>> _valve_status_queue{128};
+    spsc_queue<ValveStatusMap,fixed_sized<true>> _valve_status_queue{MAX_QUEUE_PDO};
     // last received pump data
     PumpStatusMap _pump_status_map,_internal_pump_status_map;
-    spsc_queue<PumpStatusMap,fixed_sized<true>> _pump_status_queue{128};
+    spsc_queue<PumpStatusMap,fixed_sized<true>> _pump_status_queue{MAX_QUEUE_PDO};
     
     MotorReferenceMap _motor_reference_map,_internal_motor_reference_map;
-    spsc_queue<MotorReferenceMap,fixed_sized<true>> _motor_reference_queue{128};
+    spsc_queue<MotorReferenceMap,fixed_sized<true>> _motor_reference_queue{MAX_QUEUE_PDO};
     
     ValveReferenceMap _valve_reference_map,_internal_valve_reference_map;
-    spsc_queue<ValveReferenceMap,fixed_sized<true>> _valve_reference_queue{128};
+    spsc_queue<ValveReferenceMap,fixed_sized<true>> _valve_reference_queue{MAX_QUEUE_PDO};
     
     PumpReferenceMap _pump_reference_map,_internal_pump_reference_map;
-    spsc_queue<PumpReferenceMap,fixed_sized<true>> _pump_reference_queue{128};
+    spsc_queue<PumpReferenceMap,fixed_sized<true>> _pump_reference_queue{MAX_QUEUE_PDO};
     
     pthread_mutex_t _mutex_update,_mutex_client_thread;
     pthread_cond_t _update_cond,_client_thread_cond;
