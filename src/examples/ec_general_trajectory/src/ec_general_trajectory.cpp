@@ -129,6 +129,7 @@ int main(int argc, char * const argv[])
         const auto period = std::chrono::nanoseconds(ec_cfg.period_ms * 1000000);
 
         for (auto &[esc_id, current_trj] : general_trj){ 
+            current_trj->reset();
             current_trj->set_start_time();
         }
         
@@ -186,11 +187,15 @@ int main(int argc, char * const argv[])
             }
 
             // ************************* SEND ALWAYS REFERENCES***********************************//
-            client->set_valve_reference(valve_reference_map);
+            if(!valve_reference_map.empty()){
+                client->set_valve_reference(valve_reference_map);
+            }
             // ************************* SEND ALWAYS REFERENCES***********************************//
                  
             // ************************* SEND ALWAYS REFERENCES***********************************//
-            client->set_motor_reference(motor_reference_map);
+            if(!motor_reference_map.empty()){
+                client->set_motor_reference(motor_reference_map);
+            }
             // ************************* SEND ALWAYS REFERENCES***********************************//
 
             time = time + period;

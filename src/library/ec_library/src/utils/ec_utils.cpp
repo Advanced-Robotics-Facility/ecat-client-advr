@@ -291,13 +291,13 @@ void EcUtils::trajectory_generator()
                 else{
                     // Spline trajectory
                     if ( _ec_cfg.trj_type=="spline"){
-                        std::vector<double> time =  {0,trj_time};
+                        std::vector<double> time =  {0,_ec_cfg.trj_time};
                         std::vector<double> value = {0,set_poit};
-                        //_ec_cfg.trj_config_map[device_type].trj_generator[id][ctrl_type] = std::make_shared<Spline_trajectory>(time, value);
+                        _ec_cfg.trj_config_map[device_type].trj_generator[id][ctrl_type] = std::make_shared<Spline_trajectory>(time, value);
                     } 
                     // Smoother trajectory
                     else if ( _ec_cfg.trj_type=="smoother"){
-                        std::vector<double> time =  {0,trj_time};
+                        std::vector<double> time =  {0,_ec_cfg.trj_time};
                         std::vector<double> value = {0,set_poit};
                         _ec_cfg.trj_config_map[device_type].trj_generator[id][ctrl_type] = std::make_shared<Smoother_trajectory>(time, value);
                     } 
@@ -319,11 +319,20 @@ void EcUtils::trajectory_generator()
                     } 
                     // Stair trajectory
                     else if ( _ec_cfg.trj_type=="stair"){
-
+                        double T=0.1*_ec_cfg.trj_time;
+                        double amplitude = T * set_poit;
+                        double max_amplitude = set_poit;
+                        double t_trans = _ec_cfg.trj_time/(1000*_ec_cfg.period_ms);
+                        _ec_cfg.trj_config_map[device_type].trj_generator[id][ctrl_type] = std::make_shared<Stair_trajectory>(T, amplitude, max_amplitude, t_trans);
                     } 
                     // Chirp trajectory
                     else if ( _ec_cfg.trj_type=="chirp"){
-
+                        double amplitude = set_poit;
+                        double min_f = 1/_ec_cfg.trj_time;
+                        double max_f = 10*min_f;
+                        bool reverse = false;
+                        double step_size = 0.1;
+                        _ec_cfg.trj_config_map[device_type].trj_generator[id][ctrl_type] = std::make_shared<Chirp_trajectory>(amplitude, min_f, max_f,reverse,step_size);
                     }
                     else{
                         throw std::runtime_error("Trajectory type not recognized!");

@@ -1,5 +1,5 @@
 trajectory:
-  type: sine #sine, step, smoother
+  type: sine #spline, smoother, step, sine, stair, chirp
   frequency: 1
   repeat: 2
   
