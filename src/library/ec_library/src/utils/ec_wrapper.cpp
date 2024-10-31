@@ -166,37 +166,43 @@ void EcWrapper::safe_init()
     _client->get_motor_status(motor_status_map);
     for (const auto &[esc_id, motor_rx_pdo] : motor_status_map){
         auto motor_pos =    std::get<2>(motor_rx_pdo);
-        motor_reference_map[esc_id] = std::make_tuple(  _ec_cfg.device_config_map[esc_id].control_mode_type,  // ctrl_type
-                                                        motor_pos,                                            // pos_ref
-                                                        0.0,                                                  // vel_ref
-                                                        0.0,                                                  // tor_ref
-                                                        _ec_cfg.device_config_map[esc_id].gains[0],           // gain_1
-                                                        _ec_cfg.device_config_map[esc_id].gains[1],           // gain_2
-                                                        _ec_cfg.device_config_map[esc_id].gains[2],           // gain_3
-                                                        _ec_cfg.device_config_map[esc_id].gains[3],           // gain_4
-                                                        _ec_cfg.device_config_map[esc_id].gains[4],           // gain_5
-                                                        1,                                                    // op means NO_OP
-                                                        0,                                                    // idx
-                                                        0                                                     // aux
-                                                    );
+        motor_reference_map[esc_id] = {0,motor_pos,0,0,0,0,0,0,0,0,0,0};
+        if(_ec_cfg.device_config_map.count(esc_id)>0){
+            motor_reference_map[esc_id] = std::make_tuple(  _ec_cfg.device_config_map[esc_id].control_mode_type,  // ctrl_type
+                                                            motor_pos,                                            // pos_ref
+                                                            0.0,                                                  // vel_ref
+                                                            0.0,                                                  // tor_ref
+                                                            _ec_cfg.device_config_map[esc_id].gains[0],           // gain_1
+                                                            _ec_cfg.device_config_map[esc_id].gains[1],           // gain_2
+                                                            _ec_cfg.device_config_map[esc_id].gains[2],           // gain_3
+                                                            _ec_cfg.device_config_map[esc_id].gains[3],           // gain_4
+                                                            _ec_cfg.device_config_map[esc_id].gains[4],           // gain_5
+                                                            1,                                                    // op means NO_OP
+                                                            0,                                                    // idx
+                                                            0                                                     // aux
+                                                        );
+        }
     }
 
     // init valve reference map 
     _client->get_valve_status(valve_status_map);
     for (const auto &[esc_id, valve_rx_pdo] : valve_status_map){
-        auto enc_pos =    std::get<0>(valve_rx_pdo);            
-        valve_reference_map[esc_id] = std::make_tuple(  0,                                                    // current_ref
-                                                        enc_pos,                                              // position_ref
-                                                        0,                                                    // force_ref
-                                                        _ec_cfg.device_config_map[esc_id].gains[0],           // gain_1
-                                                        _ec_cfg.device_config_map[esc_id].gains[1],           // gain_2
-                                                        _ec_cfg.device_config_map[esc_id].gains[2],           // gain_3
-                                                        _ec_cfg.device_config_map[esc_id].gains[3],           // gain_4
-                                                        _ec_cfg.device_config_map[esc_id].gains[4],           // gain_5 
-                                                        0,                                                    // fault_ack
-                                                        0,                                                    // ts
-                                                        0,                                                    // op_idx_aux
-                                                        0);                                                   // aux
+        auto enc_pos =    std::get<0>(valve_rx_pdo);  
+        valve_reference_map[esc_id] = {0,enc_pos,0,0,0,0,0,0,0,0,0,0};          
+        if(_ec_cfg.device_config_map.count(esc_id)>0){
+            valve_reference_map[esc_id] = std::make_tuple(  0,                                                    // current_ref
+                                                            enc_pos,                                              // position_ref
+                                                            0,                                                    // force_ref
+                                                            _ec_cfg.device_config_map[esc_id].gains[0],           // gain_1
+                                                            _ec_cfg.device_config_map[esc_id].gains[1],           // gain_2
+                                                            _ec_cfg.device_config_map[esc_id].gains[2],           // gain_3
+                                                            _ec_cfg.device_config_map[esc_id].gains[3],           // gain_4
+                                                            _ec_cfg.device_config_map[esc_id].gains[4],           // gain_5 
+                                                            0,                                                    // fault_ack
+                                                            0,                                                    // ts
+                                                            0,                                                    // op_idx_aux
+                                                            0);                                                   // aux
+        }
     }
 
     // init valve reference map
