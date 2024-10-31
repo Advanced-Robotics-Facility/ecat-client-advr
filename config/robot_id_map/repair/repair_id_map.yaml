@@ -1,4 +1,5 @@
 joint_map:
+  1:  sliding_guide
   11: j_arm_1_1
   12: j_arm_1_2
   13: j_arm_1_3
@@ -14,3 +15,4 @@ joint_map:
   26: j_arm_2_6
   27: j_arm_2_7
   41: torso
+

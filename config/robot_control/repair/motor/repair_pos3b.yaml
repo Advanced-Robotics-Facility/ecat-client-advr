@@ -1,3 +1,36 @@
+# pos_3b Gains define
+
+# pos_3b_Gains_200:
+#   - 200.0
+#   - 0.0
+#   - 10.0
+#   - 0.0
+#   - 0.0
+
+# pos_3b_Gains_300:
+#   - 300.0
+#   - 0.0
+#   - 10.0
+#   - 0.0
+#   - 0.0
+
+# pos_3b_Gains_500:
+#   - 500.0
+#   - 0.0
+#   - 10.0
+#   - 0.0
+#   - 0.0
+
+#############################
+# SLIDING GUIDE 
+#############################
+sliding_guide:
+  motor_type: ADVRF #allowed ADVRF, Synapticon default ADVRF
+  brake_present: false
+  control_mode: 0x3B
+  gains: [200.0,0.0,10.0,0.0,0.0]
+  #gains: pos_3b_Gains_200
+
 #############################
 # TORSO 
 #############################
@@ -5,7 +38,9 @@ torso:
   motor_type: ADVRF #allowed ADVRF, Synapticon default ADVRF
   brake_present: false
   control_mode: 0x3B
-  gains: [100.0,0.0,10.0,0.0,0.0]
+  gains: [200.0,0.0,10.0,0.0,0.0]
+  #gains: pos_3b_Gains_200
+
 
 #############################
 # ARM 1 
@@ -14,43 +49,43 @@ j_arm_1_1:
   motor_type: ADVRF #allowed ADVRF, Synapticon default ADVRF
   brake_present: false
   control_mode: 0x3B
-  gains: [100.0,0.0,10.0,0.0,0.0]
+  gains: [500.0,0.0,10.0,0.0,0.0]
   
 j_arm_1_2:
   motor_type: ADVRF #allowed ADVRF, Synapticon default ADVRF
   brake_present: false
   control_mode: 0x3B
-  gains: [100.0,0.0,10.0,0.0,0.0]
+  gains: [500.0,0.0,10.0,0.0,0.0]
 
 j_arm_1_3:
   motor_type: ADVRF #allowed ADVRF, Synapticon default ADVRF
   brake_present: false
   control_mode: 0x3B
-  gains: [100.0,0.0,10.0,0.0,0.0]
+  gains: [500.0,0.0,10.0,0.0,0.0]
   
 j_arm_1_4:
   motor_type: ADVRF #allowed ADVRF, Synapticon default ADVRF
   brake_present: false
   control_mode: 0x3B
-  gains: [100.0,0.0,10.0,0.0,0.0]
+  gains: [500.0,0.0,10.0,0.0,0.0]
 
 j_arm_1_5:
   motor_type: ADVRF #allowed ADVRF, Synapticon default ADVRF
   brake_present: false
   control_mode: 0x3B
-  gains: [100.0,0.0,10.0,0.0,0.0]
+  gains: [500.0,0.0,10.0,0.0,0.0]
   
 j_arm_1_6:
   motor_type: ADVRF #allowed ADVRF, Synapticon default ADVRF
   brake_present: false
   control_mode: 0x3B
-  gains: [100.0,0.0,10.0,0.0,0.0]
+  gains: [500.0,0.0,10.0,0.0,0.0]
   
 j_arm_1_7:
   motor_type: ADVRF #allowed ADVRF, Synapticon default ADVRF
   brake_present: false
   control_mode: 0x3B
-  gains: [100.0,0.0,10.0,0.0,0.0]
+  gains: [500.0,0.0,10.0,0.0,0.0]
 
 #############################
 # ARM 2 
@@ -59,40 +94,40 @@ j_arm_2_1:
   motor_type: ADVRF #allowed ADVRF, Synapticon default ADVRF
   brake_present: false
   control_mode: 0x3B
-  gains: [100.0,0.0,10.0,0.0,0.0]
+  gains: [200.0,0.0,10.0,0.0,0.0]
   
 j_arm_2_2:
   motor_type: ADVRF #allowed ADVRF, Synapticon default ADVRF
   brake_present: false
   control_mode: 0x3B
-  gains: [100.0,0.0,10.0,0.0,0.0]
+  gains: [200.0,0.0,10.0,0.0,0.0]
 
 j_arm_2_3:
   motor_type: ADVRF #allowed ADVRF, Synapticon default ADVRF
   brake_present: false
   control_mode: 0x3B
-  gains: [100.0,0.0,10.0,0.0,0.0]
+  gains: [200.0,0.0,10.0,0.0,0.0]
   
 j_arm_2_4:
   motor_type: ADVRF #allowed ADVRF, Synapticon default ADVRF
   brake_present: false
   control_mode: 0x3B
-  gains: [100.0,0.0,10.0,0.0,0.0]
+  gains: [200.0,0.0,10.0,0.0,0.0]
 
 j_arm_2_5:
   motor_type: ADVRF #allowed ADVRF, Synapticon default ADVRF
   brake_present: false
   control_mode: 0x3B
-  gains: [100.0,0.0,10.0,0.0,0.0]
+  gains: [200.0,0.0,10.0,0.0,0.0]
   
 j_arm_2_6:
   motor_type: ADVRF #allowed ADVRF, Synapticon default ADVRF
   brake_present: false
   control_mode: 0x3B
-  gains: [100.0,0.0,10.0,0.0,0.0]
+  gains: [200.0,0.0,10.0,0.0,0.0]
   
 j_arm_2_7:
   motor_type: ADVRF #allowed ADVRF, Synapticon default ADVRF
   brake_present: false
   control_mode: 0x3B
-  gains: [100.0,0.0,10.0,0.0,0.0]
+  gains: [200.0,0.0,10.0,0.0,0.0]
