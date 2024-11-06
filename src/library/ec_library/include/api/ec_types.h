@@ -40,8 +40,8 @@ using DST = std::vector<std::tuple<int32_t, int32_t, std::vector<float>>>;
 // Sdo commands
 using RD_SDO = std::vector<std::string>;
 using WR_SDO = std::vector<std::tuple<std::string, std::string>>;
-using RR_SDO = std::map<std::string, float>;
-using SRD_SDO = std::map<uint32_t, RR_SDO>;
+using RR_SDOS = std::map<std::string, std::string>;
+using SRD_SDO = std::map<uint32_t, RR_SDOS>;
 
 // PdoAuxCommand
 using PAC = std::vector<std::tuple<int32_t, int32_t>>;

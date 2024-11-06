@@ -22,13 +22,10 @@ EcGuiSdo::~EcGuiSdo(){}
 
 bool EcGuiSdo::eventFilter( QObject* o, QEvent* e )
 {
-    if( o == _sdo_tree_wid && e->type() == QEvent::KeyRelease)
-    {
+    if( o == _sdo_tree_wid && e->type() == QEvent::KeyRelease){
         QKeyEvent *qkey = static_cast<QKeyEvent*>(e);
-        if(qkey->key() == Qt::Key_Return)
-        {
-            if(_sdo_column == SDO_VALUE_COL)
-            {
+        if(qkey->key() == Qt::Key_Return){
+            if(_sdo_column == SDO_VALUE_COL){
                 QStringList esc_id_pieces = _sdo_item->parent()->text(0).split( "_" );
                 
                 uint32_t esc_id =esc_id_pieces.value(2).toUInt();
@@ -39,21 +36,16 @@ bool EcGuiSdo::eventFilter( QObject* o, QEvent* e )
                 WR_SDO wr_sdo{std::make_tuple(sdo_name,new_sdo_value)};
                 
                 bool write_read=false;
-                if(_client->set_wr_sdo(esc_id,{},wr_sdo))
-                {
-                    RR_SDO rr_sdo_new;
-                    if(_client->retrieve_rr_sdo(esc_id,rd_sdo,{},rr_sdo_new))
-                    {
-                        std::string sdo_value_read = std::to_string(rr_sdo_new[sdo_name]);
-                        if(sdo_value_read == new_sdo_value)
-                        {
+                if(_client->set_wr_sdo(esc_id,{},wr_sdo)){
+                    RR_SDOS rr_sdo_new;
+                    if(_client->retrieve_rr_sdo(esc_id,rd_sdo,{},rr_sdo_new)){
+                        if(rr_sdo_new[sdo_name] == new_sdo_value){
                             write_read=true;
                         }
                     }
                 }
                 
-                if(!write_read)
-                {
+                if(!write_read){
                     _sdo_item->setText(2,QString::fromStdString(_old_sdo_value));
                 }
 
@@ -70,8 +62,7 @@ bool EcGuiSdo::eventFilter( QObject* o, QEvent* e )
 }
 void EcGuiSdo::OnMouseClicked(QTreeWidgetItem* item, int column)
 {
-    if(_sdo_item != nullptr)
-    {
+    if(_sdo_item != nullptr){
         _sdo_tree_wid->closePersistentEditor(_sdo_item,_sdo_column); // close old editor
     }
 
@@ -79,12 +70,10 @@ void EcGuiSdo::OnMouseClicked(QTreeWidgetItem* item, int column)
     _sdo_column=column;
     _old_sdo_value= _sdo_item->text(2).toStdString();
 
-    if((column == SDO_VALUE_COL ) && (_sdo_item->parent() != nullptr))
-    {
+    if((column == SDO_VALUE_COL ) && (_sdo_item->parent() != nullptr)){
         _sdo_tree_wid->openPersistentEditor(item,column);
     }
-    else
-    {
+    else{
         _sdo_tree_wid->closePersistentEditor(item,column);
     } 
 }
@@ -104,22 +93,16 @@ void EcGuiSdo::restart_ec_gui_sdo(EcIface::Ptr client,SRD_SDO sdo_map)
 
 void EcGuiSdo::add_esc_sdo()
 {
-    for ( auto &[esc_id, rr_sdo] : _sdo_map )
-    {
+    for ( auto &[esc_id, rr_sdo] : _sdo_map ){
         QTreeWidgetItem * esc_item = new QTreeWidgetItem();
         std::string esc_id_name = "esc_id_"+std::to_string(esc_id);
         esc_item->setText(0,QString::fromStdString(esc_id_name));
         
-        for ( auto &[sdo_name, value] : rr_sdo )
-        {
-            QTreeWidgetItem * sdo_value = new QTreeWidgetItem();
-            sdo_value->setText(1,QString::fromStdString(sdo_name));
-            
-            std::string value_str = std::to_string(value);
-            std::replace(value_str.begin(), value_str.end(), ',', '.');
-            sdo_value->setText(2,QString::fromStdString(value_str));
-            
-            esc_item->addChild(sdo_value);
+        for ( auto &[sdo_name, sdo_value] : rr_sdo ){
+            QTreeWidgetItem * sdo_entry = new QTreeWidgetItem();
+            sdo_entry->setText(1,QString::fromStdString(sdo_name));
+            sdo_entry->setText(2,QString::fromStdString(sdo_value));
+            esc_item->addChild(sdo_entry);
         }
         _sdo_tree_wid->addTopLevelItem(esc_item);
     }
@@ -130,9 +113,8 @@ void EcGuiSdo::rescan_esc_sdo()
 {
     _sdo_map.clear();
     
-    for ( auto &[esc_id, rr_sdo] : _sdo_map )
-    {
-        RR_SDO new_rr_sdo_info;
+    for ( auto &[esc_id, rr_sdo] : _sdo_map ){
+        RR_SDOS new_rr_sdo_info;
         _client->retrieve_all_sdo(esc_id,new_rr_sdo_info);
         _sdo_map[esc_id] = new_rr_sdo_info;
     }

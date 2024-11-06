@@ -20,11 +20,11 @@ public:
     bool stop_devices() final;
     bool pdo_aux_cmd(const PAC & pac) final;
     bool retrieve_slaves_info(SSI &slave_info) final;
-    bool retrieve_all_sdo(uint32_t esc_id,RR_SDO &rr_sdo) final;
+    bool retrieve_all_sdo(uint32_t esc_id,RR_SDOS &rr_sdo) final;
     bool retrieve_rr_sdo(uint32_t esc_id,
                          const RD_SDO &rd_sdo, 
                          const WR_SDO &wr_sdo,
-                         RR_SDO &rr_sdo) final;
+                         RR_SDOS &rr_sdo) final;
                          
     bool set_wr_sdo(uint32_t esc_id,
                     const RD_SDO &rd_sdo,

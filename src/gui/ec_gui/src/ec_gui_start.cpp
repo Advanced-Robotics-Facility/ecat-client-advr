@@ -251,7 +251,7 @@ void EcGuiStart::scan_device()
         }
         else{
             for ( auto &[device_id, device_type, device_pos] : _ec_wrapper_info.device_info ) {
-                RR_SDO rr_sdo;
+                RR_SDOS rr_sdo;
                 _ec_wrapper_info.client->retrieve_all_sdo(device_id,rr_sdo);
                 _ec_wrapper_info.sdo_map[device_id]=rr_sdo;
             }

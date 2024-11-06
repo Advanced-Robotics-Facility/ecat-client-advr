@@ -234,7 +234,7 @@ void EcBoostCmd::getAndset_slaves_sdo(uint32_t esc_id, const RD_SDO &rd_sdo, con
     _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
 }
 
-bool EcBoostCmd::retrieve_all_sdo(uint32_t esc_id,RR_SDO &rr_sdo)
+bool EcBoostCmd::retrieve_all_sdo(uint32_t esc_id,RR_SDOS &rr_sdo)
 {
     return false;
 }
@@ -242,7 +242,7 @@ bool EcBoostCmd::retrieve_all_sdo(uint32_t esc_id,RR_SDO &rr_sdo)
 bool EcBoostCmd::retrieve_rr_sdo(uint32_t esc_id,
                              const RD_SDO &rd_sdo, 
                              const WR_SDO &wr_sdo,
-                             RR_SDO &rr_sdo)
+                             RR_SDOS &rr_sdo)
 
 {
     int attemps_cnt = 0;
@@ -255,7 +255,9 @@ bool EcBoostCmd::retrieve_rr_sdo(uint32_t esc_id,
             
             ret_cmd_status = get_reply_from_server(ReplReqRep::SDO_CMD);
             if(ret_cmd_status){
-                rr_sdo = _rr_sdo;
+                for ( auto &[k,v] : _rr_sdo ) {
+                    rr_sdo[k] = std::to_string(v);
+                }
                 attemps_cnt = _max_cmd_attemps;
             }
             else{
