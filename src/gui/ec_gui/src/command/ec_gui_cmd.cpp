@@ -264,7 +264,7 @@ bool EcGuiCmd::braking_cmd_req()
             brake_req_sdo=0x00DB;
         }
         
-        wr_sdo.push_back(std::make_tuple("ctrl_status_cmd",std::to_string(brake_req)));
+        wr_sdo.push_back(std::make_tuple("ctrl_status_cmd",std::to_string(brake_req_sdo)));
         braking_cmd_ack &= _client->set_wr_sdo(esc_id,rd_sdo,wr_sdo);
     }
     
