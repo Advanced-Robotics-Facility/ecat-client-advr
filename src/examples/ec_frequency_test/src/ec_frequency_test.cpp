@@ -50,6 +50,23 @@ int main(int argc, char * const argv[])
         DPRINTF("Got an homing position map\n");
         return 1;
     }
+
+    unsigned long int increment_us = 0;
+    if(argv[1] != NULL){
+        char* p;
+        increment_us = strtoul(argv[1], &p, 10);
+        if (*p != '\0' || errno != 0) {
+            DPRINTF("Problem on frequency parameter!\n");
+            return 1;
+        }
+    }
+
+    if (increment_us > ULONG_MAX) {
+        DPRINTF("Frequency parameter is not valid!\n");
+        return 1;
+    }else{
+        DPRINTF("Frequency parameter is: %ld us\n",increment_us);
+    }   
   
     bool ec_sys_started = true;
     try{
@@ -103,8 +120,7 @@ int main(int argc, char * const argv[])
         auto time = start_time;
         const auto period = std::chrono::nanoseconds(ec_cfg.period_ms * 1000000);
         auto incrementat_freq = std::chrono::nanoseconds(0);
-        auto incrementat_k=std::chrono::nanoseconds(100000); //(100 us) every 1s
-        bool incrementat_freq_req=true;
+        auto incrementat_k=std::chrono::nanoseconds(increment_us*1000);
         
         while (run_loop && client->get_client_status().run_loop){
             client->read();
@@ -124,9 +140,7 @@ int main(int argc, char * const argv[])
             time = time + period + incrementat_freq;
 
             if(time_elapsed_ms>=1000){ //1s
-                if(incrementat_freq_req){
-                    incrementat_freq = incrementat_freq + incrementat_k;
-                }
+                incrementat_freq = incrementat_freq + incrementat_k;
                 start_time=time;
             }
             
