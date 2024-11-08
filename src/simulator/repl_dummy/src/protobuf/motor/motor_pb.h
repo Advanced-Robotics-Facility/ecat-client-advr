@@ -14,6 +14,9 @@ public:
    
     virtual void pbDeserialize(iit::advr::Ec_slave_pdo pb)
     {
+        if ( pb.type() != iit::advr::Ec_slave_pdo::TX_XT_MOTOR ) {
+            return;
+        }
         pos_ref=pb.mutable_motor_xt_tx_pdo()->pos_ref();
         vel_ref=pb.mutable_motor_xt_tx_pdo()->vel_ref();
         tor_ref=pb.mutable_motor_xt_tx_pdo()->tor_ref();
@@ -62,10 +65,13 @@ public:
    
     virtual void pbDeserialize(iit::advr::Ec_slave_pdo pb)
     {
-        pos_ref=pb.mutable_circulo9_tx_pdo()->target_pos();
-        vel_ref=pb.mutable_circulo9_tx_pdo()->target_vel();
-        tor_ref=pb.mutable_circulo9_tx_pdo()->target_torque();
-        curr_ref=pb.mutable_circulo9_tx_pdo()->target_current();
+        if ( pb.type() != iit::advr::Ec_slave_pdo::TX_CIA402 ) {
+            return;
+        }
+        pos_ref=pb.mutable_cia402_tx_pdo()->target_pos();
+        vel_ref=pb.mutable_cia402_tx_pdo()->target_vel();
+        tor_ref=pb.mutable_cia402_tx_pdo()->target_torque();
+        curr_ref=pb.mutable_cia402_tx_pdo()->target_current();
     }
     
     virtual void  pbSerialize(iit::advr::Ec_slave_pdo& pb)
@@ -76,22 +82,22 @@ public:
         pb.mutable_header()->mutable_stamp()->set_sec(ts.tv_sec);
         pb.mutable_header()->mutable_stamp()->set_nsec(ts.tv_nsec);
         // Type
-        pb.set_type(iit::advr::Ec_slave_pdo::TX_CIRCULO9);
+        pb.set_type(iit::advr::Ec_slave_pdo::RX_CIA402);
         
-        pb.mutable_circulo9_rx_pdo()->set_statusword(0);
-        pb.mutable_circulo9_rx_pdo()->set_link_pos(pos_ref);
-        pb.mutable_circulo9_rx_pdo()->set_motor_pos(pos_ref);
-        pb.mutable_circulo9_rx_pdo()->set_link_vel(vel_ref);
-        pb.mutable_circulo9_rx_pdo()->set_motor_vel(vel_ref);
-        pb.mutable_circulo9_rx_pdo()->set_torque(tor_ref);
-        pb.mutable_circulo9_rx_pdo()->set_current(curr_ref);
-        pb.mutable_circulo9_rx_pdo()->set_motor_temp(temp(gen));
-        pb.mutable_circulo9_rx_pdo()->set_drive_temp(temp(gen));
-        pb.mutable_circulo9_rx_pdo()->set_error_code(0);
-        pb.mutable_circulo9_rx_pdo()->set_demanded_pos(pos_ref);
-        pb.mutable_circulo9_rx_pdo()->set_demanded_vel(vel_ref);
-        pb.mutable_circulo9_rx_pdo()->set_demanded_torque(tor_ref);
-        pb.mutable_circulo9_rx_pdo()->set_demanded_current(curr_ref);
+        pb.mutable_cia402_rx_pdo()->set_statusword(0);
+        pb.mutable_cia402_rx_pdo()->set_link_pos(pos_ref);
+        pb.mutable_cia402_rx_pdo()->set_motor_pos(pos_ref);
+        pb.mutable_cia402_rx_pdo()->set_link_vel(vel_ref);
+        pb.mutable_cia402_rx_pdo()->set_motor_vel(vel_ref);
+        pb.mutable_cia402_rx_pdo()->set_torque(tor_ref);
+        pb.mutable_cia402_rx_pdo()->set_current(curr_ref);
+        pb.mutable_cia402_rx_pdo()->set_motor_temp(temp(gen));
+        pb.mutable_cia402_rx_pdo()->set_drive_temp(temp(gen));
+        pb.mutable_cia402_rx_pdo()->set_error_code(0);
+        pb.mutable_cia402_rx_pdo()->set_demanded_pos(pos_ref);
+        pb.mutable_cia402_rx_pdo()->set_demanded_vel(vel_ref);
+        pb.mutable_cia402_rx_pdo()->set_demanded_torque(tor_ref);
+        pb.mutable_cia402_rx_pdo()->set_demanded_current(curr_ref);
     } 
 };
 
