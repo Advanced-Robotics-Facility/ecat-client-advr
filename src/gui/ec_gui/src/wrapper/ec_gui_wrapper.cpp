@@ -87,8 +87,7 @@ EcGuiWrapper::EcGuiWrapper(QWidget *parent) :
     connect(_receive_timer, SIGNAL(timeout()),
         this, SLOT(receive()));
 
-
-    setPeriod();
+    _time_ms = 16; //62.5 Hz
 }
 
 void EcGuiWrapper::DwTopLevelChanged(bool isFloating)
@@ -145,26 +144,19 @@ bool EcGuiWrapper::check_client_setup()
     return ret;
 }
 
-void EcGuiWrapper::setPeriod()
-{
-    double freq=(_period_combobox->currentText().toDouble())/1000;
-    _time_ms=_period_combobox->currentText().toInt();
-}
-
 int EcGuiWrapper::get_period_ms()
 {
-    return _time_ms;
+    return _period_combobox->currentText().toInt();
 }
 
 void EcGuiWrapper::OnPeriodChanged()
 {
-    setPeriod();
-    
     if(_ec_wrapper_info.client == nullptr){
         return;
     }
     else{
-        _ec_wrapper_info.client->set_loop_time(_time_ms);
+        auto client_time = _period_combobox->currentText().toInt();
+        _ec_wrapper_info.client->set_loop_time(client_time);
     }
 
 /**** RX STOP and START *****/
@@ -264,7 +256,6 @@ void EcGuiWrapper::start_record()
         }
         else{
             _record_started = true;
-            //_ec_wrapper_info.client->start_logging();
         }
     }
 }
@@ -276,7 +267,6 @@ void EcGuiWrapper::stop_record()
     
     if(_record_started){
         _record_started = false;
-        //_ec_wrapper_info.client->stop_logging();
     }
 }
 
@@ -318,7 +308,6 @@ void EcGuiWrapper::receive()
 {
     if(_ec_wrapper_info.client->get_client_status().run_loop){
         _ec_wrapper_info.client->read();
-        //_ec_wrapper_info.client->log();
         _ec_gui_pdo->read();
     }
     else{

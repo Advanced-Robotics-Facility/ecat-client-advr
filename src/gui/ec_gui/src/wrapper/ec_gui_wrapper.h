@@ -33,7 +33,6 @@ public:
 
     void restart_gui_wrapper(ec_wrapper_info_t ec_wrapper_info);
     bool get_wrapper_send_sts();
-    void setPeriod();
     void onSendStopBtnReleased();
     int get_period_ms();
 
