@@ -86,7 +86,7 @@ int main(int argc, char * const argv[])
 
         for (const auto &[esc_id, motor_rx_pdo] : motor_status_map){
             if(homing.count(esc_id)){
-                motors_set_ref[esc_id] = std::get<1>(motor_status_map[esc_id]); // motor pos];
+                motors_set_ref[esc_id] = std::get<2>(motor_rx_pdo); // motor pos];
             }
         }
 
