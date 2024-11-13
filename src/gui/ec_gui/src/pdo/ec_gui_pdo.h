@@ -52,12 +52,6 @@ private:
       uint16_t _counter_buffer;
       uint16_t _buffer_size;
       
-      QList<QString> _motor_pdo_fields,_motor_ref_pdo_fields;
-      QList<QString> _pow_pdo_fields;
-      QList<QString> _ft6_pdo_fields;
-      QList<QString> _imu_pdo_fields;                                         
-      QList<QString> _valve_pdo_fields,_valve_ref_pdo_fields,_pump_pdo_fields,_pump_ref_pdo_fields;
-
       // last received motor data
       MotorStatusMap _motor_status_map;
       // last received ft data
@@ -82,9 +76,13 @@ private:
                                     
       void create_graph(std::string esc_id_pdo);
       QTreeWidgetItem * search_slave_into_treewid(std::string esc_id_name);
-      QList<QString> get_pdo_fields(const std::vector<std::string> pdo_name);
-      QTreeWidgetItem * initial_setup(std::string esc_id_name,QList<QString> pdo_fields);
-      void fill_data(std::string esc_id_name,QTreeWidgetItem * topLevel,QList<QString> pdo_fields,std::vector<float> pdo);
+      QTreeWidgetItem * initial_setup(const std::string &esc_id_name,
+                                      const std::vector<std::string> &pdo_fields,
+                                      const std::string &direction);
+      void fill_data(const std::string &esc_id_name,
+                     QTreeWidgetItem * topLevel,
+                     const std::vector<std::string> &pdo_fields,
+                     const std::vector<float> &pdo);
       void onStopPlotting();
       
       void update_plot();

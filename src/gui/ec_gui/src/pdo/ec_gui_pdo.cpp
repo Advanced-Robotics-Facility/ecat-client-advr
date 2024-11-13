@@ -54,10 +54,6 @@ _ec_gui_slider(ec_gui_slider)
     _battery_level->display(888888);
     _battery_level->setStyleSheet("background: red; color: #00FF00");
     _v_batt=0.0;
-
-    _counter_buffer= 0;
-    _buffer_size=25;
-    _buffer_time=QVector<double>(_buffer_size);
 }
       
 EcGuiPdo::~EcGuiPdo()
@@ -84,17 +80,19 @@ void EcGuiPdo::restart_ec_gui_pdo(EcIface::Ptr client)
     _custom_plot->legend->setVisible(false);
     _custom_plot->xAxis->setRange(0, 8, Qt::AlignRight);
     _custom_plot->replot();
+
+    _counter_buffer= 0;
+    _buffer_size=10;
+    _buffer_time.resize(_buffer_size);
 }
 
 /************************************* SEARCH SLAVE INTO TREE WID ***************************************/
 QTreeWidgetItem * EcGuiPdo::search_slave_into_treewid(std::string esc_id_name)
 {
     QTreeWidgetItem * topLevel_read=nullptr;
-    for(int i=0;i<_tree_wid->topLevelItemCount();i++)
-    {
+    for(int i=0;i<_tree_wid->topLevelItemCount();i++){
       topLevel_read =_tree_wid->topLevelItem(i);
-      if(esc_id_name==topLevel_read->text(1).toStdString())
-      {
+      if(esc_id_name==topLevel_read->text(1).toStdString()){
           topLevel_read =_tree_wid->topLevelItem(i);
           return(topLevel_read);
       }
@@ -118,34 +116,25 @@ void EcGuiPdo::create_graph(std::string esc_id_pdo)
 }
 /************************************* GENERATE GRAPH ***************************************/
 
-/************************************* CONVERT PDO NAME***************************************/
-QList<QString> EcGuiPdo::get_pdo_fields(const std::vector<std::string> pdo_name)
-{
-    QList<QString> list;
-    list.reserve(pdo_name.size());
-    for(const auto &pdo_name_v:pdo_name){
-        list.push_back(QString::fromStdString(pdo_name_v));
-    }
-    return list;
-}
-
 /************************************* INITIAL SETUP ***************************************/
-QTreeWidgetItem * EcGuiPdo::initial_setup(std::string esc_id_name,QList<QString> pdo_fields)
+QTreeWidgetItem * EcGuiPdo::initial_setup(const std::string &esc_id_name,
+                                          const std::vector<std::string> &pdo_fields,
+                                          const std::string &direction)
 {
       QTreeWidgetItem * topLevelrtn = new QTreeWidgetItem();
       topLevelrtn->setText(1,QString::fromStdString(esc_id_name));
       topLevelrtn->setText(2,"");
-      topLevelrtn->setText(3,"Rx");
+      topLevelrtn->setText(3,QString::fromStdString(direction));
 
       for(const auto &pdo_fields_value:pdo_fields){
-          std::string esc_id_pdo = esc_id_name + "_" + pdo_fields_value.toStdString();
+          std::string esc_id_pdo = esc_id_name + "_" + pdo_fields_value;
 
-          _buffer_pdo_map[esc_id_pdo]=QVector<double>(_buffer_size);
+          _buffer_pdo_map[esc_id_pdo].resize(_buffer_size);
           
           QTreeWidgetItem * item = new QTreeWidgetItem();
           item->setFlags(item->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable);
           item->setCheckState(1,Qt::Unchecked);
-          item->setText(1,pdo_fields_value);
+          item->setText(1,QString::fromStdString(pdo_fields_value));
           topLevelrtn->addChild(item);
       }
       
@@ -155,13 +144,17 @@ QTreeWidgetItem * EcGuiPdo::initial_setup(std::string esc_id_name,QList<QString>
 /************************************* INITIAL SETUP ***************************************/
 
 /************************************* FILL DATA ***************************************/
-void EcGuiPdo::fill_data(std::string esc_id_name,QTreeWidgetItem * topLevel,QList<QString> pdo_fields,std::vector<float> pdo)
+void EcGuiPdo::fill_data(const std::string &esc_id_name,
+                         QTreeWidgetItem * topLevel,
+                         const std::vector<std::string> &pdo_fields,
+                         const std::vector<float> &pdo)
 {
     try{
         /************************************* DATA ***********************************************/
         int k=0;
+        QString raw_data="";
         for(const auto &pdo_fields_value:pdo_fields){
-            std::string esc_id_pdo = esc_id_name + "_" + pdo_fields_value.toStdString();
+            std::string esc_id_pdo = esc_id_name + "_" + pdo_fields_value;
             
             _buffer_pdo_map[esc_id_pdo][_counter_buffer]=pdo[k];
 
@@ -169,6 +162,7 @@ void EcGuiPdo::fill_data(std::string esc_id_name,QTreeWidgetItem * topLevel,QLis
                 QTreeWidgetItem * item = topLevel->child(k);
                 QString data=QString::number(pdo[k], 'f', 2);
                 item->setText(2,data);
+                raw_data=raw_data+data+ " ";
                 if(item->checkState(1)==Qt::Checked){
                     if(_graph_pdo_map.count(esc_id_pdo)==0){
                         // generate graph
@@ -183,17 +177,14 @@ void EcGuiPdo::fill_data(std::string esc_id_name,QTreeWidgetItem * topLevel,QLis
             k++;
         }
         /************************************* DATA ************************************************/
-
         if(_counter_buffer==_buffer_size){
-            /************************************* TIME ************************************************/
-            //topLevel->setText(0,QString::number(_s_receive_time, 'f', 3));
-            /************************************* TIME ***********************************************/
-
-            /************************************* RAW DATA ********************************************/
-            //topLevel->setText(4,raw_data);
-            /************************************* RAW DATA ********************************************/
+        /************************************* TIME ************************************************/
+            topLevel->setText(0,QString::number(_s_receive_time, 'f', 2));
+        /************************************* TIME ***********************************************/
+        /************************************* RAW DATA ********************************************/
+            topLevel->setText(4,raw_data);
+        /************************************* RAW DATA ********************************************/
         }
-        
     }catch (const std::out_of_range &oor) {}
 }
 
@@ -217,34 +208,32 @@ void EcGuiPdo::read()
     _s_receive_time=(double) _ms_receive_time/1000;
     _buffer_time[_counter_buffer]=_s_receive_time;
 
-    /************************************* READ PDOs  ********************************************/
+    /************************************* READ Rx PDOs  ********************************************/
     read_motor_status();
     read_ft_status();
     read_pow_status();
     read_imu_status();
     read_valve_status();
     read_pump_status();
-    /************************************* READ PDOs  ********************************************/
+    /************************************* READ Rx PDOs  ********************************************/
 
+    /************************************* READ Tx PDOs  ********************************************/
     read_motor_ref();
     read_valve_ref();
     read_pump_ref();
+    /************************************* READ Tx PDOs  ********************************************/
 
     update_plot();
-
-    if(_counter_buffer==_buffer_size){
-        _counter_buffer=0;
-    }else{
-        _counter_buffer++;
-    }
-
 }
 
 void EcGuiPdo::update_plot()
 {
     if(_counter_buffer==_buffer_size){
+        _counter_buffer=0;
         if(_update_plot){
             if(!_first_update){
+                _custom_plot->clearGraphs();
+                _graph_pdo_map.clear();
                 _custom_plot->legend->setVisible(true);
                 _first_update=true;
             }
@@ -256,11 +245,12 @@ void EcGuiPdo::update_plot()
         }
         else{
             if(_first_update){
-                _custom_plot->clearGraphs();
-                _graph_pdo_map.clear();
                 _first_update=false;
             }
         }
+    }
+    else{
+        _counter_buffer++;
     }
 }
 
@@ -271,11 +261,10 @@ void EcGuiPdo::read_motor_status()
         std::string esc_id_name="motor_id_"+std::to_string(esc_id);
         QTreeWidgetItem *topLevel=search_slave_into_treewid(esc_id_name);
         if(!topLevel){
-            _motor_pdo_fields=get_pdo_fields(MotorPdoRx::name);
-            topLevel= initial_setup(esc_id_name,_motor_pdo_fields);
+            topLevel= initial_setup(esc_id_name,MotorPdoRx::name,"Rx");
         }
         if(MotorPdoRx::make_vector_from_tuple(motor_rx_pdo,_motor_rx_v)){
-            fill_data(esc_id_name,topLevel,_motor_pdo_fields,_motor_rx_v);
+            fill_data(esc_id_name,topLevel,MotorPdoRx::name,_motor_rx_v);
         }
         
         /************************************* ALIGN POSITION SLIDERS with the motor position ********************************************/
@@ -294,11 +283,10 @@ void EcGuiPdo::read_ft_status()
         std::string esc_id_name="ft_id_"+std::to_string(esc_id);
         QTreeWidgetItem *topLevel=search_slave_into_treewid(esc_id_name);
         if(!topLevel){
-            _ft6_pdo_fields=get_pdo_fields(FtPdoRx::name);
-            topLevel= initial_setup(esc_id_name,_ft6_pdo_fields);
+            topLevel= initial_setup(esc_id_name,FtPdoRx::name,"Rx");
         }
         if(FtPdoRx::make_vector_from_tuple(ft_rx_pdo,_ft_rx_v)){
-            fill_data(esc_id_name,topLevel,_ft6_pdo_fields,_ft_rx_v);
+            fill_data(esc_id_name,topLevel,FtPdoRx::name,_ft_rx_v);
         }
 
     }
@@ -312,11 +300,10 @@ inline void EcGuiPdo::read_pow_status()
         std::string esc_id_name="pow_id_"+std::to_string(esc_id);
         QTreeWidgetItem *topLevel=search_slave_into_treewid(esc_id_name);
         if(!topLevel){
-            _pow_pdo_fields=get_pdo_fields(PowPdoRx::name);
-            topLevel= initial_setup(esc_id_name,_pow_pdo_fields);
+            topLevel= initial_setup(esc_id_name,PowPdoRx::name,"Rx");
         }
         if(PowPdoRx::make_vector_from_tuple(pow_rx_pdo,_pow_rx_v)){
-            fill_data(esc_id_name,topLevel,_pow_pdo_fields,_pow_rx_v);
+            fill_data(esc_id_name,topLevel,PowPdoRx::name,_pow_rx_v);
         }
     }
 }
@@ -328,11 +315,10 @@ void EcGuiPdo::read_imu_status()
         std::string esc_id_name="imu_id_"+std::to_string(esc_id);
         QTreeWidgetItem *topLevel=search_slave_into_treewid(esc_id_name);
         if(!topLevel){
-            _imu_pdo_fields=get_pdo_fields(ImuPdoRx::name);
-            topLevel= initial_setup(esc_id_name,_imu_pdo_fields);
+            topLevel= initial_setup(esc_id_name,ImuPdoRx::name,"Rx");
         }
         if(ImuPdoRx::make_vector_from_tuple(imu_rx_pdo,_imu_rx_v)){
-            fill_data(esc_id_name,topLevel,_imu_pdo_fields,_imu_rx_v);
+            fill_data(esc_id_name,topLevel,ImuPdoRx::name,_imu_rx_v);
         }
     }
 }
@@ -343,11 +329,10 @@ void EcGuiPdo::read_valve_status()
         std::string esc_id_name="valve_id_"+std::to_string(esc_id);
         QTreeWidgetItem *topLevel=search_slave_into_treewid(esc_id_name);
         if(!topLevel){
-            _valve_pdo_fields=get_pdo_fields(ValvePdoRx::name);
-            topLevel= initial_setup(esc_id_name,_valve_pdo_fields);
+            topLevel= initial_setup(esc_id_name,ValvePdoRx::name,"Rx");
         }
         if(ValvePdoRx::make_vector_from_tuple(valve_rx_pdo,_valve_rx_v)){
-            fill_data(esc_id_name,topLevel,_valve_pdo_fields,_valve_rx_v);
+            fill_data(esc_id_name,topLevel,ValvePdoRx::name,_valve_rx_v);
         }
     }
 }
@@ -359,11 +344,10 @@ void EcGuiPdo::read_pump_status()
         std::string esc_id_name="pump_id_"+std::to_string(esc_id);
         QTreeWidgetItem *topLevel=search_slave_into_treewid(esc_id_name);
         if(!topLevel){
-            _pump_pdo_fields=get_pdo_fields(PumpPdoRx::name);
-            topLevel= initial_setup(esc_id_name,_pump_pdo_fields);
+            topLevel= initial_setup(esc_id_name,PumpPdoRx::name,"Rx");
         }
         if(PumpPdoRx::make_vector_from_tuple(pump_rx_pdo,_pump_rx_v)){
-            fill_data(esc_id_name,topLevel,_pump_pdo_fields,_pump_rx_v);
+            fill_data(esc_id_name,topLevel,PumpPdoRx::name,_pump_rx_v);
         }
 
         /************************************* ALIGN PUMP SLIDERS with the actual pressure********************************************/
@@ -471,11 +455,10 @@ void EcGuiPdo::read_motor_ref()
             std::string esc_id_name="motor_id_ref_"+std::to_string(esc_id);
             QTreeWidgetItem *topLevel=search_slave_into_treewid(esc_id_name);
             if(!topLevel){
-                _motor_ref_pdo_fields=get_pdo_fields(MotorPdoTx::name);
-                topLevel= initial_setup(esc_id_name,_motor_ref_pdo_fields);
+                topLevel= initial_setup(esc_id_name,MotorPdoTx::name,"Tx");
             }
             if(MotorPdoTx::make_vector_from_tuple(references,_motor_tx_v)){
-                fill_data(esc_id_name,topLevel,_motor_ref_pdo_fields,_motor_tx_v);
+                fill_data(esc_id_name,topLevel,MotorPdoTx::name,_motor_tx_v);
             }
         }
     }
@@ -542,11 +525,10 @@ void EcGuiPdo::read_valve_ref()
             std::string esc_id_name="valve_id_ref_"+std::to_string(esc_id);
             QTreeWidgetItem *topLevel=search_slave_into_treewid(esc_id_name);
             if(!topLevel){
-                _valve_ref_pdo_fields=get_pdo_fields(ValvePdoTx::name);
-                topLevel= initial_setup(esc_id_name,_valve_ref_pdo_fields);
+                topLevel= initial_setup(esc_id_name,ValvePdoTx::name,"Tx");
             }
             if(ValvePdoTx::make_vector_from_tuple(references,_valve_tx_v)){
-                fill_data(esc_id_name,topLevel,_valve_ref_pdo_fields,_valve_tx_v);
+                fill_data(esc_id_name,topLevel,ValvePdoTx::name,_valve_tx_v);
             }
         }
     }
@@ -612,11 +594,10 @@ void EcGuiPdo::read_pump_ref()
             std::string esc_id_name="pump_id_ref_"+std::to_string(esc_id);
             QTreeWidgetItem *topLevel=search_slave_into_treewid(esc_id_name);
             if(!topLevel){
-                _pump_ref_pdo_fields=get_pdo_fields(PumpPdoTx::name);
-                topLevel= initial_setup(esc_id_name,_pump_ref_pdo_fields);
+                topLevel= initial_setup(esc_id_name,PumpPdoTx::name,"Tx");
             }
             if(PumpPdoTx::make_vector_from_tuple(references,_pump_tx_v)){
-                fill_data(esc_id_name,topLevel,_pump_ref_pdo_fields,_pump_tx_v);
+                fill_data(esc_id_name,topLevel,PumpPdoTx::name,_pump_tx_v);
             }
         }
     }

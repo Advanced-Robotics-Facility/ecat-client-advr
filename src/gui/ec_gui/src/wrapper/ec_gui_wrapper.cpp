@@ -87,7 +87,7 @@ EcGuiWrapper::EcGuiWrapper(QWidget *parent) :
     connect(_receive_timer, SIGNAL(timeout()),
         this, SLOT(receive()));
 
-    _time_ms = 4; //62.5 Hz
+    _time_ms = 5;
 }
 
 void EcGuiWrapper::DwTopLevelChanged(bool isFloating)
