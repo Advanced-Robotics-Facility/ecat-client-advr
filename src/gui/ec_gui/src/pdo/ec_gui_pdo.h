@@ -43,11 +43,14 @@ private:
       QCustomPlot *_custom_plot;
       QPushButton * _stop_plotting_btn;
       std::map<std::string,QCPGraph *> _graph_pdo_map;
-      std::map<std::string,QColor> _color_pdo_map;
-      bool _update_plot,_first_update,_clear_plot;
+      std::map<std::string,QVector<double>> _buffer_pdo_map;
+      QVector<double> _buffer_time;
+      bool _update_plot,_first_update;
       qint64 _ms_receive_time,_ms_send_time;
       double _s_receive_time,_s_send_time;
       float _currentHue = 0.0;
+      uint16_t _counter_buffer;
+      uint16_t _buffer_size;
       
       QList<QString> _motor_pdo_fields,_motor_ref_pdo_fields;
       QList<QString> _pow_pdo_fields;
@@ -77,7 +80,7 @@ private:
       QLCDNumber *_battery_level;
       float _v_batt;
                                     
-      void create_color(std::string esc_id_pdo);
+      void create_graph(std::string esc_id_pdo);
       QTreeWidgetItem * search_slave_into_treewid(std::string esc_id_name);
       QList<QString> get_pdo_fields(const std::vector<std::string> pdo_name);
       QTreeWidgetItem * initial_setup(std::string esc_id_name,QList<QString> pdo_fields);
