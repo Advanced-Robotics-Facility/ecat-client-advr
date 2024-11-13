@@ -234,6 +234,10 @@ void EcGuiPdo::update_plot()
             if(!_first_update){
                 _custom_plot->clearGraphs();
                 _graph_pdo_map.clear();
+
+                QFont legendFont = font();
+                legendFont.setPointSize(12);
+                _custom_plot->legend->setFont(legendFont);
                 _custom_plot->legend->setVisible(true);
                 _first_update=true;
             }
