@@ -51,6 +51,9 @@ private:
       float _currentHue = 0.0;
       uint16_t _counter_buffer;
       uint16_t _buffer_size;
+
+      QString _raw_data,_data,_time;
+      std::string _esc_id_pdo;
       
       // last received motor data
       MotorStatusMap _motor_status_map;

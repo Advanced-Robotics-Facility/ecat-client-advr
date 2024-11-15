@@ -6,7 +6,7 @@ QWidget(parent),
 _ec_gui_slider(ec_gui_slider)
 {
     _tree_wid = parent->findChild<QTreeWidget *>("PDO");
-    
+
     _receive_timer= new QElapsedTimer();
     _send_timer= new QElapsedTimer();
     
@@ -152,24 +152,26 @@ void EcGuiPdo::fill_data(const std::string &esc_id_name,
     try{
         /************************************* DATA ***********************************************/
         int k=0;
-        QString raw_data="";
+        _raw_data="";
         for(const auto &pdo_fields_value:pdo_fields){
-            std::string esc_id_pdo = esc_id_name + "_" + pdo_fields_value;
-            
-            _buffer_pdo_map[esc_id_pdo][_counter_buffer]=pdo[k];
+            _esc_id_pdo = esc_id_name + "_" + pdo_fields_value;
+            _buffer_pdo_map[_esc_id_pdo][_counter_buffer]=pdo[k];
 
             if(_counter_buffer==_buffer_size){
-                QTreeWidgetItem * item = topLevel->child(k);
-                QString data=QString::number(pdo[k], 'f', 2);
-                item->setText(2,data);
-                raw_data=raw_data+data+ " ";
-                if(item->checkState(1)==Qt::Checked){
-                    if(_graph_pdo_map.count(esc_id_pdo)==0){
+                _data=QString::number(pdo[k], 'f', 2);
+                _raw_data=_raw_data+_data+ " ";
+
+                if(topLevel->isExpanded()){
+                    topLevel->child(k)->setText(2,_data);
+                }
+                
+                if(topLevel->child(k)->checkState(1)==Qt::Checked){
+                    if(_graph_pdo_map.count(_esc_id_pdo)==0){
                         // generate graph
-                        create_graph(esc_id_pdo);
+                        create_graph(_esc_id_pdo);
                     }
                     // add data to lines
-                    _graph_pdo_map[esc_id_pdo]->addData(_buffer_time,_buffer_pdo_map[esc_id_pdo],true);    
+                    _graph_pdo_map[_esc_id_pdo]->addData(_buffer_time,_buffer_pdo_map[_esc_id_pdo],true);    
                     //update plot
                     _update_plot |= true;
                 }
@@ -179,10 +181,10 @@ void EcGuiPdo::fill_data(const std::string &esc_id_name,
         /************************************* DATA ************************************************/
         if(_counter_buffer==_buffer_size){
         /************************************* TIME ************************************************/
-            topLevel->setText(0,QString::number(_s_receive_time, 'f', 2));
+            topLevel->setText(0,_time);
         /************************************* TIME ***********************************************/
         /************************************* RAW DATA ********************************************/
-            topLevel->setText(4,raw_data);
+            topLevel->setText(4,_raw_data);
         /************************************* RAW DATA ********************************************/
         }
     }catch (const std::out_of_range &oor) {}
@@ -190,11 +192,9 @@ void EcGuiPdo::fill_data(const std::string &esc_id_name,
 
 void EcGuiPdo::onStopPlotting()
 {
-    for(int i=0;i<_tree_wid->topLevelItemCount();i++)
-    {
+    for(int i=0;i<_tree_wid->topLevelItemCount();i++){
         auto topLevel =_tree_wid->topLevelItem(i);
-        for(int k=0; k< topLevel->childCount(); k++)
-        {
+        for(int k=0; k< topLevel->childCount(); k++){
             QTreeWidgetItem * item = topLevel->child(k);
             item->setCheckState(1,Qt::Unchecked);
         }
@@ -207,6 +207,7 @@ void EcGuiPdo::read()
     _ms_receive_time= _receive_timer->elapsed();
     _s_receive_time=(double) _ms_receive_time/1000;
     _buffer_time[_counter_buffer]=_s_receive_time;
+    _time=QString::number(_s_receive_time, 'f', 2);
 
     /************************************* READ Rx PDOs  ********************************************/
     read_motor_status();
@@ -239,6 +240,7 @@ void EcGuiPdo::update_plot()
                 legendFont.setPointSize(12);
                 _custom_plot->legend->setFont(legendFont);
                 _custom_plot->legend->setVisible(true);
+
                 _first_update=true;
             }
             //make key axis range scroll with the data (at a constant range size of 8):
