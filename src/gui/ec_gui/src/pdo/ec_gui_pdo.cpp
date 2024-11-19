@@ -156,17 +156,13 @@ void EcGuiPdo::fill_data(const std::string &esc_id_name,
     try{
         /************************************* DATA ***********************************************/
         int k=0;
-        _raw_data="";
         for(const auto &pdo_fields_value:pdo_fields){
             _esc_id_pdo = esc_id_name + "_" + pdo_fields_value;
             _buffer_pdo_map[_esc_id_pdo][_counter_buffer]=pdo[k];
 
             if(_counter_buffer==_buffer_size-1){
-                _data=QString::number(pdo[k], 'f', 2);
-                _raw_data=_raw_data+_data+ " ";
-
                 if(topLevel->isExpanded()){
-                    topLevel->child(k)->setText(1,_data);
+                    topLevel->child(k)->setText(1,QString::number(pdo[k], 'f', 2));
                 }
                 
                 if(topLevel->child(k)->checkState(0)==Qt::Checked){

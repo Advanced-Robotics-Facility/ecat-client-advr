@@ -53,7 +53,6 @@ private:
       uint16_t _counter_buffer;
       uint16_t _buffer_size;
 
-      QString _raw_data,_data;
       std::string _esc_id_pdo;
       
       // last received motor data
