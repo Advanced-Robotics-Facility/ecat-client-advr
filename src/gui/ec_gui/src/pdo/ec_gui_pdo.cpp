@@ -157,7 +157,7 @@ void EcGuiPdo::fill_data(const std::string &esc_id_name,
             _esc_id_pdo = esc_id_name + "_" + pdo_fields_value;
             _buffer_pdo_map[_esc_id_pdo][_counter_buffer]=pdo[k];
 
-            if(_counter_buffer==_buffer_size){
+            if(_counter_buffer==_buffer_size-1){
                 _data=QString::number(pdo[k], 'f', 2);
                 _raw_data=_raw_data+_data+ " ";
 
@@ -179,7 +179,7 @@ void EcGuiPdo::fill_data(const std::string &esc_id_name,
             k++;
         }
         /************************************* DATA ************************************************/
-        if(_counter_buffer==_buffer_size){
+        if(_counter_buffer==_buffer_size-1){
         /************************************* TIME ************************************************/
             topLevel->setText(0,_time);
         /************************************* TIME ***********************************************/
@@ -229,7 +229,7 @@ void EcGuiPdo::read()
 
 void EcGuiPdo::update_plot()
 {
-    if(_counter_buffer==_buffer_size){
+    if(_counter_buffer==_buffer_size-1){
         _counter_buffer=0;
         if(_update_plot){
             if(!_first_update){
