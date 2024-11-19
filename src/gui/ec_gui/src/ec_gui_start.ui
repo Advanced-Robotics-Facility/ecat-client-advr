@@ -125,7 +125,7 @@
   <widget class="QDockWidget" name="DataObject">
    <property name="minimumSize">
     <size>
-     <width>861</width>
+     <width>962</width>
      <height>470</height>
     </size>
    </property>
@@ -147,83 +147,166 @@
    <widget class="QWidget" name="dockWidgetContents_5">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QTabWidget" name="tabWidget">
-       <property name="currentIndex">
+      <layout class="QVBoxLayout" name="verticalLayout_8">
+       <property name="leftMargin">
         <number>0</number>
        </property>
-       <widget class="QWidget" name="tab">
-        <attribute name="title">
-         <string>PDO</string>
-        </attribute>
-        <layout class="QHBoxLayout" name="horizontalLayout_7">
-         <item>
-          <widget class="QTreeWidget" name="PDO">
-           <column>
-            <property name="text">
-             <string>Time</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Slave Name</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Data</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Dir</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Raw Data</string>
-            </property>
-           </column>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="tab_2">
-        <attribute name="title">
-         <string>SDO</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_3">
-         <item>
-          <widget class="QTreeWidget" name="SDO">
-           <column>
-            <property name="text">
-             <string>Slave Name</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>SDO Name</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>SDO Value</string>
-            </property>
-           </column>
-          </widget>
-         </item>
-         <item>
-          <widget class="QDialogButtonBox" name="SDOManager">
-           <property name="layoutDirection">
-            <enum>Qt::LeftToRight</enum>
-           </property>
-           <property name="standardButtons">
-            <set>QDialogButtonBox::Reset|QDialogButtonBox::RestoreDefaults|QDialogButtonBox::Save</set>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </widget>
+       <item>
+        <widget class="QTabWidget" name="tabWidget">
+         <property name="currentIndex">
+          <number>0</number>
+         </property>
+         <widget class="QWidget" name="tab">
+          <attribute name="title">
+           <string>PDO</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="verticalLayout_11">
+           <item>
+            <widget class="QTreeWidget" name="PDO">
+             <attribute name="headerMinimumSectionSize">
+              <number>26</number>
+             </attribute>
+             <attribute name="headerDefaultSectionSize">
+              <number>150</number>
+             </attribute>
+             <column>
+              <property name="text">
+               <string>Slave Name</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Data</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Dir</string>
+              </property>
+             </column>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_5">
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <spacer name="horizontalSpacer_5">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QLabel" name="TimePdo">
+               <property name="minimumSize">
+                <size>
+                 <width>800</width>
+                 <height>20</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>800</width>
+                 <height>20</height>
+                </size>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>12</pointsize>
+                </font>
+               </property>
+               <property name="layoutDirection">
+                <enum>Qt::LeftToRight</enum>
+               </property>
+               <property name="autoFillBackground">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>0.00</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_10">
+               <property name="minimumSize">
+                <size>
+                 <width>30</width>
+                 <height>20</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>30</width>
+                 <height>20</height>
+                </size>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>12</pointsize>
+                </font>
+               </property>
+               <property name="text">
+                <string>t[s] </string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="tab_2">
+          <attribute name="title">
+           <string>SDO</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="verticalLayout_3">
+           <item>
+            <widget class="QTreeWidget" name="SDO">
+             <column>
+              <property name="text">
+               <string>Slave Name</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>SDO Name</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>SDO Value</string>
+              </property>
+             </column>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDialogButtonBox" name="SDOManager">
+             <property name="layoutDirection">
+              <enum>Qt::LeftToRight</enum>
+             </property>
+             <property name="standardButtons">
+              <set>QDialogButtonBox::Reset|QDialogButtonBox::RestoreDefaults|QDialogButtonBox::Save</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </widget>
@@ -234,6 +317,11 @@
      <width>500</width>
      <height>470</height>
     </size>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>9</pointsize>
+    </font>
    </property>
    <property name="features">
     <set>QDockWidget::AllDockWidgetFeatures</set>

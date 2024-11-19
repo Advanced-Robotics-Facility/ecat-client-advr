@@ -26,10 +26,15 @@ _ec_gui_slider(ec_gui_slider)
     _custom_plot->xAxis->setLabel("Time [s]");
     _custom_plot->axisRect()->setupFullAxesBox();
     _custom_plot->yAxis->setRange(-100, 100);
+
+    QFont legendFont = font();
+    legendFont.setPointSize(12);
+    _custom_plot->legend->setFont(legendFont);
+    
     
     auto cplot  = parent->findChild<QVBoxLayout *>("cplot");
     cplot->addWidget(_custom_plot);
-    
+
     _stop_plotting_btn = parent->findChild<QPushButton *>("stopPlotting");
 
     connect(_stop_plotting_btn, &QPushButton::released,
@@ -54,6 +59,8 @@ _ec_gui_slider(ec_gui_slider)
     _battery_level->display(888888);
     _battery_level->setStyleSheet("background: red; color: #00FF00");
     _v_batt=0.0;
+
+    _time_pdo=parent->findChild<QLabel *>("TimePdo"); 
 }
       
 EcGuiPdo::~EcGuiPdo()
@@ -82,22 +89,19 @@ void EcGuiPdo::restart_ec_gui_pdo(EcIface::Ptr client)
     _custom_plot->replot();
 
     _counter_buffer= 0;
-    _buffer_size=10;
+    _buffer_size=20;
     _buffer_time.resize(_buffer_size);
 }
 
 /************************************* SEARCH SLAVE INTO TREE WID ***************************************/
 QTreeWidgetItem * EcGuiPdo::search_slave_into_treewid(std::string esc_id_name)
 {
-    QTreeWidgetItem * topLevel_read=nullptr;
     for(int i=0;i<_tree_wid->topLevelItemCount();i++){
-      topLevel_read =_tree_wid->topLevelItem(i);
-      if(esc_id_name==topLevel_read->text(1).toStdString()){
-          topLevel_read =_tree_wid->topLevelItem(i);
-          return(topLevel_read);
+      if(esc_id_name==_tree_wid->topLevelItem(i)->text(0).toStdString()){
+          return(_tree_wid->topLevelItem(i));
       }
     }
-    return(nullptr);
+    return nullptr;
 }
 /************************************* SEARCH SLAVE INTO TREE WID ***************************************/
 
@@ -122,9 +126,9 @@ QTreeWidgetItem * EcGuiPdo::initial_setup(const std::string &esc_id_name,
                                           const std::string &direction)
 {
       QTreeWidgetItem * topLevelrtn = new QTreeWidgetItem();
-      topLevelrtn->setText(1,QString::fromStdString(esc_id_name));
-      topLevelrtn->setText(2,"");
-      topLevelrtn->setText(3,QString::fromStdString(direction));
+      topLevelrtn->setText(0,QString::fromStdString(esc_id_name));
+      topLevelrtn->setText(1,"");
+      topLevelrtn->setText(2,QString::fromStdString(direction));
 
       for(const auto &pdo_fields_value:pdo_fields){
           std::string esc_id_pdo = esc_id_name + "_" + pdo_fields_value;
@@ -133,8 +137,8 @@ QTreeWidgetItem * EcGuiPdo::initial_setup(const std::string &esc_id_name,
           
           QTreeWidgetItem * item = new QTreeWidgetItem();
           item->setFlags(item->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable);
-          item->setCheckState(1,Qt::Unchecked);
-          item->setText(1,QString::fromStdString(pdo_fields_value));
+          item->setCheckState(0,Qt::Unchecked);
+          item->setText(0,QString::fromStdString(pdo_fields_value));
           topLevelrtn->addChild(item);
       }
       
@@ -162,10 +166,10 @@ void EcGuiPdo::fill_data(const std::string &esc_id_name,
                 _raw_data=_raw_data+_data+ " ";
 
                 if(topLevel->isExpanded()){
-                    topLevel->child(k)->setText(2,_data);
+                    topLevel->child(k)->setText(1,_data);
                 }
                 
-                if(topLevel->child(k)->checkState(1)==Qt::Checked){
+                if(topLevel->child(k)->checkState(0)==Qt::Checked){
                     if(_graph_pdo_map.count(_esc_id_pdo)==0){
                         // generate graph
                         create_graph(_esc_id_pdo);
@@ -178,15 +182,6 @@ void EcGuiPdo::fill_data(const std::string &esc_id_name,
             }
             k++;
         }
-        /************************************* DATA ************************************************/
-        if(_counter_buffer==_buffer_size-1){
-        /************************************* TIME ************************************************/
-            topLevel->setText(0,_time);
-        /************************************* TIME ***********************************************/
-        /************************************* RAW DATA ********************************************/
-            topLevel->setText(4,_raw_data);
-        /************************************* RAW DATA ********************************************/
-        }
     }catch (const std::out_of_range &oor) {}
 }
 
@@ -196,7 +191,7 @@ void EcGuiPdo::onStopPlotting()
         auto topLevel =_tree_wid->topLevelItem(i);
         for(int k=0; k< topLevel->childCount(); k++){
             QTreeWidgetItem * item = topLevel->child(k);
-            item->setCheckState(1,Qt::Unchecked);
+            item->setCheckState(0,Qt::Unchecked);
         }
     }
 }
@@ -207,7 +202,6 @@ void EcGuiPdo::read()
     _ms_receive_time= _receive_timer->elapsed();
     _s_receive_time=(double) _ms_receive_time/1000;
     _buffer_time[_counter_buffer]=_s_receive_time;
-    _time=QString::number(_s_receive_time, 'f', 2);
 
     /************************************* READ Rx PDOs  ********************************************/
     read_motor_status();
@@ -231,14 +225,12 @@ void EcGuiPdo::update_plot()
 {
     if(_counter_buffer==_buffer_size-1){
         _counter_buffer=0;
+        _time_pdo->setText(QString::number(_s_receive_time, 'f', 2));
         if(_update_plot){
             if(!_first_update){
                 _custom_plot->clearGraphs();
                 _graph_pdo_map.clear();
 
-                QFont legendFont = font();
-                legendFont.setPointSize(12);
-                _custom_plot->legend->setFont(legendFont);
                 _custom_plot->legend->setVisible(true);
 
                 _first_update=true;

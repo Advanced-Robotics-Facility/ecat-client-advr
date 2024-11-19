@@ -42,6 +42,7 @@ private:
       QElapsedTimer *_send_timer;
       QCustomPlot *_custom_plot;
       QPushButton * _stop_plotting_btn;
+      QLabel *_time_pdo;
       std::map<std::string,QCPGraph *> _graph_pdo_map;
       std::map<std::string,QVector<double>> _buffer_pdo_map;
       QVector<double> _buffer_time;
@@ -52,7 +53,7 @@ private:
       uint16_t _counter_buffer;
       uint16_t _buffer_size;
 
-      QString _raw_data,_data,_time;
+      QString _raw_data,_data;
       std::string _esc_id_pdo;
       
       // last received motor data
