@@ -79,9 +79,9 @@ private:
                                     
       void create_graph(std::string esc_id_pdo);
       QTreeWidgetItem * search_slave_into_treewid(std::string esc_id_name);
-      QTreeWidgetItem * initial_setup(const std::string &esc_id_name,
-                                      const std::vector<std::string> &pdo_fields,
-                                      const std::string &direction);
+      QTreeWidgetItem * retrieve_treewid_item(const std::string &esc_id_name,
+                                              const std::vector<std::string> &pdo_fields,
+                                              const std::string &direction);
       void fill_data(const std::string &esc_id_name,
                      QTreeWidgetItem * topLevel,
                      const std::vector<std::string> &pdo_fields,
