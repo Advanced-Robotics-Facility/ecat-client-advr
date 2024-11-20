@@ -181,7 +181,6 @@ void EcGuiWrapper::onSendStopBtnReleased()
     _ec_gui_slider->reset_sliders();
 
     _send_ref = _ec_gui_cmd->get_cmd_sts(_ctrl_cmd);
-    _ec_gui_pdo->set_ctrl_mode(_ctrl_cmd);
     count_reset_ref=0;
     
     if((_send_stop_btn->text()=="Start Motion")&&(_send_ref)){
@@ -210,8 +209,6 @@ void EcGuiWrapper::onSendStopBtnReleased()
     }
 }
 
-
-
 void EcGuiWrapper::send()
 {
 
@@ -220,8 +217,8 @@ void EcGuiWrapper::send()
         _ec_gui_pdo->set_filter(_time_ms);//STOP align all references to zero or with the actual position for the motors
         _ec_gui_pdo->restart_send_timer();
         if(count_reset_ref>3){ 
-            _ec_gui_pdo->clear_write();
             _send_timer->stop(); //delay stop
+            return;
         }
     }
 

@@ -43,6 +43,7 @@ public:
     QCheckBox* get_slider_enabled();
 
     bool is_slider_enabled();
+    bool is_slider_checked();
     void check_slider_enabled();
     void uncheck_slider_enabled();
     std::string get_slider_name();

@@ -170,6 +170,11 @@ void SliderWidget::disable_slider_enabled()
 
 bool SliderWidget::is_slider_enabled()
 {
+    return _tab_name_wid->isEnabled();
+}
+
+bool SliderWidget::is_slider_checked()
+{
     return _slider_enabled->isChecked();
 }
 

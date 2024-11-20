@@ -202,7 +202,7 @@ void EcGuiCmd::fill_start_stop_motor()
     _brake_cmds.clear();
     _motors_selected = false;
     for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
-        if(slider_wid->is_slider_enabled()){
+        if(slider_wid->is_slider_checked()){
             _motors_selected |= true;
             if(_ctrl_cmd_type==ClientCmdType::STOP){
                 if(false){
@@ -237,7 +237,7 @@ void EcGuiCmd::fill_start_stop_pump()
 {
     _pumps_selected = false;
     for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
-        if(slider_wid->is_slider_enabled()){
+        if(slider_wid->is_slider_checked()){
             _pumps_selected |= true;
         }
     }

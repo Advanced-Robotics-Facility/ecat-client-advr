@@ -25,10 +25,8 @@ public:
       void restart_receive_timer();
       void read();
       void set_filter(int time_ms);
-      void set_ctrl_mode(float ctrl_cmd);
       void restart_send_timer();
       void write();
-      void clear_write();
 
 private:
       EcIface::Ptr _client;
@@ -107,17 +105,11 @@ private:
       PumpReferenceMap _pumps_ref;
 
       std::vector<float> _gains;
-      float _ctrl_cmd;
 
       void write_motor_pdo();
-      void read_motor_ref();
-      void clear_motor_ref();
       void write_valve_pdo();
-      void read_valve_ref();
-      void clear_valve_ref();
       void write_pump_pdo();
-      void read_pump_ref();
-      void clear_pump_ref();
+
     //************************ WRITE PDO ******************************
 
 };
