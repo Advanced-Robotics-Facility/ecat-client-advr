@@ -37,16 +37,6 @@ _ec_gui_slider(ec_gui_slider)
 
     _update_plot=_first_update=false;
 
-    _motor_rx_v.resize(MotorPdoRx::pdo_size);
-    _motor_tx_v.resize(MotorPdoTx::pdo_size);
-    _pow_rx_v.resize(PowPdoRx::pdo_size);
-    _ft_rx_v.resize(FtPdoRx::pdo_size);
-    _imu_rx_v.resize(ImuPdoRx::pdo_size);
-    _valve_rx_v.resize(ValvePdoRx::pdo_size);
-    _valve_tx_v.resize(ValvePdoTx::pdo_size);
-    _pump_rx_v.resize(PumpPdoRx::pdo_size);
-    _pump_tx_v.resize(PumpPdoTx::pdo_size);
-
     _battery_level = parent->findChild<QLCDNumber *>("BatteryLevel");
     _battery_level->setDigitCount(4);
     _battery_level->display(888888);
@@ -82,8 +72,14 @@ void EcGuiPdo::restart_ec_gui_pdo(EcIface::Ptr client)
 
     _counter_buffer= 0;
     _buffer_size=20;
+
+    _buffer_time.clear();
     _buffer_time.resize(_buffer_size);
+    _buffer_pdo_map.clear();
+    _pdo_v.clear();
+
     _slider_map=_ec_gui_slider->get_sliders(); // read only actual slider widget map.
+
 }
 /************************************* GENERATE GRAPH ***************************************/
 void EcGuiPdo::create_graph(std::string esc_id_pdo)
@@ -136,6 +132,8 @@ QTreeWidgetItem * EcGuiPdo::retrieve_treewid_item(const std::string &esc_id_name
             item->setText(0,QString::fromStdString(pdo_fields_value));
             topLevelrtn->addChild(item);
         }
+
+        _pdo_v[esc_id_name].resize(pdo_fields.size());
 
         _tree_wid->addTopLevelItem(topLevelrtn);
     }
@@ -247,8 +245,8 @@ void EcGuiPdo::read_motor_status()
     for ( const auto &[esc_id, motor_rx_pdo] : _motor_status_map){
         std::string esc_id_name="motor_id_"+std::to_string(esc_id);
         QTreeWidgetItem *topLevel= retrieve_treewid_item(esc_id_name,MotorPdoRx::name,"Rx");
-        if(MotorPdoRx::make_vector_from_tuple(motor_rx_pdo,_motor_rx_v)){
-            fill_data(esc_id_name,topLevel,MotorPdoRx::name,_motor_rx_v);
+        if(MotorPdoRx::make_vector_from_tuple(motor_rx_pdo,_pdo_v[esc_id_name])){
+            fill_data(esc_id_name,topLevel,MotorPdoRx::name,_pdo_v[esc_id_name]);
         }
         
         /************************************* ALIGN POSITION SLIDERS with the motor position ********************************************/
@@ -266,8 +264,8 @@ void EcGuiPdo::read_ft_status()
     for ( const auto &[esc_id, ft_rx_pdo] : _ft_status_map){
         std::string esc_id_name="ft_id_"+std::to_string(esc_id);
         QTreeWidgetItem *topLevel= retrieve_treewid_item(esc_id_name,FtPdoRx::name,"Rx");
-        if(FtPdoRx::make_vector_from_tuple(ft_rx_pdo,_ft_rx_v)){
-            fill_data(esc_id_name,topLevel,FtPdoRx::name,_ft_rx_v);
+        if(FtPdoRx::make_vector_from_tuple(ft_rx_pdo,_pdo_v[esc_id_name])){
+            fill_data(esc_id_name,topLevel,FtPdoRx::name,_pdo_v[esc_id_name]);
         }
     }
 }
@@ -281,8 +279,8 @@ inline void EcGuiPdo::read_pow_status()
         }
         std::string esc_id_name="pow_id_"+std::to_string(esc_id);
         QTreeWidgetItem *topLevel= retrieve_treewid_item(esc_id_name,PowPdoRx::name,"Rx");
-        if(PowPdoRx::make_vector_from_tuple(pow_rx_pdo,_pow_rx_v)){
-            fill_data(esc_id_name,topLevel,PowPdoRx::name,_pow_rx_v);
+        if(PowPdoRx::make_vector_from_tuple(pow_rx_pdo,_pdo_v[esc_id_name])){
+            fill_data(esc_id_name,topLevel,PowPdoRx::name,_pdo_v[esc_id_name]);
         }
     }
 }
@@ -293,8 +291,8 @@ void EcGuiPdo::read_imu_status()
     for ( const auto &[esc_id, imu_rx_pdo] : _imu_status_map){
         std::string esc_id_name="imu_id_"+std::to_string(esc_id);
         QTreeWidgetItem *topLevel= retrieve_treewid_item(esc_id_name,ImuPdoRx::name,"Rx");
-        if(ImuPdoRx::make_vector_from_tuple(imu_rx_pdo,_imu_rx_v)){
-            fill_data(esc_id_name,topLevel,ImuPdoRx::name,_imu_rx_v);
+        if(ImuPdoRx::make_vector_from_tuple(imu_rx_pdo,_pdo_v[esc_id_name])){
+            fill_data(esc_id_name,topLevel,ImuPdoRx::name,_pdo_v[esc_id_name]);
         }
     }
 }
@@ -304,8 +302,8 @@ void EcGuiPdo::read_valve_status()
     for ( const auto &[esc_id, valve_rx_pdo] : _valve_status_map){
         std::string esc_id_name="valve_id_"+std::to_string(esc_id);
         QTreeWidgetItem *topLevel= retrieve_treewid_item(esc_id_name,ValvePdoRx::name,"Rx");
-        if(ValvePdoRx::make_vector_from_tuple(valve_rx_pdo,_valve_rx_v)){
-            fill_data(esc_id_name,topLevel,ValvePdoRx::name,_valve_rx_v);
+        if(ValvePdoRx::make_vector_from_tuple(valve_rx_pdo,_pdo_v[esc_id_name])){
+            fill_data(esc_id_name,topLevel,ValvePdoRx::name,_pdo_v[esc_id_name]);
         }
         /************************************* ALIGN VALVE SLIDERS with the actual encoder pos********************************************/
         double enc_pos=std::get<0>(valve_rx_pdo);
@@ -322,8 +320,8 @@ void EcGuiPdo::read_pump_status()
     for ( const auto &[esc_id, pump_rx_pdo] : _pump_status_map){
         std::string esc_id_name="pump_id_"+std::to_string(esc_id);
         QTreeWidgetItem *topLevel= retrieve_treewid_item(esc_id_name,PumpPdoRx::name,"Rx");
-        if(PumpPdoRx::make_vector_from_tuple(pump_rx_pdo,_pump_rx_v)){
-            fill_data(esc_id_name,topLevel,PumpPdoRx::name,_pump_rx_v);
+        if(PumpPdoRx::make_vector_from_tuple(pump_rx_pdo,_pdo_v[esc_id_name])){
+            fill_data(esc_id_name,topLevel,PumpPdoRx::name,_pdo_v[esc_id_name]);
         }
 
         /************************************* ALIGN PUMP SLIDERS with the actual pressure********************************************/

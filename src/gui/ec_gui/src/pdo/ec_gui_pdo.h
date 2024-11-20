@@ -65,12 +65,8 @@ private:
       ValveStatusMap _valve_status_map;
       // last received pump data
       PumpStatusMap _pump_status_map;
-    
-      std::vector<float> _motor_rx_v,_motor_tx_v;
-      std::vector<float> _pow_rx_v;
-      std::vector<float> _ft_rx_v;
-      std::vector<float> _imu_rx_v;
-      std::vector<float> _valve_rx_v,_valve_tx_v,_pump_rx_v,_pump_tx_v;
+
+      std::map<std::string,std::vector<float>>  _pdo_v;
 
       QLCDNumber *_battery_level;
     
@@ -102,8 +98,6 @@ private:
       ValveReferenceMap _valves_ref;
       
       PumpReferenceMap _pumps_ref;
-
-      std::vector<float> _gains;
 
       void write_motor_pdo();
       void write_valve_pdo();
