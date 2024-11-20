@@ -73,8 +73,7 @@ private:
       std::vector<float> _valve_rx_v,_valve_tx_v,_pump_rx_v,_pump_tx_v;
 
       QLCDNumber *_battery_level;
-      float _v_batt;
-                                    
+    
       void create_graph(std::string esc_id_pdo);
       QTreeWidgetItem * search_slave_into_treewid(std::string esc_id_name);
       QTreeWidgetItem * retrieve_treewid_item(const std::string &esc_id_name,

@@ -48,10 +48,9 @@ _ec_gui_slider(ec_gui_slider)
     _pump_tx_v.resize(PumpPdoTx::pdo_size);
 
     _battery_level = parent->findChild<QLCDNumber *>("BatteryLevel");
-    _battery_level->setDigitCount(6);
+    _battery_level->setDigitCount(4);
     _battery_level->display(888888);
     _battery_level->setStyleSheet("background: red; color: #00FF00");
-    _v_batt=0.0;
 
     _time_pdo=parent->findChild<QLabel *>("TimePdo"); 
 }
@@ -277,7 +276,9 @@ inline void EcGuiPdo::read_pow_status()
 {
     _client->get_pow_status(_pow_status_map);
     for ( const auto &[esc_id, pow_rx_pdo] : _pow_status_map){
-        //_battery_level->display(std::get<0>(pow_rx_pdo));
+        if(_counter_buffer==_buffer_size-1){
+            _battery_level->display(std::get<0>(pow_rx_pdo));
+        }
         std::string esc_id_name="pow_id_"+std::to_string(esc_id);
         QTreeWidgetItem *topLevel= retrieve_treewid_item(esc_id_name,PowPdoRx::name,"Rx");
         if(PowPdoRx::make_vector_from_tuple(pow_rx_pdo,_pow_rx_v)){
