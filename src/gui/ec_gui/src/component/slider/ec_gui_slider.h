@@ -4,6 +4,7 @@
 #include <QtUiTools>
 #include <QWidget>
 
+#include "slider_window.h"
 #include "slider_widget.h"
 #include "utils/ec_utils.h"
 
@@ -69,11 +70,14 @@ private:
 
   float _control_mode;
 
+  QTabWidget *_devicecontrol;
+  std::map<std::string,SliderWindow *> _sliders_window_map;
   QVBoxLayout *_sliders_motorlayout;
   QVBoxLayout *_sliders_valvelayout,*_sliders_pumplayout;
   QListWidget* _device_list_wid;
   void delete_items(QLayout * layout);
   void on_checkbox_clicked(QCheckBox *,int);
+  QVBoxLayout* retrieve_slider_layout(const std::string &tab_name,const QStringList &control_mode);
 };
 
 #endif // EC_GUI_SLIDER_H

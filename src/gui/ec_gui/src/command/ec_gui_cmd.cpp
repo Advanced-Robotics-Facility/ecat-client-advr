@@ -17,6 +17,7 @@ EcGuiCmd::EcGuiCmd(EcGuiSlider::Ptr ec_gui_slider,
 
     /*  create mode type to start he motors */
     _mode_type_combobox = parent->findChild<QComboBox *>("ModeType");
+    _mode_type_combobox->hide();
 
     /* connection of read mode type function */
     connect(_mode_type_combobox, SIGNAL(currentIndexChanged(int)),this,

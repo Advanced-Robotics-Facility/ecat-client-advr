@@ -2,6 +2,7 @@
     <qresource prefix="/">
         <file>ec_gui_start.ui</file>
         <file>component/slider/slider_widget.ui</file>
+        <file>component/slider/slider_window.ui</file>
         <file>icon/48px-Document-open.png</file>
         <file>icon/48px-Document-save-as.png</file>
         <file>icon/48px-Document-save.png</file>

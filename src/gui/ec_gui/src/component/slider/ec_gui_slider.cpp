@@ -3,10 +3,19 @@
 EcGuiSlider::EcGuiSlider(QWidget *parent) :
     QWidget(parent)
 {
-    _sliders_motorlayout  = parent->findChild<QVBoxLayout *>("motorSliders");
-    _sliders_valvelayout = parent->findChild<QVBoxLayout *>("valveSliders");
-    _sliders_pumplayout = parent->findChild<QVBoxLayout *>("pumpSliders");
+    _devicecontrol=parent->findChild<QTabWidget *>("deviceControl");
     _device_list_wid = parent->findChild<QListWidget *>("devicelistWidget");
+}
+
+QVBoxLayout* EcGuiSlider::retrieve_slider_layout(const std::string &tab_name,const QStringList &control_mode)
+{
+    if(_sliders_window_map.count(tab_name)==0){
+        int tab_actual_index=_devicecontrol->count();
+        _sliders_window_map[tab_name]=new SliderWindow(control_mode,this);
+        _devicecontrol->insertTab(tab_actual_index,_sliders_window_map[tab_name],QString::fromStdString(tab_name));
+        _devicecontrol->show();
+    }
+    return _sliders_window_map[tab_name]->get_layout();
 }
 
 void EcGuiSlider::create_sliders(SSI device_info)
@@ -20,7 +29,10 @@ void EcGuiSlider::create_sliders(SSI device_info)
             QString motor_name = QString::fromStdString(motor_name_s);
             auto wid_motor=new SliderWidget(motor_name,motor_info,this);
             _slider_map.motor_sw_map[device_id]=wid_motor;
-            _sliders_motorlayout->addWidget(wid_motor,0, Qt::AlignTop);
+
+            QStringList control_mode= {"Position", "Velocity","Impedance", "Torque","Current", "Idle"};
+            auto motor_layout= retrieve_slider_layout("Motors",control_mode);
+            motor_layout->addWidget(wid_motor,0, Qt::AlignTop);
 
             _device_list_wid->addItem(motor_name);
             auto slider_enabled=wid_motor->get_slider_enabled();
@@ -34,7 +46,10 @@ void EcGuiSlider::create_sliders(SSI device_info)
             QString valve_name = QString::fromStdString(valve_name_s);
             auto wid_valve=new SliderWidget(valve_name,valve_info,this);
             _slider_map.valve_sw_map[device_id]=wid_valve;
-            _sliders_valvelayout->addWidget(wid_valve,0, Qt::AlignTop);
+
+            QStringList control_mode= {"Position", "Force","Current", "Idle"};
+            auto valve_layout= retrieve_slider_layout("Valves",control_mode);
+            valve_layout->addWidget(wid_valve,0, Qt::AlignTop);
 
             _device_list_wid->addItem(valve_name);
             auto slider_enabled=wid_valve->get_slider_enabled();
@@ -48,7 +63,10 @@ void EcGuiSlider::create_sliders(SSI device_info)
             QString pump_name = QString::fromStdString(pump_name_s);
             auto wid_pump=new SliderWidget(pump_name,pump_info,this);
             _slider_map.pump_sw_map[device_id]=wid_pump;
-            _sliders_pumplayout->addWidget(wid_pump,0, Qt::AlignTop);
+
+            QStringList control_mode= {"Pressure", "Idle"};
+            auto pump_layout= retrieve_slider_layout("Pumps",control_mode);
+            pump_layout->addWidget(wid_pump,0, Qt::AlignTop);
 
             _device_list_wid->addItem(pump_name);
             auto slider_enabled=wid_pump->get_slider_enabled();
@@ -73,15 +91,15 @@ void EcGuiSlider::on_checkbox_clicked(QCheckBox * slider_enabled,int i)
 
 void EcGuiSlider::delete_sliders()
 {
-    delete_items(_sliders_motorlayout->layout());
+    for(auto [tab_name,vertical_layout]: _sliders_window_map){
+        delete_items(vertical_layout->layout());
+    }
+    
+    _devicecontrol->clear();
+    _sliders_window_map.clear();
     _slider_map.motor_sw_map.clear();
-
-    delete_items(_sliders_valvelayout->layout());
     _slider_map.valve_sw_map.clear();
-
-    delete_items(_sliders_pumplayout->layout());
     _slider_map.pump_sw_map.clear();    
-
     _device_list_wid->clear();
 }
 

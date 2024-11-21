@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1528</width>
+    <width>1534</width>
     <height>1015</height>
    </rect>
   </property>
@@ -27,7 +27,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1528</width>
+     <width>1534</width>
      <height>20</height>
     </rect>
    </property>
@@ -382,7 +382,7 @@
   <widget class="QDockWidget" name="Command">
    <property name="minimumSize">
     <size>
-     <width>1116</width>
+     <width>1122</width>
      <height>428</height>
     </size>
    </property>
@@ -619,245 +619,54 @@
          </property>
          <widget class="QWidget" name="motorCtrl">
           <attribute name="title">
-           <string>Motors</string>
+           <string/>
           </attribute>
-          <layout class="QVBoxLayout" name="verticalLayout_5">
+          <widget class="QComboBox" name="ModeType">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>20</y>
+             <width>113</width>
+             <height>26</height>
+            </rect>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>150</width>
+             <height>16777215</height>
+            </size>
+           </property>
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_14">
-             <item>
-              <widget class="QLabel" name="label_7">
-               <property name="maximumSize">
-                <size>
-                 <width>150</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Control Mode</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QComboBox" name="ModeType">
-               <property name="maximumSize">
-                <size>
-                 <width>150</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <item>
-                <property name="text">
-                 <string>Position</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Velocity</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Impedance</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Current</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Idle</string>
-                </property>
-               </item>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_3">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>250</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
+            <property name="text">
+             <string>Position</string>
+            </property>
            </item>
            <item>
-            <widget class="QScrollArea" name="scrollArea">
-             <property name="widgetResizable">
-              <bool>true</bool>
-             </property>
-             <widget class="QWidget" name="scrollAreaWidgetContents">
-              <property name="geometry">
-               <rect>
-                <x>0</x>
-                <y>0</y>
-                <width>926</width>
-                <height>173</height>
-               </rect>
-              </property>
-              <layout class="QHBoxLayout" name="horizontalLayout_6">
-               <item>
-                <layout class="QVBoxLayout" name="motorSliders"/>
-               </item>
-              </layout>
-             </widget>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-         <widget class="QWidget" name="tab_4">
-          <attribute name="title">
-           <string>Valves</string>
-          </attribute>
-          <layout class="QVBoxLayout" name="verticalLayout_9">
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_19">
-             <item>
-              <widget class="QLabel" name="label_9">
-               <property name="maximumSize">
-                <size>
-                 <width>160</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Control Mode</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QComboBox" name="comboBox">
-               <property name="maximumSize">
-                <size>
-                 <width>150</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <item>
-                <property name="text">
-                 <string>Current</string>
-                </property>
-               </item>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_2">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>250</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
+            <property name="text">
+             <string>Velocity</string>
+            </property>
            </item>
            <item>
-            <widget class="QScrollArea" name="scrollArea_6">
-             <property name="widgetResizable">
-              <bool>true</bool>
-             </property>
-             <widget class="QWidget" name="scrollAreaWidgetContents_6">
-              <property name="geometry">
-               <rect>
-                <x>0</x>
-                <y>0</y>
-                <width>98</width>
-                <height>28</height>
-               </rect>
-              </property>
-              <layout class="QHBoxLayout" name="horizontalLayout_18">
-               <item>
-                <layout class="QVBoxLayout" name="valveSliders"/>
-               </item>
-              </layout>
-             </widget>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-         <widget class="QWidget" name="tab_5">
-          <attribute name="title">
-           <string>Pumps</string>
-          </attribute>
-          <layout class="QVBoxLayout" name="verticalLayout_10">
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_16">
-             <item>
-              <widget class="QLabel" name="label_11">
-               <property name="maximumSize">
-                <size>
-                 <width>160</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Control Mode</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QComboBox" name="comboBox_2">
-               <property name="maximumSize">
-                <size>
-                 <width>200</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <item>
-                <property name="text">
-                 <string>Pressure</string>
-                </property>
-               </item>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_4">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>250</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
+            <property name="text">
+             <string>Impedance</string>
+            </property>
            </item>
            <item>
-            <widget class="QScrollArea" name="scrollArea_7">
-             <property name="widgetResizable">
-              <bool>true</bool>
-             </property>
-             <widget class="QWidget" name="scrollAreaWidgetContents_7">
-              <property name="geometry">
-               <rect>
-                <x>0</x>
-                <y>0</y>
-                <width>98</width>
-                <height>28</height>
-               </rect>
-              </property>
-              <layout class="QHBoxLayout" name="horizontalLayout_20">
-               <item>
-                <layout class="QVBoxLayout" name="pumpSliders"/>
-               </item>
-              </layout>
-             </widget>
-            </widget>
+            <property name="text">
+             <string>Torque</string>
+            </property>
            </item>
-          </layout>
+           <item>
+            <property name="text">
+             <string>Current</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Idle</string>
+            </property>
+           </item>
+          </widget>
          </widget>
         </widget>
        </item>
