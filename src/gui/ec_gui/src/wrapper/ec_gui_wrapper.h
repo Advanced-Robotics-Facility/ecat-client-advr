@@ -39,9 +39,9 @@ public slots:
     void DwTopLevelChanged(bool isFloating);
     void send();
     void receive();
-    void start_receive();
+    void start_stop_receive();
     void stop_receive();
-    void start_record();
+    void start_stop_record();
     void stop_record();
 private:
   
@@ -63,12 +63,9 @@ private:
   QPushButton *_send_stop_btn;
 
   QTimer *_send_timer,*_receive_timer;
-  QAction *_receive_action,*_stop_receive_action;
-  bool _receive_started;
+  QAction *_receive_action,*_record_action;
+  bool _receive_started,_record_started;
 
-  QAction *_record_action,*_stop_record_action;
-  bool _record_started;
-  
   bool check_client_setup();
   int count_reset_ref=0;
 };

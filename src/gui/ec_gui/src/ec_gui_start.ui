@@ -50,9 +50,7 @@
      <string>Measurement</string>
     </property>
     <addaction name="actionReceive"/>
-    <addaction name="actionStopReceive"/>
     <addaction name="actionRecord"/>
-    <addaction name="actionStopRecord"/>
     <addaction name="actionCut"/>
    </widget>
    <widget class="QMenu" name="menuConnection">
@@ -118,9 +116,7 @@
    <addaction name="actionConfiguration"/>
    <addaction name="separator"/>
    <addaction name="actionReceive"/>
-   <addaction name="actionStopReceive"/>
    <addaction name="actionRecord"/>
-   <addaction name="actionStopRecord"/>
   </widget>
   <widget class="QDockWidget" name="DataObject">
    <property name="minimumSize">
@@ -775,8 +771,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>926</width>
-                <height>173</height>
+                <width>98</width>
+                <height>28</height>
                </rect>
               </property>
               <layout class="QHBoxLayout" name="horizontalLayout_18">
@@ -849,8 +845,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>926</width>
-                <height>173</height>
+                <width>98</width>
+                <height>28</height>
                </rect>
               </property>
               <layout class="QHBoxLayout" name="horizontalLayout_20">

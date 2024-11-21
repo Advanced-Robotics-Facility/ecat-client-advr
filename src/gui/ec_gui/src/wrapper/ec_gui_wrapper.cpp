@@ -25,16 +25,10 @@ EcGuiWrapper::EcGuiWrapper(QWidget *parent) :
     connect(_graphics_dw, SIGNAL(topLevelChanged(bool)), this, SLOT(DwTopLevelChanged(bool)));
 
     _receive_action = parent->findChild<QAction *>("actionReceive");
-    connect(_receive_action, SIGNAL(triggered()), this, SLOT(start_receive()));
-    
-    _stop_receive_action = parent->findChild<QAction *>("actionStopReceive");
-    connect(_stop_receive_action, SIGNAL(triggered()), this, SLOT(stop_receive()));
+    connect(_receive_action, SIGNAL(triggered()), this, SLOT(start_stop_receive()));
     
     _record_action = parent->findChild<QAction *>("actionRecord");
-    connect(_record_action, SIGNAL(triggered()), this, SLOT(start_record()));
-    
-    _stop_record_action = parent->findChild<QAction *>("actionStopRecord");
-    connect(_stop_record_action, SIGNAL(triggered()), this, SLOT(stop_record()));
+    connect(_record_action, SIGNAL(triggered()), this, SLOT(start_stop_record()));
     
     _receive_started = _record_started = false;
     
@@ -89,12 +83,9 @@ bool EcGuiWrapper::get_wrapper_send_sts()
 
 void EcGuiWrapper::restart_gui_wrapper(ec_wrapper_info_t ec_wrapper_info)
 {
-    if(_receive_started){
-        stop_receive();
-    }
-    if(_record_started){
-        stop_record();
-    }
+
+    stop_receive();
+    stop_record();
     
     _ec_wrapper_info = ec_wrapper_info;
 
@@ -187,9 +178,9 @@ void EcGuiWrapper::send()
 
 }
 
-void EcGuiWrapper::start_record()
+void EcGuiWrapper::start_stop_record()
 {
-    if(!_record_started && check_client_setup()){
+    if(check_client_setup()){
         if(_ec_wrapper_info.device_info.empty()){
             QMessageBox msgBox;
             msgBox.warning(this,msgBox.windowTitle(),
@@ -198,8 +189,15 @@ void EcGuiWrapper::start_record()
                            QMessageBox::Ok);
         }
         else{
-            _record_started = true;
-            _ec_logger->start_mat_logger();
+            if(!_record_started){
+                _record_started = true;
+                _ec_logger->start_mat_logger();
+                _record_action->setIcon(QIcon(":/icon/stop_record.png"));
+                _record_action->setText("Stop Record");
+            }
+            else{
+                stop_record();
+            }
         }
     }
 }
@@ -209,12 +207,14 @@ void EcGuiWrapper::stop_record()
     if(_record_started && check_client_setup()){
         _record_started = false;
         _ec_logger->stop_mat_logger();
+        _record_action->setIcon(QIcon(":/icon/record.png"));
+        _record_action->setText("Record");
     }
 }
 
-void EcGuiWrapper::start_receive()
+void EcGuiWrapper::start_stop_receive()
 {
-    if(!_receive_started && check_client_setup()){
+    if(check_client_setup()){
         if(_ec_wrapper_info.device_info.empty()){
             QMessageBox msgBox;
             msgBox.warning(this,msgBox.windowTitle(),
@@ -223,11 +223,16 @@ void EcGuiWrapper::start_receive()
                            QMessageBox::Ok);
         }
         else{
-            _receive_started = true;
-        
-            _ec_gui_pdo->restart_receive_timer();
-
-            _receive_timer->start(_time_ms);
+            if(!_receive_started){
+                _receive_started = true;
+                _receive_action->setIcon(QIcon(":/icon/stop_read.png"));
+                _receive_action->setText("Stop Receive");
+                _ec_gui_pdo->restart_receive_timer();
+                _receive_timer->start(_time_ms);
+            }
+            else{
+                stop_receive();
+            }   
         }
     }
 }
@@ -236,6 +241,8 @@ void EcGuiWrapper::stop_receive()
 {
     if(_receive_started && check_client_setup()){
         _receive_started = false;
+        _receive_action->setIcon(QIcon(":/icon/read.png"));
+        _receive_action->setText("Receive");
         _receive_timer->stop();
     }
 }
