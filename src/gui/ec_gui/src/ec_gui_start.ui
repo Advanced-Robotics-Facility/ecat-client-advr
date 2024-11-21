@@ -1112,7 +1112,7 @@
               <string>localhost</string>
              </property>
              <property name="text">
-              <string>54321</string>
+              <string>5000</string>
              </property>
              <property name="text">
               <string/>
@@ -1133,7 +1133,7 @@
               <string>localhost</string>
              </property>
              <property name="text">
-              <string>54321</string>
+              <string>5000</string>
              </property>
              <property name="text">
               <string/>
@@ -1219,9 +1219,14 @@
             <widget class="QLabel" name="label_8">
              <property name="maximumSize">
               <size>
-               <width>180</width>
+               <width>16777215</width>
                <height>16777215</height>
               </size>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
              </property>
              <property name="text">
               <string>EtherCAT System Password</string>
@@ -1283,7 +1288,9 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>14</pointsize>
+               <pointsize>12</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
               </font>
              </property>
              <property name="text">
@@ -1322,133 +1329,43 @@
             </widget>
            </item>
            <item>
-            <widget class="QLabel" name="label">
-             <property name="maximumSize">
+            <spacer name="horizontalSpacer_9">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
               <size>
-               <width>150</width>
-               <height>30</height>
+               <width>40</width>
+               <height>20</height>
               </size>
              </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QLabel" name="label">
              <property name="font">
               <font>
-               <pointsize>14</pointsize>
+               <pointsize>10</pointsize>
               </font>
              </property>
-             <property name="layoutDirection">
-              <enum>Qt::RightToLeft</enum>
-             </property>
              <property name="text">
-              <string>Period</string>
+              <string>Expert User Password</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QComboBox" name="Period">
-             <property name="minimumSize">
-              <size>
-               <width>80</width>
-               <height>0</height>
-              </size>
-             </property>
+            <widget class="QLineEdit" name="lineEdit">
              <property name="maximumSize">
               <size>
-               <width>80</width>
+               <width>100</width>
                <height>16777215</height>
               </size>
              </property>
-             <property name="font">
-              <font>
-               <pointsize>14</pointsize>
-              </font>
-             </property>
-             <property name="layoutDirection">
-              <enum>Qt::RightToLeft</enum>
-             </property>
-             <property name="currentText">
-              <string>1000</string>
-             </property>
-             <item>
-              <property name="text">
-               <string>1000</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>500</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>250</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>200</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>100</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>50</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>20</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>10</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>5</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>4</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>3</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>2</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>1</string>
-              </property>
-             </item>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_2">
-             <property name="maximumSize">
-              <size>
-               <width>40</width>
-               <height>30</height>
-              </size>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>14</pointsize>
-              </font>
-             </property>
              <property name="text">
-              <string>ms</string>
+              <string>facility</string>
+             </property>
+             <property name="echoMode">
+              <enum>QLineEdit::PasswordEchoOnEdit</enum>
              </property>
             </widget>
            </item>

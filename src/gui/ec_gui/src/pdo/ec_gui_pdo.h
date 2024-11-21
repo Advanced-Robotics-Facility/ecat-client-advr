@@ -21,7 +21,7 @@ public:
       
       ~EcGuiPdo();
     
-      void restart_ec_gui_pdo(EcIface::Ptr client);
+      void restart_ec_gui_pdo(EcIface::Ptr client,EcLogger::Ptr ec_logger);
       void restart_receive_timer();
       void read();
       void set_filter(int time_ms);
@@ -30,6 +30,7 @@ public:
 
 private:
       EcIface::Ptr _client;
+      EcLogger::Ptr _ec_logger;
       EcGuiSlider::Ptr _ec_gui_slider;
       EcGuiSlider::slider_map_t _slider_map;
       
@@ -56,6 +57,7 @@ private:
       
       // last received motor data
       MotorStatusMap _motor_status_map;
+      MotorReferenceMap _motor_reference_map;
       // last received ft data
       FtStatusMap _ft_status_map;
       // last received pow data
@@ -64,9 +66,11 @@ private:
       ImuStatusMap _imu_status_map;
       // last received valve data
       ValveStatusMap _valve_status_map;
+      ValveReferenceMap _valve_reference_map;
       // last received pump data
       PumpStatusMap _pump_status_map;
-
+      PumpReferenceMap _pump_reference_map;
+      
       std::map<std::string,std::vector<float>>  _pdo_v;
 
       QLCDNumber *_battery_level;
@@ -94,12 +98,6 @@ private:
     //************************ WRITE PDO ******************************
       int _time_ms;
       
-      MotorReferenceMap _motors_ref;
-
-      ValveReferenceMap _valves_ref;
-      
-      PumpReferenceMap _pumps_ref;
-
       void write_motor_pdo();
       void write_valve_pdo();
       void write_pump_pdo();

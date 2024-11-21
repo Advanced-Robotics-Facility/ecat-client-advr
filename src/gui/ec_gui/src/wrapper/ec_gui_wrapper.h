@@ -34,11 +34,9 @@ public:
     void restart_gui_wrapper(ec_wrapper_info_t ec_wrapper_info);
     bool get_wrapper_send_sts();
     void onSendStopBtnReleased();
-    int get_period_ms();
 
 public slots:
     void DwTopLevelChanged(bool isFloating);
-    void OnPeriodChanged();
     void send();
     void receive();
     void start_receive();
@@ -55,13 +53,13 @@ private:
   EcGuiPdo::Ptr _ec_gui_pdo;
   EcGuiSdo::Ptr _ec_gui_sdo;
   EcGuiCmd::Ptr _ec_gui_cmd;
+  EcLogger::Ptr _ec_logger;
 
   int _time_ms;
 
   float _ctrl_cmd;
   bool _send_ref;
   
-  QComboBox * _period_combobox;
   QPushButton *_send_stop_btn;
 
   QTimer *_send_timer,*_receive_timer;

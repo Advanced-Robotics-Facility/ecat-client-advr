@@ -90,7 +90,7 @@ void EcGuiStart::create_ec_iface()
         ec_cfg.protocol=ec_net_info.protocol;
         ec_cfg.host_name=ec_net_info.host_name;
         ec_cfg.host_port=ec_net_info.host_port;
-        ec_cfg.period_ms = _ec_gui_wrapper->get_period_ms();
+        ec_cfg.period_ms = 4; //4ms fix period 
         ec_cfg.logging = false; 
         
 #ifdef TEST_GUI 

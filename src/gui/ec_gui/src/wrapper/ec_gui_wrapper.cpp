@@ -23,22 +23,6 @@ EcGuiWrapper::EcGuiWrapper(QWidget *parent) :
     
     _graphics_dw = parent->findChild<QDockWidget *>("Graphics");
     connect(_graphics_dw, SIGNAL(topLevelChanged(bool)), this, SLOT(DwTopLevelChanged(bool)));
-    
-    
-    /*frequency */
-
-    _period_combobox = parent->findChild<QComboBox *>("Period");
-    _period_combobox->setCurrentIndex(9); // set Default 4ms.
-
-    // change FONT
-    QFont font;
-    font.setPointSize(font.pointSize() + 5);
-    _period_combobox->setFont(font);
-
-    /* connection of frequency function */
-    connect(_period_combobox, SIGNAL(currentIndexChanged(int)),this,
-        SLOT(OnPeriodChanged())
-    );
 
     _receive_action = parent->findChild<QAction *>("actionReceive");
     connect(_receive_action, SIGNAL(triggered()), this, SLOT(start_receive()));
@@ -64,28 +48,27 @@ EcGuiWrapper::EcGuiWrapper(QWidget *parent) :
     _ec_gui_cmd = std::make_shared<EcGuiCmd>(_ec_gui_slider,
                                              parent);
 
+    _ec_logger=std::make_shared<EcLogger>();
+
     _send_ref=false;
         
     // Get Send and Stop button
     _send_stop_btn = parent->findChild<QPushButton *>("SendStopBtn");
 
-    connect(_send_stop_btn, &QPushButton::released,
-            this, &EcGuiWrapper::onSendStopBtnReleased);
+    connect(_send_stop_btn, &QPushButton::released,this, &EcGuiWrapper::onSendStopBtnReleased);
     
     // create a timer for sending PDO
     _send_timer = new QTimer(this);
 
     // setup signal and slot
-    connect(_send_timer, SIGNAL(timeout()),
-        this, SLOT(send()));
+    connect(_send_timer, SIGNAL(timeout()),this, SLOT(send()));
 
 
     // create a timer for receiving PDO
     _receive_timer = new QTimer(this);
 
     // setup signal and slot
-    connect(_receive_timer, SIGNAL(timeout()),
-        this, SLOT(receive()));
+    connect(_receive_timer, SIGNAL(timeout()),this, SLOT(receive()));
 
     _time_ms = 5;
 }
@@ -93,8 +76,7 @@ EcGuiWrapper::EcGuiWrapper(QWidget *parent) :
 void EcGuiWrapper::DwTopLevelChanged(bool isFloating)
 {
     auto dw = qobject_cast<QDockWidget*>(sender());
-    if(isFloating)
-    {
+    if(isFloating){
         dw->setWindowFlags(Qt::Window);
         dw->show();
     }
@@ -107,22 +89,22 @@ bool EcGuiWrapper::get_wrapper_send_sts()
 
 void EcGuiWrapper::restart_gui_wrapper(ec_wrapper_info_t ec_wrapper_info)
 {
-    if(_receive_started)
-    {
+    if(_receive_started){
         stop_receive();
     }
-    if(_record_started)
-    {
+    if(_record_started){
         stop_record();
     }
     
     _ec_wrapper_info = ec_wrapper_info;
+
+    _ec_logger->init_mat_logger(_ec_wrapper_info.device_info);
     
     _ec_gui_slider->create_sliders(_ec_wrapper_info.device_info);
     
     _ec_gui_cmd->restart_ec_gui_cmd(_ec_wrapper_info.client);
     
-    _ec_gui_pdo->restart_ec_gui_pdo(_ec_wrapper_info.client);
+    _ec_gui_pdo->restart_ec_gui_pdo(_ec_wrapper_info.client,_ec_logger);
     
     _ec_gui_sdo->restart_ec_gui_sdo(_ec_wrapper_info.client,
                                     _ec_wrapper_info.sdo_map);
@@ -131,49 +113,18 @@ void EcGuiWrapper::restart_gui_wrapper(ec_wrapper_info_t ec_wrapper_info)
 bool EcGuiWrapper::check_client_setup()
 {
     bool ret=false;
-    if(_ec_wrapper_info.client == nullptr)
-    {
+    if(_ec_wrapper_info.client == nullptr){
         QMessageBox msgBox;
-        msgBox.critical(this,msgBox.windowTitle(),tr("EtherCAT client not setup, please press Start EtherCAT system button.\n"));
+        msgBox.critical(this,msgBox.windowTitle(),
+                        tr("EtherCAT client not setup"
+                           ",please press Start EtherCAT system button.\n"));
     }
-    else
-    {
+    else{
         ret = true;
     }
     
     return ret;
 }
-
-int EcGuiWrapper::get_period_ms()
-{
-    return _period_combobox->currentText().toInt();
-}
-
-void EcGuiWrapper::OnPeriodChanged()
-{
-    if(_ec_wrapper_info.client == nullptr){
-        return;
-    }
-    else{
-        auto client_time = _period_combobox->currentText().toInt();
-        _ec_wrapper_info.client->set_loop_time(client_time);
-    }
-
-/**** RX STOP and START *****/
-
-    if(_receive_started){
-        _receive_timer->stop();
-
-        _ec_gui_pdo->restart_receive_timer();
-
-        _receive_timer->start(_time_ms);
-    }
-
-
-/**** RX STOP and START *****/
-
-}
-
 
 void EcGuiWrapper::onSendStopBtnReleased()
 {
@@ -184,7 +135,6 @@ void EcGuiWrapper::onSendStopBtnReleased()
     count_reset_ref=0;
     
     if((_send_stop_btn->text()=="Start Motion")&&(_send_ref)){
-        _period_combobox->setEnabled(false);
         _send_stop_btn->setText("Stop Motion");
         _ec_gui_slider->enable_sliders();
 
@@ -193,8 +143,7 @@ void EcGuiWrapper::onSendStopBtnReleased()
         _send_timer->start(_time_ms);
     }
     else{
-        _send_ref=false;
-        _period_combobox->setEnabled(true);        
+        _send_ref=false;      
         _ec_gui_slider->disable_sliders();
 
         if(_send_stop_btn->text()=="Start Motion"){
@@ -240,45 +189,38 @@ void EcGuiWrapper::send()
 
 void EcGuiWrapper::start_record()
 {
-    if(!check_client_setup())
-        return;
-    
-    if(!_record_started){
+    if(!_record_started && check_client_setup()){
         if(_ec_wrapper_info.device_info.empty()){
             QMessageBox msgBox;
             msgBox.warning(this,msgBox.windowTitle(),
-                        tr("Cannot recod PDO.\n"
-                        "Please press scan device button"),
-                        QMessageBox::Ok);
+                           tr("Cannot recod PDO.\n"
+                              "Please press scan device button"),
+                           QMessageBox::Ok);
         }
         else{
             _record_started = true;
+            _ec_logger->start_mat_logger();
         }
     }
 }
 
 void EcGuiWrapper::stop_record()
 {
-    if(!check_client_setup())
-        return;
-    
-    if(_record_started){
+    if(_record_started && check_client_setup()){
         _record_started = false;
+        _ec_logger->stop_mat_logger();
     }
 }
 
 void EcGuiWrapper::start_receive()
 {
-    if(!check_client_setup())
-        return;
-
-    if(!_receive_started){
+    if(!_receive_started && check_client_setup()){
         if(_ec_wrapper_info.device_info.empty()){
             QMessageBox msgBox;
             msgBox.warning(this,msgBox.windowTitle(),
-                        tr("Cannot receive PDO.\n"
-                        "Please press scan device button"),
-                            QMessageBox::Ok);
+                           tr("Cannot receive PDO.\n"
+                              "Please press scan device button"),
+                           QMessageBox::Ok);
         }
         else{
             _receive_started = true;
@@ -292,10 +234,7 @@ void EcGuiWrapper::start_receive()
 
 void EcGuiWrapper::stop_receive()
 {
-    if(!check_client_setup())
-        return;
-    
-    if(_receive_started){
+    if(_receive_started && check_client_setup()){
         _receive_started = false;
         _receive_timer->stop();
     }
@@ -314,5 +253,5 @@ void EcGuiWrapper::receive()
 
 EcGuiWrapper::~EcGuiWrapper()
 {
-    
+    _ec_logger->stop_mat_logger();
 }

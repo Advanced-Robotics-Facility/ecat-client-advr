@@ -59,10 +59,13 @@ void EcGuiPdo::restart_receive_timer()
     _receive_timer->restart();
 }
 
-void EcGuiPdo::restart_ec_gui_pdo(EcIface::Ptr client)
+void EcGuiPdo::restart_ec_gui_pdo(EcIface::Ptr client,EcLogger::Ptr ec_logger)
 {
     _client.reset();
     _client=client;
+
+    _ec_logger.reset();
+    _ec_logger=ec_logger;
     
     _tree_wid->clear();
     _custom_plot->clearGraphs();
@@ -246,6 +249,7 @@ void EcGuiPdo::update_plot()
 void EcGuiPdo::read_motor_status()
 {
     _client->get_motor_status(_motor_status_map);
+    _ec_logger->log_motor_status(_motor_status_map);
     for ( const auto &[esc_id, motor_rx_pdo] : _motor_status_map){
         std::string esc_id_name="motor_id_"+std::to_string(esc_id);
         QTreeWidgetItem *topLevel= retrieve_treewid_item(esc_id_name,MotorPdoRx::name,"Rx");
@@ -265,6 +269,7 @@ void EcGuiPdo::read_motor_status()
 void EcGuiPdo::read_ft_status()
 {
     _client->get_ft_status(_ft_status_map);
+    _ec_logger->log_ft_status(_ft_status_map);
     for ( const auto &[esc_id, ft_rx_pdo] : _ft_status_map){
         std::string esc_id_name="ft_id_"+std::to_string(esc_id);
         QTreeWidgetItem *topLevel= retrieve_treewid_item(esc_id_name,FtPdoRx::name,"Rx");
@@ -277,6 +282,7 @@ void EcGuiPdo::read_ft_status()
 inline void EcGuiPdo::read_pow_status()
 {
     _client->get_pow_status(_pow_status_map);
+    _ec_logger->log_pow_status(_pow_status_map);
     for ( const auto &[esc_id, pow_rx_pdo] : _pow_status_map){
         if(_counter_buffer==_buffer_size-1){
             _battery_level->display(std::get<0>(pow_rx_pdo));
@@ -292,6 +298,7 @@ inline void EcGuiPdo::read_pow_status()
 void EcGuiPdo::read_imu_status()
 {
     _client->get_imu_status(_imu_status_map);
+    _ec_logger->log_imu_status(_imu_status_map);
     for ( const auto &[esc_id, imu_rx_pdo] : _imu_status_map){
         std::string esc_id_name="imu_id_"+std::to_string(esc_id);
         QTreeWidgetItem *topLevel= retrieve_treewid_item(esc_id_name,ImuPdoRx::name,"Rx");
@@ -303,6 +310,7 @@ void EcGuiPdo::read_imu_status()
 void EcGuiPdo::read_valve_status()
 {
     _client->get_valve_status(_valve_status_map);
+    _ec_logger->log_valve_status(_valve_status_map);
     for ( const auto &[esc_id, valve_rx_pdo] : _valve_status_map){
         std::string esc_id_name="valve_id_"+std::to_string(esc_id);
         QTreeWidgetItem *topLevel= retrieve_treewid_item(esc_id_name,ValvePdoRx::name,"Rx");
@@ -321,6 +329,7 @@ void EcGuiPdo::read_valve_status()
 void EcGuiPdo::read_pump_status()
 {
     _client->get_pump_status(_pump_status_map);
+    _ec_logger->log_pump_status(_pump_status_map);
     for ( const auto &[esc_id, pump_rx_pdo] : _pump_status_map){
         std::string esc_id_name="pump_id_"+std::to_string(esc_id);
         QTreeWidgetItem *topLevel= retrieve_treewid_item(esc_id_name,PumpPdoRx::name,"Rx");
@@ -366,29 +375,30 @@ void EcGuiPdo::write_motor_pdo()
 {
     bool motors_selected=false;
     for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
-        if(_motors_ref.count(slave_id)==0){
+        if(_motor_reference_map.count(slave_id)==0){
             float motor_pos=slider_wid->get_spinbox_value(1); // DONE read function!!
-            _motors_ref[slave_id]={0,motor_pos,0,0,0,0,0,0,0,0,0,0};
+            _motor_reference_map[slave_id]={0,motor_pos,0,0,0,0,0,0,0,0,0,0};
         }
-        std::get<0>(_motors_ref[slave_id])=0x00;
+        std::get<0>(_motor_reference_map[slave_id])=0x00;
         if(slider_wid->is_slider_checked()){
             motors_selected=true;
-            std::get<0>(_motors_ref[slave_id])=slider_wid->get_spinbox_value(0);
-            std::get<1>(_motors_ref[slave_id])=slider_wid->compute_wave(1,_s_send_time); 
-            std::get<2>(_motors_ref[slave_id])=slider_wid->compute_wave(2,_s_send_time); 
-            std::get<3>(_motors_ref[slave_id])=slider_wid->compute_wave(3,_s_send_time); 
-            std::get<4>(_motors_ref[slave_id])=slider_wid->compute_wave(4,_s_send_time); 
-            std::get<5>(_motors_ref[slave_id])=slider_wid->compute_wave(5,_s_send_time); 
-            std::get<6>(_motors_ref[slave_id])=slider_wid->compute_wave(6,_s_send_time); 
-            std::get<7>(_motors_ref[slave_id])=slider_wid->compute_wave(7,_s_send_time); 
-            std::get<8>(_motors_ref[slave_id])=slider_wid->compute_wave(8,_s_send_time); 
-            std::get<9>(_motors_ref[slave_id])=1;
-            std::get<10>(_motors_ref[slave_id])=slider_wid->get_spinbox_value(10); 
-            std::get<11>(_motors_ref[slave_id])=slider_wid->compute_wave(11,_s_send_time);  
+            std::get<0>(_motor_reference_map[slave_id])=slider_wid->get_spinbox_value(0);
+            std::get<1>(_motor_reference_map[slave_id])=slider_wid->compute_wave(1,_s_send_time); 
+            std::get<2>(_motor_reference_map[slave_id])=slider_wid->compute_wave(2,_s_send_time); 
+            std::get<3>(_motor_reference_map[slave_id])=slider_wid->compute_wave(3,_s_send_time); 
+            std::get<4>(_motor_reference_map[slave_id])=slider_wid->compute_wave(4,_s_send_time); 
+            std::get<5>(_motor_reference_map[slave_id])=slider_wid->compute_wave(5,_s_send_time); 
+            std::get<6>(_motor_reference_map[slave_id])=slider_wid->compute_wave(6,_s_send_time); 
+            std::get<7>(_motor_reference_map[slave_id])=slider_wid->compute_wave(7,_s_send_time); 
+            std::get<8>(_motor_reference_map[slave_id])=slider_wid->compute_wave(8,_s_send_time); 
+            std::get<9>(_motor_reference_map[slave_id])=1;
+            std::get<10>(_motor_reference_map[slave_id])=slider_wid->get_spinbox_value(10); 
+            std::get<11>(_motor_reference_map[slave_id])=slider_wid->compute_wave(11,_s_send_time);  
         }
     }
     if(motors_selected){
-       _client->set_motor_reference(_motors_ref);
+       _client->set_motor_reference(_motor_reference_map);
+       _ec_logger->log_motor_reference(_motor_reference_map); 
     }
 }
 
@@ -396,28 +406,29 @@ void EcGuiPdo::write_valve_pdo()
 {
     bool valves_selected=false;
     for (auto& [slave_id, slider_wid]:_slider_map.valve_sw_map){
-        if(_valves_ref.count(slave_id)==0){
+        if(_valve_reference_map.count(slave_id)==0){
             float enc_pos=slider_wid->get_spinbox_value(0); // DONE read function!!
-            _valves_ref[slave_id]={0,enc_pos,0,0,0,0,0,0,0,0,0,0};
+            _valve_reference_map[slave_id]={0,enc_pos,0,0,0,0,0,0,0,0,0,0};
         }
         if(slider_wid->is_slider_checked()){
             valves_selected=true;
-            std::get<0>(_valves_ref[slave_id])=slider_wid->compute_wave(0,_s_send_time);
-            std::get<1>(_valves_ref[slave_id])=slider_wid->compute_wave(1,_s_send_time); 
-            std::get<2>(_valves_ref[slave_id])=slider_wid->compute_wave(2,_s_send_time); 
-            std::get<3>(_valves_ref[slave_id])=slider_wid->compute_wave(3,_s_send_time); 
-            std::get<4>(_valves_ref[slave_id])=slider_wid->compute_wave(4,_s_send_time); 
-            std::get<5>(_valves_ref[slave_id])=slider_wid->compute_wave(5,_s_send_time); 
-            std::get<6>(_valves_ref[slave_id])=slider_wid->compute_wave(6,_s_send_time); 
-            std::get<7>(_valves_ref[slave_id])=slider_wid->compute_wave(7,_s_send_time); 
-            std::get<8>(_valves_ref[slave_id])=slider_wid->get_spinbox_value(8);
-            std::get<9>(_valves_ref[slave_id])=slider_wid->get_spinbox_value(9); 
-            std::get<10>(_valves_ref[slave_id])=slider_wid->get_spinbox_value(10); 
-            std::get<11>(_valves_ref[slave_id])=slider_wid->compute_wave(11,_s_send_time);  
+            std::get<0>(_valve_reference_map[slave_id])=slider_wid->compute_wave(0,_s_send_time);
+            std::get<1>(_valve_reference_map[slave_id])=slider_wid->compute_wave(1,_s_send_time); 
+            std::get<2>(_valve_reference_map[slave_id])=slider_wid->compute_wave(2,_s_send_time); 
+            std::get<3>(_valve_reference_map[slave_id])=slider_wid->compute_wave(3,_s_send_time); 
+            std::get<4>(_valve_reference_map[slave_id])=slider_wid->compute_wave(4,_s_send_time); 
+            std::get<5>(_valve_reference_map[slave_id])=slider_wid->compute_wave(5,_s_send_time); 
+            std::get<6>(_valve_reference_map[slave_id])=slider_wid->compute_wave(6,_s_send_time); 
+            std::get<7>(_valve_reference_map[slave_id])=slider_wid->compute_wave(7,_s_send_time); 
+            std::get<8>(_valve_reference_map[slave_id])=slider_wid->get_spinbox_value(8);
+            std::get<9>(_valve_reference_map[slave_id])=slider_wid->get_spinbox_value(9); 
+            std::get<10>(_valve_reference_map[slave_id])=slider_wid->get_spinbox_value(10); 
+            std::get<11>(_valve_reference_map[slave_id])=slider_wid->compute_wave(11,_s_send_time);  
         }
     }
     if(valves_selected){
-       _client->set_valve_reference(_valves_ref);
+       _client->set_valve_reference(_valve_reference_map);
+       _ec_logger->log_valve_reference(_valve_reference_map);
     }
 }
 
@@ -425,25 +436,26 @@ void EcGuiPdo::write_pump_pdo()
 {
     bool pumps_selected=false;
     for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
-        if(_pumps_ref.count(slave_id)==0){
+        if(_pump_reference_map.count(slave_id)==0){
             float pressure=slider_wid->get_spinbox_value(0); // DONE read function!!
-            _pumps_ref[slave_id]={pressure,0,0,0,0,0,0,0,0};
+            _pump_reference_map[slave_id]={pressure,0,0,0,0,0,0,0,0};
         }
         if(slider_wid->is_slider_checked()){
             pumps_selected=true;
-            std::get<0>(_pumps_ref[slave_id])=slider_wid->compute_wave(0,_s_send_time);
-            std::get<1>(_pumps_ref[slave_id])=slider_wid->get_spinbox_value(1);
-            std::get<2>(_pumps_ref[slave_id])=slider_wid->get_spinbox_value(2); 
-            std::get<3>(_pumps_ref[slave_id])=slider_wid->get_spinbox_value(3);
-            std::get<4>(_pumps_ref[slave_id])=slider_wid->get_spinbox_value(4);
-            std::get<5>(_pumps_ref[slave_id])=slider_wid->get_spinbox_value(5);
-            std::get<6>(_pumps_ref[slave_id])=slider_wid->get_spinbox_value(6);
-            std::get<7>(_pumps_ref[slave_id])=slider_wid->get_spinbox_value(7); 
-            std::get<8>(_pumps_ref[slave_id])=slider_wid->get_spinbox_value(8); 
+            std::get<0>(_pump_reference_map[slave_id])=slider_wid->compute_wave(0,_s_send_time);
+            std::get<1>(_pump_reference_map[slave_id])=slider_wid->get_spinbox_value(1);
+            std::get<2>(_pump_reference_map[slave_id])=slider_wid->get_spinbox_value(2); 
+            std::get<3>(_pump_reference_map[slave_id])=slider_wid->get_spinbox_value(3);
+            std::get<4>(_pump_reference_map[slave_id])=slider_wid->get_spinbox_value(4);
+            std::get<5>(_pump_reference_map[slave_id])=slider_wid->get_spinbox_value(5);
+            std::get<6>(_pump_reference_map[slave_id])=slider_wid->get_spinbox_value(6);
+            std::get<7>(_pump_reference_map[slave_id])=slider_wid->get_spinbox_value(7); 
+            std::get<8>(_pump_reference_map[slave_id])=slider_wid->get_spinbox_value(8); 
         }
     }
     if(pumps_selected){
-       _client->set_pump_reference(_pumps_ref);
+       _client->set_pump_reference(_pump_reference_map);
+       _ec_logger->log_pump_reference(_pump_reference_map);
     }
 }
 /********************************************************* WRITE PDO***********************************************************************************************/
