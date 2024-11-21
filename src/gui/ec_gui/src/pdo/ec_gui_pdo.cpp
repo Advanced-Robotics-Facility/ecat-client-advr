@@ -43,6 +43,8 @@ _ec_gui_slider(ec_gui_slider)
     _battery_level->setStyleSheet("background: red; color: #00FF00");
 
     _time_pdo=parent->findChild<QLabel *>("TimePdo"); 
+
+    _auto_scroll=parent->findChild<QCheckBox *>("AutoScroll"); 
 }
       
 EcGuiPdo::~EcGuiPdo()
@@ -222,9 +224,11 @@ void EcGuiPdo::update_plot()
 
                 _first_update=true;
             }
-            //make key axis range scroll with the data (at a constant range size of 8):
-            _custom_plot->xAxis->setRange(_s_receive_time, 8, Qt::AlignRight);
-            _custom_plot->replot();
+            if(_auto_scroll->isChecked()){
+                //make key axis range scroll with the data (at a constant range size of 8):
+                _custom_plot->xAxis->setRange(_s_receive_time, 8, Qt::AlignRight);
+                _custom_plot->replot();
+            }
             
             _update_plot=false;
         }

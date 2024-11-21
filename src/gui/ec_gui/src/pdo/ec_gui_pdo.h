@@ -40,6 +40,7 @@ private:
       QElapsedTimer *_send_timer;
       QCustomPlot *_custom_plot;
       QPushButton * _stop_plotting_btn;
+      QCheckBox *_auto_scroll;
       QLabel *_time_pdo;
       std::map<std::string,QCPGraph *> _graph_pdo_map;
       std::map<std::string,QVector<double>> _buffer_pdo_map;
