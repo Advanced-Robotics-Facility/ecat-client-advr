@@ -49,13 +49,9 @@ SliderWindow::SliderWindow(const QStringList&  control_mode,
     _control_mode = findChild<QComboBox *>("ControlMode");
     _control_mode->addItems(control_mode);
 
-    /* connection of control mode type function */
-    connect(_control_mode, SIGNAL(currentIndexChanged(int)),this,SLOT(readControlMode()));
-
     _layout= findChild<QVBoxLayout *>("Sliders");
 
     _actual_control_mode=0x00;
-    readControlMode();
 }
 
 QVBoxLayout* SliderWindow::get_layout()
@@ -63,15 +59,17 @@ QVBoxLayout* SliderWindow::get_layout()
     return _layout;
 }
 
-void SliderWindow::readControlMode()
+
+int SliderWindow::read_control_mode()
 {
     int control_mode_index=_control_mode->currentIndex();
     _actual_control_mode=_control_mode_hex[control_mode_index];
+    return _actual_control_mode;
 }
 
-int SliderWindow::get_control_mode()
+QComboBox* SliderWindow::get_control_mode()
 {
-    return _actual_control_mode;
+    return _control_mode;
 }
 
 void SliderWindow::enable_control_mode()

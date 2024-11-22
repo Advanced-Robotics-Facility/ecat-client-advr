@@ -69,6 +69,9 @@ public:
     void enable_control_mode(const std::string& tab_name);
     void disable_control_mode(const std::string& tab_name);
 
+public slots:
+    void control_mode_change();
+
 private:
   
   slider_map_t _slider_map;
@@ -82,6 +85,7 @@ private:
   QListWidget* _device_list_wid;
   void delete_items(QLayout * layout);
   void on_checkbox_clicked(QCheckBox *,int);
+  void set_control_mode(const std::string &tab_name);
   QVBoxLayout* retrieve_slider_layout(const std::string &tab_name,
                                       const QStringList &control_mode,
                                       const std::vector<int> control_mode_hex);

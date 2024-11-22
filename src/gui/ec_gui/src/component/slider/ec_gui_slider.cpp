@@ -14,6 +14,9 @@ QVBoxLayout* EcGuiSlider::retrieve_slider_layout(const std::string &tab_name,
     if(_sliders_window_map.count(tab_name)==0){
         int tab_actual_index=_devicecontrol->count();
         _sliders_window_map[tab_name]=new SliderWindow(control_mode,control_mode_hex,this);
+        auto ctrl_mode_combo=_sliders_window_map[tab_name]->get_control_mode();
+        connect(ctrl_mode_combo, SIGNAL(currentIndexChanged(int)),this,SLOT(control_mode_change()));
+        set_control_mode(tab_name);
         _devicecontrol->insertTab(tab_actual_index,_sliders_window_map[tab_name],QString::fromStdString(tab_name));
     }
     return _sliders_window_map[tab_name]->get_layout();
@@ -39,8 +42,7 @@ void EcGuiSlider::create_sliders(SSI device_info)
             _device_list_wid->addItem(motor_name);
             auto slider_enabled=wid_motor->get_slider_enabled();
             connect(slider_enabled, &QCheckBox::toggled,
-                    std::bind(&EcGuiSlider::on_checkbox_clicked, this, slider_enabled,device_list_index)
-                    );
+                    std::bind(&EcGuiSlider::on_checkbox_clicked, this, slider_enabled,device_list_index));
             device_list_index++;
         }
         else if(device_type==iit::ecat::HYQ_KNEE){
@@ -57,8 +59,7 @@ void EcGuiSlider::create_sliders(SSI device_info)
             _device_list_wid->addItem(valve_name);
             auto slider_enabled=wid_valve->get_slider_enabled();
             connect(slider_enabled, &QCheckBox::toggled,
-                    std::bind(&EcGuiSlider::on_checkbox_clicked, this, slider_enabled,device_list_index)
-                    );
+                    std::bind(&EcGuiSlider::on_checkbox_clicked, this, slider_enabled,device_list_index));
             device_list_index++;
         }
         else if(device_type==iit::ecat::HYQ_HPU){
@@ -76,8 +77,7 @@ void EcGuiSlider::create_sliders(SSI device_info)
             _device_list_wid->addItem(pump_name);
             auto slider_enabled=wid_pump->get_slider_enabled();
             connect(slider_enabled, &QCheckBox::toggled,
-                    std::bind(&EcGuiSlider::on_checkbox_clicked, this, slider_enabled,device_list_index)
-                    );
+                    std::bind(&EcGuiSlider::on_checkbox_clicked, this, slider_enabled,device_list_index));
             device_list_index++;
         }
     }
@@ -225,11 +225,30 @@ EcGuiSlider::slider_map_t EcGuiSlider::get_sliders()
     return _slider_map;
 }
 
+void EcGuiSlider::control_mode_change()
+{
+    int curr_tab_index=_devicecontrol->currentIndex();
+    QString curr_tab_name= _devicecontrol->tabText(curr_tab_index);
+    std::string tab_name=curr_tab_name.toStdString();
+    set_control_mode(tab_name);
+}
+
+
+void EcGuiSlider::set_control_mode(const std::string &tab_name)
+{
+    if(tab_name=="Motors"){
+        int ctrl_mode=_sliders_window_map[tab_name]->read_control_mode();
+        for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
+            slider_wid->align_spinbox(0,ctrl_mode);
+        }
+    }
+}
+
 int EcGuiSlider::get_control_mode(std::string tab_name)
 {
     int ctrl_mode=0x00;
     if(_sliders_window_map.count(tab_name)>0){
-        ctrl_mode=_sliders_window_map[tab_name]->get_control_mode();
+        ctrl_mode=_sliders_window_map[tab_name]->read_control_mode();
     }
     return ctrl_mode;
 }

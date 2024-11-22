@@ -17,17 +17,15 @@ public:
                            QWidget * parent = 0);
     
     QVBoxLayout* get_layout();
-    int get_control_mode();
+    QComboBox *get_control_mode();
     void enable_control_mode();
     void disable_control_mode();
+    int read_control_mode();
 
     ~SliderWindow();
 
-public slots:
-     void readControlMode();
-
 private:
-    QComboBox *_control_mode;
+    QComboBox* _control_mode;
     std::vector<int> _control_mode_hex;
     int _actual_control_mode;
     QVBoxLayout* _layout;
