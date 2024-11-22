@@ -44,7 +44,7 @@ EcGuiWrapper::EcGuiWrapper(QWidget *parent) :
 
     _ec_logger=std::make_shared<EcLogger>();
 
-    _send_ref=false;
+    _send_pdo=false;
         
     // Get Send and Stop button
     _send_stop_btn = parent->findChild<QPushButton *>("SendStopBtn");
@@ -78,7 +78,7 @@ void EcGuiWrapper::DwTopLevelChanged(bool isFloating)
 
 bool EcGuiWrapper::get_wrapper_send_sts()
 {
-    return _send_ref;
+    return _send_pdo;
 }
 
 void EcGuiWrapper::restart_gui_wrapper(ec_wrapper_info_t ec_wrapper_info)
@@ -122,10 +122,10 @@ void EcGuiWrapper::onSendStopBtnReleased()
     // @NOTE to be tested.
     _ec_gui_slider->reset_sliders();
 
-    _send_ref = _ec_gui_cmd->get_cmd_sts(_ctrl_cmd);
+    _send_pdo = _ec_gui_cmd->get_command_sts(); // devices controlled
     count_reset_ref=0;
     
-    if((_send_stop_btn->text()=="Start Motion")&&(_send_ref)){
+    if((_send_stop_btn->text()=="Start Motion")&&(_send_pdo)){
         _send_stop_btn->setText("Stop Motion");
         _ec_gui_slider->enable_sliders();
 
@@ -134,7 +134,7 @@ void EcGuiWrapper::onSendStopBtnReleased()
         _send_timer->start(_time_ms);
     }
     else{
-        _send_ref=false;      
+        _send_pdo=false;      
         _ec_gui_slider->disable_sliders();
 
         if(_send_stop_btn->text()=="Start Motion"){
@@ -152,27 +152,27 @@ void EcGuiWrapper::onSendStopBtnReleased()
 void EcGuiWrapper::send()
 {
 
-    if(!_send_ref){
+    // **************Delay stop**************
+    if(!_send_pdo){
         count_reset_ref++;
         _ec_gui_pdo->set_filter(_time_ms);//STOP align all references to zero or with the actual position for the motors
         _ec_gui_pdo->restart_send_timer();
         if(count_reset_ref>3){ 
-            _send_timer->stop(); //delay stop
+            _send_timer->stop();
             return;
         }
     }
+    // **************Delay stop**************
 
-    if(_ec_wrapper_info.client->get_client_status().run_loop){
+    bool client_run_loop=_ec_wrapper_info.client->get_client_status().run_loop; // client thread still running.
+    if(client_run_loop){
         _ec_gui_pdo->write();
         _ec_wrapper_info.client->write();
     }
-    else{
-        
-    }
 
-    if(!_ec_gui_cmd->get_cmd_sts(_ctrl_cmd)){
+    if(!_ec_gui_cmd->get_command_sts() || !client_run_loop){
         if(count_reset_ref==0){
-            onSendStopBtnReleased(); // stop sending references
+            onSendStopBtnReleased(); // stop sending references with delay
         }
     } // stop motors command
 

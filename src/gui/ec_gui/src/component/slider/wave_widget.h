@@ -14,6 +14,7 @@ enum SliderProperty : uint8_t
     NOT_AVAILABLE       = 0,        // slider not available for changing.
     AVAILABLE           = 1,        // slider available for changing.
     ALWAYS_AVAILABLE    = 2,        // slider always available.
+    PARTIAL_AVAILABLE   = 3,        // slider partial available.
 };
 
 

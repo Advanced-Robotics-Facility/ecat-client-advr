@@ -64,6 +64,7 @@ SliderWidget::SliderWidget (const QString&  name,
         slider_label->setText(QString::fromStdString(slider_info_s.slider_name[i]));
         slider_label->setMinimumSize(0,25);
         slider_label->setMaximumSize(150,25);
+        slider_label->hide();
         slider_name_layout->addWidget(slider_label,0, Qt::AlignTop);
 
         //connect(value_box, &QDoubleSpinBox::editingFinished,

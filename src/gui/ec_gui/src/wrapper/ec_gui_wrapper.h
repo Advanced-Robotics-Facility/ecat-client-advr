@@ -56,9 +56,7 @@ private:
   EcLogger::Ptr _ec_logger;
 
   int _time_ms;
-
-  float _ctrl_cmd;
-  bool _send_ref;
+  bool _send_pdo;
   
   QPushButton *_send_stop_btn;
 

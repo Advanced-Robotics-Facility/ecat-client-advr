@@ -7,13 +7,14 @@ EcGuiSlider::EcGuiSlider(QWidget *parent) :
     _device_list_wid = parent->findChild<QListWidget *>("devicelistWidget");
 }
 
-QVBoxLayout* EcGuiSlider::retrieve_slider_layout(const std::string &tab_name,const QStringList &control_mode)
+QVBoxLayout* EcGuiSlider::retrieve_slider_layout(const std::string &tab_name,
+                                                 const QStringList &control_mode,
+                                                 const std::vector<int> control_mode_hex)
 {
     if(_sliders_window_map.count(tab_name)==0){
         int tab_actual_index=_devicecontrol->count();
-        _sliders_window_map[tab_name]=new SliderWindow(control_mode,this);
+        _sliders_window_map[tab_name]=new SliderWindow(control_mode,control_mode_hex,this);
         _devicecontrol->insertTab(tab_actual_index,_sliders_window_map[tab_name],QString::fromStdString(tab_name));
-        _devicecontrol->show();
     }
     return _sliders_window_map[tab_name]->get_layout();
 }
@@ -31,7 +32,8 @@ void EcGuiSlider::create_sliders(SSI device_info)
             _slider_map.motor_sw_map[device_id]=wid_motor;
 
             QStringList control_mode= {"Position", "Velocity","Impedance", "Torque","Current", "Idle"};
-            auto motor_layout= retrieve_slider_layout("Motors",control_mode);
+            std::vector<int> control_mode_hex= {0x3B,0x71,0xD4,0xCC,0xDD,0x00};
+            auto motor_layout= retrieve_slider_layout("Motors",control_mode,control_mode_hex);
             motor_layout->addWidget(wid_motor,0, Qt::AlignTop);
 
             _device_list_wid->addItem(motor_name);
@@ -48,7 +50,8 @@ void EcGuiSlider::create_sliders(SSI device_info)
             _slider_map.valve_sw_map[device_id]=wid_valve;
 
             QStringList control_mode= {"Position", "Force","Current", "Idle"};
-            auto valve_layout= retrieve_slider_layout("Valves",control_mode);
+            std::vector<int> control_mode_hex= {0x3B,0xD4,0xDD,0x00};
+            auto valve_layout= retrieve_slider_layout("Valves",control_mode,control_mode_hex);
             valve_layout->addWidget(wid_valve,0, Qt::AlignTop);
 
             _device_list_wid->addItem(valve_name);
@@ -65,7 +68,9 @@ void EcGuiSlider::create_sliders(SSI device_info)
             _slider_map.pump_sw_map[device_id]=wid_pump;
 
             QStringList control_mode= {"Pressure", "Idle"};
-            auto pump_layout= retrieve_slider_layout("Pumps",control_mode);
+            std::vector<int> control_mode_hex= {0x3B,0x00};
+
+            auto pump_layout= retrieve_slider_layout("Pumps",control_mode,control_mode_hex);
             pump_layout->addWidget(wid_pump,0, Qt::AlignTop);
 
             _device_list_wid->addItem(pump_name);
@@ -158,6 +163,50 @@ void EcGuiSlider::set_sliders_filter(double st)
     }
 }
 
+void EcGuiSlider::check_sliders()
+{
+    int curr_tab_index=_devicecontrol->currentIndex();
+    QString curr_tab_name= _devicecontrol->tabText(curr_tab_index);
+
+    if(curr_tab_name=="Motors"){
+        for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
+            slider_wid->check_slider_enabled();
+        }
+    }
+    else if(curr_tab_name=="Valves"){
+        for (auto& [slave_id, slider_wid]:_slider_map.valve_sw_map){
+            slider_wid->check_slider_enabled();
+        }
+    }
+    else if(curr_tab_name=="Pumps"){
+        for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
+            slider_wid->check_slider_enabled();
+        }
+    }
+}
+
+void EcGuiSlider::uncheck_sliders()
+{
+    int curr_tab_index=_devicecontrol->currentIndex();
+    QString curr_tab_name= _devicecontrol->tabText(curr_tab_index);
+
+    if(curr_tab_name=="Motors"){
+        for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
+            slider_wid->uncheck_slider_enabled();
+        }
+    }
+    else if(curr_tab_name=="Valves"){
+        for (auto& [slave_id, slider_wid]:_slider_map.valve_sw_map){
+            slider_wid->uncheck_slider_enabled();
+        }
+    }
+    else if(curr_tab_name=="Pumps"){
+        for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
+            slider_wid->uncheck_slider_enabled();
+        }
+    }
+}
+
 void EcGuiSlider::delete_items(QLayout * layout)
 {
     if ( layout != NULL )
@@ -174,6 +223,42 @@ void EcGuiSlider::delete_items(QLayout * layout)
 EcGuiSlider::slider_map_t EcGuiSlider::get_sliders()
 {
     return _slider_map;
+}
+
+int EcGuiSlider::get_control_mode(std::string tab_name)
+{
+    int ctrl_mode=0x00;
+    if(_sliders_window_map.count(tab_name)>0){
+        ctrl_mode=_sliders_window_map[tab_name]->get_control_mode();
+    }
+    return ctrl_mode;
+}
+
+void EcGuiSlider::enable_control_mode(const std::string& tab_name)
+{
+    if(tab_name!=""){
+        if(_sliders_window_map.count(tab_name)>0){
+            _sliders_window_map[tab_name]->enable_control_mode();
+        }
+    }
+    else{
+        for(auto&[tab_name,tab_window]:_sliders_window_map){
+            tab_window->enable_control_mode();
+        }
+    }
+}
+void EcGuiSlider::disable_control_mode(const std::string& tab_name)
+{
+    if(tab_name!=""){
+        if(_sliders_window_map.count(tab_name)>0){
+            _sliders_window_map[tab_name]->disable_control_mode();
+        }
+    }
+    else{
+        for(auto&[tab_name,tab_window]:_sliders_window_map){
+            tab_window->disable_control_mode();
+        }
+    }
 }
 
 EcGuiSlider::~EcGuiSlider()

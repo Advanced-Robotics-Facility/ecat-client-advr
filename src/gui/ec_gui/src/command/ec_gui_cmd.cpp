@@ -15,18 +15,6 @@ EcGuiCmd::EcGuiCmd(EcGuiSlider::Ptr ec_gui_slider,
         SLOT(readCommand())
     );
 
-    /*  create mode type to start he motors */
-    _mode_type_combobox = parent->findChild<QComboBox *>("ModeType");
-    _mode_type_combobox->hide();
-
-    /* connection of read mode type function */
-    connect(_mode_type_combobox, SIGNAL(currentIndexChanged(int)),this,
-        SLOT(readMotorCtrlType())
-    );
-
-    // find devices
-    _devicecontrol=parent->findChild<QTabWidget *>("deviceControl");
-
     /* Getting command manager (Apply) */
     _cmd_manager = parent->findChild<QDialogButtonBox *>("CmdManager");
     _applybtn = _cmd_manager->button(QDialogButtonBox::Apply);
@@ -47,8 +35,7 @@ EcGuiCmd::EcGuiCmd(EcGuiSlider::Ptr ec_gui_slider,
     connect(_allbtn, &QPushButton::released,
             this, &EcGuiCmd::onAllCmdReleased);
     
-    _device_start_req=_send_ref=false;
-    _ctrl_cmd=0;
+    _device_start_req=_device_controlled=false;
     
     readCommand();
 }
@@ -61,7 +48,6 @@ void EcGuiCmd::restart_ec_gui_cmd(EcIface::Ptr client)
     _slider_map = _ec_gui_slider->get_sliders();
     
     _fieldtype_combobox->setCurrentIndex(0);
-    _mode_type_combobox->setCurrentIndex(0);
     readCommand();
 }
 
@@ -75,10 +61,8 @@ void EcGuiCmd::readCommand()
     if(getFieldType() == "Start devices")
     {
         _ctrl_cmd_type=ClientCmdType::START;
-        _mode_type_combobox->setEnabled(true);
-        readMotorCtrlType();
-        if(!_device_start_req){
-
+        if(!_device_controlled){
+            _ec_gui_slider->enable_control_mode("");
             for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
                 slider_wid->enable_slider_enabled();
             }
@@ -93,102 +77,29 @@ void EcGuiCmd::readCommand()
         
         }
 
-        _notallbtn->setEnabled(!_device_start_req); // devices already started.
-        _allbtn->setEnabled(!_device_start_req); // devices already started.
+        _notallbtn->setEnabled(!_device_controlled); // devices already started.
+        _allbtn->setEnabled(!_device_controlled); // devices already started.
     
     }
-    else if(getFieldType() == "Stop devices")
-    {
+    else if(getFieldType() == "Stop devices"){
         _ctrl_cmd_type=ClientCmdType::STOP;
-        _mode_type_combobox->setEnabled(false);
+        _ec_gui_slider->disable_control_mode("");
         _notallbtn->setEnabled(false);
         _allbtn->setEnabled(false);
     }
-    else
-    {
+    else{
         throw std::runtime_error("Error: Found not valid EtherCAT Master commnad");
     }
 }
 
-std::string EcGuiCmd::getModeType() const
-{
-    return _mode_type_combobox->currentText().toStdString();
-}
-
-void EcGuiCmd::enable_disable_pid()
-{
-}
-void EcGuiCmd::readMotorCtrlType()
-{
-    if(getModeType() != "Idle"){
-        if(getModeType() == "Position"){
-            _ctrl_cmd=0x3B;
-        }
-        else if(getModeType() == "Velocity"){
-            _ctrl_cmd=0x71;
-        }
-        else if(getModeType() == "Impedance"){
-            _ctrl_cmd=0xD4;
-        }
-        else if(getModeType() == "Current"){
-            _ctrl_cmd=0xCC;
-        }
-        else{
-            throw std::runtime_error("Error: Found not valid motor control mode");
-        }
-    }
-
-    for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
-        slider_wid->align_spinbox(0,_ctrl_cmd);
-    }
-
-    enable_disable_pid();  
-}
-
 void EcGuiCmd::onNotAllCmdReleased()
 {
-
-    int curr_tab= _devicecontrol->currentIndex();
-
-    if(curr_tab==0){
-        for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
-            slider_wid->uncheck_slider_enabled();
-        }
-    }
-    else if(curr_tab==1){
-        for (auto& [slave_id, slider_wid]:_slider_map.valve_sw_map){
-            slider_wid->uncheck_slider_enabled();
-        }
-    }
-    else{
-        for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
-            slider_wid->uncheck_slider_enabled();
-        }
-    }
-
+    _ec_gui_slider->uncheck_sliders();
 }
 
 void EcGuiCmd::onAllCmdReleased()
 {
-
-    int curr_tab= _devicecontrol->currentIndex();
-
-    if(curr_tab==0){
-        for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
-            slider_wid->check_slider_enabled();
-        }
-    }
-    else if(curr_tab==1){
-        for (auto& [slave_id, slider_wid]:_slider_map.valve_sw_map){
-            slider_wid->check_slider_enabled();
-        }
-    }
-    else{
-        for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
-            slider_wid->check_slider_enabled();
-        }
-    }
-
+    _ec_gui_slider->check_sliders();
 }
 
 void EcGuiCmd::launch_cmd_message(QString message)
@@ -211,14 +122,16 @@ void EcGuiCmd::fill_start_stop_motor()
                 }
             }
             else{
-                if(getModeType() != "Idle"){
-                    _gains.clear();
-                    _gains.push_back(_slider_map.motor_sw_map[slave_id]->get_spinbox_value(4));
-                    _gains.push_back(_slider_map.motor_sw_map[slave_id]->get_spinbox_value(5));
-                    _gains.push_back(_slider_map.motor_sw_map[slave_id]->get_spinbox_value(6));
-                    _gains.push_back(_slider_map.motor_sw_map[slave_id]->get_spinbox_value(7));
-                    _gains.push_back(_slider_map.motor_sw_map[slave_id]->get_spinbox_value(8));
-                    _start_devices.push_back(std::make_tuple(slave_id,_ctrl_cmd,_gains));
+                int ctrl_mode=_ec_gui_slider->get_control_mode("Motors");
+                if(ctrl_mode!= 0x00){
+                    slider_wid->align_spinbox(0,ctrl_mode);
+                    std::vector<float> gains;
+                    gains.push_back(slider_wid->get_spinbox_value(4));
+                    gains.push_back(slider_wid->get_spinbox_value(5));
+                    gains.push_back(slider_wid->get_spinbox_value(6));
+                    gains.push_back(slider_wid->get_spinbox_value(7));
+                    gains.push_back(slider_wid->get_spinbox_value(8));
+                    _start_devices.push_back(std::make_tuple(slave_id,ctrl_mode,gains));
                 }
                 
                 if(false){
@@ -232,6 +145,23 @@ void EcGuiCmd::fill_start_stop_motor()
 void EcGuiCmd::fill_start_stop_valve()
 {
     _valves_selected = false;
+    for (auto& [slave_id, slider_wid]:_slider_map.valve_sw_map){
+        if(slider_wid->is_slider_checked()){
+            _valves_selected |= true;
+            if(_ctrl_cmd_type==ClientCmdType::START){
+                int ctrl_mode=_ec_gui_slider->get_control_mode("Valves");
+                if(ctrl_mode!= 0x00){
+                    std::vector<float> gains;
+                    gains.push_back(slider_wid->get_spinbox_value(3));
+                    gains.push_back(slider_wid->get_spinbox_value(4));
+                    gains.push_back(slider_wid->get_spinbox_value(5));
+                    gains.push_back(slider_wid->get_spinbox_value(6));
+                    gains.push_back(slider_wid->get_spinbox_value(7));
+                    _start_devices.push_back(std::make_tuple(slave_id,ctrl_mode,gains));
+                }
+            }
+        }
+    }
 }
 
 void EcGuiCmd::fill_start_stop_pump()
@@ -275,101 +205,70 @@ bool EcGuiCmd::braking_cmd_req()
     return braking_cmd_ack;
 }
 
-void EcGuiCmd::onApplyCmdMotors()
+void EcGuiCmd::onApplyCmd()
 {
     if(!_start_devices.empty()){
-    //********** START MOTORS **********//
-        if(!_start_devices.empty()){
-            _device_start_req =_client->start_devices(_start_devices);
+        _device_start_req =_client->start_devices(_start_devices);
 #ifdef TEST_GUI 
-            _device_start_req=true;
+        _device_start_req=true;
 #endif 
-            if(!_device_start_req){
-                _cmd_message="Cannot perform the start command on the motor(s) requested";
-                launch_cmd_message(_cmd_message);
-                return;
-            }
-        }
-        
-        //********** RELEASE OR ENGAGE BRAKES WITH CHECKS **********//
-        if(!_brake_cmds.empty()){
-            bool braking_cmd_fdb = braking_cmd_req(); // release or engage the brakes
-            if(braking_cmd_fdb){
-                std::this_thread::sleep_for(1000ms);
-                if(!_client->pdo_aux_cmd_sts(_brake_cmds)){ // release or engage the brakes status
-                    _cmd_message="Wrong status of the brakes requested";
-                    launch_cmd_message(_cmd_message);
-                    return;
-                }
-            }
-            else{
-                _cmd_message="Cannot perform the release or engage brake command on the motor(s) requested";
-                launch_cmd_message(_cmd_message);
-                return;
-            }
-        }
-
-        _cmd_message="All motor(s) requested have performed the command successfully";
-        
         if(!_device_start_req){
-            //********** STOP MOTORS **********//
-            if(!_client->stop_devices()){
-                _cmd_message.clear();
-                _cmd_message="Cannot perform the stop command on the motor(s) requested";
-            }
-        }
-
-        launch_cmd_message(_cmd_message);
-    }
-}
-
-void EcGuiCmd::onApplyCmdValves()
-{
-    if(_valves_selected){
-    //********** START/STOP VALVES **********//
-        if(false){
-            bool valve_cmd_req = false;
-#ifdef TEST_GUI 
-            valve_cmd_req=true;
-#endif 
-            if(!valve_cmd_req){
-                _cmd_message="Cannot perform the stop command on the valves(s) requested"; 
-                if(_ctrl_cmd_type==ClientCmdType::START){
-                    _cmd_message="Cannot perform the start command on the valves(s) requested";
-                }
-            }
-            else{
-                _cmd_message="All valve(s) requested have performed the command successfully";
-                if(_ctrl_cmd_type==ClientCmdType::START){
-                    _device_start_req |= true;
-                }
-            }
+            _cmd_message="Cannot perform the start command on the devices(s) requested";
             launch_cmd_message(_cmd_message);
+            return;
         }
     }
-}
 
-void EcGuiCmd::onApplyCmdPumps()
-{
     if(_pumps_selected){
-    //********** START/STOP PUMPS **********//
-         if(_ctrl_cmd_type==ClientCmdType::START){
-            _device_start_req |= true;
-         }
-         
-        _cmd_message="All pumps(s) requested have performed the command successfully";
-        launch_cmd_message(_cmd_message);
+        if(_ctrl_cmd_type==ClientCmdType::START){
+        _device_start_req |= true;
+        }
     }
+    
+    if(!_brake_cmds.empty()){
+        bool braking_cmd_fdb = braking_cmd_req(); // release or engage the brakes
+        if(braking_cmd_fdb){
+            std::this_thread::sleep_for(1000ms);
+            if(!_client->pdo_aux_cmd_sts(_brake_cmds)){ // release or engage the brakes status
+                _cmd_message="Wrong status of the brakes requested";
+                launch_cmd_message(_cmd_message);
+                return;
+            }
+        }
+        else{
+            _cmd_message="Cannot perform the release or engage brake command on the motor(s) requested";
+            launch_cmd_message(_cmd_message);
+            return;
+        }
+    }
+
+    _cmd_message="All devices(s) requested have performed the command successfully";
+    
+    if(!_device_start_req){
+        bool device_stop_req=_client->stop_devices();
+#ifdef TEST_GUI 
+        device_stop_req=true;
+#endif 
+        if(!device_stop_req){
+            _cmd_message.clear();
+            _cmd_message="Cannot perform the stop command on the device(s) requested";
+
+        }
+        else{
+            _device_controlled=false;
+        }
+    }
+    launch_cmd_message(_cmd_message);
 }
 
 void EcGuiCmd::onApplyCmdReleased()
 {
     _cmd_message.clear();
-    if((_device_start_req)&&(_ctrl_cmd_type==ClientCmdType::START)){
+    if((_device_controlled)&&(_ctrl_cmd_type==ClientCmdType::START)){
         _cmd_message="Device(s) already started, please launch STOP EtherCAT command";
         launch_cmd_message(_cmd_message);
     }
-    else if((!_device_start_req)&&(_ctrl_cmd_type==ClientCmdType::STOP)){
+    else if((!_device_controlled)&&(_ctrl_cmd_type==ClientCmdType::STOP)){
         _cmd_message="No device(s)  was started, please launch START EtherCAT command";         
         launch_cmd_message(_cmd_message);
     }
@@ -379,27 +278,23 @@ void EcGuiCmd::onApplyCmdReleased()
         
         _start_devices.clear();
         _device_start_req=false;
-        _send_ref=false;
         
         fill_start_stop_motor();
-        //fill_start_stop_valve();
+        fill_start_stop_valve();
         fill_start_stop_pump();
         
-        if(!_motors_selected && 
-           !_valves_selected &&
-           !_pumps_selected){
+        if(!_motors_selected && !_valves_selected &&!_pumps_selected){
             _cmd_message="No device selected, please select at least one";
             launch_cmd_message(_cmd_message);
         }
         else{
             
-            onApplyCmdMotors();
-            //onApplyCmdValves();
-            onApplyCmdPumps();
+            onApplyCmd();
 
             if(_device_start_req){
-                _mode_type_combobox->setEnabled(false);
-                _send_ref=true;
+                _device_controlled=true;
+
+                _ec_gui_slider->disable_control_mode("");
                 _notallbtn->setEnabled(false);
                 _allbtn->setEnabled(false);
 
@@ -419,10 +314,9 @@ void EcGuiCmd::onApplyCmdReleased()
     }
 }
 
-bool EcGuiCmd::get_cmd_sts(float &ctrl_cmd)
+bool EcGuiCmd::get_command_sts()
 {
-    ctrl_cmd = _ctrl_cmd;
-    return _send_ref;
+    return _device_controlled;
 }
 
 EcGuiCmd::~EcGuiCmd()

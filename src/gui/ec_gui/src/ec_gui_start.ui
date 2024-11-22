@@ -621,52 +621,6 @@
           <attribute name="title">
            <string/>
           </attribute>
-          <widget class="QComboBox" name="ModeType">
-           <property name="geometry">
-            <rect>
-             <x>10</x>
-             <y>20</y>
-             <width>113</width>
-             <height>26</height>
-            </rect>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>150</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <item>
-            <property name="text">
-             <string>Position</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Velocity</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Impedance</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Torque</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Current</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Idle</string>
-            </property>
-           </item>
-          </widget>
          </widget>
         </widget>
        </item>

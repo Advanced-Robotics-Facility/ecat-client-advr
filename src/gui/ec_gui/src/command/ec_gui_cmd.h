@@ -18,10 +18,8 @@ public:
 
     ~EcGuiCmd();
 
-    bool get_cmd_sts(float &ctrl_cmd);
-    void onApplyCmdMotors();
-    void onApplyCmdValves();
-    void onApplyCmdPumps();
+    bool get_command_sts();
+    void onApplyCmd();
     void onApplyCmdReleased();
     void onNotAllCmdReleased();
     void onAllCmdReleased();
@@ -31,12 +29,9 @@ public:
     
 public slots:
     void readCommand();
-    void readMotorCtrlType();
 private:
 
   std::string getFieldType() const;
-  std::string getModeType() const;
-  void enable_disable_pid();
   void launch_cmd_message(QString message);
   void fill_start_stop_motor();
   void fill_start_stop_valve();
@@ -47,17 +42,12 @@ private:
 
   DST _start_devices = {};
   PAC _brake_cmds = {};
-  std::vector<float> _gains;
-  float _ctrl_cmd;
-
 
   QString _cmd_message;
-  bool _device_start_req,_send_ref;
+  bool _device_start_req,_device_controlled;
   bool _motors_selected,_valves_selected,_pumps_selected;
 
   QComboBox * _fieldtype_combobox;
-  QComboBox * _mode_type_combobox;
-  QTabWidget *_devicecontrol;
 
   QDialogButtonBox  * _cmd_manager;
   QPushButton * _applybtn;
