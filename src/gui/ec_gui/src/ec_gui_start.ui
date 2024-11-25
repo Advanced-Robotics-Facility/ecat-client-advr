@@ -1113,7 +1113,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEdit">
+            <widget class="QLineEdit" name="ExpertUserPass">
              <property name="maximumSize">
               <size>
                <width>100</width>
@@ -1121,7 +1121,7 @@
               </size>
              </property>
              <property name="text">
-              <string>facility</string>
+              <string/>
              </property>
              <property name="echoMode">
               <enum>QLineEdit::PasswordEchoOnEdit</enum>

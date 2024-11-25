@@ -22,6 +22,7 @@ public:
  
 public slots:
         void OnMouseClicked(QTreeWidgetItem* item, int column);
+        void ExpertUserPassChanged();
         
 protected:
         bool eventFilter( QObject* o, QEvent* e );
@@ -30,9 +31,12 @@ private:
         EcIface::Ptr _client;
         QTreeWidget *_sdo_tree_wid;
         QTreeWidgetItem* _sdo_item;
+        QLineEdit* _expert_user;
+        QDialogButtonBox *_sdo_manager;
         int _sdo_column;
         SRD_SDO _sdo_map;
         std::string _old_sdo_value;
+        bool _user_expert;
         
         void add_esc_sdo();
         void rescan_esc_sdo();

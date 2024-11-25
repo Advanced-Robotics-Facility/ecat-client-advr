@@ -2,6 +2,8 @@
 #include "ec_gui_utils.h"
 #define SDO_VALUE_COL 2
 
+static const std::string expert_user_password="facility";
+
 EcGuiSdo::EcGuiSdo(QWidget *parent):
 QWidget(parent)
 {
@@ -13,9 +15,16 @@ QWidget(parent)
     _sdo_item = nullptr;
     _sdo_column=-1;
     _old_sdo_value="";
+
+    _expert_user = parent->findChild<QLineEdit *>("ExpertUserPass");
+    connect(_expert_user, &QLineEdit::returnPressed,
+    std::bind(&EcGuiSdo::ExpertUserPassChanged, this));
     
     _sdo_tree_wid->installEventFilter(this);
-    //auto sdo_manager = parent->findChild<QDialogButtonBox *>("SDOManager");
+    _sdo_manager = parent->findChild<QDialogButtonBox *>("SDOManager");
+    _sdo_manager->setEnabled(false);
+
+    _user_expert=false;
 }
       
 EcGuiSdo::~EcGuiSdo(){}
@@ -62,6 +71,10 @@ bool EcGuiSdo::eventFilter( QObject* o, QEvent* e )
 }
 void EcGuiSdo::OnMouseClicked(QTreeWidgetItem* item, int column)
 {
+    if(!_user_expert){
+        return;
+    }
+
     if(_sdo_item != nullptr){
         _sdo_tree_wid->closePersistentEditor(_sdo_item,_sdo_column); // close old editor
     }
@@ -97,7 +110,7 @@ void EcGuiSdo::add_esc_sdo()
         QTreeWidgetItem * esc_item = new QTreeWidgetItem();
         std::string esc_id_name = "esc_id_"+std::to_string(esc_id);
         esc_item->setText(0,QString::fromStdString(esc_id_name));
-        
+        rr_sdo["dddddd"]="1";
         for ( auto &[sdo_name, sdo_value] : rr_sdo ){
             QTreeWidgetItem * sdo_entry = new QTreeWidgetItem();
             sdo_entry->setText(1,QString::fromStdString(sdo_name));
@@ -118,4 +131,17 @@ void EcGuiSdo::rescan_esc_sdo()
         _client->retrieve_all_sdo(esc_id,new_rr_sdo_info);
         _sdo_map[esc_id] = new_rr_sdo_info;
     }
+}
+
+void EcGuiSdo::ExpertUserPassChanged()
+{
+    QMessageBox msgBox;
+    QString message="export user password incorrect!";
+    if(_expert_user->text().toStdString()==expert_user_password){
+        message="export user password correct!";
+        _user_expert=true;
+        _sdo_manager->setEnabled(true);
+    }
+    msgBox.setText(message);
+    msgBox.exec();
 }
