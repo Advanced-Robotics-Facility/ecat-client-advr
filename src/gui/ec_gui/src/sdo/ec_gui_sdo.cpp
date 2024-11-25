@@ -110,7 +110,6 @@ void EcGuiSdo::add_esc_sdo()
         QTreeWidgetItem * esc_item = new QTreeWidgetItem();
         std::string esc_id_name = "esc_id_"+std::to_string(esc_id);
         esc_item->setText(0,QString::fromStdString(esc_id_name));
-        rr_sdo["dddddd"]="1";
         for ( auto &[sdo_name, sdo_value] : rr_sdo ){
             QTreeWidgetItem * sdo_entry = new QTreeWidgetItem();
             sdo_entry->setText(1,QString::fromStdString(sdo_name));
