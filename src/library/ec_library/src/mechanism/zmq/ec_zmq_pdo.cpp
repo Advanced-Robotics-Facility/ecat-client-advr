@@ -44,8 +44,7 @@ void EcZmqPdo::init(void)
     _context = std::make_shared<context_t>(1);
     _subscriber = std::make_shared<socket_t>(*_context, ZMQ_SUB);
 
-    std::string key("");
-   _subscriber->setsockopt(ZMQ_SUBSCRIBE, key.c_str(),key.length()); 
+   _subscriber->setsockopt(ZMQ_SUBSCRIBE, "",0); 
    _subscriber->setsockopt(ZMQ_RCVHWM, &opt_hwm, sizeof ( opt_hwm ) );
 }
 
