@@ -45,10 +45,8 @@ void EcZmqPdo::init(void)
     _subscriber = std::make_shared<socket_t>(*_context, ZMQ_SUB);
 
     std::string key("");
-
    _subscriber->setsockopt(ZMQ_SUBSCRIBE, key.c_str(),key.length()); 
-   //_subscriber->setsockopt(ZMQ_RCVHWM, &opt_hwm, sizeof ( opt_hwm ) );
-   //_subscriber->setsockopt(ZMQ_RCVBUF, 2*1024);
+   _subscriber->setsockopt(ZMQ_RCVHWM, &opt_hwm, sizeof ( opt_hwm ) );
 }
 
 int EcZmqPdo::write_connect(void)
@@ -64,40 +62,34 @@ int EcZmqPdo::write_quit(void)
 
 int EcZmqPdo::read()
 {
-    zmq::multipart_t multipart;
-    std::string msg="";
-    //int nmsg = 0;
     try{
-        while(multipart.recv(*_subscriber,ZMQ_DONTWAIT))
-        {
-            //nmsg++;
-            msg="";
-            if(!multipart.empty())
-            {
-                msg = multipart.popstr();
-                auto zmqmsg=multipart.pop();
-                auto msg_size=zmqmsg.size();
-                pb_rx_pdos.Clear();
-                pb_rx_pdos.ParseFromArray(zmqmsg.data(),msg_size);
-            } 
-        }
-    }
-    catch(std::exception& e)
-    {
+        bool read_message=true;
+        int more=1;
+        size_t more_size = sizeof(more);
+        std::string msg_id="";
+        while(read_message){
+            zmq::message_t message;
+            if(!_subscriber->recv(&message,ZMQ_DONTWAIT)){
+                read_message=false;
+            }
+            else{
+                _subscriber->getsockopt(ZMQ_RCVMORE, &more, &more_size);
+                if (!more){
+                    if(msg_id!=""){
+                        pb_rx_pdos.Clear();
+                        pb_rx_pdos.ParseFromArray(message.data(),message.size());
+                        get_from_pb();
+                        read_message=false; //  Last message frame
+                    }
+                }else{
+                    msg_id= std::string(static_cast<char*> (message.data()), message.size());
+                }
+            }  
+        } 
+    }catch(std::exception& e){
         std::cout << e.what() << std::endl;
         return 0;
     }
-    
-    if(msg==""){
-        pb_rx_pdos.Clear();
-    }
-    else{
-        get_from_pb();
-    }
-
-    //if(nmsg>100)
-    //    std::cout << "recv " << nmsg << " from zmq" << std::endl;
-
     return 0;
 }
 

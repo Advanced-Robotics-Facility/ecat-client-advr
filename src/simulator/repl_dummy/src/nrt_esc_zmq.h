@@ -21,6 +21,8 @@ private:
     std::shared_ptr<zmq::socket_t>  _publisher;
     std::string _zmq_uri;
     std::string _esc_name;
+    zmq::message_t  _msg_id;
+    zmq::message_t  _msg;
 
 public:
     EcPub(const std::string zmq_uri,std::string esc_name):_zmq_uri(zmq_uri),_esc_name(esc_name){
@@ -33,7 +35,6 @@ public:
         #else
             int opt_hwm = 1;
         #endif
-
         _context = std::make_shared<zmq::context_t>(1);
         _publisher = std::make_shared<zmq::socket_t>(*_context, ZMQ_PUB);
         _publisher->setsockopt ( ZMQ_LINGER, &opt_linger, sizeof ( opt_linger ) );
@@ -49,20 +50,31 @@ public:
         return _zmq_uri;
     }
 
-    int publish_msg(iit::advr::Ec_slave_pdo pdo) {
-        std::string pb_msg_serialized;
-        zmq::multipart_t multipart;
+    int publish_msg(iit::advr::Ec_slave_pdo pdo_msg) {
         try {
-            pdo.SerializeToString(&pb_msg_serialized);
-            multipart.push(zmq::message_t(pb_msg_serialized.c_str(), pb_msg_serialized.length()));
-            multipart.push(zmq::message_t(_esc_name.c_str(), _esc_name.length()));
-            multipart.send((*_publisher));
-            printf("Esc_id [%s]send...{%ld}\n",_esc_name.c_str(),pb_msg_serialized.size());
+            if ( ! pdo_msg.IsInitialized() ) {
+                DPRINTF("msg is NOT initialized\n");
+                return -EINVAL;
+            }
+            
+            _msg_id.rebuild ( _esc_name.length() );
+            memcpy ((void*)_msg_id.data(), _esc_name.data(), _esc_name.length());
+
+            size_t msg_size = pdo_msg.ByteSize();
+            if ( msg_size+sizeof(msg_size) > MAX_PB_SIZE ) {
+                DPRINTF("msg_size TOO big %ld > %d \n", msg_size, MAX_PB_SIZE);
+                return -EOVERFLOW;
+            }
+            _msg.rebuild ( msg_size );
+            pdo_msg.SerializeToArray(_msg.data(), msg_size);
+
+            _publisher->send ( _msg_id, ZMQ_SNDMORE );
+            _publisher->send ( _msg, 0);
+
         } catch ( zmq::error_t& e ) { 
             printf ( ">>> zsend ... catch %s\n", e.what() );
             return -1;
         }
-
         return 0;
     }   
 };
