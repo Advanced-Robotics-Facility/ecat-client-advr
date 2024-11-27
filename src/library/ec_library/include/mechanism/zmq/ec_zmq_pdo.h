@@ -62,8 +62,7 @@ private:
     int32_t _id; 
     uint32_t _type;
     std::string _esc_name,_zmq_uri;
-    
-    std::shared_ptr<zmq::context_t> _context;
+    std::string _msg_id;
     std::shared_ptr<zmq::socket_t>  _subscriber;
 };
 

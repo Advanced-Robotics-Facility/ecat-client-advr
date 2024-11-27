@@ -17,15 +17,16 @@
 
 class EcPub{
 private:
-    std::shared_ptr<zmq::context_t> _context;
     std::shared_ptr<zmq::socket_t>  _publisher;
     std::string _zmq_uri;
     std::string _esc_name;
     zmq::message_t  _msg_id;
     zmq::message_t  _msg;
+    std::shared_ptr<zmq::context_t>  _pub_context;
 
 public:
-    EcPub(const std::string zmq_uri,std::string esc_name):_zmq_uri(zmq_uri),_esc_name(esc_name){
+    EcPub(const std::string zmq_uri,std::string esc_name,std::shared_ptr<zmq::context_t> pub_context):
+        _zmq_uri(zmq_uri),_esc_name(esc_name),_pub_context(pub_context){
         
         DPRINTF("PDO ZMQ URI: [%s]\n",_zmq_uri.c_str()); 
 
@@ -36,8 +37,7 @@ public:
             int opt_hwm = 1;
         #endif
         try{
-            _context = std::make_shared<zmq::context_t>(1);
-            _publisher = std::make_shared<zmq::socket_t>(*_context, ZMQ_PUB);
+            _publisher = std::make_shared<zmq::socket_t>(*_pub_context,ZMQ_PUB);
             _publisher->setsockopt ( ZMQ_LINGER, &opt_linger, sizeof ( opt_linger ) );
             _publisher->setsockopt ( ZMQ_SNDHWM, &opt_hwm, sizeof ( opt_hwm ) );
             _publisher->bind(_zmq_uri);
@@ -47,7 +47,12 @@ public:
         }
     } 
     ~EcPub(){
-        _publisher->disconnect(_zmq_uri);
+        try{
+            _publisher->disconnect(_zmq_uri);
+            _publisher->close();
+        }catch ( zmq::error_t& e ) { 
+            std::cout << "error on closing phase: " << e.what() << std::endl;
+        }
     }
 
     std::string get_zmq_pub_uri()
@@ -94,7 +99,8 @@ private:
     std::map<int,std::shared_ptr<EscPb>> esc_pb;
     std::map<int,std::shared_ptr<EcPub>> esc_zmq_pub;
     std::map<int, iit::advr::Ec_slave_pdo>  pb_rx_pdos;
-    
+    std::shared_ptr<zmq::context_t>  _pub_context;
+
 public:
 
     NrtEscZmq(std::map<int,int> esc_map,uint32_t th_period_us,
@@ -116,13 +122,15 @@ public:
         if(protocol=="zipc"){
             protocol="ipc";
         }
-    
+
+        _pub_context=std::make_shared<zmq::context_t>(1);
+
         for ( const auto& [id, esc_type] : esc_map ) {
             auto esc_name = iit::ecat::esc_type_map.at(esc_type);  
 
             std::string host_port_cmd = std::to_string(host_port+id);
             std::string zmq_uri = protocol+"://" + host_address + ":"+host_port_cmd;
-            auto ec_pub= std::make_shared<EcPub>(zmq_uri,esc_name);
+            auto ec_pub= std::make_shared<EcPub>(zmq_uri,esc_name,_pub_context);
             esc_zmq_pub[id]=ec_pub;
 
             pb_rx_pdos[id] = iit::advr::Ec_slave_pdo();
@@ -168,6 +176,10 @@ public:
 
     ~NrtEscZmq(){ 
         iit::ecat::print_stat ( s_loop );
+        for ( auto& [id, ec_pub] : esc_zmq_pub ) {
+            ec_pub.reset();
+        }
+        _pub_context->close();
     }
 
     virtual void th_init ( void * ){ 
@@ -177,14 +189,12 @@ public:
     }
     
     virtual void th_loop ( void * ){
-
         for ( auto& [id, ec_pub] : esc_zmq_pub ) {
             if(esc_pb[id]!=nullptr){
                 esc_pb[id]->pbSerialize(pb_rx_pdos[id]);  
                 ec_pub->publish_msg(pb_rx_pdos[id]);
             }
         }
-        
     }
     
 };

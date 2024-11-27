@@ -31,9 +31,6 @@ static void test_sighandler(int signum) {
     loop_guard = 0;
 }
 
-
-
-
 ////////////////////////////////////////////////////
 //
 // Main
@@ -97,12 +94,10 @@ int main ( int argc, char * argv[] ) try {
     }
 #endif
 
-    threads[thread_name]->stop();
-    
-    for ( auto const &t : threads) {
-        //t.second->stop();
-        t.second->join();
-        delete t.second;
+    for ( auto const& [key,th] : threads ) {
+        th->stop();
+        th->join();
+        delete th;
     }
     
     std::cout << "Exit main" << std::endl;

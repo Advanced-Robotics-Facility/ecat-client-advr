@@ -5,6 +5,7 @@ using namespace zmq;
 using namespace iit::advr;
 using namespace std;
 
+zmq::context_t sub_context(1);
 
 EcZmqPdo::EcZmqPdo( int32_t id, uint32_t type, const std::string zmq_uri):
 _id(id),
@@ -36,8 +37,7 @@ std::string EcZmqPdo::get_zmq_pdo_uri()
 void EcZmqPdo::init(void)
 {
     try{
-        _context = std::make_shared<context_t>(1);
-        _subscriber = std::make_shared<socket_t>(*_context, ZMQ_SUB);
+        _subscriber = std::make_shared<socket_t>(sub_context, ZMQ_SUB);
         _subscriber->setsockopt(ZMQ_SUBSCRIBE, "",0); 
     }catch ( zmq::error_t& e ) { 
         std::string zmq_error(e.what());
@@ -73,27 +73,27 @@ int EcZmqPdo::read()
 {
     try{
         bool read_message=true;
-        int more=1;
-        size_t more_size = sizeof(more);
-        std::string msg_id="";
+        int msg_more=1;
+        size_t msg_more_size=sizeof(msg_more);
+        _msg_id="";
         while(read_message){
             zmq::message_t message;
             if(!_subscriber->recv(&message,ZMQ_DONTWAIT)){
                 read_message=false;
             }
             else{
-                _subscriber->getsockopt(ZMQ_RCVMORE, &more, &more_size);
-                if (!more){
-                    if(msg_id!=""){
+                _subscriber->getsockopt(ZMQ_RCVMORE, &msg_more, &msg_more_size);
+                if (!msg_more){
+                    if(_msg_id!=""){
                         pb_rx_pdos.Clear();
                         pb_rx_pdos.ParseFromArray(message.data(),message.size());
                         get_from_pb();
                         read_message=false; //  Last message frame
                     }
                 }else{
-                    msg_id= std::string(static_cast<char*> (message.data()), message.size());
+                    _msg_id= std::string(static_cast<char*> (message.data()), message.size());
                 }
-            }  
+            }
         } 
     }catch(std::exception& e){
         std::cout << e.what() << std::endl;
