@@ -199,11 +199,12 @@ void EcGuiNet::run()
 
 void EcGuiNet::ec_master_readyStdO()
 {
+
    _ec_master_stoud.clear();
-   while(_ec_master_process->canReadLine()){
-       _ec_master_stoud = _ec_master_process->readLine();
-       _ec_master_terminal->setText(_ec_master_stoud);
-  }
+    while(_ec_master_process->canReadLine()){
+        _ec_master_stoud = _ec_master_process->readLine();
+        _ec_master_terminal->setText(_ec_master_stoud);
+    }
 }
 
 void EcGuiNet::server_readyStdO()
