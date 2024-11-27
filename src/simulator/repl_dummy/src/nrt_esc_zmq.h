@@ -35,11 +35,16 @@ public:
         #else
             int opt_hwm = 1;
         #endif
-        _context = std::make_shared<zmq::context_t>(1);
-        _publisher = std::make_shared<zmq::socket_t>(*_context, ZMQ_PUB);
-        _publisher->setsockopt ( ZMQ_LINGER, &opt_linger, sizeof ( opt_linger ) );
-        _publisher->setsockopt ( ZMQ_SNDHWM, &opt_hwm, sizeof ( opt_hwm ) );
-        _publisher->bind(_zmq_uri);
+        try{
+            _context = std::make_shared<zmq::context_t>(1);
+            _publisher = std::make_shared<zmq::socket_t>(*_context, ZMQ_PUB);
+            _publisher->setsockopt ( ZMQ_LINGER, &opt_linger, sizeof ( opt_linger ) );
+            _publisher->setsockopt ( ZMQ_SNDHWM, &opt_hwm, sizeof ( opt_hwm ) );
+            _publisher->bind(_zmq_uri);
+        }catch ( zmq::error_t& e ) { 
+            std::string zmq_error(e.what());
+            throw std::runtime_error("error on publisher socket initialization: "+zmq_error);
+        }
     } 
     ~EcPub(){
         _publisher->disconnect(_zmq_uri);

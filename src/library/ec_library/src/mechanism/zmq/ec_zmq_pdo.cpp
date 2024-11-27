@@ -35,27 +35,37 @@ std::string EcZmqPdo::get_zmq_pdo_uri()
 
 void EcZmqPdo::init(void)
 {
-    #if ZMQ_VERSION_MAJOR == 2
-    uint64_t opt_hwm = 1;
-    #else
-    int opt_hwm = 1;
-    #endif
-
-    _context = std::make_shared<context_t>(1);
-    _subscriber = std::make_shared<socket_t>(*_context, ZMQ_SUB);
-
-   _subscriber->setsockopt(ZMQ_SUBSCRIBE, "",0); 
-   _subscriber->setsockopt(ZMQ_RCVHWM, &opt_hwm, sizeof ( opt_hwm ) );
+    try{
+        _context = std::make_shared<context_t>(1);
+        _subscriber = std::make_shared<socket_t>(*_context, ZMQ_SUB);
+        _subscriber->setsockopt(ZMQ_SUBSCRIBE, "",0); 
+    }catch ( zmq::error_t& e ) { 
+        std::string zmq_error(e.what());
+        throw std::runtime_error("error on subscriber socket initialization: "+zmq_error);
+    }
 }
 
 int EcZmqPdo::write_connect(void)
 {
-    _subscriber->connect(_zmq_uri);
-    return 0;
+    int ret=0;
+    try{
+        _subscriber->connect(_zmq_uri);
+    }catch ( zmq::error_t& e ) { 
+        std::cout << "fatel error on subscriber socket connection: " << e.what() << std::endl;
+        ret=-1;
+    }
+    return ret;
 }
 
 int EcZmqPdo::write_quit(void)
 {
+    int ret=0;
+    try{
+        _subscriber->disconnect(_zmq_uri);
+    }catch ( zmq::error_t& e ) { 
+        std::cout << "fatel error on subscriber socket disconnection: " << e.what() << std::endl;
+        ret=-1;
+    }
     return 0;
 }
 
