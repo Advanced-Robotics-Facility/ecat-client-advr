@@ -48,7 +48,7 @@ public:
     } 
     ~EcPub(){
         try{
-            _publisher->disconnect(_zmq_uri);
+            _publisher->unbind(_zmq_uri);
             _publisher->close();
         }catch ( zmq::error_t& e ) { 
             std::cout << "error on closing phase: " << e.what() << std::endl;

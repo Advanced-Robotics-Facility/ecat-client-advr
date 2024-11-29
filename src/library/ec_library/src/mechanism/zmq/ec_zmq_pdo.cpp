@@ -74,29 +74,16 @@ int EcZmqPdo::write_quit(void)
 int EcZmqPdo::read()
 {
     try{
-        bool read_message=true;
-        int msg_more=1;
-        size_t msg_more_size=sizeof(msg_more);
-        _msg_id="";
-        while(read_message){
-            zmq::message_t message;
-            if(!_subscriber->recv(&message,ZMQ_DONTWAIT)){
-                read_message=false;
+        zmq::message_t zmq_msg_id;
+        while(_subscriber->recv(&zmq_msg_id,ZMQ_RCVMORE)){
+            //_msg_id= std::string(static_cast<char*> (zmq_msg_id.data()), zmq_msg_id.size());
+            zmq::message_t zmq_msg;
+            if(_subscriber->recv(&zmq_msg)){
+                pb_rx_pdos.Clear();
+                pb_rx_pdos.ParseFromArray(zmq_msg.data(),zmq_msg.size());
+                get_from_pb();
             }
-            else{
-                _subscriber->getsockopt(ZMQ_RCVMORE, &msg_more, &msg_more_size);
-                if (!msg_more){
-                    if(_msg_id!=""){
-                        pb_rx_pdos.Clear();
-                        pb_rx_pdos.ParseFromArray(message.data(),message.size());
-                        get_from_pb();
-                        read_message=false; //  Last message frame
-                    }
-                }else{
-                    _msg_id= std::string(static_cast<char*> (message.data()), message.size());
-                }
-            }
-        } 
+        }
     }catch(std::exception& e){
         std::cout << e.what() << std::endl;
         return 0;
