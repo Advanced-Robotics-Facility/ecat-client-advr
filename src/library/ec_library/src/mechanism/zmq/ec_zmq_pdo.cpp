@@ -74,11 +74,15 @@ int EcZmqPdo::write_quit(void)
 int EcZmqPdo::read()
 {
     try{
+        bool new_msg=false;
         while(_subscriber->recv(&_zmq_msg_id,ZMQ_RCVMORE)){
             if(_subscriber->recv(&_zmq_msg)){
-                pb_rx_pdos.ParseFromArray(_zmq_msg.data(),_zmq_msg.size());
-                get_from_pb();
+                new_msg=true;
             }
+        }
+        if(new_msg){ // read last element
+            pb_rx_pdos.ParseFromArray(_zmq_msg.data(),_zmq_msg.size());
+            get_from_pb();
         }
     }catch(std::exception& e){
         std::cout << e.what() << std::endl;
