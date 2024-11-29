@@ -74,13 +74,9 @@ int EcZmqPdo::write_quit(void)
 int EcZmqPdo::read()
 {
     try{
-        zmq::message_t zmq_msg_id;
-        while(_subscriber->recv(&zmq_msg_id,ZMQ_RCVMORE)){
-            //_msg_id= std::string(static_cast<char*> (zmq_msg_id.data()), zmq_msg_id.size());
-            zmq::message_t zmq_msg;
-            if(_subscriber->recv(&zmq_msg)){
-                pb_rx_pdos.Clear();
-                pb_rx_pdos.ParseFromArray(zmq_msg.data(),zmq_msg.size());
+        while(_subscriber->recv(&_zmq_msg_id,ZMQ_RCVMORE)){
+            if(_subscriber->recv(&_zmq_msg)){
+                pb_rx_pdos.ParseFromArray(_zmq_msg.data(),_zmq_msg.size());
                 get_from_pb();
             }
         }
