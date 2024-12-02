@@ -43,8 +43,10 @@ private:
       QPushButton * _stop_plotting_btn;
       QCheckBox *_auto_scroll;
       QLabel *_time_pdo;
-      std::map<std::string,QCPGraph *> _graph_pdo_map;
-      std::map<std::string,QVector<double>> _buffer_pdo_map;
+      std::map<int,QTreeWidgetItem *> _esc_pdo_map;
+      std::map<int,std::vector<QCPGraph *>> _graph_pdo_map;
+      std::map<int,std::vector<float>>  _pdo_v;
+      std::map<int,std::vector<QVector<double>>> _buffer_pdo_map;
       QVector<double> _buffer_time;
       bool _update_plot,_first_update;
       qint64 _ms_receive_time,_ms_send_time;
@@ -53,8 +55,6 @@ private:
       uint16_t _counter_buffer;
       uint16_t _buffer_size;
 
-      std::string _esc_id_pdo;
-      
       // last received motor data
       MotorStatusMap _motor_status_map;
       MotorReferenceMap _motor_reference_map;
@@ -70,17 +70,15 @@ private:
       // last received pump data
       PumpStatusMap _pump_status_map;
       PumpReferenceMap _pump_reference_map;
-      
-      std::map<std::string,std::vector<float>>  _pdo_v;
 
       QLCDNumber *_battery_level;
     
-      void create_graph(std::string esc_id_pdo);
-      QTreeWidgetItem * search_slave_into_treewid(std::string esc_id_name);
-      QTreeWidgetItem * retrieve_treewid_item(const std::string &esc_id_name,
+      void create_graph(const int &esc_id,const int &index,const std::string &esc_pdo_name);
+      QTreeWidgetItem * retrieve_treewid_item(const int &esc_id,
+                                              const std::string &esc_type,
                                               const std::vector<std::string> &pdo_fields,
-                                              const std::string &direction);
-      void fill_data(const std::string &esc_id_name,
+                                              const std::string direction);
+      void fill_data(const int &esc_id,
                      QTreeWidgetItem * topLevel,
                      const std::vector<std::string> &pdo_fields,
                      const std::vector<float> &pdo);
