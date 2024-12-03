@@ -66,22 +66,24 @@ public:
     }
 
     int publish_msg(iit::advr::Ec_slave_pdo &pdo_msg) {
+        
+        if ( ! pdo_msg.IsInitialized() ) {
+            DPRINTF("msg is NOT initialized\n");
+            return -EINVAL;
+        }
+
+        size_t msg_size = pdo_msg.ByteSize();
+        if ( msg_size+sizeof(msg_size) > MAX_PB_SIZE ) {
+            DPRINTF("msg_size TOO big %ld > %d \n", msg_size, MAX_PB_SIZE);
+            return -EOVERFLOW;
+        }
+        _msg.rebuild ( msg_size );
+        pdo_msg.SerializeToArray(_msg.data(), msg_size);
+
+        
         try {
-            if ( ! pdo_msg.IsInitialized() ) {
-                DPRINTF("msg is NOT initialized\n");
-                return -EINVAL;
-            }
-
-            size_t msg_size = pdo_msg.ByteSize();
-            if ( msg_size+sizeof(msg_size) > MAX_PB_SIZE ) {
-                DPRINTF("msg_size TOO big %ld > %d \n", msg_size, MAX_PB_SIZE);
-                return -EOVERFLOW;
-            }
-            _msg.rebuild ( msg_size );
-            pdo_msg.SerializeToArray(_msg.data(), msg_size);
-
-            _publisher->send ( _msg_id, ZMQ_SNDMORE );
-            _publisher->send ( _msg, 0);
+            _publisher->send (_msg_id, ZMQ_SNDMORE );
+            _publisher->send (_msg);
 
         } catch ( zmq::error_t& e ) { 
             printf ( ">>> zsend ... catch %s\n", e.what() );
