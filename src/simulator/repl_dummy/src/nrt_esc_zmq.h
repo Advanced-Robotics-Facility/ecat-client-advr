@@ -14,6 +14,7 @@
 #include "protobuf/ft/ft_pb.h"
 #include "protobuf/valve/valve_pb.h"
 #include "protobuf/pump/pump_pb.h"
+extern zmq::context_t zmq_ctx;
 
 class EcPub{
 private:
@@ -37,7 +38,11 @@ public:
             int opt_hwm = 1;
         #endif
         try{
-            _publisher = std::make_shared<zmq::socket_t>(*_pub_context,ZMQ_PUB);
+            // prepare _msg_id just once
+            _msg_id.rebuild ( _esc_name.length() );
+            memcpy ((void*)_msg_id.data(), _esc_name.data(), _esc_name.length());
+
+            _publisher = std::make_shared<zmq::socket_t>(zmq_ctx,ZMQ_PUB);
             _publisher->setsockopt ( ZMQ_LINGER, &opt_linger, sizeof ( opt_linger ) );
             _publisher->setsockopt ( ZMQ_SNDHWM, &opt_hwm, sizeof ( opt_hwm ) );
             _publisher->bind(_zmq_uri);
@@ -60,15 +65,12 @@ public:
         return _zmq_uri;
     }
 
-    int publish_msg(iit::advr::Ec_slave_pdo pdo_msg) {
+    int publish_msg(iit::advr::Ec_slave_pdo &pdo_msg) {
         try {
             if ( ! pdo_msg.IsInitialized() ) {
                 DPRINTF("msg is NOT initialized\n");
                 return -EINVAL;
             }
-            
-            _msg_id.rebuild ( _esc_name.length() );
-            memcpy ((void*)_msg_id.data(), _esc_name.data(), _esc_name.length());
 
             size_t msg_size = pdo_msg.ByteSize();
             if ( msg_size+sizeof(msg_size) > MAX_PB_SIZE ) {
@@ -100,11 +102,14 @@ private:
     std::map<int,std::shared_ptr<EcPub>> esc_zmq_pub;
     std::map<int, iit::advr::Ec_slave_pdo>  pb_rx_pdos;
     std::shared_ptr<zmq::context_t>  _pub_context;
-
+    std::map<int,int> _esc_map;
+    std::string _protocol,_host_address;
+    uint32_t _host_port;
 public:
 
     NrtEscZmq(std::map<int,int> esc_map,uint32_t th_period_us,
-              std::string protocol,std::string host_address,uint32_t host_port){
+              std::string protocol,std::string host_address,uint32_t host_port):
+              _esc_map(esc_map),_protocol(protocol),_host_address(host_address),_host_port(host_port){
         name="NrtEscZmq";
         //periodic
         struct timespec ts;
@@ -115,23 +120,33 @@ public:
         priority = sched_get_priority_max ( schedpolicy ) / 2;
         stacksize = 0; // not set stak size !!!! YOU COULD BECAME CRAZY !!!!!!!!!!!!
 
-        if(host_address=="localhost"){
-            host_address="127.0.0.1";
+        if(_host_address=="localhost"){
+            _host_address="127.0.0.1";
         }
 
-        if(protocol=="zipc"){
-            protocol="ipc";
+        if(_protocol=="zipc"){
+            _protocol="ipc";
         }
+    }
+
+    ~NrtEscZmq(){ 
+        iit::ecat::print_stat ( s_loop );
+        for ( auto& [id, ec_pub] : esc_zmq_pub ) {
+            ec_pub.reset();
+        }
+        _pub_context->close();
+    }
+
+    virtual void th_init ( void * ){ 
 
         _pub_context=std::make_shared<zmq::context_t>(1);
 
-        for ( const auto& [id, esc_type] : esc_map ) {
+        for ( const auto& [id, esc_type] : _esc_map ) {
             auto esc_name = iit::ecat::esc_type_map.at(esc_type);  
 
-            std::string host_port_cmd = std::to_string(host_port+id);
-            std::string zmq_uri = protocol+"://" + host_address + ":"+host_port_cmd;
-            auto ec_pub= std::make_shared<EcPub>(zmq_uri,esc_name,_pub_context);
-            esc_zmq_pub[id]=ec_pub;
+            std::string host_port_cmd = std::to_string(_host_port+id);
+            std::string zmq_uri = _protocol+"://" + _host_address + ":"+host_port_cmd;
+            esc_zmq_pub[id]=std::make_shared<EcPub>(zmq_uri,esc_name,_pub_context);;
 
             pb_rx_pdos[id] = iit::advr::Ec_slave_pdo();
             
@@ -172,17 +187,7 @@ public:
                     break;
             }           
         }
-    }
 
-    ~NrtEscZmq(){ 
-        iit::ecat::print_stat ( s_loop );
-        for ( auto& [id, ec_pub] : esc_zmq_pub ) {
-            ec_pub.reset();
-        }
-        _pub_context->close();
-    }
-
-    virtual void th_init ( void * ){ 
         start_time = iit::ecat::get_time_ns();
         tNow = tPre = start_time;
         loop_cnt = 0;

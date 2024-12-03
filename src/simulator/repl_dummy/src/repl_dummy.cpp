@@ -24,6 +24,7 @@ static int loop_guard = 1;
 
 
 EcThreadsMap threads;
+zmq::context_t zmq_ctx(1);
     
 static void test_sighandler(int signum) {
     
