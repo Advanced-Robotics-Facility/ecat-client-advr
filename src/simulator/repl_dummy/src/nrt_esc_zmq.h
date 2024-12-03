@@ -80,11 +80,9 @@ public:
         _msg.rebuild ( msg_size );
         pdo_msg.SerializeToArray(_msg.data(), msg_size);
 
-        
         try {
             _publisher->send (_msg_id, ZMQ_SNDMORE );
             _publisher->send (_msg);
-
         } catch ( zmq::error_t& e ) { 
             printf ( ">>> zsend ... catch %s\n", e.what() );
             return -1;
@@ -148,7 +146,7 @@ public:
 
             std::string host_port_cmd = std::to_string(_host_port+id);
             std::string zmq_uri = _protocol+"://" + _host_address + ":"+host_port_cmd;
-            esc_zmq_pub[id]=std::make_shared<EcPub>(zmq_uri,esc_name,_pub_context);;
+            esc_zmq_pub[id]=std::make_shared<EcPub>(zmq_uri,esc_name,_pub_context);
 
             pb_rx_pdos[id] = iit::advr::Ec_slave_pdo();
             
