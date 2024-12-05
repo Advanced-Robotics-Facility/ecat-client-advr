@@ -56,9 +56,6 @@ protected:
     virtual void set_to_pb(void) = 0;
 
 private:
-    
-    zmq::multipart_t _multipart;
-    
     int32_t _id; 
     uint32_t _type;
     std::string _esc_name,_zmq_uri;
