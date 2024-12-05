@@ -70,6 +70,7 @@ int main ( int argc, char * argv[] ) try {
         esc_map[esc_id]=esc_type;
     }
     
+    int nprocs = get_nprocs();
     std::string thread_name="";
     if(ec_cfg.protocol=="iddp"){
         thread_name="RtEscPipe";
@@ -79,7 +80,7 @@ int main ( int argc, char * argv[] ) try {
     else{
         thread_name="NrtEscZmq";
         threads[thread_name] = new NrtEscZmq(esc_map,rt_th_period_us,ec_cfg.protocol,ec_cfg.host_name,ec_cfg.host_port+4000);
-        threads[thread_name]->create(false);
+        threads[thread_name]->create(false,nprocs-2);
     }
 
 #ifdef SIG_TEST
