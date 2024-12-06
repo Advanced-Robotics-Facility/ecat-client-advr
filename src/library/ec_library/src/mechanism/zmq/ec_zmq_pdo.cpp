@@ -5,10 +5,6 @@ using namespace zmq;
 using namespace iit::advr;
 using namespace std;
 
-namespace EcZmqContext{
-    static zmq::context_t sub_context(1);
-}
-
 EcZmqPdo::EcZmqPdo( int32_t id, uint32_t type, const std::string zmq_uri):
 _id(id),
 _type(type),

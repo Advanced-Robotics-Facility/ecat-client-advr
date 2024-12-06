@@ -7,7 +7,9 @@
 #include "zmq.hpp"
 #include <zmq_addon.hpp>
 
-
+namespace EcZmqContext{
+    extern zmq::context_t sub_context;
+}
 
 class EcZmqPdo
 {
