@@ -7,10 +7,10 @@ set(CMAKE_AUTORCC ON)
 find_package(TIFF REQUIRED)
 
 # find qt
-find_package(Qt5UiTools 5.9 REQUIRED)
-find_package(Qt5Widgets 5.9 REQUIRED)
-find_package(Qt5Charts  5.9 REQUIRED)
-find_package(Qt5PrintSupport  5.9 REQUIRED)
+find_package(Qt6UiTools 6.0 REQUIRED)
+find_package(Qt6Widgets 6.0 REQUIRED)
+find_package(Qt6Charts  6.0 REQUIRED)
+find_package(Qt6PrintSupport  6.0 REQUIRED)
 
 OPTION(TEST_GUI "Testing GUI concepts" OFF)
 
@@ -47,9 +47,9 @@ add_library(ec_gui_lib STATIC
 
 target_link_libraries(ec_gui_lib
     PUBLIC
-    Qt5::Widgets
-    Qt5::UiTools
-    Qt5::PrintSupport 
+    Qt6::Widgets
+    Qt6::UiTools
+    Qt6::PrintSupport 
     -lcurl
     ${YAML_CPP_LIBRARIES}
     ${Boost_SYSTEM_LIBRARY}
