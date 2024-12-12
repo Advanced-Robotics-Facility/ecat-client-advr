@@ -17,12 +17,18 @@ EcGuiWrapper::EcGuiWrapper(QWidget *parent) :
 
     _command_dw = parent->findChild<QDockWidget *>("Command");
     connect(_command_dw, SIGNAL(topLevelChanged(bool)), this, SLOT(DwTopLevelChanged(bool)));
+    _command_dw->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
     
     _pdo_sdo_dw = parent->findChild<QDockWidget *>("DataObject");
     connect(_pdo_sdo_dw, SIGNAL(topLevelChanged(bool)), this, SLOT(DwTopLevelChanged(bool)));
+    _pdo_sdo_dw->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
     
     _graphics_dw = parent->findChild<QDockWidget *>("Graphics");
     connect(_graphics_dw, SIGNAL(topLevelChanged(bool)), this, SLOT(DwTopLevelChanged(bool)));
+    _graphics_dw->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+
+    auto measurement_setup_dw= parent->findChild<QDockWidget *>("MeasurementSetup"); 
+    measurement_setup_dw->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
 
     _receive_action = parent->findChild<QAction *>("actionReceive");
     connect(_receive_action, SIGNAL(triggered()), this, SLOT(start_stop_receive()));

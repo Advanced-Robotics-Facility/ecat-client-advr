@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1613</width>
+    <width>1632</width>
     <height>1017</height>
    </rect>
   </property>
@@ -27,7 +27,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1613</width>
+     <width>1632</width>
      <height>22</height>
     </rect>
    </property>
@@ -121,13 +121,13 @@
   <widget class="QDockWidget" name="DataObject">
    <property name="minimumSize">
     <size>
-     <width>500</width>
+     <width>400</width>
      <height>400</height>
     </size>
    </property>
    <property name="maximumSize">
     <size>
-     <width>550</width>
+     <width>500</width>
      <height>500</height>
     </size>
    </property>
@@ -310,7 +310,7 @@
   <widget class="QDockWidget" name="Graphics">
    <property name="minimumSize">
     <size>
-     <width>500</width>
+     <width>400</width>
      <height>400</height>
     </size>
    </property>
@@ -383,7 +383,7 @@
   <widget class="QDockWidget" name="Command">
    <property name="minimumSize">
     <size>
-     <width>1101</width>
+     <width>400</width>
      <height>400</height>
     </size>
    </property>
@@ -392,6 +392,9 @@
      <width>524287</width>
      <height>550</height>
     </size>
+   </property>
+   <property name="features">
+    <set>QDockWidget::AllDockWidgetFeatures</set>
    </property>
    <property name="windowTitle">
     <string>Control</string>
@@ -713,13 +716,13 @@
   <widget class="QDockWidget" name="MeasurementSetup">
    <property name="minimumSize">
     <size>
-     <width>500</width>
+     <width>400</width>
      <height>400</height>
     </size>
    </property>
    <property name="maximumSize">
     <size>
-     <width>550</width>
+     <width>500</width>
      <height>500</height>
     </size>
    </property>
@@ -747,7 +750,7 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>480</width>
+          <width>472</width>
           <height>459</height>
          </rect>
         </property>
