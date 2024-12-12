@@ -15,7 +15,6 @@ int main(int argc, char *argv[])
 
     QMainWindow mw;
     EcGuiStart w;
-    w.setMinimumSize(1000,1000);
     mw.setCentralWidget(w.centralWidget());
     mw.setWindowState(Qt::WindowMaximized);
     mw.show();
