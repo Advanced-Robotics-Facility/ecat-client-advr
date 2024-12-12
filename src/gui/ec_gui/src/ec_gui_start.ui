@@ -383,7 +383,7 @@
   <widget class="QDockWidget" name="Command">
    <property name="minimumSize">
     <size>
-     <width>500</width>
+     <width>1101</width>
      <height>400</height>
     </size>
    </property>
@@ -748,7 +748,7 @@
           <x>0</x>
           <y>0</y>
           <width>480</width>
-          <height>361</height>
+          <height>459</height>
          </rect>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -985,7 +985,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>11</pointsize>
               </font>
              </property>
              <property name="text">
@@ -1105,7 +1105,7 @@
             <widget class="QLabel" name="label">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>11</pointsize>
               </font>
              </property>
              <property name="text">
