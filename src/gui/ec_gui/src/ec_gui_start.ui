@@ -121,14 +121,14 @@
   <widget class="QDockWidget" name="DataObject">
    <property name="minimumSize">
     <size>
-     <width>400</width>
-     <height>400</height>
+     <width>486</width>
+     <height>450</height>
     </size>
    </property>
    <property name="maximumSize">
     <size>
      <width>500</width>
-     <height>500</height>
+     <height>524287</height>
     </size>
    </property>
    <property name="features">
@@ -311,13 +311,13 @@
    <property name="minimumSize">
     <size>
      <width>400</width>
-     <height>400</height>
+     <height>450</height>
     </size>
    </property>
    <property name="maximumSize">
     <size>
      <width>524287</width>
-     <height>550</height>
+     <height>16777215</height>
     </size>
    </property>
    <property name="features">
@@ -390,7 +390,7 @@
    <property name="maximumSize">
     <size>
      <width>524287</width>
-     <height>550</height>
+     <height>450</height>
     </size>
    </property>
    <property name="features">
@@ -723,7 +723,7 @@
    <property name="maximumSize">
     <size>
      <width>500</width>
-     <height>500</height>
+     <height>450</height>
     </size>
    </property>
    <property name="features">
@@ -751,7 +751,7 @@
           <x>0</x>
           <y>0</y>
           <width>472</width>
-          <height>459</height>
+          <height>361</height>
          </rect>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_4">

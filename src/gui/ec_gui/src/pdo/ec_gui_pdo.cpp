@@ -17,7 +17,7 @@ _ec_gui_slider(ec_gui_slider)
     QCustomPlot::connect(_custom_plot->yAxis, SIGNAL(rangeChanged(QCPRange)), _custom_plot->yAxis2, SLOT(setRange(QCPRange)));
 
     // Allow user to drag axis ranges with mouse, zoom with mouse wheel and select graphs by clicking:
-    _custom_plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    _custom_plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom );// QCP::iSelectPlottables);
 
 
     QSharedPointer<QCPAxisTickerTime> timeTicker(new QCPAxisTickerTime);
