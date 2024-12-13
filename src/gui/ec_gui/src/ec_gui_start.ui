@@ -308,13 +308,26 @@
              </item>
              <item>
               <widget class="QLabel" name="label_2">
+               <property name="maximumSize">
+                <size>
+                 <width>100</width>
+                 <height>30</height>
+                </size>
+               </property>
                <property name="text">
                 <string>Search SDO</string>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="SDOSearch"/>
+              <widget class="QLineEdit" name="SDOSearch">
+               <property name="maximumSize">
+                <size>
+                 <width>250</width>
+                 <height>30</height>
+                </size>
+               </property>
+              </widget>
              </item>
             </layout>
            </item>

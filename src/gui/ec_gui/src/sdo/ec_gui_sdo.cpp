@@ -129,7 +129,9 @@ void EcGuiSdo::add_esc_sdo()
         }
         _sdo_tree_wid->addTopLevelItem(esc_item);
     }
-    _sdo_tree_wid->resizeColumnToContents(0);
+    _sdo_tree_wid->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    _sdo_tree_wid->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    _sdo_tree_wid->header()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
 }
 
 void EcGuiSdo::rescan_esc_sdo()
