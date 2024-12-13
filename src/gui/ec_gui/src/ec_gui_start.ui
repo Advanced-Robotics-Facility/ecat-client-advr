@@ -121,7 +121,7 @@
   <widget class="QDockWidget" name="DataObject">
    <property name="minimumSize">
     <size>
-     <width>486</width>
+     <width>500</width>
      <height>450</height>
     </size>
    </property>
@@ -337,7 +337,7 @@
               <enum>Qt::LeftToRight</enum>
              </property>
              <property name="standardButtons">
-              <set>QDialogButtonBox::Reset|QDialogButtonBox::RestoreDefaults|QDialogButtonBox::Save</set>
+              <set>QDialogButtonBox::RestoreDefaults|QDialogButtonBox::Retry|QDialogButtonBox::Save</set>
              </property>
             </widget>
            </item>

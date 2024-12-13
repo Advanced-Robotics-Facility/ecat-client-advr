@@ -25,6 +25,9 @@ public slots:
         void OnItemExapanded(QTreeWidgetItem* item);
         void ExpertUserPassChanged();
         void SdoSearchChanged();
+        void onSaveSdoReleased();
+        void onRescanSdoReleased();
+        void onRestoreSdoReleased();
         
 protected:
         bool eventFilter( QObject* o, QEvent* e );
@@ -36,13 +39,13 @@ private:
         QLineEdit *_expert_user, *_sdo_search;
         QDialogButtonBox *_sdo_manager;
         int _sdo_column;
+        std::map<uint32_t,QTreeWidgetItem *> _sdo_item_map;
         SRD_SDO _sdo_map;
         std::string _old_sdo_value;
         bool _user_expert;
         QString _sdo_search_req;
         
         void add_esc_sdo();
-        void rescan_esc_sdo();
         void search_sdo();
 };
 

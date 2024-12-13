@@ -29,6 +29,16 @@ QWidget(parent)
     _sdo_tree_wid->installEventFilter(this);
     _sdo_manager = parent->findChild<QDialogButtonBox *>("SDOManager");
     _sdo_manager->setEnabled(false);
+
+    auto save_btn = _sdo_manager->button(QDialogButtonBox::Save);
+    connect(save_btn, &QPushButton::released,this, &EcGuiSdo::onSaveSdoReleased);
+
+    auto rescan_btn = _sdo_manager->button(QDialogButtonBox::Retry);
+    rescan_btn->setText("Rescan");
+    connect(rescan_btn, &QPushButton::released,this, &EcGuiSdo::onRescanSdoReleased);
+
+    auto restore_btn = _sdo_manager->button(QDialogButtonBox::RestoreDefaults);
+    connect(restore_btn, &QPushButton::released,this, &EcGuiSdo::onRestoreSdoReleased);
 }
       
 EcGuiSdo::~EcGuiSdo(){}
@@ -106,6 +116,7 @@ void EcGuiSdo::restart_ec_gui_sdo(EcIface::Ptr client,SRD_SDO sdo_map)
     _client=client;
     
     _sdo_tree_wid->clear();
+    _sdo_item_map.clear();
     
     _sdo_map.clear();
     _sdo_map = sdo_map;
@@ -128,21 +139,11 @@ void EcGuiSdo::add_esc_sdo()
             esc_item->addChild(sdo_entry);
         }
         _sdo_tree_wid->addTopLevelItem(esc_item);
+        _sdo_item_map[esc_id]=esc_item;
     }
     _sdo_tree_wid->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     _sdo_tree_wid->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     _sdo_tree_wid->header()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
-}
-
-void EcGuiSdo::rescan_esc_sdo()
-{
-    _sdo_map.clear();
-    
-    for ( auto &[esc_id, rr_sdo] : _sdo_map ){
-        RR_SDOS new_rr_sdo_info;
-        _client->retrieve_all_sdo(esc_id,new_rr_sdo_info);
-        _sdo_map[esc_id] = new_rr_sdo_info;
-    }
 }
 
 void EcGuiSdo::ExpertUserPassChanged()
@@ -166,8 +167,7 @@ void EcGuiSdo::SdoSearchChanged()
 
 void EcGuiSdo::search_sdo()
 {
-    for(int i=0;i<_sdo_tree_wid->topLevelItemCount();i++){
-        auto topLevel =_sdo_tree_wid->topLevelItem(i);
+    for(const auto&[esc_id,topLevel]: _sdo_item_map){
         if(topLevel->isExpanded()){
             for(int k=0; k< topLevel->childCount(); k++){
                 QTreeWidgetItem * item = topLevel->child(k);
@@ -179,5 +179,34 @@ void EcGuiSdo::search_sdo()
                 }
             } 
         }    
+    }
+}
+
+void EcGuiSdo::onSaveSdoReleased()
+{
+    for(const auto&[esc_id,topLevel]: _sdo_item_map){
+        if(topLevel->isExpanded()){
+
+        }
+    }
+}
+
+void EcGuiSdo::onRescanSdoReleased()
+{
+    for(const auto&[esc_id,topLevel]: _sdo_item_map){
+        if(topLevel->isExpanded()){
+            RR_SDOS new_rr_sdo_info;
+            _client->retrieve_all_sdo(esc_id,new_rr_sdo_info);
+            _sdo_map[esc_id] = new_rr_sdo_info;
+        }
+    }
+}
+
+void EcGuiSdo::onRestoreSdoReleased()
+{
+    for(const auto&[esc_id,topLevel]: _sdo_item_map){
+        if(topLevel->isExpanded()){
+
+        }
     }
 }
