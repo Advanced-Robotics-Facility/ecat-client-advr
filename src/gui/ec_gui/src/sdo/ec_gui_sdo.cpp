@@ -30,18 +30,121 @@ QWidget(parent)
     _sdo_manager = parent->findChild<QDialogButtonBox *>("SDOManager");
     _sdo_manager->setEnabled(false);
 
-    auto save_btn = _sdo_manager->button(QDialogButtonBox::Save);
-    connect(save_btn, &QPushButton::released,this, &EcGuiSdo::onSaveSdoReleased);
-
     auto rescan_btn = _sdo_manager->button(QDialogButtonBox::Retry);
     rescan_btn->setText("Rescan");
     connect(rescan_btn, &QPushButton::released,this, &EcGuiSdo::onRescanSdoReleased);
+
+    auto save_btn = _sdo_manager->button(QDialogButtonBox::Save);
+    connect(save_btn, &QPushButton::released,this, &EcGuiSdo::onSaveSdoReleased);
+
+    auto load_btn = _sdo_manager->button(QDialogButtonBox::Ignore);
+    load_btn->setText("Load");
+    connect(load_btn, &QPushButton::released,this, &EcGuiSdo::onLoadSdoReleased);
 
     auto restore_btn = _sdo_manager->button(QDialogButtonBox::RestoreDefaults);
     connect(restore_btn, &QPushButton::released,this, &EcGuiSdo::onRestoreSdoReleased);
 }
       
 EcGuiSdo::~EcGuiSdo(){}
+
+void EcGuiSdo::restart_ec_gui_sdo(EcIface::Ptr client,SRD_SDO sdo_map)
+{
+    _client.reset();
+    _client=client;
+    
+    _sdo_tree_wid->clear();
+    _sdo_item_map.clear();
+    
+    _sdo_map.clear();
+    _sdo_map = sdo_map;
+
+    add_esc_sdo();
+
+    search_sdo();
+}
+
+void EcGuiSdo::add_esc_sdo()
+{
+    for ( auto &[esc_id, rr_sdo] : _sdo_map ){
+        QTreeWidgetItem * esc_item = new QTreeWidgetItem();
+        std::string esc_id_name = "esc_id_"+std::to_string(esc_id);
+        esc_item->setText(0,QString::fromStdString(esc_id_name));
+        for ( auto &[sdo_name, sdo_value] : rr_sdo ){
+            QTreeWidgetItem * sdo_entry = new QTreeWidgetItem();
+            sdo_entry->setText(1,QString::fromStdString(sdo_name));
+            sdo_entry->setText(2,QString::fromStdString(sdo_value));
+            esc_item->addChild(sdo_entry);
+            _sdo_item_map[esc_id][sdo_name]=sdo_entry;
+        }
+        _sdo_tree_wid->addTopLevelItem(esc_item);
+    }
+    _sdo_tree_wid->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    _sdo_tree_wid->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    _sdo_tree_wid->header()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+}
+
+void EcGuiSdo::search_sdo()
+{
+    for(auto&[esc_id,name_item_map]: _sdo_item_map){
+        for(auto&[sdo_name,sdo_item]: name_item_map){
+            if(sdo_item->parent()->isExpanded()){
+                sdo_item->setHidden(false);
+                if(_sdo_search_req!=""){
+                    if(sdo_item->text(1).indexOf(_sdo_search_req,0,Qt::CaseInsensitive) != 0){
+                        sdo_item->setHidden(true);
+                    }
+                }
+            }    
+        }
+    }
+}
+
+void EcGuiSdo::rescan_sdo()
+{   
+    for(auto&[esc_id,name_item_map]: _sdo_item_map){
+        for(auto&[sdo_name,sdo_item]: name_item_map){
+            if(sdo_item->parent()->isExpanded()){
+                RD_SDO rd_sdo={sdo_name};
+                RR_SDOS rr_sdo;
+                if(_client->retrieve_rr_sdo(esc_id,rd_sdo,{},rr_sdo)){
+                    if(rr_sdo.count(sdo_name)>0){
+                        std::string sdo_value= rr_sdo[sdo_name];
+                        sdo_item->setText(1,QString::fromStdString(sdo_name));
+                        sdo_item->setText(2,QString::fromStdString(sdo_value));
+                        _sdo_map[esc_id][sdo_name]=sdo_value;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void EcGuiSdo::flash_cmd(int value)
+{
+    bool rescan_after_flash=false;
+    std::string flash_cmd_str=std::to_string(value);
+    WR_SDO wr_sdo{std::make_tuple("flash_params_cmd",flash_cmd_str)};
+    RD_SDO rd_sdo={"flash_params_cmd_ack"};
+
+    for(auto&[esc_id,name_item_map]: _sdo_item_map){
+        if(name_item_map.count("flash_params_cmd")>0 && name_item_map.count("flash_params_cmd_ack")>0){
+            if(name_item_map["flash_params_cmd"]->parent()->isExpanded()){
+                if(_client->set_wr_sdo(esc_id,{},wr_sdo)){
+                    RR_SDOS rr_sdo;
+                    if(_client->retrieve_rr_sdo(esc_id,rd_sdo,{},rr_sdo)){
+                        if(rr_sdo["flash_params_cmd_ack"] == flash_cmd_str){
+                            rescan_after_flash=true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    if(rescan_after_flash){
+        rescan_sdo();
+    }
+}
 
 bool EcGuiSdo::eventFilter( QObject* o, QEvent* e )
 {
@@ -110,42 +213,6 @@ void EcGuiSdo::OnItemExapanded(QTreeWidgetItem* item)
     search_sdo();
 }
 
-void EcGuiSdo::restart_ec_gui_sdo(EcIface::Ptr client,SRD_SDO sdo_map)
-{
-    _client.reset();
-    _client=client;
-    
-    _sdo_tree_wid->clear();
-    _sdo_item_map.clear();
-    
-    _sdo_map.clear();
-    _sdo_map = sdo_map;
-
-    add_esc_sdo();
-
-    search_sdo();
-}
-
-void EcGuiSdo::add_esc_sdo()
-{
-    for ( auto &[esc_id, rr_sdo] : _sdo_map ){
-        QTreeWidgetItem * esc_item = new QTreeWidgetItem();
-        std::string esc_id_name = "esc_id_"+std::to_string(esc_id);
-        esc_item->setText(0,QString::fromStdString(esc_id_name));
-        for ( auto &[sdo_name, sdo_value] : rr_sdo ){
-            QTreeWidgetItem * sdo_entry = new QTreeWidgetItem();
-            sdo_entry->setText(1,QString::fromStdString(sdo_name));
-            sdo_entry->setText(2,QString::fromStdString(sdo_value));
-            esc_item->addChild(sdo_entry);
-        }
-        _sdo_tree_wid->addTopLevelItem(esc_item);
-        _sdo_item_map[esc_id]=esc_item;
-    }
-    _sdo_tree_wid->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-    _sdo_tree_wid->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-    _sdo_tree_wid->header()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
-}
-
 void EcGuiSdo::ExpertUserPassChanged()
 {
     QMessageBox msgBox;
@@ -165,48 +232,24 @@ void EcGuiSdo::SdoSearchChanged()
     search_sdo();
 }
 
-void EcGuiSdo::search_sdo()
+void EcGuiSdo::onRescanSdoReleased()
 {
-    for(const auto&[esc_id,topLevel]: _sdo_item_map){
-        if(topLevel->isExpanded()){
-            for(int k=0; k< topLevel->childCount(); k++){
-                QTreeWidgetItem * item = topLevel->child(k);
-                item->setHidden(false);
-                if(_sdo_search_req!=""){
-                   if(item->text(1).indexOf(_sdo_search_req,0,Qt::CaseInsensitive) != 0){
-                        item->setHidden(true);
-                   }
-                }
-            } 
-        }    
-    }
+    rescan_sdo();
 }
 
 void EcGuiSdo::onSaveSdoReleased()
 {
-    for(const auto&[esc_id,topLevel]: _sdo_item_map){
-        if(topLevel->isExpanded()){
-
-        }
-    }
+    flash_cmd(0x0012); //iit::ecat::Flash_cmd_type::SAVE_PARAMS_TO_FLASH
 }
 
-void EcGuiSdo::onRescanSdoReleased()
+void EcGuiSdo::onLoadSdoReleased()
 {
-    for(const auto&[esc_id,topLevel]: _sdo_item_map){
-        if(topLevel->isExpanded()){
-            RR_SDOS new_rr_sdo_info;
-            _client->retrieve_all_sdo(esc_id,new_rr_sdo_info);
-            _sdo_map[esc_id] = new_rr_sdo_info;
-        }
-    }
+    flash_cmd(0x0034); //iit::ecat::Flash_cmd_type::LOAD_PARAMS_FROM_FLASH
 }
 
 void EcGuiSdo::onRestoreSdoReleased()
 {
-    for(const auto&[esc_id,topLevel]: _sdo_item_map){
-        if(topLevel->isExpanded()){
-
-        }
-    }
+    flash_cmd(0x0056); //iit::ecat::Flash_cmd_type::LOAD_DEFAULT_PARAMS
 }
+
+

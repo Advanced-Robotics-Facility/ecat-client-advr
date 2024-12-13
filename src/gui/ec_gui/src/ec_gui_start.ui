@@ -337,7 +337,7 @@
               <enum>Qt::LeftToRight</enum>
              </property>
              <property name="standardButtons">
-              <set>QDialogButtonBox::RestoreDefaults|QDialogButtonBox::Retry|QDialogButtonBox::Save</set>
+              <set>QDialogButtonBox::Ignore|QDialogButtonBox::RestoreDefaults|QDialogButtonBox::Retry|QDialogButtonBox::Save</set>
              </property>
             </widget>
            </item>
