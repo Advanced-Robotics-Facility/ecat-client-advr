@@ -289,6 +289,36 @@
             </widget>
            </item>
            <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_6">
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <spacer name="horizontalSpacer_2">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_2">
+               <property name="text">
+                <string>Search SDO</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="SDOSearch"/>
+             </item>
+            </layout>
+           </item>
+           <item>
             <widget class="QDialogButtonBox" name="SDOManager">
              <property name="layoutDirection">
               <enum>Qt::LeftToRight</enum>
@@ -317,7 +347,7 @@
    <property name="maximumSize">
     <size>
      <width>524287</width>
-     <height>16777215</height>
+     <height>524287</height>
     </size>
    </property>
    <property name="features">
@@ -383,7 +413,7 @@
   <widget class="QDockWidget" name="Command">
    <property name="minimumSize">
     <size>
-     <width>400</width>
+     <width>1101</width>
      <height>400</height>
     </size>
    </property>
@@ -751,7 +781,7 @@
           <x>0</x>
           <y>0</y>
           <width>472</width>
-          <height>361</height>
+          <height>409</height>
          </rect>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_4">

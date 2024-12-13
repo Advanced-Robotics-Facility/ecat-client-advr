@@ -11,20 +11,24 @@ QWidget(parent)
     _sdo_tree_wid->setEditTriggers(QAbstractItemView::EditKeyPressed| QAbstractItemView::SelectedClicked);
     
     connect(_sdo_tree_wid, SIGNAL(itemClicked(QTreeWidgetItem*, int)),this, SLOT(OnMouseClicked(QTreeWidgetItem*, int)));
+    connect(_sdo_tree_wid, SIGNAL(itemExpanded(QTreeWidgetItem *)), this, SLOT(OnItemExapanded(QTreeWidgetItem *)));
     
     _sdo_item = nullptr;
     _sdo_column=-1;
     _old_sdo_value="";
 
     _expert_user = parent->findChild<QLineEdit *>("ExpertUserPass");
-    connect(_expert_user, &QLineEdit::returnPressed,
-    std::bind(&EcGuiSdo::ExpertUserPassChanged, this));
-    
+    connect(_expert_user, &QLineEdit::returnPressed,std::bind(&EcGuiSdo::ExpertUserPassChanged, this));
+    _user_expert=false;
+
+
+    _sdo_search = parent->findChild<QLineEdit *>("SDOSearch");
+    connect(_sdo_search, &QLineEdit::textChanged,std::bind(&EcGuiSdo::SdoSearchChanged, this));
+    _sdo_search_req="";
+
     _sdo_tree_wid->installEventFilter(this);
     _sdo_manager = parent->findChild<QDialogButtonBox *>("SDOManager");
     _sdo_manager->setEnabled(false);
-
-    _user_expert=false;
 }
       
 EcGuiSdo::~EcGuiSdo(){}
@@ -91,6 +95,11 @@ void EcGuiSdo::OnMouseClicked(QTreeWidgetItem* item, int column)
     } 
 }
 
+void EcGuiSdo::OnItemExapanded(QTreeWidgetItem* item)
+{
+    search_sdo();
+}
+
 void EcGuiSdo::restart_ec_gui_sdo(EcIface::Ptr client,SRD_SDO sdo_map)
 {
     _client.reset();
@@ -102,6 +111,8 @@ void EcGuiSdo::restart_ec_gui_sdo(EcIface::Ptr client,SRD_SDO sdo_map)
     _sdo_map = sdo_map;
 
     add_esc_sdo();
+
+    search_sdo();
 }
 
 void EcGuiSdo::add_esc_sdo()
@@ -143,4 +154,28 @@ void EcGuiSdo::ExpertUserPassChanged()
     }
     msgBox.setText(message);
     msgBox.exec();
+}
+
+void EcGuiSdo::SdoSearchChanged()
+{
+    _sdo_search_req = _sdo_search->text();
+    search_sdo();
+}
+
+void EcGuiSdo::search_sdo()
+{
+    for(int i=0;i<_sdo_tree_wid->topLevelItemCount();i++){
+        auto topLevel =_sdo_tree_wid->topLevelItem(i);
+        if(topLevel->isExpanded()){
+            for(int k=0; k< topLevel->childCount(); k++){
+                QTreeWidgetItem * item = topLevel->child(k);
+                item->setHidden(false);
+                if(_sdo_search_req!=""){
+                   if(item->text(1).indexOf(_sdo_search_req,0,Qt::CaseInsensitive) != 0){
+                        item->setHidden(true);
+                   }
+                }
+            } 
+        }    
+    }
 }
