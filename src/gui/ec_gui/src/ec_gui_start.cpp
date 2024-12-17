@@ -49,28 +49,25 @@ EcGuiStart::EcGuiStart(QWidget *parent) :
     /* Load ui */
     auto wid = LoadUiFile(this);
     
+    auto measurement_setup_dw= findChild<QDockWidget *>("MeasurementSetup"); 
+    measurement_setup_dw->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+    
     _net_tree_wid = findChild<QTreeWidget *>("NetworkSetup");
     _net_tree_wid->resizeColumnToContents(0);
     _net_tree_wid->expandAll();
     
-    
     auto ec_sys_start = findChild<QPushButton *>("StartEthercatSystem");
-    connect(ec_sys_start, &QPushButton::released,
-            this, &EcGuiStart::onStartEtherCATSystem);
+    connect(ec_sys_start, &QPushButton::released,this, &EcGuiStart::onStartEtherCATSystem);
     
     auto ec_sys_stop = findChild<QPushButton *>("StopEthercatSystem");
-    connect(ec_sys_stop, &QPushButton::released,
-            this, &EcGuiStart::onStopEtherCATSystem);
+    connect(ec_sys_stop, &QPushButton::released,this, &EcGuiStart::onStopEtherCATSystem);
     
     auto scan_device = findChild<QPushButton *>("ScanDevice");
-    connect(scan_device, &QPushButton::released,
-            this, &EcGuiStart::onScanDeviceReleased);
-    
+    connect(scan_device, &QPushButton::released,this, &EcGuiStart::onScanDeviceReleased);
     
     _ec_gui_net = std::make_shared<EcGuiNet>(this);
     _ec_gui_wrapper = std::make_shared<EcGuiWrapper>(this);
     
-
     _etherCAT_sys_started=false;
 }
 

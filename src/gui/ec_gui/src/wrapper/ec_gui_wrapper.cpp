@@ -27,9 +27,6 @@ EcGuiWrapper::EcGuiWrapper(QWidget *parent) :
     connect(_graphics_dw, SIGNAL(topLevelChanged(bool)), this, SLOT(DwTopLevelChanged(bool)));
     _graphics_dw->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
 
-    auto measurement_setup_dw= parent->findChild<QDockWidget *>("MeasurementSetup"); 
-    measurement_setup_dw->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
-
     _receive_action = parent->findChild<QAction *>("actionReceive");
     connect(_receive_action, SIGNAL(triggered()), this, SLOT(start_stop_receive()));
     
@@ -103,8 +100,7 @@ void EcGuiWrapper::restart_gui_wrapper(ec_wrapper_info_t ec_wrapper_info)
     
     _ec_gui_pdo->restart_ec_gui_pdo(_ec_wrapper_info.client,_ec_logger);
     
-    _ec_gui_sdo->restart_ec_gui_sdo(_ec_wrapper_info.client,
-                                    _ec_wrapper_info.sdo_map);
+    _ec_gui_sdo->restart_ec_gui_sdo(_ec_wrapper_info.client,_ec_wrapper_info.sdo_map);
 }
 
 bool EcGuiWrapper::check_client_setup()
