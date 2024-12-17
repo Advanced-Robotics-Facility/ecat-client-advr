@@ -82,6 +82,7 @@ void EcGuiPdo::restart_ec_gui_pdo(EcIface::Ptr client,EcLogger::Ptr ec_logger)
     _buffer_time.resize(_buffer_size);
     _buffer_pdo_map.clear();
     _pdo_v.clear();
+    _esc_pdo_map.clear();
 
     _slider_map=_ec_gui_slider->get_sliders(); // read only actual slider widget map.
 
