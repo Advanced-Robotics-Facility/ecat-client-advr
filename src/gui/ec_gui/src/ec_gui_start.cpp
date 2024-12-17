@@ -71,9 +71,6 @@ EcGuiStart::EcGuiStart(QWidget *parent) :
     _etherCAT_sys_started=false;
 }
 
-
-
-
 void EcGuiStart::create_ec_iface()
 {
     if(_ec_gui_net->check_network()){
@@ -115,8 +112,6 @@ void EcGuiStart::create_ec_iface()
     }
 }
 
-
-
 void EcGuiStart::onStartEtherCATSystem()
 {
     QMessageBox msgBox;
@@ -145,6 +140,7 @@ void EcGuiStart::stopping_client()
         _ec_wrapper_info.client.reset();
     }
 }
+
 bool EcGuiStart::stopping_ec_sys()
 {
     bool etherCAT_sys_stopped=false;
@@ -191,7 +187,6 @@ void EcGuiStart::restart_gui()
         _ec_gui_wrapper->start_stop_receive(); // auto-start of receiving
     }
 }
-
 
 void EcGuiStart::error_on_scannig()
 {
