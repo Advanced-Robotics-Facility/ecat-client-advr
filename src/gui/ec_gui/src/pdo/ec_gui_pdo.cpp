@@ -26,6 +26,9 @@ _ec_gui_slider(ec_gui_slider)
     _custom_plot->xAxis->setLabel("Time [s]");
     _custom_plot->axisRect()->setupFullAxesBox();
     _custom_plot->yAxis->setRange(-100, 100);
+    QFont legendFont = font();
+    legendFont.setPointSize(12);
+    _custom_plot->legend->setFont(legendFont);
     
     auto cplot  = parent->findChild<QVBoxLayout *>("cplot");
     cplot->addWidget(_custom_plot);
@@ -56,6 +59,7 @@ EcGuiPdo::~EcGuiPdo()
       
 void EcGuiPdo::restart_receive_timer()
 {
+    _first_update=false;
     _receive_timer->restart();
 }
 
@@ -214,12 +218,7 @@ void EcGuiPdo::update_plot()
             if(!_first_update){
                 _custom_plot->clearGraphs();
                 _graph_pdo_map.clear();
-
-                QFont legendFont = font();
-                legendFont.setPointSize(12);
-                _custom_plot->legend->setFont(legendFont);
                 _custom_plot->legend->setVisible(true);
-
                 _first_update=true;
             }
             if(_auto_scroll->isChecked()){
