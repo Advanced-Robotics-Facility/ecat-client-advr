@@ -37,13 +37,11 @@ EcGuiWrapper::EcGuiWrapper(QWidget *parent) :
     
     _ec_gui_slider = std::make_shared<EcGuiSlider>(parent);
     
-    _ec_gui_pdo = std::make_shared<EcGuiPdo>(_ec_gui_slider,
-                                             parent);
+    _ec_gui_pdo = std::make_shared<EcGuiPdo>(_ec_gui_slider,parent);
     
     _ec_gui_sdo = std::make_shared<EcGuiSdo>(parent);
 
-    _ec_gui_cmd = std::make_shared<EcGuiCmd>(_ec_gui_slider,
-                                             parent);
+    _ec_gui_cmd = std::make_shared<EcGuiCmd>(_ec_gui_slider,parent);
 
     _ec_logger=std::make_shared<EcLogger>();
 
