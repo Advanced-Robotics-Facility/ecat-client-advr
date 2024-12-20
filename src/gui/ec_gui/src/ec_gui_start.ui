@@ -834,7 +834,7 @@
             <bool>true</bool>
            </property>
            <property name="columnCount">
-            <number>5</number>
+            <number>4</number>
            </property>
            <attribute name="headerVisible">
             <bool>true</bool>
@@ -874,14 +874,6 @@
              <string>Port</string>
             </property>
            </column>
-           <column>
-            <property name="text">
-             <string>Terminal</string>
-            </property>
-            <property name="textAlignment">
-             <set>AlignLeading|AlignVCenter</set>
-            </property>
-           </column>
            <item>
             <property name="text">
              <string>EtherCAT System Setup                 </string>
@@ -890,9 +882,6 @@
              <font>
               <pointsize>9</pointsize>
              </font>
-            </property>
-            <property name="text">
-             <string/>
             </property>
             <property name="text">
              <string/>
@@ -920,9 +909,6 @@
              <property name="text">
               <string>5000</string>
              </property>
-             <property name="text">
-              <string/>
-             </property>
             </item>
             <item>
              <property name="text">
@@ -940,16 +926,6 @@
              </property>
              <property name="text">
               <string>5000</string>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="textAlignment">
-              <set>AlignTrailing|AlignVCenter</set>
-             </property>
-             <property name="icon">
-              <iconset resource="ec_gui_start_resources.qrc">
-               <normaloff>:/icon/terminal.png</normaloff>:/icon/terminal.png</iconset>
              </property>
             </item>
             <item>
@@ -969,13 +945,6 @@
              <property name="text">
               <string/>
              </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset resource="ec_gui_start_resources.qrc">
-               <normaloff>:/icon/terminal.png</normaloff>:/icon/terminal.png</iconset>
-             </property>
              <item>
               <property name="text">
                <string>EtherCAT Device</string>
@@ -988,9 +957,6 @@
               <property name="icon">
                <iconset resource="ec_gui_start_resources.qrc">
                 <normaloff>:/icon/Ethercat.png</normaloff>:/icon/Ethercat.png</iconset>
-              </property>
-              <property name="text">
-               <string/>
               </property>
               <property name="text">
                <string/>

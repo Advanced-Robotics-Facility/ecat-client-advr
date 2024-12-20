@@ -141,9 +141,9 @@ void EcGuiNet::server_processFinished(int exitCode, QProcess::ExitStatus exitSta
 void EcGuiNet::ec_master_readyStdO()
 {
     if(_ec_master_process->canReadLine()){
-        _ec_master_stoud = _ec_master_process->readAllStandardOutput();
+        _ec_master_stdout = _ec_master_process->readAllStandardOutput();
         if(_ec_master_stream){
-            *_ec_master_stream << _ec_master_stoud;
+            *_ec_master_stream << _ec_master_stdout;
             _ec_master_stream->flush();
         } 
     }
@@ -256,13 +256,13 @@ bool EcGuiNet::create_ssh_cmd(QProcess *process,QString& stdout)
 
 bool EcGuiNet::start_network()
 {
-    if(!create_ssh_cmd(_ec_master_process,_ec_master_stoud)){
+    if(!create_ssh_cmd(_ec_master_process,_ec_master_stdout)){
         return false;
     }
 
     QString bin_file_name = "'repl'";
-    kill_process(_ec_master_process,bin_file_name,_ec_master_stoud);
-    auto bin_file_path = find_process(_ec_master_process,bin_file_name,_ec_master_stoud);
+    kill_process(_ec_master_process,bin_file_name,_ec_master_stdout);
+    auto bin_file_path = find_process(_ec_master_process,bin_file_name,_ec_master_stdout);
 
     /******************************START EtherCAT Master ************************************************/
     if(!bin_file_path.isEmpty()){
@@ -313,7 +313,7 @@ void EcGuiNet::stop_network()
     /******************************STOP EtherCAT Master ************************************************/
     _ec_master_process->close();
     bin_file_name = "'repl'";
-    kill_process(_ec_master_process,bin_file_name,_ec_master_stoud);
+    kill_process(_ec_master_process,bin_file_name,_ec_master_stdout);
 }
 
 bool EcGuiNet::check_network()

@@ -49,7 +49,7 @@ private:
   
   QProcess *_ec_master_process,*_server_process;
   QStringList _ssh_command;
-  QString _ec_master_stoud,_server_stdout;
+  QString _ec_master_stdout,_server_stdout;
   QFile *_ec_master_file,*_server_file;
   QTextStream *_ec_master_stream,*_server_stream;
   QString _server_hostname,_server_ip,_server_port,_server_protocol,_server_pwd;
