@@ -16,6 +16,7 @@
 
 
 using namespace std::chrono;
+using namespace std::chrono_literals;
 
 void ec_gui_start_widget_qrc_init()
 {
@@ -121,7 +122,7 @@ void EcGuiStart::onStartEtherCATSystem()
             return;
         }
         _ec_gui_net->setObjectName("ec_gui_net");
-        _ec_gui_net->start();
+    
         _etherCAT_sys_started=true;
         
         msgBox.setText("EtherCAT Master system started");
@@ -148,20 +149,15 @@ bool EcGuiStart::stopping_ec_sys()
         //stopping_client();
         /******************************STOP EtherCAT Master and Server ************************************************/
         _ec_gui_net->stop_network();
-        if(_ec_gui_net->isRunning()){
-            _ec_gui_net->terminate();
-            _ec_gui_net->wait();
-        }
         /******************************CLEAN UP THE GUI ************************************************/
         clear_device();
         EcGuiWrapper::ec_wrapper_info_t _ec_wrapper_info_reset;
         _ec_wrapper_info=_ec_wrapper_info_reset;
         
         restart_gui();
-        
+
         _etherCAT_sys_started=false;
         etherCAT_sys_stopped=true;
-
     }
     
     return etherCAT_sys_stopped;

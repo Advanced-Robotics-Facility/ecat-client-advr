@@ -7,7 +7,7 @@
 #include "ec_gui_terminal.h"
 
 
-class EcGuiNet : public QThread
+class EcGuiNet : public QWidget
 {
     Q_OBJECT
 public:
@@ -29,24 +29,16 @@ public:
     bool check_network();
     ec_net_info_t get_net_setup();
 
-signals:
-
-   void start_timer();
-
 public slots:
     void ec_master_processFinished(int, QProcess::ExitStatus);
     void server_processFinished(int, QProcess::ExitStatus);
-    void OnMouseDoubleClicked(QTreeWidgetItem* item, int column);
     void OnMouseClicked(QTreeWidgetItem* item, int column);
     void OnPasswordEntered();
     void OnPasswordChanged();
     void OnProtocolChanged();
-    void update_std_out();
-    void slot_timer_start();
 
 protected:
     bool eventFilter( QObject* o, QEvent* e );
-    void run();
     
 private:
 
@@ -58,9 +50,9 @@ private:
   QProcess *_ec_master_process,*_server_process;
   QStringList _ssh_command;
   QString _ec_master_stoud,_server_stdout;
-  EcGuiTerminal::Ptr _ec_master_terminal, _server_terminal;
+  QFile *_ec_master_file,*_server_file;
+  QTextStream *_ec_master_stream,*_server_stream;
   QString _server_hostname,_server_ip,_server_port,_server_protocol,_server_pwd;
-  QTimer *_recv_std_out;
   
   QComboBox * _protocol_combobox;
   
