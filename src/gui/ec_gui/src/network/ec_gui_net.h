@@ -26,7 +26,6 @@ public:
 
     bool start_network();
     void stop_network();
-    bool check_network();
     ec_net_info_t get_net_setup();
 
 public slots:

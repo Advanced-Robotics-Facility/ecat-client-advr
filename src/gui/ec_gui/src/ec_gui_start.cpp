@@ -74,41 +74,33 @@ EcGuiStart::EcGuiStart(QWidget *parent) :
 
 void EcGuiStart::create_ec_iface()
 {
-    if(_ec_gui_net->check_network()){
-        if(_ec_wrapper_info.client){
-            _ec_wrapper_info.client->stop_client();
-        }
-        
-        auto ec_net_info = _ec_gui_net->get_net_setup();
+    if(_ec_wrapper_info.client){
+        _ec_wrapper_info.client->stop_client();
+    }
     
-        EcUtils::EC_CONFIG ec_cfg;    
-        ec_cfg.protocol=ec_net_info.protocol;
-        ec_cfg.host_name=ec_net_info.host_name;
-        ec_cfg.host_port=ec_net_info.host_port;
-        ec_cfg.period_ms = 4; //4ms fix period 
-        ec_cfg.logging = false; 
-        
+    auto ec_net_info = _ec_gui_net->get_net_setup();
+
+    EcUtils::EC_CONFIG ec_cfg;    
+    ec_cfg.protocol=ec_net_info.protocol;
+    ec_cfg.host_name=ec_net_info.host_name;
+    ec_cfg.host_port=ec_net_info.host_port;
+    ec_cfg.period_ms = 4; //4ms fix period 
+    ec_cfg.logging = false; 
+    
 #ifdef TEST_GUI 
-        EcUtils::Ptr ec_utils = std::make_shared<EcUtils>();
+    EcUtils::Ptr ec_utils = std::make_shared<EcUtils>();
 #else
-        EcUtils::Ptr ec_utils = std::make_shared<EcUtils>(ec_cfg);
+    EcUtils::Ptr ec_utils = std::make_shared<EcUtils>(ec_cfg);
 #endif
 
-        try{
-            _ec_wrapper_info.client.reset();
-            _ec_wrapper_info.client = ec_utils->make_ec_iface();
-            _ec_wrapper_info.client->start_client(ec_cfg.period_ms);
-        }
-        catch ( std::exception &e ){
-            QMessageBox msgBox;
-            msgBox.critical(this,msgBox.windowTitle(),tr(e.what()));
-        }
+    try{
+        _ec_wrapper_info.client.reset();
+        _ec_wrapper_info.client = ec_utils->make_ec_iface();
+        _ec_wrapper_info.client->start_client(ec_cfg.period_ms);
     }
-    else
-    {
+    catch ( std::exception &e ){
         QMessageBox msgBox;
-        msgBox.critical(this,msgBox.windowTitle(),tr("Cannot find the server in running mode, please start it and retry!"));
-        return;
+        msgBox.critical(this,msgBox.windowTitle(),tr(e.what()));
     }
 }
 

@@ -315,25 +315,6 @@ void EcGuiNet::stop_network()
     kill_process(_ec_master_process,bin_file_name,_ec_master_stdout);
 }
 
-bool EcGuiNet::check_network()
-{
-    bool ret= false;
-    if(_server_protocol=="udp"){
-        if(!create_ssh_cmd(_server_process,_server_stdout)){
-            return ret;
-        }
-        QString pid=find_running_process(_server_process,"'udp_server'",_server_stdout);
-        if(pid!=""){
-            ret=true;
-        }
-    }
-    else{
-        ret=true;
-    }
-    
-    return ret;
-}
-
 EcGuiNet::ec_net_info_t EcGuiNet::get_net_setup()
 {
     ec_net_info_t ec_net_info;
