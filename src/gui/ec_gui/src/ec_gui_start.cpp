@@ -94,9 +94,8 @@ void EcGuiStart::create_ec_iface()
         EcUtils::Ptr ec_utils = std::make_shared<EcUtils>(ec_cfg);
 #endif
 
-        
-        _ec_wrapper_info.client.reset();
         try{
+            _ec_wrapper_info.client.reset();
             _ec_wrapper_info.client = ec_utils->make_ec_iface();
             _ec_wrapper_info.client->start_client(ec_cfg.period_ms);
         }

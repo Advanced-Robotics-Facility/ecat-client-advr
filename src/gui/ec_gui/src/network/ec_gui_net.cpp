@@ -41,7 +41,7 @@ EcGuiNet::EcGuiNet(QWidget *parent) :
 
     connect(_ec_master_process , SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(ec_master_processFinished(int, QProcess::ExitStatus)));
     connect(_ec_master_process, &QProcess::readyReadStandardOutput,this, &EcGuiNet::ec_master_readyStdO);
-    
+
     _server_process = new QProcess(this);
     _server_process->setReadChannel(QProcess::StandardOutput);
     _server_process->setProcessChannelMode(QProcess::MergedChannels);
@@ -51,7 +51,6 @@ EcGuiNet::EcGuiNet(QWidget *parent) :
     connect(_server_process, &QProcess::readyReadStandardOutput,this, &EcGuiNet::server_readyStdO);
     
     /*protocl */
-
     _protocol_combobox = parent->findChild<QComboBox *>("Protocol");
     _protocol_combobox->setCurrentIndex(0);
     _server_protocol = _protocol_combobox->currentText();
