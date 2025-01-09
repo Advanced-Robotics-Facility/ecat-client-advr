@@ -206,12 +206,17 @@ double WaveWidget::compute_wave(double t)
             if(_tab_wave_type->currentIndex()==0){
                 fx = _valuebox->value() +_wave_a->value() * std::sin (2*M_PI*_wave_f->value()*t + _wave_t->value());
             }
-            else{
+            else if(_tab_wave_type->currentIndex()==1){
                 fx=-1*_wave_a->value();
                 if(std::signbit(std::sin (2*M_PI*_wave_f->value()*t + _wave_t->value()))){
                     fx=1*_wave_a->value();
                 }
-                fx=_valuebox->value()+ fx;  
+                fx=_valuebox->value()+ fx;
+            }
+            else if(_tab_wave_type->currentIndex()==2){
+                //double p = 1/_wave_f->value();
+                //fx= _valuebox->value() + (4*_wave_a->value()*p) * std::fabs(std::fmod((t-p/4),p)-p/2) - _wave_a->value();
+                fx = _valuebox->value() + (2*_wave_a->value()/M_PI) * std::asin(std::sin (2*M_PI*_wave_f->value()*t + _wave_t->value()));
             }
         }
     }

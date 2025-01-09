@@ -164,22 +164,6 @@
                 </widget>
                </item>
                <item>
-                <spacer name="horizontalSpacer_8">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeType">
-                  <enum>QSizePolicy::Fixed</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>40</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-               <item>
                 <widget class="QDoubleSpinBox" name="Wave_A">
                  <property name="minimumSize">
                   <size>
@@ -198,22 +182,6 @@
                  </property>
                 </widget>
                </item>
-               <item>
-                <spacer name="horizontalSpacer_2">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeType">
-                  <enum>QSizePolicy::Fixed</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>50</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
               </layout>
              </item>
              <item>
@@ -230,22 +198,6 @@
                   <string>Frequency</string>
                  </property>
                 </widget>
-               </item>
-               <item>
-                <spacer name="horizontalSpacer_9">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeType">
-                  <enum>QSizePolicy::Fixed</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>40</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
                </item>
                <item>
                 <widget class="QDoubleSpinBox" name="Wave_F">
@@ -266,22 +218,6 @@
                  </property>
                 </widget>
                </item>
-               <item>
-                <spacer name="horizontalSpacer_3">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeType">
-                  <enum>QSizePolicy::Fixed</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>50</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
               </layout>
              </item>
              <item>
@@ -298,22 +234,6 @@
                   <string>Theta</string>
                  </property>
                 </widget>
-               </item>
-               <item>
-                <spacer name="horizontalSpacer_10">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeType">
-                  <enum>QSizePolicy::Fixed</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>40</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
                </item>
                <item>
                 <widget class="QDoubleSpinBox" name="Wave_T">
@@ -334,25 +254,25 @@
                  </property>
                 </widget>
                </item>
-               <item>
-                <spacer name="horizontalSpacer_7">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeType">
-                  <enum>QSizePolicy::Fixed</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>50</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
               </layout>
              </item>
             </layout>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Fixed</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
            </item>
            <item>
             <widget class="QTabWidget" name="tabWaveType">
@@ -378,6 +298,33 @@
               <attribute name="icon">
                <iconset resource="../../ec_gui_start_resources.qrc">
                 <normaloff>:/icon/SquareWave.png</normaloff>:/icon/SquareWave.png</iconset>
+              </attribute>
+              <attribute name="title">
+               <string/>
+              </attribute>
+             </widget>
+             <widget class="QWidget" name="tab">
+              <attribute name="icon">
+               <iconset resource="../../ec_gui_start_resources.qrc">
+                <normaloff>:/icon/TriangleWave.png</normaloff>:/icon/TriangleWave.png</iconset>
+              </attribute>
+              <attribute name="title">
+               <string/>
+              </attribute>
+             </widget>
+             <widget class="QWidget" name="tab_2">
+              <attribute name="icon">
+               <iconset resource="../../ec_gui_start_resources.qrc">
+                <normaloff>:/icon/TrapezoidalWave.png</normaloff>:/icon/TrapezoidalWave.png</iconset>
+              </attribute>
+              <attribute name="title">
+               <string/>
+              </attribute>
+             </widget>
+             <widget class="QWidget" name="tab_5">
+              <attribute name="icon">
+               <iconset resource="../../ec_gui_start_resources.qrc">
+                <normaloff>:/icon/ChirpWave.png</normaloff>:/icon/ChirpWave.png</iconset>
               </attribute>
               <attribute name="title">
                <string/>

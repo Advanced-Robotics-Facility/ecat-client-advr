@@ -33,6 +33,9 @@
         <file>icon/SquareWave.png</file>
         <file>icon/SineWave.png</file>
         <file>icon/StepWave.png</file>
+        <file>icon/TriangleWave.png</file>
+        <file>icon/TrapezoidalWave.png</file>
+        <file>icon/ChirpWave.png</file>
         <file>icon/oscilloscope.png</file>
         <file>component/slider/wave_widget.ui</file>
     </qresource>
