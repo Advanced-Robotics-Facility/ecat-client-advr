@@ -277,7 +277,7 @@ inline void EcGuiPdo::read_pow_status()
     _ec_logger->log_pow_status(_pow_status_map);
     for ( const auto &[esc_id, pow_rx_pdo] : _pow_status_map){
         if(_counter_buffer==_buffer_size-1){
-            //_battery_level->display(std::get<0>(pow_rx_pdo));
+            _battery_level->display(std::get<0>(pow_rx_pdo));
         }
         QTreeWidgetItem *topLevel= retrieve_treewid_item(esc_id,"pow",PowPdoRx::name,"Rx");
         if(PowPdoRx::make_vector_from_tuple(pow_rx_pdo,_pdo_v[esc_id])){
