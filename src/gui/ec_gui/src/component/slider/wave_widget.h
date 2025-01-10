@@ -63,6 +63,11 @@ private:
 
     SecondOrderFilter<double>::Ptr _slider_filtered;
     uint8_t _valuebox_property;
+    uint16_t _chirp_counter=0;
+    double _chirp_w1,_chirp_w2;
+    double _chirp_start_t,_chirp_t;
+    bool _chirp_inv=false;
+    uint8_t _chirp_dur_s;
 };
 
 #endif

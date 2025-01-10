@@ -1,4 +1,5 @@
 #include "wave_widget.h"
+#include <iostream>
 
 inline void initSlidersResource()
 {
@@ -190,6 +191,12 @@ void WaveWidget::set_filter(double st)
 {
     _slider_filtered->reset(_valuebox->value());
     _slider_filtered->setTimeStep(st);
+
+    _chirp_counter=0;
+    _chirp_dur_s=10; // 10s
+    _chirp_inv=false;
+    _chirp_w1=2*M_PI*_wave_f->value();
+    _chirp_w2=2*M_PI*_wave_f->value()*10;
 }
 
 double WaveWidget::compute_wave(double t)
@@ -214,9 +221,30 @@ double WaveWidget::compute_wave(double t)
                 fx=_valuebox->value()+ fx;
             }
             else if(_tab_wave_type->currentIndex()==2){
-                //double p = 1/_wave_f->value();
-                //fx= _valuebox->value() + (4*_wave_a->value()*p) * std::fabs(std::fmod((t-p/4),p)-p/2) - _wave_a->value();
                 fx = _valuebox->value() + (2*_wave_a->value()/M_PI) * std::asin(std::sin (2*M_PI*_wave_f->value()*t + _wave_t->value()));
+            }
+            else if(_tab_wave_type->currentIndex()==4){
+                if(_chirp_counter>=200*_chirp_dur_s){ // 200Hz since p = 0.005 ms
+                    _chirp_counter=0;
+                    if(!_chirp_inv){
+                        _chirp_inv=true;
+                    }
+                    else{
+                        _chirp_inv=false;
+                    }
+                }
+                if(_chirp_counter==0){
+                    _chirp_start_t=t;
+                }
+                _chirp_t = t - _chirp_start_t;
+
+                if(!_chirp_inv){
+                    fx = _valuebox->value()+_wave_a->value()* std::sin(_chirp_w1*_chirp_t+(_chirp_w2-_chirp_w1)*_chirp_t*_chirp_t/(2*_chirp_dur_s));
+                }else{
+                    fx = _valuebox->value()+_wave_a->value()* std::sin(_chirp_w2*_chirp_t+(_chirp_w1-_chirp_w2)*_chirp_t*_chirp_t/(2*_chirp_dur_s));
+                }
+
+                _chirp_counter++;
             }
         }
     }
