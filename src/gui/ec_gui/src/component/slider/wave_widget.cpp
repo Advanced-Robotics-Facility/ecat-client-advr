@@ -206,22 +206,24 @@ double WaveWidget::compute_wave(double t)
         fx = _slider_filtered->process(_valuebox->value());
     }
     else{
-        if(t==0){
-            fx=_valuebox->value();
-        }
-        else{
+        if(t!=0){
             if(_tab_wave_type->currentIndex()==0){
-                fx = _valuebox->value() +_wave_a->value() * std::sin (2*M_PI*_wave_f->value()*t + _wave_t->value());
+                fx = _wave_a->value() * std::sin (2*M_PI*_wave_f->value()*t + _wave_t->value());
             }
             else if(_tab_wave_type->currentIndex()==1){
                 fx=-1*_wave_a->value();
                 if(std::signbit(std::sin (2*M_PI*_wave_f->value()*t + _wave_t->value()))){
                     fx=1*_wave_a->value();
                 }
-                fx=_valuebox->value()+ fx;
             }
             else if(_tab_wave_type->currentIndex()==2){
-                fx = _valuebox->value() + (2*_wave_a->value()/M_PI) * std::asin(std::sin (2*M_PI*_wave_f->value()*t + _wave_t->value()));
+                fx = 2*_wave_a->value()/M_PI * std::asin(std::sin (2*M_PI*_wave_f->value()*t + _wave_t->value()));
+            }
+            else if(_tab_wave_type->currentIndex()==3){
+                fx=-1*_wave_a->value();
+                if(std::signbit(std::sin (2*M_PI*_wave_f->value()*t + _wave_t->value()))){
+                    fx=1*_wave_a->value();
+                }
             }
             else if(_tab_wave_type->currentIndex()==4){
                 if(_chirp_counter>=200*_chirp_dur_s){ // 200Hz since p = 0.005 ms
@@ -239,14 +241,14 @@ double WaveWidget::compute_wave(double t)
                 _chirp_t = t - _chirp_start_t;
 
                 if(!_chirp_inv){
-                    fx = _valuebox->value()+_wave_a->value()* std::sin(_chirp_w1*_chirp_t+(_chirp_w2-_chirp_w1)*_chirp_t*_chirp_t/(2*_chirp_dur_s));
+                    fx = _wave_a->value()* std::sin(_chirp_w1*_chirp_t+(_chirp_w2-_chirp_w1)*_chirp_t*_chirp_t/(2*_chirp_dur_s));
                 }else{
-                    fx = _valuebox->value()+_wave_a->value()* std::sin(_chirp_w2*_chirp_t+(_chirp_w1-_chirp_w2)*_chirp_t*_chirp_t/(2*_chirp_dur_s));
+                    fx = _wave_a->value()* std::sin(_chirp_w2*_chirp_t+(_chirp_w1-_chirp_w2)*_chirp_t*_chirp_t/(2*_chirp_dur_s));
                 }
-
                 _chirp_counter++;
             }
         }
+        fx=_valuebox->value()+ fx;
     }
 
     if(fx >= _max_slider_value){
