@@ -75,8 +75,7 @@ WaveWidget::WaveWidget(QDoubleSpinBox *valuebox,
     }
 
     // connect slider to spinbox
-    connect(_valueslider, &QSlider::valueChanged,
-             std::bind(&WaveWidget::on_slider_changed, this));
+    connect(_valueslider, &QSlider::valueChanged,std::bind(&WaveWidget::on_slider_changed, this));
 
     _valuebox->setMaximum(_max_slider_value);
     _valuebox->setMinimum(_min_slider_value);
@@ -98,25 +97,35 @@ WaveWidget::WaveWidget(QDoubleSpinBox *valuebox,
 
     _valuebox->setKeyboardTracking(false);
 
-    connect(_valuebox, &QDoubleSpinBox::editingFinished,
-           std::bind(&WaveWidget::on_spinbox_changed, this)
-           );
-
+    connect(_valuebox, &QDoubleSpinBox::editingFinished,std::bind(&WaveWidget::on_spinbox_changed, this));
 
     _slider_filtered=std::make_shared<SecondOrderFilter<double>>(12.0,1.0,1.0,_actual_spinbox_value);
 
     // find wave tab.
     _tab_wave = findChild<QTabWidget *>("tabWave");
     _tab_wave_type = findChild<QTabWidget *>("tabWaveType");
+    connect(_tab_wave_type, &QTabWidget::currentChanged,std::bind(&WaveWidget::wave_param_changed, this));
 
     _wave_a=findChild<QDoubleSpinBox *>("Wave_A");
     _wave_a->setMaximum(_max_slider_value);
     _wave_a->setMinimum(_min_slider_value);
     _wave_a->setDecimals(decimal_value);
     _wave_a->setSingleStep(1/((double)_slider_spinbox_fct));
-    
+    connect(_wave_a, &QDoubleSpinBox::editingFinished,std::bind(&WaveWidget::wave_param_changed, this));
     _wave_f=findChild<QDoubleSpinBox *>("Wave_F");
+    connect(_wave_f, &QDoubleSpinBox::editingFinished,std::bind(&WaveWidget::wave_param_changed, this));
     _wave_t=findChild<QDoubleSpinBox *>("Wave_T");
+    connect(_wave_t, &QDoubleSpinBox::editingFinished,std::bind(&WaveWidget::wave_param_changed, this));
+}
+
+void WaveWidget::wave_param_changed()
+{
+    _init_trj=true; 
+    _amp=   _wave_a->value();
+    _freq=  _wave_f->value();
+    _theta= _wave_t->value();
+
+    _x0=_valuebox->value();
 }
 
 void WaveWidget::on_slider_changed()
@@ -171,7 +180,7 @@ void WaveWidget::enable_slider()
 {
     tab_wave_selected();
     _valueslider->setEnabled(true);
-    if(_valuebox_property!=SliderProperty::NOT_AVAILABLE){
+    if(_valuebox_property!=SliderProperty::NOT_AVAILABLE &&  _tab_wave->currentIndex()==0){
         _valuebox->setEnabled(true);
     }
 }
@@ -192,73 +201,83 @@ void WaveWidget::set_filter(double st)
     _slider_filtered->reset(_valuebox->value());
     _slider_filtered->setTimeStep(st);
 
-    _chirp_counter=0;
+    _trj_counter=0;
+    wave_param_changed();
+
     _chirp_dur_s=10; // 10s
     _chirp_inv=false;
-    _chirp_w1=2*M_PI*_wave_f->value();
-    _chirp_w2=2*M_PI*_wave_f->value()*10;
+    _chirp_w1=2*M_PI*_freq;
+    _chirp_w2=2*M_PI*_freq*10;
+
+    _fx=0;
 }
 
 double WaveWidget::compute_wave(double t)
 {
-    double fx=0;
     if(_tab_wave->currentIndex()==0){
-        fx = _slider_filtered->process(_valuebox->value());
+        _fx = _slider_filtered->process(_valuebox->value());
     }
     else{
         if(t!=0){
+            if(_trj_counter>=200*_chirp_dur_s){ // 200Hz since p = 0.005 ms
+                _trj_counter=0;
+                _init_trj=true;
+                if(!_chirp_inv){
+                    _chirp_inv=true;
+                }
+                else{
+                    _chirp_inv=false;
+                }
+            }
+
+            if(_init_trj){
+                _init_trj=false;
+                _trj_start_t=t;
+            }
+            _trj_t = t - _trj_start_t;
+
             if(_tab_wave_type->currentIndex()==0){
-                fx = _wave_a->value() * std::sin (2*M_PI*_wave_f->value()*t + _wave_t->value());
+                _fx = _amp * std::sin (2*M_PI*_freq*_trj_t + _theta);
             }
             else if(_tab_wave_type->currentIndex()==1){
-                fx=-1*_wave_a->value();
-                if(std::signbit(std::sin (2*M_PI*_wave_f->value()*t + _wave_t->value()))){
-                    fx=1*_wave_a->value();
+                _fx=-_amp;
+                if(std::signbit(std::sin (2*M_PI*_freq*_trj_t + _theta))){
+                    _fx=_amp;
                 }
             }
             else if(_tab_wave_type->currentIndex()==2){
-                fx = 2*_wave_a->value()/M_PI * std::asin(std::sin (2*M_PI*_wave_f->value()*t + _wave_t->value()));
+                _fx = 2*_amp/M_PI * std::asin(std::sin (2*M_PI*_freq*_trj_t + _theta));
             }
             else if(_tab_wave_type->currentIndex()==3){
-                fx=-1*_wave_a->value();
-                if(std::signbit(std::sin (2*M_PI*_wave_f->value()*t + _wave_t->value()))){
-                    fx=1*_wave_a->value();
+                _fx=-_amp;
+                if(std::signbit(std::sin (2*M_PI*_freq*_trj_t + _theta))){
+                    _fx=_amp;
                 }
             }
             else if(_tab_wave_type->currentIndex()==4){
-                if(_chirp_counter>=200*_chirp_dur_s){ // 200Hz since p = 0.005 ms
-                    _chirp_counter=0;
-                    if(!_chirp_inv){
-                        _chirp_inv=true;
-                    }
-                    else{
-                        _chirp_inv=false;
-                    }
-                }
-                if(_chirp_counter==0){
-                    _chirp_start_t=t;
-                }
-                _chirp_t = t - _chirp_start_t;
-
                 if(!_chirp_inv){
-                    fx = _wave_a->value()* std::sin(_chirp_w1*_chirp_t+(_chirp_w2-_chirp_w1)*_chirp_t*_chirp_t/(2*_chirp_dur_s));
+                    _fx = _amp* std::sin(_chirp_w1*_trj_t+(_chirp_w2-_chirp_w1)*_trj_t*_trj_t/(2*_chirp_dur_s));
                 }else{
-                    fx = _wave_a->value()* std::sin(_chirp_w2*_chirp_t+(_chirp_w1-_chirp_w2)*_chirp_t*_chirp_t/(2*_chirp_dur_s));
+                    _fx = _amp* std::sin(_chirp_w2*_trj_t+(_chirp_w1-_chirp_w2)*_trj_t*_trj_t/(2*_chirp_dur_s));
                 }
-                _chirp_counter++;
+                _trj_counter++;
             }
         }
-        fx=_valuebox->value()+ fx;
+        _fx=_fx + _x0;
     }
 
-    if(fx >= _max_slider_value){
-        fx=_max_slider_value;
+    if(_fx >= _max_slider_value){
+        _fx=_max_slider_value;
     }
-    else if (fx <= _min_slider_value){
-        fx=_min_slider_value;
+    else if (_fx <= _min_slider_value){
+        _fx=_min_slider_value;
     }
 
-    return fx;
+    if(_tab_wave->currentIndex()!=0){
+        align_spinbox(_fx);
+    }
+
+    return _fx;
 }
 
 void WaveWidget::enable_tab_wave()
@@ -292,11 +311,6 @@ void WaveWidget::tab_wave_selected()
     }
     else{
         _tab_wave->setTabEnabled(0,false);
-        for(int i=0; i<_tab_wave_type->count();i++){
-            if(i!=_tab_wave_type->currentIndex()){
-                _tab_wave_type->setTabEnabled(i,false);
-            }
-        }
     }
 }
 
