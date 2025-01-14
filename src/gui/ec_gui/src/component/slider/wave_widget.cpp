@@ -264,42 +264,38 @@ double WaveWidget::compute_wave(double t)
 void WaveWidget::enable_tab_wave()
 {
     _tab_wave->setEnabled(true);
-    _tab_wave->setTabEnabled(0,true);
-    _tab_wave->setTabEnabled(1,true);
-
-    _tab_wave_type->setTabEnabled(0,true);
-    _tab_wave_type->setTabEnabled(1,true);
+    for(int i=0; i<_tab_wave->count();i++){
+        _tab_wave->setTabEnabled(i,true);
+    }
+     for(int i=0; i<_tab_wave_type->count();i++){
+        _tab_wave_type->setTabEnabled(i,true);
+    }
 }
 
 void WaveWidget::disable_tab_wave()
 {
     _tab_wave->setEnabled(false);
-    _tab_wave->setTabEnabled(0,false);
-    _tab_wave->setTabEnabled(1,false);
+    for(int i=0; i<_tab_wave->count();i++){
+        _tab_wave->setTabEnabled(i,false);
+    }
 
-    _tab_wave_type->setTabEnabled(0,false);
-    _tab_wave_type->setTabEnabled(1,false);
+    for(int i=0; i<_tab_wave_type->count();i++){
+        _tab_wave_type->setTabEnabled(i,false);
+    }
 }
 
 void WaveWidget::tab_wave_selected()
 {
     int curr_tab= _tab_wave->currentIndex();
     if(curr_tab==0){
-        _tab_wave->setTabEnabled(0,true);
         _tab_wave->setTabEnabled(1,false);
     }
     else{
         _tab_wave->setTabEnabled(0,false);
-        _tab_wave->setTabEnabled(1,true);
-
-        int wave_type= _tab_wave_type->currentIndex();
-        if(wave_type==0){
-            _tab_wave_type->setTabEnabled(0,true);
-            _tab_wave_type->setTabEnabled(1,false);
-        }
-        else{
-            _tab_wave_type->setTabEnabled(0,false);
-            _tab_wave_type->setTabEnabled(1,true);
+        for(int i=0; i<_tab_wave_type->count();i++){
+            if(i!=_tab_wave_type->currentIndex()){
+                _tab_wave_type->setTabEnabled(i,false);
+            }
         }
     }
 }
