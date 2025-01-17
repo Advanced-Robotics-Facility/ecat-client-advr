@@ -48,6 +48,7 @@ private:
     void on_slider_changed();
     void on_spinbox_changed();
     void wave_param_changed();
+    void set_wave_param();
 
     void enable_tab_wave();
     void disable_tab_wave();
@@ -67,11 +68,12 @@ private:
     uint64_t _trj_counter=0;
     bool _init_trj;
     double _trj_start_t,_trj_t;
-    double _chirp_w1,_chirp_w2;
+    double _chirp_w_start,_chirp_w_diff;
     bool _chirp_inv=false;
     uint8_t _chirp_dur_s;
     double _fx,_x0;
     double _amp,_freq,_theta;
+    int _wave_type;
 };
 
 #endif

@@ -111,21 +111,47 @@ WaveWidget::WaveWidget(QDoubleSpinBox *valuebox,
     _wave_a->setMinimum(_min_slider_value);
     _wave_a->setDecimals(decimal_value);
     _wave_a->setSingleStep(1/((double)_slider_spinbox_fct));
+    _wave_a->setKeyboardTracking(false);
     connect(_wave_a, &QDoubleSpinBox::editingFinished,std::bind(&WaveWidget::wave_param_changed, this));
     _wave_f=findChild<QDoubleSpinBox *>("Wave_F");
+    _wave_f->setKeyboardTracking(false);
     connect(_wave_f, &QDoubleSpinBox::editingFinished,std::bind(&WaveWidget::wave_param_changed, this));
     _wave_t=findChild<QDoubleSpinBox *>("Wave_T");
+    _wave_t->setKeyboardTracking(false);
     connect(_wave_t, &QDoubleSpinBox::editingFinished,std::bind(&WaveWidget::wave_param_changed, this));
+
+    set_wave_param();
 }
 
 void WaveWidget::wave_param_changed()
 {
-    _init_trj=true; 
+    if(_amp==_wave_a->value() &&
+       _freq==_wave_f->value() &&
+       _theta==_wave_t->value() &&
+       _wave_type==_tab_wave_type->currentIndex()){
+        return;
+    }
+
+    set_wave_param();
+}
+
+void WaveWidget::set_wave_param()
+{
     _amp=   _wave_a->value();
     _freq=  _wave_f->value();
     _theta= _wave_t->value();
+    _wave_type=_tab_wave_type->currentIndex();
+
+    _init_trj=true; 
+    _trj_counter=0;
+
+    _chirp_dur_s=10; // 10s
+    _chirp_inv=false;
+    _chirp_w_start= 2*M_PI*_freq;
+    _chirp_w_diff=  2*M_PI*(10*_freq-_freq);
 
     _x0=_valuebox->value();
+    _fx=0;
 }
 
 void WaveWidget::on_slider_changed()
@@ -201,15 +227,7 @@ void WaveWidget::set_filter(double st)
     _slider_filtered->reset(_valuebox->value());
     _slider_filtered->setTimeStep(st);
 
-    _trj_counter=0;
-    wave_param_changed();
-
-    _chirp_dur_s=10; // 10s
-    _chirp_inv=false;
-    _chirp_w1=2*M_PI*_freq;
-    _chirp_w2=2*M_PI*_freq*10;
-
-    _fx=0;
+    set_wave_param();
 }
 
 double WaveWidget::compute_wave(double t)
@@ -224,9 +242,13 @@ double WaveWidget::compute_wave(double t)
                 _init_trj=true;
                 if(!_chirp_inv){
                     _chirp_inv=true;
+                    _chirp_w_start= 2*M_PI*10*_freq;
+                    _chirp_w_diff=  2*M_PI*(_freq-10*_freq);
                 }
                 else{
                     _chirp_inv=false;
+                    _chirp_w_start= 2*M_PI*_freq;
+                    _chirp_w_diff=  2*M_PI*(10*_freq-_freq);
                 }
             }
 
@@ -236,30 +258,29 @@ double WaveWidget::compute_wave(double t)
             }
             _trj_t = t - _trj_start_t;
 
-            if(_tab_wave_type->currentIndex()==0){
-                _fx = _amp * std::sin (2*M_PI*_freq*_trj_t + _theta);
-            }
-            else if(_tab_wave_type->currentIndex()==1){
-                _fx=-_amp;
-                if(std::signbit(std::sin (2*M_PI*_freq*_trj_t + _theta))){
+            if(_wave_type!=4){
+                double sine_fx = std::sin (2*M_PI*_freq*_trj_t + _theta);
+                if(_wave_type==0){
+                    _fx = _amp * sine_fx ;
+                }
+                else if(_wave_type==1){
                     _fx=_amp;
+                    if(std::signbit(sine_fx)){
+                        _fx=-_amp;
+                    }
                 }
-            }
-            else if(_tab_wave_type->currentIndex()==2){
-                _fx = 2*_amp/M_PI * std::asin(std::sin (2*M_PI*_freq*_trj_t + _theta));
-            }
-            else if(_tab_wave_type->currentIndex()==3){
-                _fx=-_amp;
-                if(std::signbit(std::sin (2*M_PI*_freq*_trj_t + _theta))){
+                else if(_wave_type==2){
+                    _fx = 2*_amp/M_PI * std::asin(sine_fx);
+                }
+                else if(_wave_type==3){
                     _fx=_amp;
+                    if(std::signbit(sine_fx)){
+                        _fx=-_amp;
+                    }
                 }
             }
-            else if(_tab_wave_type->currentIndex()==4){
-                if(!_chirp_inv){
-                    _fx = _amp* std::sin(_chirp_w1*_trj_t+(_chirp_w2-_chirp_w1)*_trj_t*_trj_t/(2*_chirp_dur_s));
-                }else{
-                    _fx = _amp* std::sin(_chirp_w2*_trj_t+(_chirp_w1-_chirp_w2)*_trj_t*_trj_t/(2*_chirp_dur_s));
-                }
+            else{
+                _fx = _amp* std::sin(_chirp_w_start*_trj_t+_chirp_w_diff*_trj_t*_trj_t/(2*_chirp_dur_s));
                 _trj_counter++;
             }
         }
