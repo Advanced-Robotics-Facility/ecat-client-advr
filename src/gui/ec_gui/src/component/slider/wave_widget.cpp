@@ -273,9 +273,14 @@ double WaveWidget::compute_wave(double t)
                     _fx = 2*_amp/M_PI * std::asin(sine_fx);
                 }
                 else if(_wave_type==3){
-                    _fx=_amp;
-                    if(std::signbit(sine_fx)){
-                        _fx=-_amp;
+                    _fx = 4*_amp/M_PI * std::asin(sine_fx);
+                    if(std::abs(_fx)>=std::abs(_amp)){
+                        if(std::signbit(_fx)){
+                            _fx=-std::abs(_amp);
+                        }
+                        else{
+                           _fx=std::abs(_amp); 
+                        }
                     }
                 }
             }
