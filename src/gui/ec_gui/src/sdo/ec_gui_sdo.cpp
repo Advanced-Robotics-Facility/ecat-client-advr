@@ -121,8 +121,10 @@ void EcGuiSdo::rescan_sdo()
 
 void EcGuiSdo::flash_cmd(int value)
 {
-    bool rescan_after_flash=false;
+    bool flash_cmd_ok=true;
+    int flash_cmd_ack=0x7800+value;
     std::string flash_cmd_str=std::to_string(value);
+    std::string flash_cmd_ack_str=std::to_string(flash_cmd_ack);
     WR_SDO wr_sdo{std::make_tuple("flash_params_cmd",flash_cmd_str)};
     RD_SDO rd_sdo={"flash_params_cmd_ack"};
 
@@ -132,8 +134,8 @@ void EcGuiSdo::flash_cmd(int value)
                 if(_client->set_wr_sdo(esc_id,{},wr_sdo)){
                     RR_SDOS rr_sdo;
                     if(_client->retrieve_rr_sdo(esc_id,rd_sdo,{},rr_sdo)){
-                        if(rr_sdo["flash_params_cmd_ack"] == flash_cmd_str){
-                            rescan_after_flash=true;
+                        if(rr_sdo["flash_params_cmd_ack"] != flash_cmd_ack_str){
+                            flash_cmd_ok=false;
                         }
                     }
                 }
@@ -141,9 +143,15 @@ void EcGuiSdo::flash_cmd(int value)
         }
     }
     
-    if(rescan_after_flash){
-        rescan_sdo();
+    rescan_sdo();
+
+    QMessageBox msgBox;
+    QString message="Success on flash command on all devices!";
+    if(!flash_cmd_ok){
+        message="Unsuccess on flash command for all or some devices";
     }
+    msgBox.setText(message);
+    msgBox.exec();
 }
 
 bool EcGuiSdo::eventFilter( QObject* o, QEvent* e )
