@@ -154,6 +154,36 @@ void EcGuiSdo::flash_cmd(int value)
     msgBox.exec();
 }
 
+void EcGuiSdo::save_sdo_file()
+{
+
+    QDateTime date = QDateTime::currentDateTime();
+    QString formatted_time = date.toString("dd_MM_yyyy__hh_mm_ss");
+
+    for(auto&[esc_id,name_item_map]: _sdo_item_map){
+        QFile *sdo_file;
+        bool sdo_file_open=false;
+        for(auto&[sdo_name,sdo_item]: name_item_map){
+            if(sdo_item->parent()->isExpanded()){
+                if(!sdo_file){
+                    QString sdo_file_path =QDir::homePath()+"/"+sdo_item->parent()->text(0)+"_"+formatted_time+".csv";
+                    sdo_file=new QFile(sdo_file_path);
+                    sdo_file_open=sdo_file->open(QFile::WriteOnly|QFile::Truncate);
+                }
+                if(sdo_file_open){
+                    QTextStream stream(sdo_file);
+                    stream << sdo_item->text(1).toStdString().c_str() << "\t" 
+                           << sdo_item->text(2).toStdString().c_str() << "\n";
+                }
+            }
+        }
+        if(sdo_file_open){
+            sdo_file->close();
+        }
+    }
+}
+
+
 bool EcGuiSdo::eventFilter( QObject* o, QEvent* e )
 {
     if( o == _sdo_tree_wid && e->type() == QEvent::KeyRelease){

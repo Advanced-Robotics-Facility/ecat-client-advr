@@ -50,6 +50,7 @@ private:
         void search_sdo();
         void rescan_sdo();
         void flash_cmd(int value);
+        void save_sdo_file();
 };
 
 
