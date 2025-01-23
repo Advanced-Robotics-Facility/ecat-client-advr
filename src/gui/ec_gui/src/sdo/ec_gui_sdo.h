@@ -53,6 +53,7 @@ private:
         void rescan_sdo();
         void flash_cmd(int value);
         void save_sdo_file();
+        void open_sdo_file();
 };
 
 

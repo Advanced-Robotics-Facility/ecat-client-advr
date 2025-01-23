@@ -197,6 +197,29 @@ void EcGuiSdo::save_sdo_file()
     }
 }
 
+void EcGuiSdo::open_sdo_file()
+{
+    QFileDialog dialog(this);
+    dialog.setFileMode(QFileDialog::AnyFile);
+    dialog.setNameFilter(tr(".csv (*.csv)"));
+    QStringList fileNames;
+    if (dialog.exec()){
+        fileNames = dialog.selectedFiles();
+    }
+    if(!fileNames.empty()){
+        QFile *sdo_file=new QFile(fileNames[0]);
+        if(sdo_file->open(QFile::ReadOnly)){
+            QTextStream in(sdo_file);
+            while (!in.atEnd()){
+                QStringList split_line = in.readLine().split("\t");
+                for(auto &value:split_line){
+                    
+                }
+            }
+            sdo_file->close();
+        }
+    }
+}
 
 bool EcGuiSdo::eventFilter( QObject* o, QEvent* e )
 {
@@ -311,7 +334,7 @@ void EcGuiSdo::onSaveFileSdoReleased()
 
 void EcGuiSdo::onOpenFileSdoReleased()
 {
-
+    open_sdo_file();
 }
 
 
