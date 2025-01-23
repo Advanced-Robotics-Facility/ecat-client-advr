@@ -333,6 +333,13 @@
            </item>
            <item>
             <widget class="QDialogButtonBox" name="SDOManager">
+             <property name="standardButtons">
+              <set>QDialogButtonBox::RestoreDefaults|QDialogButtonBox::Retry</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDialogButtonBox" name="SDOFlashManager">
              <property name="layoutDirection">
               <enum>Qt::LeftToRight</enum>
              </property>

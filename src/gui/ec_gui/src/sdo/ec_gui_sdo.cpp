@@ -27,22 +27,35 @@ QWidget(parent)
     _sdo_search_req="";
 
     _sdo_tree_wid->installEventFilter(this);
+    _sdo_flash_manager = parent->findChild<QDialogButtonBox *>("SDOFlashManager"); 
+    _sdo_flash_manager->setEnabled(false);
+
+    auto save_btn = _sdo_flash_manager->button(QDialogButtonBox::Save);
+    connect(save_btn, &QPushButton::released,this, &EcGuiSdo::onSaveSdoReleased);
+
+    auto load_btn = _sdo_flash_manager->button(QDialogButtonBox::Retry);
+    load_btn->setText("Load");
+    connect(load_btn, &QPushButton::released,this, &EcGuiSdo::onLoadSdoReleased);
+
+    auto restore_btn = _sdo_flash_manager->button(QDialogButtonBox::Ignore);
+    restore_btn->setText("Restore default");
+    connect(restore_btn, &QPushButton::released,this, &EcGuiSdo::onRestoreSdoReleased);
+
+    auto open_file_btn = _sdo_flash_manager->button(QDialogButtonBox::RestoreDefaults);
+    open_file_btn->setText("Open SDO file");
+    connect(open_file_btn, &QPushButton::released,this, &EcGuiSdo::onOpenFileSdoReleased);
+    
+
     _sdo_manager = parent->findChild<QDialogButtonBox *>("SDOManager");
-    _sdo_manager->setEnabled(false);
 
     auto rescan_btn = _sdo_manager->button(QDialogButtonBox::Retry);
     rescan_btn->setText("Rescan");
     connect(rescan_btn, &QPushButton::released,this, &EcGuiSdo::onRescanSdoReleased);
 
-    auto save_btn = _sdo_manager->button(QDialogButtonBox::Save);
-    connect(save_btn, &QPushButton::released,this, &EcGuiSdo::onSaveSdoReleased);
+    auto save_file_btn = _sdo_manager->button(QDialogButtonBox::RestoreDefaults);
+    save_file_btn->setText(" Save  SDO file");
+    connect(save_file_btn, &QPushButton::released,this, &EcGuiSdo::onSaveFileSdoReleased);
 
-    auto load_btn = _sdo_manager->button(QDialogButtonBox::Ignore);
-    load_btn->setText("Load");
-    connect(load_btn, &QPushButton::released,this, &EcGuiSdo::onLoadSdoReleased);
-
-    auto restore_btn = _sdo_manager->button(QDialogButtonBox::RestoreDefaults);
-    connect(restore_btn, &QPushButton::released,this, &EcGuiSdo::onRestoreSdoReleased);
 }
       
 EcGuiSdo::~EcGuiSdo(){}
@@ -161,7 +174,7 @@ void EcGuiSdo::save_sdo_file()
     QString formatted_time = date.toString("dd_MM_yyyy__hh_mm_ss");
 
     for(auto&[esc_id,name_item_map]: _sdo_item_map){
-        QFile *sdo_file;
+        QFile *sdo_file=nullptr;
         bool sdo_file_open=false;
         for(auto&[sdo_name,sdo_item]: name_item_map){
             if(sdo_item->parent()->isExpanded()){
@@ -177,6 +190,7 @@ void EcGuiSdo::save_sdo_file()
                 }
             }
         }
+
         if(sdo_file_open){
             sdo_file->close();
         }
@@ -258,7 +272,7 @@ void EcGuiSdo::ExpertUserPassChanged()
     if(_expert_user->text().toStdString()==expert_user_password){
         message="export user password correct!";
         _user_expert=true;
-        _sdo_manager->setEnabled(true);
+        _sdo_flash_manager->setEnabled(true);
     }
     msgBox.setText(message);
     msgBox.exec();
@@ -288,6 +302,16 @@ void EcGuiSdo::onLoadSdoReleased()
 void EcGuiSdo::onRestoreSdoReleased()
 {
     flash_cmd(0x0056); //iit::ecat::Flash_cmd_type::LOAD_DEFAULT_PARAMS
+}
+
+void EcGuiSdo::onSaveFileSdoReleased()
+{
+    save_sdo_file();
+}
+
+void EcGuiSdo::onOpenFileSdoReleased()
+{
+
 }
 
 

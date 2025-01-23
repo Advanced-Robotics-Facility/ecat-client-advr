@@ -29,6 +29,8 @@ public slots:
         void onRescanSdoReleased();
         void onRestoreSdoReleased();
         void onLoadSdoReleased();
+        void onSaveFileSdoReleased();
+        void onOpenFileSdoReleased();
         
 protected:
         bool eventFilter( QObject* o, QEvent* e );
@@ -38,7 +40,7 @@ private:
         QTreeWidget *_sdo_tree_wid;
         QTreeWidgetItem *_sdo_item;
         QLineEdit *_expert_user, *_sdo_search;
-        QDialogButtonBox *_sdo_manager;
+        QDialogButtonBox *_sdo_manager,*_sdo_flash_manager;
         int _sdo_column;
         std::map<uint32_t,std::map<std::string,QTreeWidgetItem *>> _sdo_item_map;
         SRD_SDO _sdo_map;
