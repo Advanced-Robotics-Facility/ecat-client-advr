@@ -56,6 +56,118 @@ private:
         void open_sdo_file();
 };
 
+class EcGuiSdoWizard : public QWidget
+{
+  Q_OBJECT
+
+public:
+        EcGuiSdoWizard(QWidget * parent = 0){
+            _sdo_wizard_tree = new QTreeWidget();
+            _sdo_wizard_tree->setColumnCount(2);
+            _sdo_wizard_tree->setHeaderLabels({"SDO Name","SDO Value"});
+            _sdo_wizard_tree->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+            _sdo_wizard_tree->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+
+            auto sdo_sel_manager = new QDialogButtonBox(QDialogButtonBox::YesToAll| QDialogButtonBox::NoToAll);
+            sdo_sel_manager->setLayoutDirection(Qt::RightToLeft);
+            auto yes_all_btn = sdo_sel_manager->button(QDialogButtonBox::YesToAll);
+            connect(yes_all_btn, &QPushButton::released,this, &EcGuiSdoWizard::onYesToAllSdoReleased);
+            auto no_all_btn = sdo_sel_manager->button(QDialogButtonBox::NoToAll);
+            connect(no_all_btn, &QPushButton::released,this, &EcGuiSdoWizard::onNoToAllSdoReleased);
+
+            QWizardPage *sdo_wizard_page = new QWizardPage();
+            sdo_wizard_page->setTitle("SDO Wizard");
+            QVBoxLayout *layout = new QVBoxLayout;
+            layout->addWidget(_sdo_wizard_tree);
+            layout->addWidget(sdo_sel_manager);
+            sdo_wizard_page->setLayout(layout);
+
+            _sdo_wizard.addPage(sdo_wizard_page);
+        };
+
+        WR_SDO run_sdo_wizard(){
+            _write_new_sdo.clear();
+            if(init_wizard()){
+                if(_sdo_wizard.exec()){
+                    fill_write_sdo();
+                }
+            }
+            return _write_new_sdo;
+        };
+
+
+        ~EcGuiSdoWizard(){};
+
+private slots:
+        void onYesToAllSdoReleased(){
+           _sdo_check_state=Qt::Checked;
+           sdo_checking();
+        };
+
+        void onNoToAllSdoReleased(){
+           _sdo_check_state=Qt::Unchecked;
+           sdo_checking();
+        };
+private:
+        QTreeWidget *_sdo_wizard_tree;
+        QWizard _sdo_wizard;
+        Qt::CheckState _sdo_check_state=Qt::Unchecked;
+        WR_SDO _write_new_sdo;
+
+        bool init_wizard(){
+           QFileDialog dialog(this);
+           dialog.setFileMode(QFileDialog::AnyFile);
+           dialog.setNameFilter(tr(".csv (*.csv)"));
+           QStringList fileNames;
+           if (dialog.exec()){
+                fileNames = dialog.selectedFiles();
+           }
+           if(!fileNames.empty()){
+                QFile *sdo_file=new QFile(fileNames[0]);
+                if(sdo_file->open(QFile::ReadOnly)){
+                   QTextStream in(sdo_file);
+                   while (!in.atEnd()){
+                        QStringList split_line = in.readLine().split("\t");
+                        add_content(split_line);
+                   }
+                   sdo_file->close();
+                   return true;
+                }
+           }
+           return false;
+        };
+        
+        void add_content(QStringList &list){
+             if(!list.empty()){
+                int i=0;
+                QTreeWidgetItem * sdo_wizard_item = new QTreeWidgetItem();
+                for(auto &value:list){
+                   sdo_wizard_item->setText(i,value);
+                   sdo_wizard_item->setFlags(sdo_wizard_item->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable);
+                   sdo_wizard_item->setCheckState(0,Qt::Unchecked);
+                   i++;
+                }
+                _sdo_wizard_tree->addTopLevelItem(sdo_wizard_item);
+             }
+        };
+
+        void sdo_checking(){
+             for(int i=0;i<_sdo_wizard_tree->topLevelItemCount();i++){
+                 auto topLevel =_sdo_wizard_tree->topLevelItem(i);
+                 topLevel->setCheckState(0,_sdo_check_state);
+             }
+        };
+         void fill_write_sdo(){
+             for(int i=0;i<_sdo_wizard_tree->topLevelItemCount();i++){
+                 auto topLevel =_sdo_wizard_tree->topLevelItem(i);
+                 if(topLevel->checkState(0)==Qt::Checked){
+                     std::string sdo_name = topLevel->text(0).toStdString();
+                     std::string sdo_value = topLevel->text(1).toStdString();
+                    _write_new_sdo.push_back(std::make_tuple(sdo_name,sdo_value));
+                 }
+             }
+        };
+};
 
 #endif // EC_GUI_SDO_H
 

@@ -114,27 +114,46 @@ void EcGuiSdo::search_sdo()
 
 void EcGuiSdo::rescan_sdo()
 {   
+    bool try_rescan_cmd=false;
+    bool rescan_ok=true;
     for(auto&[esc_id,name_item_map]: _sdo_item_map){
         for(auto&[sdo_name,sdo_item]: name_item_map){
             if(sdo_item->parent()->isExpanded()){
                 RD_SDO rd_sdo={sdo_name};
                 RR_SDOS rr_sdo;
+                try_rescan_cmd=true;
                 if(_client->retrieve_rr_sdo(esc_id,rd_sdo,{},rr_sdo)){
                     if(rr_sdo.count(sdo_name)>0){
                         std::string sdo_value= rr_sdo[sdo_name];
                         sdo_item->setText(1,QString::fromStdString(sdo_name));
                         sdo_item->setText(2,QString::fromStdString(sdo_value));
                         _sdo_map[esc_id][sdo_name]=sdo_value;
+                    }else{
+                        rescan_ok=false;
                     }
+                }else{
+                    rescan_ok=false;
                 }
             }
         }
     }
+
+    QMessageBox msgBox;
+    QString message="No rescan command executed";
+    if(try_rescan_cmd){
+        message="Success on rescan command for all devices";
+        if(!rescan_ok){
+            message="Unsuccess on rescan command for all or some devices";
+        }
+    }
+    msgBox.setText(message);
+    msgBox.exec();
 }
 
 void EcGuiSdo::flash_cmd(int value)
 {
     bool flash_cmd_ok=true;
+    bool try_flash_cmd=false;
     int flash_cmd_ack=0x7800+value;
     std::string flash_cmd_str=std::to_string(value);
     std::string flash_cmd_ack_str=std::to_string(flash_cmd_ack);
@@ -144,6 +163,7 @@ void EcGuiSdo::flash_cmd(int value)
     for(auto&[esc_id,name_item_map]: _sdo_item_map){
         if(name_item_map.count("flash_params_cmd")>0 && name_item_map.count("flash_params_cmd_ack")>0){
             if(name_item_map["flash_params_cmd"]->parent()->isExpanded()){
+                try_flash_cmd=true;
                 if(_client->set_wr_sdo(esc_id,{},wr_sdo)){
                     RR_SDOS rr_sdo;
                     if(_client->retrieve_rr_sdo(esc_id,rd_sdo,{},rr_sdo)){
@@ -156,15 +176,20 @@ void EcGuiSdo::flash_cmd(int value)
         }
     }
     
-    rescan_sdo();
-
     QMessageBox msgBox;
-    QString message="Success on flash command on all devices!";
-    if(!flash_cmd_ok){
-        message="Unsuccess on flash command for all or some devices";
+    QString message="No flash command executed";
+    if(try_flash_cmd){
+        message="Success on flash command for all devices";
+        if(!flash_cmd_ok){
+            message="Unsuccess on flash command for all or some devices";
+        }
     }
     msgBox.setText(message);
     msgBox.exec();
+
+    if(try_flash_cmd){
+        rescan_sdo();
+    }
 }
 
 void EcGuiSdo::save_sdo_file()
@@ -172,12 +197,15 @@ void EcGuiSdo::save_sdo_file()
 
     QDateTime date = QDateTime::currentDateTime();
     QString formatted_time = date.toString("dd_MM_yyyy__hh_mm_ss");
+    bool try_save_cmd=false;
+    bool save_ok=true;
 
     for(auto&[esc_id,name_item_map]: _sdo_item_map){
         QFile *sdo_file=nullptr;
         bool sdo_file_open=false;
         for(auto&[sdo_name,sdo_item]: name_item_map){
             if(sdo_item->parent()->isExpanded()){
+                try_save_cmd=true;
                 if(!sdo_file){
                     QString sdo_file_path =QDir::homePath()+"/"+sdo_item->parent()->text(0)+"_"+formatted_time+".csv";
                     sdo_file=new QFile(sdo_file_path);
@@ -187,6 +215,8 @@ void EcGuiSdo::save_sdo_file()
                     QTextStream stream(sdo_file);
                     stream << sdo_item->text(1).toStdString().c_str() << "\t" 
                            << sdo_item->text(2).toStdString().c_str() << "\n";
+                }else{
+                    save_ok=false;
                 }
             }
         }
@@ -195,28 +225,50 @@ void EcGuiSdo::save_sdo_file()
             sdo_file->close();
         }
     }
+
+    QMessageBox msgBox;
+    QString message="No save command executed";
+    if(try_save_cmd){
+        message="Success on save command for all devices";
+        if(!save_ok){
+            message="Unsuccess on save command for all or some devices";
+        }
+    }
+    msgBox.setText(message);
+    msgBox.exec();
 }
 
 void EcGuiSdo::open_sdo_file()
 {
-    QFileDialog dialog(this);
-    dialog.setFileMode(QFileDialog::AnyFile);
-    dialog.setNameFilter(tr(".csv (*.csv)"));
-    QStringList fileNames;
-    if (dialog.exec()){
-        fileNames = dialog.selectedFiles();
-    }
-    if(!fileNames.empty()){
-        QFile *sdo_file=new QFile(fileNames[0]);
-        if(sdo_file->open(QFile::ReadOnly)){
-            QTextStream in(sdo_file);
-            while (!in.atEnd()){
-                QStringList split_line = in.readLine().split("\t");
-                for(auto &value:split_line){
-                    
+    EcGuiSdoWizard sdo_wizard;
+    auto new_wr_sdo = sdo_wizard.run_sdo_wizard();
+    if(!new_wr_sdo.empty()){
+        bool try_write_cmd=false;
+        bool new_write_ok=true;
+        for(auto&[esc_id,name_item_map]: _sdo_item_map){
+            for(auto&[sdo_name,sdo_item]: name_item_map){
+                if(sdo_item->parent()->isExpanded()){
+                    try_write_cmd=true;
+                    if(!_client->set_wr_sdo(esc_id,{},new_wr_sdo)){
+                        new_write_ok=false;
+                    }
                 }
             }
-            sdo_file->close();
+        }
+        
+        QMessageBox msgBox;
+        QString message="No write command executed";
+        if(try_write_cmd){
+            message="Success on write command for all devices";
+            if(!new_write_ok){
+                message="Unsuccess on write command for all or some devices";
+            }
+        }
+        msgBox.setText(message);
+        msgBox.exec();
+
+        if(try_write_cmd){
+            rescan_sdo();
         }
     }
 }
