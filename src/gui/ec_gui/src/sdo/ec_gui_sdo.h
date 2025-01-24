@@ -54,6 +54,7 @@ private:
         void flash_cmd(int value);
         void save_sdo_file();
         void open_sdo_file();
+        void cmd_feedback(bool try_cmd,bool cmd_ok,QString cmd_name);
 };
 
 class EcGuiSdoWizard : public QWidget

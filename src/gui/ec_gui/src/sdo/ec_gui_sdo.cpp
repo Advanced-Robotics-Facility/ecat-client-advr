@@ -115,7 +115,7 @@ void EcGuiSdo::search_sdo()
 void EcGuiSdo::rescan_sdo()
 {   
     bool try_rescan_cmd=false;
-    bool rescan_ok=true;
+    bool rescan_cmd_ok=true;
     for(auto&[esc_id,name_item_map]: _sdo_item_map){
         for(auto&[sdo_name,sdo_item]: name_item_map){
             if(sdo_item->parent()->isExpanded()){
@@ -129,25 +129,16 @@ void EcGuiSdo::rescan_sdo()
                         sdo_item->setText(2,QString::fromStdString(sdo_value));
                         _sdo_map[esc_id][sdo_name]=sdo_value;
                     }else{
-                        rescan_ok=false;
+                        rescan_cmd_ok=false;
                     }
                 }else{
-                    rescan_ok=false;
+                    rescan_cmd_ok=false;
                 }
             }
         }
     }
 
-    QMessageBox msgBox;
-    QString message="No rescan command executed";
-    if(try_rescan_cmd){
-        message="Success on rescan command for all devices";
-        if(!rescan_ok){
-            message="Unsuccess on rescan command for all or some devices";
-        }
-    }
-    msgBox.setText(message);
-    msgBox.exec();
+    cmd_feedback(try_rescan_cmd,rescan_cmd_ok,"rescan");
 }
 
 void EcGuiSdo::flash_cmd(int value)
@@ -175,18 +166,9 @@ void EcGuiSdo::flash_cmd(int value)
             }
         }
     }
-    
-    QMessageBox msgBox;
-    QString message="No flash command executed";
-    if(try_flash_cmd){
-        message="Success on flash command for all devices";
-        if(!flash_cmd_ok){
-            message="Unsuccess on flash command for all or some devices";
-        }
-    }
-    msgBox.setText(message);
-    msgBox.exec();
 
+    cmd_feedback(try_flash_cmd,flash_cmd_ok,"flash");
+    
     if(try_flash_cmd){
         rescan_sdo();
     }
@@ -198,7 +180,7 @@ void EcGuiSdo::save_sdo_file()
     QDateTime date = QDateTime::currentDateTime();
     QString formatted_time = date.toString("dd_MM_yyyy__hh_mm_ss");
     bool try_save_cmd=false;
-    bool save_ok=true;
+    bool save_cmd_ok=true;
 
     for(auto&[esc_id,name_item_map]: _sdo_item_map){
         QFile *sdo_file=nullptr;
@@ -216,7 +198,7 @@ void EcGuiSdo::save_sdo_file()
                     stream << sdo_item->text(1).toStdString().c_str() << "\t" 
                            << sdo_item->text(2).toStdString().c_str() << "\n";
                 }else{
-                    save_ok=false;
+                    save_cmd_ok=false;
                 }
             }
         }
@@ -226,16 +208,7 @@ void EcGuiSdo::save_sdo_file()
         }
     }
 
-    QMessageBox msgBox;
-    QString message="No save command executed";
-    if(try_save_cmd){
-        message="Success on save command for all devices";
-        if(!save_ok){
-            message="Unsuccess on save command for all or some devices";
-        }
-    }
-    msgBox.setText(message);
-    msgBox.exec();
+    cmd_feedback(try_save_cmd,save_cmd_ok,"save");
 }
 
 void EcGuiSdo::open_sdo_file()
@@ -255,22 +228,27 @@ void EcGuiSdo::open_sdo_file()
                 }
             }
         }
-        
-        QMessageBox msgBox;
-        QString message="No write command executed";
-        if(try_write_cmd){
-            message="Success on write command for all devices";
-            if(!new_write_ok){
-                message="Unsuccess on write command for all or some devices";
-            }
-        }
-        msgBox.setText(message);
-        msgBox.exec();
+
+        cmd_feedback(try_write_cmd,new_write_ok,"write");
 
         if(try_write_cmd){
             rescan_sdo();
         }
     }
+}
+
+void EcGuiSdo::cmd_feedback(bool try_cmd,bool cmd_ok,QString cmd_name)
+{   
+    QMessageBox msgBox;
+    QString message="No "+cmd_name+" command executed";
+    if(try_cmd){
+        message="Success on "+cmd_name+" for all devices";
+        if(!cmd_ok){
+            message="Unsuccess on "+cmd_name+" for all or some devices";
+        }
+    }
+    msgBox.setText(message);
+    msgBox.exec();
 }
 
 bool EcGuiSdo::eventFilter( QObject* o, QEvent* e )
