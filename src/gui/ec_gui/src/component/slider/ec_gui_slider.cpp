@@ -16,9 +16,11 @@ QVBoxLayout* EcGuiSlider::retrieve_slider_layout(const std::string &tab_name,
         _sliders_window_map[tab_name]=new SliderWindow(control_mode,control_mode_hex,this);
         auto ctrl_mode_combo=_sliders_window_map[tab_name]->get_control_mode();
         connect(ctrl_mode_combo, SIGNAL(currentIndexChanged(int)),this,SLOT(control_mode_change()));
-        set_control_mode(tab_name);
         _devicecontrol->insertTab(tab_actual_index,_sliders_window_map[tab_name],QString::fromStdString(tab_name));
     }
+    
+    set_control_mode(tab_name);
+    
     return _sliders_window_map[tab_name]->get_layout();
 }
 
