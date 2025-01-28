@@ -10,7 +10,7 @@
 
 static const SliderWidget::slider_info_s motor_info={
   MotorPdoTx::name,
-  {"[uless]","[rad]","[rad/s]","[Nm]","[arbu]", "[arbu]","[arbu]","[arbu]","[arbu]","[uless]","[uless]","[arbu]"},
+  {"[uless]","[rad]","[rad/s]","[Nm]---[A]","[arbu]", "[arbu]","[arbu]","[arbu]","[arbu]","[uless]","[uless]","[arbu]"},
   {0,2,2,2,4,4,4,4,4,0,0,2},
   {"0","-3.14","-6.28","-10.0","0","0","0","0","0","0","0","-10000"},
   {"500","3.14","6.28","10.0","10000","10000","10000","10000","10000","2","65535","10000"},
