@@ -64,7 +64,7 @@ public:
     void disable_sliders();
     void check_sliders();
     void uncheck_sliders();
-    void set_sliders_filter(double st);
+    void set_sliders_info(double st,bool stopping_wave);
     int get_control_mode(std::string tab_name);
     void enable_control_mode(const std::string& tab_name);
     void disable_control_mode(const std::string& tab_name);

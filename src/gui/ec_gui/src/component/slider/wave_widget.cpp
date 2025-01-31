@@ -150,7 +150,7 @@ void WaveWidget::set_wave_param()
     _chirp_w_start= 2*M_PI*_freq;
     _chirp_w_diff=  2*M_PI*(10*_freq-_freq);
 
-    _x0=_valuebox->value();
+    _x0=_actual_spinbox_value;
     _fx=0;
 }
 
@@ -175,24 +175,23 @@ void WaveWidget::on_spinbox_changed()
 void WaveWidget::align_spinbox(double value)
 {
     _actual_spinbox_value = value;
-    _valuebox->setValue(_actual_spinbox_value);
-
-    // update slider
-    _valueslider->blockSignals(true);
-    _valueslider->setValue(int(_slider_spinbox_fct*_actual_spinbox_value));
-    _valueslider->blockSignals(false);
+    change_spinbox(_actual_spinbox_value);
 }
 
 void WaveWidget::align_spinbox()
 {
-    _valuebox->setValue(_actual_spinbox_value);
+    change_spinbox(_actual_spinbox_value);
+}
+
+void WaveWidget::change_spinbox(double value)
+{
+    _valuebox->setValue(value);
 
     // update slider
     _valueslider->blockSignals(true);
-    _valueslider->setValue(int(_slider_spinbox_fct*_actual_spinbox_value));
+    _valueslider->setValue(int(_slider_spinbox_fct*value));
     _valueslider->blockSignals(false);
 }
-
 
 void WaveWidget::disable_slider()
 {
@@ -222,8 +221,9 @@ void WaveWidget::set_spinbox_value(double actual_spinbox_value)
 }
 
 
-void WaveWidget::set_filter(double st)
+void WaveWidget::set_wave_info(double st, bool stopping_wave)
 {
+    _stopping_wave=stopping_wave;
     _slider_filtered->reset(_valuebox->value());
     _slider_filtered->setTimeStep(st);
 
@@ -232,7 +232,7 @@ void WaveWidget::set_filter(double st)
 
 double WaveWidget::compute_wave(double t)
 {
-    if(_tab_wave->currentIndex()==0){
+    if(_tab_wave->currentIndex()==0 || _stopping_wave){
         _fx = _slider_filtered->process(_valuebox->value());
     }
     else{
@@ -299,8 +299,8 @@ double WaveWidget::compute_wave(double t)
         _fx=_min_slider_value;
     }
 
-    if(_tab_wave->currentIndex()!=0){
-        align_spinbox(_fx);
+    if(_tab_wave->currentIndex()!=0 && !_stopping_wave){
+        change_spinbox(_fx);
     }
 
     return _fx;

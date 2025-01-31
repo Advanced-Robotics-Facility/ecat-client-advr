@@ -24,8 +24,8 @@ public:
       void restart_ec_gui_pdo(EcIface::Ptr client,EcLogger::Ptr ec_logger);
       void restart_receive_timer();
       void read();
-      void set_filter(int time_ms);
-      void restart_send_timer();
+      void starting_write(int time_ms);
+      void stopping_write();
       void write();
 
 private:

@@ -151,17 +151,17 @@ void EcGuiSlider::disable_sliders()
     }
 }
 
-void EcGuiSlider::set_sliders_filter(double st)
+void EcGuiSlider::set_sliders_info(double st,bool stopping_wave)
 {
     for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
-         slider_wid->set_filter(st);
+         slider_wid->set_wave_info(st,stopping_wave);
     }
 
     for (auto& [slave_id, slider_wid]:_slider_map.valve_sw_map){
-         slider_wid->set_filter(st);
+         slider_wid->set_wave_info(st,stopping_wave);
     }
     for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
-         slider_wid->set_filter(st);
+         slider_wid->set_wave_info(st,stopping_wave);
     }
 }
 

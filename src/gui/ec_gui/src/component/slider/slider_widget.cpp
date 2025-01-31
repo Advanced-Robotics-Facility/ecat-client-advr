@@ -204,10 +204,10 @@ std::string SliderWidget::get_slider_name()
 }
 
 
-void SliderWidget::set_filter(double st)
+void SliderWidget::set_wave_info(double st,bool stopping_wave)
 {
     for(auto &wave_v:_wave_v){
-        wave_v->set_filter(st);
+        wave_v->set_wave_info(st,stopping_wave);
     }
 }
 

@@ -337,15 +337,18 @@ void EcGuiPdo::read_pump_status()
 
 
 /********************************************************* WRITE PDO***********************************************************************************************/
-void EcGuiPdo::set_filter(int time_ms)
+void EcGuiPdo::starting_write(int time_ms)
 {
     _time_ms = time_ms;
     double ts=((double) _time_ms)/1000;
-    _ec_gui_slider->set_sliders_filter(ts);
+    _ec_gui_slider->set_sliders_info(ts,false);
+    _send_timer->restart();
 }
 
-void EcGuiPdo::restart_send_timer()
+void EcGuiPdo::stopping_write()
 {
+    double ts=((double) _time_ms)/1000;
+    _ec_gui_slider->set_sliders_info(ts,true);
     _send_timer->restart();
 }
 

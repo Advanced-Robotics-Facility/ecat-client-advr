@@ -123,14 +123,12 @@ void EcGuiWrapper::onSendStopBtnReleased()
     _ec_gui_slider->reset_sliders();
 
     _send_pdo = _ec_gui_cmd->get_command_sts(); // devices controlled
-    count_reset_ref=0;
+    _stopping_write_counter=0;
     
     if((_send_stop_btn->text()=="Start Motion")&&(_send_pdo)){
         _send_stop_btn->setText("Stop Motion");
         _ec_gui_slider->enable_sliders();
-
-        _ec_gui_pdo->set_filter(_time_ms);
-        _ec_gui_pdo->restart_send_timer();
+        _ec_gui_pdo->starting_write(_time_ms);
         _send_timer->start(_time_ms);
     }
     else{
@@ -154,12 +152,14 @@ void EcGuiWrapper::send()
 
     // **************Delay stop**************
     if(!_send_pdo){
-        count_reset_ref++;
-        _ec_gui_pdo->set_filter(_time_ms);//STOP align all references to zero or with the actual position for the motors
-        _ec_gui_pdo->restart_send_timer();
-        if(count_reset_ref>3){ 
+        if(_stopping_write_counter>3){ 
             _send_timer->stop();
             return;
+        }else{
+            if(_stopping_write_counter==0){
+                _ec_gui_pdo->stopping_write();//STOP align all references to zero or with the actual position for the motors
+            }
+            _stopping_write_counter++;
         }
     }
     // **************Delay stop**************
@@ -171,7 +171,7 @@ void EcGuiWrapper::send()
     }
 
     if(!_ec_gui_cmd->get_command_sts() || !client_run_loop){
-        if(count_reset_ref==0){
+        if(_stopping_write_counter==0){
             onSendStopBtnReleased(); // stop sending references with delay
         }
     } // stop motors command

@@ -48,7 +48,7 @@ public:
     void uncheck_slider_enabled();
     std::string get_slider_name();
 
-    void set_filter(double st);
+    void set_wave_info(double st, bool stopping_wave);
     double compute_wave(int i,double t);
 
     ~SliderWidget();

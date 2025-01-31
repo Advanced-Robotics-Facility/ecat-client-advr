@@ -65,7 +65,7 @@ private:
   bool _receive_started,_record_started;
 
   bool check_client_setup();
-  int count_reset_ref=0;
+  uint64_t _stopping_write_counter=0;
 };
 
 #endif // EC_GUI_WRAPPER_H
