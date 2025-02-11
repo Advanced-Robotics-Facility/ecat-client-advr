@@ -52,13 +52,6 @@ EcGuiWrapper::EcGuiWrapper(QWidget *parent) :
 
     connect(_send_stop_btn, &QPushButton::released,this, &EcGuiWrapper::onSendStopBtnReleased);
     
-    // create a timer for sending PDO
-    _send_timer = new QTimer(this);
-
-    // setup signal and slot
-    connect(_send_timer, SIGNAL(timeout()),this, SLOT(send()));
-
-
     // create a timer for receiving PDO
     _receive_timer = new QTimer(this);
 
@@ -117,7 +110,7 @@ bool EcGuiWrapper::check_client_setup()
     return ret;
 }
 
-void EcGuiWrapper::write_send_stop()
+void EcGuiWrapper::send_thread_stop()
 {
     if(_ec_send_thread){
         if(_ec_send_thread->joinable()){
@@ -139,11 +132,10 @@ void EcGuiWrapper::onSendStopBtnReleased()
         _send_stop_btn->setText("Stop Motion");
         _ec_gui_slider->enable_sliders();
         _ec_gui_pdo->starting_write(_time_ms);
-        //_send_timer->start(_time_ms);
 
         _start_send_time = std::chrono::high_resolution_clock::now();
         _send_time = _start_send_time;
-        write_send_stop();
+        send_thread_stop();
         _ec_send_thread = std::make_shared<std::thread>(&EcGuiWrapper::send,this);
     }
     else{
@@ -274,5 +266,5 @@ void EcGuiWrapper::receive()
 EcGuiWrapper::~EcGuiWrapper()
 {
     _ec_logger->stop_mat_logger();
-    write_send_stop();
+    send_thread_stop();
 }

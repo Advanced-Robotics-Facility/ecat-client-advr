@@ -63,12 +63,12 @@ private:
   
   QPushButton *_send_stop_btn;
 
-  QTimer *_send_timer,*_receive_timer;
+  QTimer *_receive_timer;
   QAction *_receive_action,*_record_action;
   bool _receive_started,_record_started;
 
   bool check_client_setup();
-  void write_send_stop();
+  void send_thread_stop();
   uint64_t _stopping_write_counter=0;
   
 };
