@@ -56,6 +56,7 @@ private:
   EcLogger::Ptr _ec_logger;
 
   std::shared_ptr<std::thread> _ec_send_thread;
+  std::mutex _mutex_log_send;
   std::chrono::high_resolution_clock::time_point _send_time,_start_send_time;
 
   int _time_ms;

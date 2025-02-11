@@ -168,7 +168,9 @@ void EcGuiWrapper::send()
 
         bool client_run_loop=_ec_wrapper_info.client->get_client_status().run_loop; // client thread still running.
         if(client_run_loop){
+            _mutex_log_send.lock();
             _ec_gui_pdo->write();
+            _mutex_log_send.unlock();
             _ec_wrapper_info.client->write();
         }
 
@@ -196,7 +198,9 @@ void EcGuiWrapper::start_stop_record()
         else{
             if(!_record_started){
                 _record_started = true;
+                _mutex_log_send.lock();
                 _ec_logger->start_mat_logger();
+                _mutex_log_send.unlock();
                 _record_action->setIcon(QIcon(":/icon/stop_record.png"));
                 _record_action->setText("Stop Record");
             }
@@ -211,7 +215,9 @@ void EcGuiWrapper::stop_record()
 {
     if(_record_started && check_client_setup()){
         _record_started = false;
+        _mutex_log_send.lock();
         _ec_logger->stop_mat_logger();
+        _mutex_log_send.unlock();
         _record_action->setIcon(QIcon(":/icon/record.png"));
         _record_action->setText("Record");
     }
