@@ -314,6 +314,9 @@ void EcZmqCmd::feed_motors()
             while(_motor_reference_queue.pop(_internal_motor_reference_map))
             {}
             auto fault=_ec_repl_cmd->Motors_PDO_cmd(_internal_motor_reference_map);
+            std::string msg="";
+            if(!cmd_error_status(fault, "feed_motors",msg)){
+            }
         }
     }
 }
