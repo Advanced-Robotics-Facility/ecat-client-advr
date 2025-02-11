@@ -117,6 +117,16 @@ bool EcGuiWrapper::check_client_setup()
     return ret;
 }
 
+void EcGuiWrapper::write_send_stop()
+{
+    if(_ec_send_thread){
+        if(_ec_send_thread->joinable()){
+            _ec_send_thread->join();
+        }
+        _ec_send_thread.reset();
+    }
+}
+
 void EcGuiWrapper::onSendStopBtnReleased()
 {
     // @NOTE to be tested.
@@ -129,7 +139,12 @@ void EcGuiWrapper::onSendStopBtnReleased()
         _send_stop_btn->setText("Stop Motion");
         _ec_gui_slider->enable_sliders();
         _ec_gui_pdo->starting_write(_time_ms);
-        _send_timer->start(_time_ms);
+        //_send_timer->start(_time_ms);
+
+        _start_send_time = std::chrono::high_resolution_clock::now();
+        _send_time = _start_send_time;
+        write_send_stop();
+        _ec_send_thread = std::make_shared<std::thread>(&EcGuiWrapper::send,this);
     }
     else{
         _send_pdo=false;      
@@ -149,33 +164,31 @@ void EcGuiWrapper::onSendStopBtnReleased()
 
 void EcGuiWrapper::send()
 {
-
-    // **************Delay stop**************
-    if(!_send_pdo){
-        if(_stopping_write_counter>3){ 
-            _send_timer->stop();
-            return;
-        }else{
+    while(_send_pdo || _stopping_write_counter<=3){
+        // **************Delay stop**************
+        if(!_send_pdo){
             if(_stopping_write_counter==0){
                 _ec_gui_pdo->stopping_write();//STOP align all references to zero or with the actual position for the motors
             }
             _stopping_write_counter++;
         }
-    }
-    // **************Delay stop**************
+        // **************Delay stop**************
 
-    bool client_run_loop=_ec_wrapper_info.client->get_client_status().run_loop; // client thread still running.
-    if(client_run_loop){
-        _ec_gui_pdo->write();
-        _ec_wrapper_info.client->write();
-    }
-
-    if(!_ec_gui_cmd->get_command_sts() || !client_run_loop){
-        if(_stopping_write_counter==0){
-            onSendStopBtnReleased(); // stop sending references with delay
+        bool client_run_loop=_ec_wrapper_info.client->get_client_status().run_loop; // client thread still running.
+        if(client_run_loop){
+            _ec_gui_pdo->write();
+            _ec_wrapper_info.client->write();
         }
-    } // stop motors command
 
+        if(!_ec_gui_cmd->get_command_sts() || !client_run_loop){
+            if(_stopping_write_counter==0){
+                onSendStopBtnReleased(); // stop sending references with delay
+            }
+        } // stop motors command
+
+        _send_time = _send_time + std::chrono::milliseconds(_time_ms);
+        std::this_thread::sleep_until(_send_time);
+    }
 }
 
 void EcGuiWrapper::start_stop_record()
@@ -261,4 +274,5 @@ void EcGuiWrapper::receive()
 EcGuiWrapper::~EcGuiWrapper()
 {
     _ec_logger->stop_mat_logger();
+    write_send_stop();
 }

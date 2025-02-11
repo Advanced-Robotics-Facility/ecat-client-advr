@@ -55,6 +55,9 @@ private:
   EcGuiCmd::Ptr _ec_gui_cmd;
   EcLogger::Ptr _ec_logger;
 
+  std::shared_ptr<std::thread> _ec_send_thread;
+  std::chrono::high_resolution_clock::time_point _send_time,_start_send_time;
+
   int _time_ms;
   bool _send_pdo;
   
@@ -65,7 +68,9 @@ private:
   bool _receive_started,_record_started;
 
   bool check_client_setup();
+  void write_send_stop();
   uint64_t _stopping_write_counter=0;
+  
 };
 
 #endif // EC_GUI_WRAPPER_H
