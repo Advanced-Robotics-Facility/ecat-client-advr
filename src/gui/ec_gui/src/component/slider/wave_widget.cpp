@@ -183,14 +183,17 @@ void WaveWidget::align_spinbox()
     change_spinbox(_actual_spinbox_value);
 }
 
+void WaveWidget::align_wave_spinbox()
+{
+    if(_tab_wave->currentIndex()!=0 && !_stopping_wave){
+        change_spinbox(_fx);
+    }
+}
+
 void WaveWidget::change_spinbox(double value)
 {
     _valuebox->setValue(value);
-
-    // update slider
-    _valueslider->blockSignals(true);
-    _valueslider->setValue(int(_slider_spinbox_fct*value));
-    _valueslider->blockSignals(false);
+    on_spinbox_changed();
 }
 
 void WaveWidget::disable_slider()
@@ -221,18 +224,57 @@ void WaveWidget::set_spinbox_value(double actual_spinbox_value)
 }
 
 
-void WaveWidget::set_wave_info(double st, bool stopping_wave)
+bool WaveWidget::set_wave_info(double st, bool stopping_wave)
 {
     _stopping_wave=stopping_wave;
     _slider_filtered->reset(_valuebox->value());
     _slider_filtered->setTimeStep(st);
 
     set_wave_param();
+
+    return _is_wave;
 }
 
+void WaveWidget::enable_tab_wave()
+{
+    _tab_wave->setEnabled(true);
+    for(int i=0; i<_tab_wave->count();i++){
+        _tab_wave->setTabEnabled(i,true);
+    }
+     for(int i=0; i<_tab_wave_type->count();i++){
+        _tab_wave_type->setTabEnabled(i,true);
+    }
+}
+
+void WaveWidget::disable_tab_wave()
+{
+    _tab_wave->setEnabled(false);
+    for(int i=0; i<_tab_wave->count();i++){
+        _tab_wave->setTabEnabled(i,false);
+    }
+
+    for(int i=0; i<_tab_wave_type->count();i++){
+        _tab_wave_type->setTabEnabled(i,false);
+    }
+}
+
+void WaveWidget::tab_wave_selected()
+{
+    int curr_tab= _tab_wave->currentIndex();
+    if(curr_tab==0){
+        _tab_wave->setTabEnabled(1,false);
+        _is_wave=false;
+    }
+    else{
+        _tab_wave->setTabEnabled(0,false);
+        _is_wave=true;
+    }
+}
+
+// done into the send thread.
 double WaveWidget::compute_wave(double t)
 {
-    if(_tab_wave->currentIndex()==0 || _stopping_wave){
+    if(!_is_wave || _stopping_wave){
         _fx = _slider_filtered->process(_valuebox->value());
     }
     else{
@@ -299,45 +341,7 @@ double WaveWidget::compute_wave(double t)
         _fx=_min_slider_value;
     }
 
-    if(_tab_wave->currentIndex()!=0 && !_stopping_wave){
-        change_spinbox(_fx);
-    }
-
     return _fx;
-}
-
-void WaveWidget::enable_tab_wave()
-{
-    _tab_wave->setEnabled(true);
-    for(int i=0; i<_tab_wave->count();i++){
-        _tab_wave->setTabEnabled(i,true);
-    }
-     for(int i=0; i<_tab_wave_type->count();i++){
-        _tab_wave_type->setTabEnabled(i,true);
-    }
-}
-
-void WaveWidget::disable_tab_wave()
-{
-    _tab_wave->setEnabled(false);
-    for(int i=0; i<_tab_wave->count();i++){
-        _tab_wave->setTabEnabled(i,false);
-    }
-
-    for(int i=0; i<_tab_wave_type->count();i++){
-        _tab_wave_type->setTabEnabled(i,false);
-    }
-}
-
-void WaveWidget::tab_wave_selected()
-{
-    int curr_tab= _tab_wave->currentIndex();
-    if(curr_tab==0){
-        _tab_wave->setTabEnabled(1,false);
-    }
-    else{
-        _tab_wave->setTabEnabled(0,false);
-    }
 }
 
 WaveWidget::~WaveWidget()

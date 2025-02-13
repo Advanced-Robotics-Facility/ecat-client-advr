@@ -35,11 +35,12 @@ public:
     void set_spinbox_value(double actual_spinbox_value);
     void align_spinbox(double value);
     void align_spinbox();
+    void align_wave_spinbox();
     void change_spinbox(double value);
     void disable_slider();
     void enable_slider();
 
-    void set_wave_info(double st,bool stopping_wave);
+    bool set_wave_info(double st,bool stopping_wave);
     double compute_wave(double t);
 
     ~WaveWidget();
@@ -76,6 +77,7 @@ private:
     double _amp,_freq,_theta;
     int _wave_type;
     bool _stopping_wave=false;
+    bool _is_wave=false;
 };
 
 #endif

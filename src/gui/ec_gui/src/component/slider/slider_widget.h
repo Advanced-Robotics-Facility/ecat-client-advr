@@ -53,6 +53,9 @@ public:
 
     ~SliderWidget();
 
+public slots:
+    void align_wave_value();
+
 private:
 
     void on_spinbox_clicked(int i);
@@ -63,6 +66,7 @@ private:
     QCheckBox* _slider_enabled;
     std::string _slider_name;
     std::vector<WaveWidget *> _wave_v;
+    QTimer *_update_value_timer;
     
 };
 

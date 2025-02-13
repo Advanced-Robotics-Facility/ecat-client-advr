@@ -97,6 +97,9 @@ SliderWidget::SliderWidget (const QString&  name,
     
     wave_layout->addWidget(_tab_name_wid);
     disable_slider();
+
+    _update_value_timer = new QTimer(this);
+    connect(_update_value_timer, SIGNAL(timeout()),this, SLOT(align_wave_value()));
 }
 
 QCheckBox* SliderWidget::get_slider_enabled()
@@ -206,8 +209,21 @@ std::string SliderWidget::get_slider_name()
 
 void SliderWidget::set_wave_info(double st,bool stopping_wave)
 {
+    bool is_wave=false; // check wave or only the filter action
     for(auto &wave_v:_wave_v){
-        wave_v->set_wave_info(st,stopping_wave);
+        is_wave |= wave_v->set_wave_info(st,stopping_wave);
+    }
+
+    _update_value_timer->stop();
+    if(!stopping_wave){
+        _update_value_timer->start(100);
+    }
+}
+
+void SliderWidget::align_wave_value()
+{
+    for(auto &wave_v:_wave_v){
+        wave_v->align_wave_spinbox();
     }
 }
 
