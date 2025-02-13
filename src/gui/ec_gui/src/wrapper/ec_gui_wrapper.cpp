@@ -175,7 +175,8 @@ void EcGuiWrapper::send()
 
         if(!_ec_gui_cmd->get_command_sts() || !client_run_loop){
             if(_stopping_write_counter==0){
-                onSendStopBtnReleased(); // stop sending references with delay
+                _send_pdo=false;
+                _send_stop_btn->click();
             }
         } // stop motors command
 
