@@ -278,7 +278,5 @@ void EcGuiStart::onScanDeviceReleased()
 
 EcGuiStart::~EcGuiStart()
 {
-   if(!stopping_ec_sys()){
-       stopping_client();
-   }
+
 }

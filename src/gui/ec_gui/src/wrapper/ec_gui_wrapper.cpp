@@ -112,6 +112,7 @@ bool EcGuiWrapper::check_client_setup()
 
 void EcGuiWrapper::send_thread_stop()
 {
+    _send_pdo=false;
     if(_ec_send_thread){
         if(_ec_send_thread->joinable()){
             _ec_send_thread->join();
@@ -125,10 +126,10 @@ void EcGuiWrapper::onSendStopBtnReleased()
     // @NOTE to be tested.
     _ec_gui_slider->reset_sliders();
 
-    _send_pdo = _ec_gui_cmd->get_command_sts(); // devices controlled
+    bool devices_controlled = _ec_gui_cmd->get_command_sts(); // devices controlled
     _stopping_write_counter=0;
     
-    if((_send_stop_btn->text()=="Start Motion")&&(_send_pdo)){
+    if((_send_stop_btn->text()=="Start Motion")&&(devices_controlled)){
         _send_stop_btn->setText("Stop Motion");
         _ec_gui_slider->enable_sliders();
         _ec_gui_pdo->starting_write(_time_ms);
@@ -136,6 +137,7 @@ void EcGuiWrapper::onSendStopBtnReleased()
         _start_send_time = std::chrono::high_resolution_clock::now();
         _send_time = _start_send_time;
         send_thread_stop();
+        _send_pdo=true;
         _ec_send_thread = std::make_shared<std::thread>(&EcGuiWrapper::send,this);
     }
     else{
@@ -272,5 +274,10 @@ void EcGuiWrapper::receive()
 EcGuiWrapper::~EcGuiWrapper()
 {
     _ec_logger->stop_mat_logger();
+    _ec_gui_slider->reset_sliders();
+    _mutex_send.lock();
+    _ec_gui_pdo->stopping_write();//STOP align all references to zero or with the actual position for the motors
+    _mutex_send.unlock();
+    _send_pdo=false;      
     send_thread_stop();
 }

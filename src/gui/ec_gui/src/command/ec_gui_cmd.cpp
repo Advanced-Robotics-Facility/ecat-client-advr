@@ -220,7 +220,7 @@ void EcGuiCmd::onApplyCmd()
 
     if(_pumps_selected){
         if(_ctrl_cmd_type==ClientCmdType::START){
-        _device_start_req |= true;
+            _device_start_req |= true;
         }
     }
     
@@ -320,5 +320,7 @@ bool EcGuiCmd::get_command_sts()
 
 EcGuiCmd::~EcGuiCmd()
 {
-
+    if(_client){
+        _client->stop_devices();
+    }
 }
