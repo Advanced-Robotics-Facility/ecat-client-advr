@@ -278,6 +278,5 @@ EcGuiWrapper::~EcGuiWrapper()
     _mutex_send.lock();
     _ec_gui_pdo->stopping_write();//STOP align all references to zero or with the actual position for the motors
     _mutex_send.unlock();
-    _send_pdo=false;      
     send_thread_stop();
 }
