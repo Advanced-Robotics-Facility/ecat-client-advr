@@ -73,8 +73,8 @@ private:
   void receive();
   void send();
   void log();
-  uint64_t _stopping_write_counter=0;
-  
+  uint8_t _stopping_write_counter=0;
+  uint8_t _max_stop_write;
 };
 
 #endif // EC_GUI_WRAPPER_H
