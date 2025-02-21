@@ -27,6 +27,9 @@ public:
       void starting_write(int time_ms);
       void stopping_write();
       void write();
+      void show();
+      void update_plot();
+      void log();
 
 private:
       EcIface::Ptr _client;
@@ -84,13 +87,12 @@ private:
                      const std::vector<float> &pdo);
       void onStopPlotting();
       
-      void update_plot();
-      void read_motor_status();
-      void read_ft_status();
-      void read_pow_status();
-      void read_imu_status();
-      void read_valve_status();
-      void read_pump_status();
+      void show_motor_status();
+      void show_ft_status();
+      void show_pow_status();
+      void show_imu_status();
+      void show_valve_status();
+      void show_pump_status();
     //************************ READ PDO ******************************
     
     //************************ WRITE PDO ******************************
@@ -101,6 +103,9 @@ private:
       void write_pump_pdo();
 
     //************************ WRITE PDO ******************************
+
+    //************************ LOG PDO ******************************
+    bool _motors_selected,_valves_selected,_pumps_selected;
 
 };
 

@@ -53,12 +53,13 @@ EcGuiWrapper::EcGuiWrapper(QWidget *parent) :
     connect(_send_stop_btn, &QPushButton::released,this, &EcGuiWrapper::onSendStopBtnReleased);
     
     // create a timer for receiving PDO
-    _receive_timer = new QTimer(this);
+    _show_timer = new QTimer(this);
+    _show_timer->setTimerType(Qt::PreciseTimer);
 
     // setup signal and slot
-    connect(_receive_timer, SIGNAL(timeout()),this, SLOT(receive()));
+    connect(_show_timer, SIGNAL(timeout()),this, SLOT(show()));
 
-    _time_ms = 5;
+    _time_ms = 4;
 }
 
 void EcGuiWrapper::DwTopLevelChanged(bool isFloating)
@@ -92,6 +93,13 @@ void EcGuiWrapper::restart_gui_wrapper(ec_wrapper_info_t ec_wrapper_info)
     _ec_gui_pdo->restart_ec_gui_pdo(_ec_wrapper_info.client,_ec_logger);
     
     _ec_gui_sdo->restart_ec_gui_sdo(_ec_wrapper_info.client,_ec_wrapper_info.sdo_map);
+
+    stop_wrapper_thread();
+    _ec_wrapper_thread = std::make_shared<std::thread>(&EcGuiWrapper::wrapper_thread,this);
+    
+    _start_loop_time = std::chrono::high_resolution_clock::now();
+    _loop_time = _start_loop_time;
+    _run_wrapper_thread=true;
 }
 
 bool EcGuiWrapper::check_client_setup()
@@ -110,17 +118,6 @@ bool EcGuiWrapper::check_client_setup()
     return ret;
 }
 
-void EcGuiWrapper::send_thread_stop()
-{
-    _send_pdo=false;
-    if(_ec_send_thread){
-        if(_ec_send_thread->joinable()){
-            _ec_send_thread->join();
-        }
-        _ec_send_thread.reset();
-    }
-}
-
 void EcGuiWrapper::onSendStopBtnReleased()
 {
     // @NOTE to be tested.
@@ -132,18 +129,15 @@ void EcGuiWrapper::onSendStopBtnReleased()
     if((_send_stop_btn->text()=="Start Motion")&&(devices_controlled)){
         _send_stop_btn->setText("Stop Motion");
         _ec_gui_slider->enable_sliders();
+        _mutex_send.lock();
         _ec_gui_pdo->starting_write(_time_ms);
-
-        _start_send_time = std::chrono::high_resolution_clock::now();
-        _send_time = _start_send_time;
-        send_thread_stop();
         _send_pdo=true;
-        _ec_send_thread = std::make_shared<std::thread>(&EcGuiWrapper::send,this);
+        _mutex_send.unlock();
     }
-    else{
-        _send_pdo=false;      
+    else{ 
         _ec_gui_slider->disable_sliders();
         _mutex_send.lock();
+        _send_pdo=false;     
         _ec_gui_pdo->stopping_write();//STOP align all references to zero or with the actual position for the motors
         _mutex_send.unlock();
         if(_send_stop_btn->text()=="Start Motion"){
@@ -155,35 +149,6 @@ void EcGuiWrapper::onSendStopBtnReleased()
         else{
             _send_stop_btn->setText("Start Motion");
         }
-    }
-}
-
-void EcGuiWrapper::send()
-{
-    while(_send_pdo || _stopping_write_counter<=3){
-        // **************Delay stop**************
-        if(!_send_pdo){
-            _stopping_write_counter++; //4*ts delayed write
-        }
-        // **************Delay stop**************
-
-        bool client_run_loop=_ec_wrapper_info.client->get_client_status().run_loop; // client thread still running.
-        if(client_run_loop){
-            _mutex_send.lock();
-            _ec_gui_pdo->write();
-            _mutex_send.unlock();
-            _ec_wrapper_info.client->write();
-        }
-
-        if(!_ec_gui_cmd->get_command_sts() || !client_run_loop){
-            if(_stopping_write_counter==0){
-                _send_pdo=false;
-                _send_stop_btn->click();
-            }
-        } // stop motors command
-
-        _send_time = _send_time + std::chrono::milliseconds(_time_ms);
-        std::this_thread::sleep_until(_send_time);
     }
 }
 
@@ -200,9 +165,9 @@ void EcGuiWrapper::start_stop_record()
         else{
             if(!_record_started){
                 _record_started = true;
-                _mutex_send.lock();
+                _mutex_log.lock();
                 _ec_logger->start_mat_logger();
-                _mutex_send.unlock();
+                _mutex_log.unlock();
                 _record_action->setIcon(QIcon(":/icon/stop_record.png"));
                 _record_action->setText("Stop Record");
             }
@@ -217,9 +182,9 @@ void EcGuiWrapper::stop_record()
 {
     if(_record_started && check_client_setup()){
         _record_started = false;
-        _mutex_send.lock();
+        _mutex_log.lock();
         _ec_logger->stop_mat_logger();
-        _mutex_send.unlock();
+        _mutex_log.unlock();
         _record_action->setIcon(QIcon(":/icon/record.png"));
         _record_action->setText("Record");
     }
@@ -241,7 +206,7 @@ void EcGuiWrapper::start_stop_receive()
                 _receive_action->setIcon(QIcon(":/icon/stop_read.png"));
                 _receive_action->setText("Stop Receive");
                 _ec_gui_pdo->restart_receive_timer();
-                _receive_timer->start(_time_ms);
+                _show_timer->start(_time_ms+2); // not precise timer. 
             }
             else{
                 stop_receive();
@@ -256,27 +221,107 @@ void EcGuiWrapper::stop_receive()
         _receive_started = false;
         _receive_action->setIcon(QIcon(":/icon/read.png"));
         _receive_action->setText("Receive");
-        _receive_timer->stop();
+        _show_timer->stop();
     }
 }
+
+void EcGuiWrapper::show()
+{
+    _mutex_receive.lock();
+    _ec_gui_pdo->show();
+    _mutex_receive.unlock();
+    _ec_gui_pdo->update_plot();
+}
+
+////*************************** EC GUI WRAPPER THREAD ************************************
 
 void EcGuiWrapper::receive()
 {
-    if(_ec_wrapper_info.client->get_client_status().run_loop){
-        _ec_wrapper_info.client->read();
-        _ec_gui_pdo->read();
-    }
-    else{
-        stop_receive();
+    if(_receive_started){
+        if(_ec_wrapper_info.client->get_client_status().run_loop){
+            _ec_wrapper_info.client->read();
+             _mutex_receive.lock();
+            _ec_gui_pdo->read();
+            _mutex_receive.unlock();
+        }
     }
 }
 
-EcGuiWrapper::~EcGuiWrapper()
+void EcGuiWrapper::send()
 {
-    _ec_logger->stop_mat_logger();
-    _ec_gui_slider->reset_sliders();
+    if(_send_pdo || _stopping_write_counter<=3){
+        // **************Delay stop**************
+        if(!_send_pdo){
+            _stopping_write_counter++; //4*ts delayed write
+        }
+        // **************Delay stop**************
+
+        bool client_run_loop=_ec_wrapper_info.client->get_client_status().run_loop; // client thread still running.
+        if(client_run_loop){
+            _mutex_send.lock();
+            _ec_gui_pdo->write();
+            _mutex_send.unlock();
+            _ec_wrapper_info.client->write();
+        }
+
+        if(!_ec_gui_cmd->get_command_sts() || !client_run_loop){
+            if(_stopping_write_counter==0){
+                _send_stop_btn->click();
+            }
+        } // stop motors command
+    }
+}
+
+void EcGuiWrapper::log()
+{
+    _mutex_log.lock();
+    _ec_gui_pdo->log();
+    _mutex_log.unlock();
+}
+
+void EcGuiWrapper::wrapper_thread()
+{
+    while(_run_wrapper_thread){
+        
+        receive();
+
+        send();
+
+        log();
+
+        _loop_time = _loop_time + std::chrono::milliseconds(_time_ms);
+        std::this_thread::sleep_until(_loop_time);
+    }
+}
+
+void EcGuiWrapper::stop_wrapper_thread()
+{
+    bool delay_stop_send = _send_pdo;
     _mutex_send.lock();
+    _send_pdo=false;
     _ec_gui_pdo->stopping_write();//STOP align all references to zero or with the actual position for the motors
     _mutex_send.unlock();
-    send_thread_stop();
+    
+    if(delay_stop_send){
+        std::this_thread::sleep_for(std::chrono::milliseconds(5*_time_ms));
+    }
+
+    _mutex_log.lock();
+    _ec_logger->stop_mat_logger();
+    _mutex_log.unlock();
+
+    _run_wrapper_thread=false;
+    if(_ec_wrapper_thread){
+        if(_ec_wrapper_thread->joinable()){
+            _ec_wrapper_thread->join();
+        }
+        _ec_wrapper_thread.reset();
+    }
+}
+////*************************** EC GUI WRAPPER THREAD ************************************
+
+EcGuiWrapper::~EcGuiWrapper()
+{
+    _ec_gui_slider->reset_sliders();
+    stop_wrapper_thread();
 }
