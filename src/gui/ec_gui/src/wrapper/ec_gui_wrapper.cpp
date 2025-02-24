@@ -77,13 +77,22 @@ bool EcGuiWrapper::get_wrapper_send_sts()
     return _send_pdo;
 }
 
+bool EcGuiWrapper::get_wrapper_cmd_sts()
+{
+    return _ec_gui_cmd->get_command_sts();
+}
+
 void EcGuiWrapper::clear_gui_wrapper()
 {
     stop_receive();
     stop_record();
 
     _ec_gui_slider->delete_sliders();
+
+    _ec_gui_cmd->restart_ec_gui_cmd(_ec_wrapper_info.client);
+
     _ec_gui_pdo->restart_ec_gui_pdo(_ec_wrapper_info.client,_ec_logger);
+
     _ec_wrapper_info.sdo_map.clear();
     _ec_gui_sdo->restart_ec_gui_sdo(_ec_wrapper_info.client,_ec_wrapper_info.sdo_map);
 

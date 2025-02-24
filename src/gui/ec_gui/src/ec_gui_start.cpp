@@ -256,7 +256,8 @@ void EcGuiStart::onScanDeviceReleased()
                                "Do you want to rescan?"),
                                 QMessageBox::Yes|QMessageBox::No);
         if(reply == QMessageBox::Yes) {
-            if(!_ec_gui_wrapper->get_wrapper_send_sts()){
+            if(!_ec_gui_wrapper->get_wrapper_send_sts() && 
+               !_ec_gui_wrapper->get_wrapper_cmd_sts()){
                 clear_gui();
                 create_ec_iface();
                 scan_device();

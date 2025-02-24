@@ -34,6 +34,7 @@ public:
     void clear_gui_wrapper();
     void restart_gui_wrapper(ec_wrapper_info_t ec_wrapper_info);
     bool get_wrapper_send_sts();
+    bool get_wrapper_cmd_sts();
     void onSendStopBtnReleased();
 
 public slots:
