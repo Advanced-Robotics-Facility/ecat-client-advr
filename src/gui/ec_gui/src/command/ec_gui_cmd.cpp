@@ -264,6 +264,14 @@ void EcGuiCmd::onApplyCmd()
 
 void EcGuiCmd::onApplyCmdReleased()
 {
+    if(!_client->get_client_status().run_loop){
+        QMessageBox msgBox;
+        msgBox.critical(this,msgBox.windowTitle(),
+            tr("EtherCAT Client loop is not running state"
+                ",please press scan device button.\n"));
+        return;
+    }
+
     _cmd_message.clear();
     if((_device_controlled)&&(_ctrl_cmd_type==ClientCmdType::START)){
         _cmd_message="Device(s) already started, please launch STOP EtherCAT command";
