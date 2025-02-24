@@ -107,14 +107,21 @@ void EcGuiWrapper::restart_gui_wrapper(ec_wrapper_info_t ec_wrapper_info)
 bool EcGuiWrapper::check_client_setup()
 {
     bool ret=false;
+    QMessageBox msgBox;
     if(_ec_wrapper_info.client == nullptr){
-        QMessageBox msgBox;
         msgBox.critical(this,msgBox.windowTitle(),
                         tr("EtherCAT client not setup"
-                           ",please press Start EtherCAT system button.\n"));
+                           ",please scan device button.\n"));
     }
     else{
-        ret = true;
+        if(!_ec_wrapper_info.client->get_client_status().run_loop){
+            msgBox.critical(this,msgBox.windowTitle(),
+                tr("EtherCAT Client loop is not running state"
+                    ",please press scan device button.\n"));
+        }
+        else{
+            ret = true;
+        }
     }
     
     return ret;
@@ -173,17 +180,17 @@ void EcGuiWrapper::start_stop_record()
                 _mutex_log.unlock();
                 _record_action->setIcon(QIcon(":/icon/stop_record.png"));
                 _record_action->setText("Stop Record");
-            }
-            else{
-                stop_record();
+                return;
             }
         }
     }
+
+    stop_record();
 }
 
 void EcGuiWrapper::stop_record()
 {
-    if(_record_started && check_client_setup()){
+    if(_record_started){
         _record_started = false;
         _mutex_log.lock();
         _ec_logger->stop_mat_logger();
@@ -210,17 +217,17 @@ void EcGuiWrapper::start_stop_receive()
                 _receive_action->setText("Stop Receive");
                 _ec_gui_pdo->restart_receive_timer();
                 _show_timer->start(_time_ms+2); // not precise timer. 
+                return;
             }
-            else{
-                stop_receive();
-            }   
         }
     }
+
+    stop_receive();
 }
 
 void EcGuiWrapper::stop_receive()
 {
-    if(_receive_started && check_client_setup()){
+    if(_receive_started){
         _receive_started = false;
         _receive_action->setIcon(QIcon(":/icon/read.png"));
         _receive_action->setText("Receive");
@@ -289,20 +296,21 @@ void EcGuiWrapper::wrapper_thread()
             std::this_thread::sleep_until(_loop_time);
         }
         else{
-            _run_wrapper_thread=false;
             if(_send_pdo){
                 _send_stop_btn->click();
             }
             
-            /*if(_receive_started){
+            if(_receive_started){
                 _receive_action->trigger();
-            }*/
+            }
 
-            
-            /*QMessageBox msgBox;
-            msgBox.setText("EtherCAT Client loop is not running state"
-                           ", please press the rescan button");
-            msgBox.exec();*/
+            if(_record_started){
+                _record_action->trigger();
+            }
+
+            _ec_gui_cmd->set_command_sts(false);
+
+            _run_wrapper_thread=false;
         }
     }
 }

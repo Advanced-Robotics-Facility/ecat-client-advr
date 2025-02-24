@@ -209,7 +209,7 @@ void EcGuiCmd::onApplyCmd()
     if(!_start_devices.empty()){
         _device_start_req =_client->start_devices(_start_devices);
 #ifdef TEST_GUI 
-        _device_start_req=true;
+        _device_start_req=_client->get_client_status().run_loop;
 #endif 
         if(!_device_start_req){
             _cmd_message="Cannot perform the start command on the devices(s) requested";
@@ -246,7 +246,7 @@ void EcGuiCmd::onApplyCmd()
     if(!_device_start_req){
         bool device_stop_req=_client->stop_devices();
 #ifdef TEST_GUI 
-        device_stop_req=true;
+        device_stop_req=_client->get_client_status().run_loop;
 #endif 
         if(!device_stop_req){
             _cmd_message.clear();
@@ -316,6 +316,11 @@ void EcGuiCmd::onApplyCmdReleased()
 bool EcGuiCmd::get_command_sts()
 {
     return _device_controlled;
+}
+
+void EcGuiCmd::set_command_sts(bool device_controlled)
+{
+    _device_controlled=device_controlled;
 }
 
 EcGuiCmd::~EcGuiCmd()

@@ -19,6 +19,7 @@ public:
     ~EcGuiCmd();
 
     bool get_command_sts();
+    void set_command_sts(bool device_controlled);
     void onApplyCmd();
     void onApplyCmdReleased();
     void onNotAllCmdReleased();
