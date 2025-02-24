@@ -108,7 +108,8 @@ bool EcZmqCmd::retrieve_slaves_info(SSI &slave_info)
     }
     
     if(_slave_info.empty()){
-        if(!_fake_slave_info.empty()){
+        if(!_fake_slave_info.empty() && 
+            _client_status.status!=ClientStatusEnum::NOT_ALIVE){
             _slave_info=_fake_slave_info;
             slave_info = _slave_info;
             return true;
