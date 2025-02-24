@@ -208,7 +208,8 @@ void EcGuiCmd::onApplyCmd()
 {
     if(!_start_devices.empty()){
         _device_start_req =_client->start_devices(_start_devices);
-#ifdef TEST_GUI 
+#ifdef TEST_GUI
+        std::this_thread::sleep_for(100ms);
         _device_start_req=_client->get_client_status().run_loop;
 #endif 
         if(!_device_start_req){
@@ -246,6 +247,7 @@ void EcGuiCmd::onApplyCmd()
     if(!_device_start_req){
         bool device_stop_req=_client->stop_devices();
 #ifdef TEST_GUI 
+        std::this_thread::sleep_for(100ms);
         device_stop_req=_client->get_client_status().run_loop;
 #endif 
         if(!device_stop_req){
