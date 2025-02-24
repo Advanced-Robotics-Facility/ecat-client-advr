@@ -8,7 +8,6 @@ using namespace std;
 EcReplCmd::EcReplCmd(string zmq_uri,int timeout) :
 _zmq_uri(zmq_uri),_timeout(timeout)
 {   
-    _context = std::make_shared<context_t>(1);
 };
 
 std::string EcReplCmd::get_zmq_uri()
@@ -32,7 +31,8 @@ void EcReplCmd::zmq_do_cmd(iit::advr::Repl_cmd  pb_cmd,
                            EcReplFault &fault)
 {
     try{
-        zmq::socket_t req_sock(*_context, ZMQ_REQ);
+        zmq::context_t context{1};
+        zmq::socket_t req_sock(context, ZMQ_REQ);
         req_sock.setsockopt(ZMQ_LINGER,0);
         req_sock.setsockopt(ZMQ_RCVTIMEO, timeout);
         req_sock.setsockopt(ZMQ_CONNECT_TIMEOUT, 1);
@@ -44,6 +44,8 @@ void EcReplCmd::zmq_do_cmd(iit::advr::Repl_cmd  pb_cmd,
         else{
             zmq_cmd_recv(msg,pb_cmd.type(),req_sock,fault);
         }
+        req_sock.disconnect(_zmq_uri);
+        req_sock.close();
 
     }catch (const zmq::error_t &err){
         std::string zmq_exception=zmq_strerror(err.num());
@@ -626,5 +628,6 @@ void EcReplCmd::set_motor_type_map(std::map<int32_t,std::string> motor_type_map)
 
 EcReplCmd::~EcReplCmd()
 {
+
 };
 

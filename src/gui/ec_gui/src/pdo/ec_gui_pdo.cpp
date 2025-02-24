@@ -65,7 +65,6 @@ void EcGuiPdo::restart_receive_timer()
 
 void EcGuiPdo::restart_ec_gui_pdo(EcIface::Ptr client,EcLogger::Ptr ec_logger)
 {
-    _client.reset();
     _client=client;
 
     _ec_logger.reset();

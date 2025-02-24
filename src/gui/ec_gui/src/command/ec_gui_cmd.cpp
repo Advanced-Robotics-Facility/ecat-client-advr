@@ -42,7 +42,6 @@ EcGuiCmd::EcGuiCmd(EcGuiSlider::Ptr ec_gui_slider,
 
 void EcGuiCmd::restart_ec_gui_cmd(EcIface::Ptr client)
 {
-    _client.reset();
     _client=client;
     
     _slider_map = _ec_gui_slider->get_sliders();

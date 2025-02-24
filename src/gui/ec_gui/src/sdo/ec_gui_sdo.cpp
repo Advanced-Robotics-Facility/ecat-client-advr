@@ -62,7 +62,6 @@ EcGuiSdo::~EcGuiSdo(){}
 
 void EcGuiSdo::restart_ec_gui_sdo(EcIface::Ptr client,SRD_SDO sdo_map)
 {
-    _client.reset();
     _client=client;
     
     _sdo_tree_wid->clear();
