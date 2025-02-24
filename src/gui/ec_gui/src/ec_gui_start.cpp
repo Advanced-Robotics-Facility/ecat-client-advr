@@ -222,6 +222,12 @@ void EcGuiStart::clear_device()
     _ec_wrapper_info.sdo_map.clear();
 }
 
+void EcGuiStart::clear_gui()
+{
+    clear_device();
+    _ec_gui_wrapper->clear_gui_wrapper();
+}
+
 void EcGuiStart::scan_device()
 {
     if(_ec_wrapper_info.client->retrieve_slaves_info(_ec_wrapper_info.device_info)){
@@ -251,7 +257,7 @@ void EcGuiStart::onScanDeviceReleased()
                                 QMessageBox::Yes|QMessageBox::No);
         if(reply == QMessageBox::Yes) {
             if(!_ec_gui_wrapper->get_wrapper_send_sts()){
-                clear_device();
+                clear_gui();
                 create_ec_iface();
                 scan_device();
             }

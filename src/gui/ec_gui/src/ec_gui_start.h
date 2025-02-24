@@ -42,6 +42,7 @@ private:
   void add_device();
   void scan_device();
   void clear_device();
+  void clear_gui();
   void create_ec_iface();
   bool stopping_ec_sys();
   void stopping_client();

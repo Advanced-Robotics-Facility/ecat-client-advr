@@ -77,12 +77,23 @@ bool EcGuiWrapper::get_wrapper_send_sts()
     return _send_pdo;
 }
 
+void EcGuiWrapper::clear_gui_wrapper()
+{
+    stop_receive();
+    stop_record();
+
+    _ec_gui_slider->delete_sliders();
+    _ec_gui_pdo->restart_ec_gui_pdo(_ec_wrapper_info.client,_ec_logger);
+    _ec_wrapper_info.sdo_map.clear();
+    _ec_gui_sdo->restart_ec_gui_sdo(_ec_wrapper_info.client,_ec_wrapper_info.sdo_map);
+
+    stop_wrapper_thread();
+
+}
+
 void EcGuiWrapper::restart_gui_wrapper(ec_wrapper_info_t ec_wrapper_info)
 {
 
-    stop_receive();
-    stop_record();
-    
     _ec_wrapper_info = ec_wrapper_info;
 
     _ec_logger->init_mat_logger(_ec_wrapper_info.device_info);
@@ -94,8 +105,6 @@ void EcGuiWrapper::restart_gui_wrapper(ec_wrapper_info_t ec_wrapper_info)
     _ec_gui_pdo->restart_ec_gui_pdo(_ec_wrapper_info.client,_ec_logger);
     
     _ec_gui_sdo->restart_ec_gui_sdo(_ec_wrapper_info.client,_ec_wrapper_info.sdo_map);
-
-    stop_wrapper_thread();
 
     _ec_wrapper_thread = std::make_shared<std::thread>(&EcGuiWrapper::wrapper_thread,this);
     
