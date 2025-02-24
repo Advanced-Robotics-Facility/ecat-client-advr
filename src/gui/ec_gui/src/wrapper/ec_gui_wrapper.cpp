@@ -182,7 +182,7 @@ void EcGuiWrapper::start_stop_record()
                            QMessageBox::Ok);
         }
         else{
-            if(!_record_started){
+            if(!_record_started && _run_wrapper_thread){
                 _record_started = true;
                 _mutex_log.lock();
                 _ec_logger->start_mat_logger();
@@ -220,7 +220,7 @@ void EcGuiWrapper::start_stop_receive()
                            QMessageBox::Ok);
         }
         else{
-            if(!_receive_started){
+            if(!_receive_started && _run_wrapper_thread){
                 _receive_started = true;
                 _receive_action->setIcon(QIcon(":/icon/stop_read.png"));
                 _receive_action->setText("Stop Receive");
@@ -305,21 +305,16 @@ void EcGuiWrapper::wrapper_thread()
             std::this_thread::sleep_until(_loop_time);
         }
         else{
+            _run_wrapper_thread=false;
+
             if(_send_pdo){
                 _send_stop_btn->click();
             }
             
-            if(_receive_started){
-                _receive_action->trigger();
-            }
-
-            if(_record_started){
-                _record_action->trigger();
-            }
+            _receive_action->trigger();
+            stop_record();
 
             _ec_gui_cmd->set_command_sts(false);
-
-            _run_wrapper_thread=false;
         }
     }
 }
