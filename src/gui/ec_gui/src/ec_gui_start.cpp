@@ -74,8 +74,15 @@ EcGuiStart::EcGuiStart(QWidget *parent) :
 
 void EcGuiStart::create_ec_iface()
 {
-    if(_ec_wrapper_info.client){
-        _ec_wrapper_info.client->stop_client();
+    try{
+        if(_ec_wrapper_info.client){
+            _ec_wrapper_info.client->stop_client();
+        }
+        _ec_wrapper_info.client.reset();
+        std::this_thread::sleep_for(100ms);
+    }catch ( std::exception &e ){
+        QMessageBox msgBox;
+        msgBox.critical(this,msgBox.windowTitle(),tr(e.what()));
     }
     
     auto ec_net_info = _ec_gui_net->get_net_setup();
@@ -94,7 +101,6 @@ void EcGuiStart::create_ec_iface()
 #endif
 
     try{
-        _ec_wrapper_info.client.reset();
         _ec_wrapper_info.client = ec_utils->make_ec_iface();
         _ec_wrapper_info.client->start_client(ec_cfg.period_ms);
     }

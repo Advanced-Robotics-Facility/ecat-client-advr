@@ -86,6 +86,10 @@ void EcGuiWrapper::clear_gui_wrapper()
 {
     stop_receive();
     stop_record();
+    stop_wrapper_thread();
+
+    _ec_wrapper_info.client.reset();
+    _ec_wrapper_info.sdo_map.clear();
 
     _ec_gui_slider->delete_sliders();
 
@@ -93,11 +97,7 @@ void EcGuiWrapper::clear_gui_wrapper()
 
     _ec_gui_pdo->restart_ec_gui_pdo(_ec_wrapper_info.client,_ec_logger);
 
-    _ec_wrapper_info.sdo_map.clear();
     _ec_gui_sdo->restart_ec_gui_sdo(_ec_wrapper_info.client,_ec_wrapper_info.sdo_map);
-
-    stop_wrapper_thread();
-
 }
 
 void EcGuiWrapper::restart_gui_wrapper(ec_wrapper_info_t ec_wrapper_info)
