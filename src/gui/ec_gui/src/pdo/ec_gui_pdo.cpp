@@ -77,6 +77,8 @@ void EcGuiPdo::restart_ec_gui_pdo(EcIface::Ptr client,EcLogger::Ptr ec_logger)
     _custom_plot->legend->setVisible(false);
     _custom_plot->xAxis->setRange(0, 8, Qt::AlignRight);
     _custom_plot->replot();
+    _battery_level->display(0.0);
+    _time_pdo->setText("0.00");
 
     _counter_buffer= 0;
     _buffer_size=20;
