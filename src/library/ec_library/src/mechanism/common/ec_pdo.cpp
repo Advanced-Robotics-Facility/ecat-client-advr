@@ -1,7 +1,5 @@
 #include "mechanism/common/ec_pdo.h"
 
-zmq::context_t EcZmqContext::sub_context(1);
-
 template < class T >
 EcPdo<T>::EcPdo(std::string protocol, std::string host_address, uint32_t host_port):
 _protocol(protocol),

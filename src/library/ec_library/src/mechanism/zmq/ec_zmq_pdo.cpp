@@ -5,12 +5,13 @@ using namespace zmq;
 using namespace iit::advr;
 using namespace std;
 
+static zmq::context_t pdo_context(1);
+
 EcZmqPdo::EcZmqPdo( int32_t id, uint32_t type, const std::string zmq_uri):
 _id(id),
 _type(type),
 _zmq_uri(zmq_uri)
 {   
-    printf("PDO ZMQ URI: [%s]\n",zmq_uri.c_str());
 }
     
 EcZmqPdo::EcZmqPdo( int32_t id, const std::string esc_name, const std::string zmq_uri):
@@ -18,13 +19,11 @@ _id(id),
 _esc_name(esc_name),
 _zmq_uri(zmq_uri)
 {   
-    printf("PDO ZMQ URI: [%s]\n",zmq_uri.c_str());
 }
 
 EcZmqPdo::EcZmqPdo(const std::string zmq_uri):
 _zmq_uri(zmq_uri)
 {   
-    printf("PDO ZMQ URI: [%s]\n",zmq_uri.c_str());
 }
 
 std::string EcZmqPdo::get_zmq_pdo_uri()
@@ -35,7 +34,7 @@ std::string EcZmqPdo::get_zmq_pdo_uri()
 void EcZmqPdo::init(void)
 {
     try{
-        _subscriber = std::make_shared<socket_t>(EcZmqContext::sub_context, ZMQ_SUB);
+        _subscriber = std::make_shared<socket_t>(pdo_context, ZMQ_SUB);
         _subscriber->setsockopt(ZMQ_SUBSCRIBE, "",0); 
     }catch ( zmq::error_t& e ) { 
         std::string zmq_error(e.what());
@@ -47,6 +46,7 @@ int EcZmqPdo::write_connect(void)
 {
     int ret=0;
     try{
+        printf("...connecting to zmq uri: [%s]\n",_zmq_uri.c_str());
         _subscriber->connect(_zmq_uri);
     }catch ( zmq::error_t& e ) { 
         std::cout << "fatel error on subscriber socket connection: " << e.what() << std::endl;
@@ -59,6 +59,7 @@ int EcZmqPdo::write_quit(void)
 {
     int ret=0;
     try{
+        printf("...disconnecting zmq uri: [%s]\n",_zmq_uri.c_str());
         _subscriber->disconnect(_zmq_uri);
     }catch ( zmq::error_t& e ) { 
         std::cout << "fatel error on subscriber socket disconnection: " << e.what() << std::endl;

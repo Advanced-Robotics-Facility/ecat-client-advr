@@ -5,6 +5,8 @@ using namespace zmq;
 using namespace iit::advr;
 using namespace std;
 
+static zmq::context_t cmd_context(1);
+
 EcReplCmd::EcReplCmd(string zmq_uri,int timeout) :
 _zmq_uri(zmq_uri),_timeout(timeout)
 {   
@@ -31,8 +33,7 @@ void EcReplCmd::zmq_do_cmd(iit::advr::Repl_cmd  pb_cmd,
                            EcReplFault &fault)
 {
     try{
-        zmq::context_t context{1};
-        zmq::socket_t req_sock(context, ZMQ_REQ);
+        zmq::socket_t req_sock(cmd_context, ZMQ_REQ);
         req_sock.setsockopt(ZMQ_LINGER,0);
         req_sock.setsockopt(ZMQ_RCVTIMEO, timeout);
         req_sock.setsockopt(ZMQ_CONNECT_TIMEOUT, 1);
@@ -44,8 +45,8 @@ void EcReplCmd::zmq_do_cmd(iit::advr::Repl_cmd  pb_cmd,
         else{
             zmq_cmd_recv(msg,pb_cmd.type(),req_sock,fault);
         }
+
         req_sock.disconnect(_zmq_uri);
-        req_sock.close();
 
     }catch (const zmq::error_t &err){
         std::string zmq_exception=zmq_strerror(err.num());
