@@ -165,8 +165,7 @@ bool EcZmqCmd::retrieve_rr_sdo(uint32_t esc_id,
         }
         else{
             attemps_cnt++;
-        }
-        
+        } 
     }
     return false;
 }
@@ -215,6 +214,9 @@ bool EcZmqCmd::start_devices(const DST &devices_start)
                                              msg);   
             if(cmd_error_status(fault, "start_devices",msg)){
                 devices_started &= false; 
+                if(_client_status.status==ClientStatusEnum::NOT_ALIVE){
+                    break;
+                }
             }
         }
         
@@ -227,7 +229,6 @@ bool EcZmqCmd::start_devices(const DST &devices_start)
         else{
             attemps_cnt++;
         }
-        
     }
 
     return false;
@@ -249,6 +250,9 @@ bool EcZmqCmd::stop_devices()
                                                   msg);
                 if(cmd_error_status(fault, "stop_devices",msg)){
                     devices_stopped &= false; 
+                    if(_client_status.status==ClientStatusEnum::NOT_ALIVE){
+                        break;
+                    }
                 }
             }
         
