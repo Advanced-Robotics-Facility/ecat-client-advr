@@ -76,6 +76,10 @@ void EcZipc::stop_client()
     
     join();
 
+    stop_pdo();
+    
+    stop_cmd();
+
     _client_status.run_loop=_run_loop;
 }
 

@@ -31,6 +31,7 @@ public:
                     const WR_SDO &wr_sdo) final;
                     
     void send_pdo();
+    void stop_cmd();
 
 private:
     

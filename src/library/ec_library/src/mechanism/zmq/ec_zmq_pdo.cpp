@@ -5,7 +5,7 @@ using namespace zmq;
 using namespace iit::advr;
 using namespace std;
 
-static zmq::context_t pdo_context(1);
+std::unique_ptr<zmq::context_t> EcZmqPdoContext::pdo_context;
 
 EcZmqPdo::EcZmqPdo( int32_t id, uint32_t type, const std::string zmq_uri):
 _id(id),
@@ -34,7 +34,7 @@ std::string EcZmqPdo::get_zmq_pdo_uri()
 void EcZmqPdo::init(void)
 {
     try{
-        _subscriber = std::make_shared<socket_t>(pdo_context, ZMQ_SUB);
+        _subscriber = std::make_shared<socket_t>(*EcZmqPdoContext::pdo_context, ZMQ_SUB);
         _subscriber->setsockopt(ZMQ_SUBSCRIBE, "",0); 
     }catch ( zmq::error_t& e ) { 
         std::string zmq_error(e.what());

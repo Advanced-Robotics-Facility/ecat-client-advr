@@ -15,6 +15,7 @@ class EcPdo: public virtual EcIface
         bool init_read_pdo();
         void read_pdo();
         void write_pdo();
+        void stop_pdo();
         
     private:
         template<typename MapPdo>

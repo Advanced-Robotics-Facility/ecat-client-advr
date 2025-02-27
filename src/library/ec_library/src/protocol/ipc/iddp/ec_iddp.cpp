@@ -78,6 +78,10 @@ void EcIDDP::stop_client()
     stop();
     
     join();
+
+    stop_pdo();
+    
+    stop_cmd();
     
     _client_status.run_loop=_run_loop;
 }

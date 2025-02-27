@@ -1,13 +1,7 @@
 #ifndef __EC_REPL_CMD__
 #define __EC_REPL_CMD__
 
-#include <protobuf/repl_cmd.pb.h>
-#include <protobuf/ecat_pdo.pb.h>
-
-#include "zmq.hpp"
-#include <zmq_addon.hpp>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
+#include "mechanism/zmq/ec_zmq_context.h"
 
 enum EC_REPL_CMD_STATUS : int {
 

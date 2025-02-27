@@ -16,7 +16,10 @@ _host_port(host_port)
     _host_port=host_port+4000; // to be verified in the configuration file
     _ec_pdo_start="";
     _init_read_pdo=_init_rx_pdo=false;
-    
+
+    if(_protocol!="pipe"){
+        EcZmqPdoContext::start_context();
+    }   
 }
 template < class T >
 EcPdo<T>::EcPdo(std::string robot_name):
@@ -30,7 +33,6 @@ _robot_name(robot_name)
 template < class T >
 EcPdo<T>::~EcPdo()
 {
-    
 }
 
 template < class T >
@@ -94,6 +96,21 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
         }               
     }
 } 
+
+template < class T >
+void EcPdo<T>::stop_pdo()
+{
+    _moto_pdo_map.clear();
+    _ft_pdo_map.clear();
+    _imu_pdo_map.clear();
+    _pow_pdo_map.clear();
+    _valve_pdo_map.clear();
+    _pump_pdo_map.clear();
+    
+    if(_protocol!="pipe"){
+        EcZmqPdoContext::stop_context();
+    }
+}
 
 template < class T >
 bool EcPdo<T>::init_read_pdo()

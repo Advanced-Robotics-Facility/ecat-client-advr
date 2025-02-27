@@ -20,6 +20,7 @@ EcZmqCmd::EcZmqCmd(std::string protocol,std::string host_address,uint32_t host_p
     std::string zmq_uri = protocol+"://" + host_address + ":"+host_port_cmd;
     int timeout_ms = 500;  // 0.5 secs
     
+    EcZmqCmdContext::start_context();
     _ec_repl_cmd = std::make_shared<EcReplCmd>(zmq_uri,timeout_ms);
     
     _consoleLog->info("ZMQ_URI: {}",zmq_uri);
@@ -354,6 +355,11 @@ void EcZmqCmd::feed_pumps()
     }
 }
 
+
+void EcZmqCmd::stop_cmd()
+{
+    EcZmqCmdContext::stop_context();
+}
 
 
 //******************************* COMMANDS *****************************************************//

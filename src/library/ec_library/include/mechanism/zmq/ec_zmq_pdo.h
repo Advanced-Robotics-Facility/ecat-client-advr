@@ -1,11 +1,7 @@
 #ifndef __EC_ZMQ_PDO__
 #define __EC_ZMQ_PDO__
 
-#include <protobuf/repl_cmd.pb.h>
-#include <protobuf/ecat_pdo.pb.h>
-
-#include "zmq.hpp"
-#include <zmq_addon.hpp>
+#include "mechanism/zmq/ec_zmq_context.h"
 
 class EcZmqPdo
 {

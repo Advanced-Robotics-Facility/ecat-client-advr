@@ -5,7 +5,7 @@ using namespace zmq;
 using namespace iit::advr;
 using namespace std;
 
-static zmq::context_t cmd_context(1);
+std::unique_ptr<zmq::context_t> EcZmqCmdContext::cmd_context;
 
 EcReplCmd::EcReplCmd(string zmq_uri,int timeout) :
 _zmq_uri(zmq_uri),_timeout(timeout)
@@ -33,7 +33,7 @@ void EcReplCmd::zmq_do_cmd(iit::advr::Repl_cmd  pb_cmd,
                            EcReplFault &fault)
 {
     try{
-        zmq::socket_t req_sock(cmd_context, ZMQ_REQ);
+        zmq::socket_t req_sock(*EcZmqCmdContext::cmd_context, ZMQ_REQ);
         req_sock.setsockopt(ZMQ_LINGER,0);
         req_sock.setsockopt(ZMQ_RCVTIMEO, timeout);
         req_sock.setsockopt(ZMQ_CONNECT_TIMEOUT, 1);
@@ -629,6 +629,5 @@ void EcReplCmd::set_motor_type_map(std::map<int32_t,std::string> motor_type_map)
 
 EcReplCmd::~EcReplCmd()
 {
-
 };
 
