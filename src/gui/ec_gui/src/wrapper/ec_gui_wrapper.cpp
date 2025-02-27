@@ -61,6 +61,7 @@ EcGuiWrapper::EcGuiWrapper(QWidget *parent) :
 
     _time_ms = 4;
     _max_stop_write=4;
+    _stopping_write_counter=_max_stop_write;
 }
 
 void EcGuiWrapper::DwTopLevelChanged(bool isFloating)
