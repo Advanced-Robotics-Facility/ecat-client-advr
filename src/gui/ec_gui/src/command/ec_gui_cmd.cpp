@@ -263,12 +263,21 @@ void EcGuiCmd::onApplyCmd()
 
 void EcGuiCmd::onApplyCmdReleased()
 {
-    if(!_client->get_client_status().run_loop){
-        QMessageBox msgBox;
+    
+    QMessageBox msgBox;
+    if(_client == nullptr){
         msgBox.critical(this,msgBox.windowTitle(),
-            tr("EtherCAT Client loop is not running state"
-                ",please press scan device button.\n"));
+                        tr("EtherCAT client not setup"
+                           ",please scan device button.\n"));
         return;
+    }
+    else{
+        if(!_client->get_client_status().run_loop){
+            msgBox.critical(this,msgBox.windowTitle(),
+                tr("EtherCAT Client loop is not running state"
+                    ",please press scan device button.\n"));
+            return;
+        }
     }
 
     _cmd_message.clear();
