@@ -40,6 +40,7 @@ void EcReplCmd::zmq_do_cmd(iit::advr::Repl_cmd  pb_cmd,
         req_sock.connect(_zmq_uri);
 
         if(!zmq_cmd_send(pb_cmd,req_sock,fault)){
+            req_sock.disconnect(_zmq_uri);
             return;
         }
         else{
@@ -86,7 +87,7 @@ bool EcReplCmd::zmq_cmd_send(iit::advr::Repl_cmd  pb_cmd,
     msg_send.push(message_t(m_cmd.c_str(), m_cmd.length()));
 
     try{
-        if(!msg_send.send(socket,ZMQ_NOBLOCK)){
+        if(!msg_send.send(socket)){
             fault.set_type(EC_REPL_CMD_STATUS::NACK);
             fault.set_info("Bad communication: Error to send message");
             fault.set_recovery_info("Retry command");
