@@ -242,10 +242,9 @@ void EcIface::wake_client_thread()
 {
     pthread_mutex_lock(&_mutex_update);
     _update_count++;
-    _update_count=std::min(_update_count,10);
+    _update_count=std::min(_update_count,MAX_QUEUE_PDO);
     pthread_cond_signal(&_update_cond);
     pthread_mutex_unlock(&_mutex_update);
-
 }
 
 template <typename T>
