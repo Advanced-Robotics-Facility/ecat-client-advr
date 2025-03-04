@@ -256,10 +256,7 @@ void EcGuiWrapper::stop_receive()
 
 void EcGuiWrapper::show()
 {
-    _mutex_receive.lock();
     _ec_gui_pdo->show();
-    _mutex_receive.unlock();
-    _ec_gui_pdo->update_plot();
 }
 
 ////*************************** EC GUI WRAPPER THREAD ************************************
@@ -268,9 +265,7 @@ void EcGuiWrapper::receive()
 {
     if(_receive_started){
         _ec_wrapper_info.client->read();
-        _mutex_receive.lock();
         _ec_gui_pdo->read();
-        _mutex_receive.unlock();
     }
 }
 

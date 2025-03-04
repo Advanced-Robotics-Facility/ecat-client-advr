@@ -28,7 +28,6 @@ public:
       void stopping_write();
       void write();
       void show();
-      void update_plot();
       void log();
 
 private:
@@ -59,19 +58,19 @@ private:
       uint16_t _buffer_size;
 
       // last received motor data
-      MotorStatusMap _motor_status_map;
+      MotorStatusMap _motor_status_map,_internal_motor_status_map;
       MotorReferenceMap _motor_reference_map;
       // last received ft data
-      FtStatusMap _ft_status_map;
+      FtStatusMap _ft_status_map,_internal_ft_status_map;
       // last received pow data
-      PwrStatusMap _pow_status_map;
+      PwrStatusMap _pow_status_map,_internal_pow_status_map;
       // last received imu data
-      ImuStatusMap _imu_status_map;
+      ImuStatusMap _imu_status_map,_internal_imu_status_map;
       // last received valve data
-      ValveStatusMap _valve_status_map;
+      ValveStatusMap _valve_status_map,_internal_valve_status_map;
       ValveReferenceMap _valve_reference_map;
       // last received pump data
-      PumpStatusMap _pump_status_map;
+      PumpStatusMap _pump_status_map,_internal_pump_status_map;
       PumpReferenceMap _pump_reference_map;
 
       QLCDNumber *_battery_level;
@@ -86,6 +85,8 @@ private:
                      const std::vector<std::string> &pdo_fields,
                      const std::vector<float> &pdo);
       void onStopPlotting();
+
+      void update_plot();
       
       void show_motor_status();
       void show_ft_status();

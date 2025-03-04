@@ -57,7 +57,7 @@ private:
   EcLogger::Ptr _ec_logger;
 
   std::shared_ptr<std::thread> _ec_wrapper_thread;
-  std::mutex _mutex_receive,_mutex_send,_mutex_log;
+  std::mutex _mutex_send,_mutex_log;
   std::chrono::high_resolution_clock::time_point _loop_time,_start_loop_time;
 
   int _time_ms;

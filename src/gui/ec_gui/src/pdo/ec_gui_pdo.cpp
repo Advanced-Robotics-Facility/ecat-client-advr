@@ -205,6 +205,8 @@ void EcGuiPdo::show()
     show_valve_status();
     show_pump_status();
     /************************************* READ Rx PDOs  ********************************************/
+
+    update_plot();
 }
 
 void EcGuiPdo::update_plot()
@@ -240,7 +242,8 @@ void EcGuiPdo::update_plot()
 
 void EcGuiPdo::show_motor_status()
 {
-    for ( const auto &[esc_id, motor_rx_pdo] : _motor_status_map){
+    _internal_motor_status_map=_motor_status_map;
+    for ( const auto &[esc_id, motor_rx_pdo] : _internal_motor_status_map){
         QTreeWidgetItem *topLevel= retrieve_treewid_item(esc_id,"motor",MotorPdoRx::name,"Rx");
         if(MotorPdoRx::make_vector_from_tuple(motor_rx_pdo,_pdo_v[esc_id])){
             fill_data(esc_id,topLevel,MotorPdoRx::name,_pdo_v[esc_id]);
@@ -257,7 +260,8 @@ void EcGuiPdo::show_motor_status()
 
 void EcGuiPdo::show_ft_status()
 {
-    for ( const auto &[esc_id, ft_rx_pdo] : _ft_status_map){
+    _internal_ft_status_map=_ft_status_map;
+    for ( const auto &[esc_id, ft_rx_pdo] : _internal_ft_status_map){
         QTreeWidgetItem *topLevel= retrieve_treewid_item(esc_id,"ft",FtPdoRx::name,"Rx");
         if(FtPdoRx::make_vector_from_tuple(ft_rx_pdo,_pdo_v[esc_id])){
             fill_data(esc_id,topLevel,FtPdoRx::name,_pdo_v[esc_id]);
@@ -267,7 +271,8 @@ void EcGuiPdo::show_ft_status()
 
 inline void EcGuiPdo::show_pow_status()
 {
-    for ( const auto &[esc_id, pow_rx_pdo] : _pow_status_map){
+    _internal_pow_status_map=_pow_status_map;
+    for ( const auto &[esc_id, pow_rx_pdo] : _internal_pow_status_map){
         if(_counter_buffer==_buffer_size-1){
             _battery_level->display(std::get<0>(pow_rx_pdo));
         }
@@ -280,7 +285,8 @@ inline void EcGuiPdo::show_pow_status()
 
 void EcGuiPdo::show_imu_status()
 {
-    for ( const auto &[esc_id, imu_rx_pdo] : _imu_status_map){
+    _internal_imu_status_map=_imu_status_map;
+    for ( const auto &[esc_id, imu_rx_pdo] : _internal_imu_status_map){
         QTreeWidgetItem *topLevel= retrieve_treewid_item(esc_id,"imu",ImuPdoRx::name,"Rx");
         if(ImuPdoRx::make_vector_from_tuple(imu_rx_pdo,_pdo_v[esc_id])){
             fill_data(esc_id,topLevel,ImuPdoRx::name,_pdo_v[esc_id]);
@@ -288,8 +294,9 @@ void EcGuiPdo::show_imu_status()
     }
 }
 void EcGuiPdo::show_valve_status()
-{
-    for ( const auto &[esc_id, valve_rx_pdo] : _valve_status_map){
+{    
+    _internal_valve_status_map=_valve_status_map;
+    for ( const auto &[esc_id, valve_rx_pdo] : _internal_valve_status_map){
         QTreeWidgetItem *topLevel= retrieve_treewid_item(esc_id,"valve",ValvePdoRx::name,"Rx");
         if(ValvePdoRx::make_vector_from_tuple(valve_rx_pdo,_pdo_v[esc_id])){
             fill_data(esc_id,topLevel,ValvePdoRx::name,_pdo_v[esc_id]);
@@ -305,7 +312,8 @@ void EcGuiPdo::show_valve_status()
 
 void EcGuiPdo::show_pump_status()
 {
-    for ( const auto &[esc_id, pump_rx_pdo] : _pump_status_map){
+    _internal_pump_status_map=_pump_status_map;
+    for ( const auto &[esc_id, pump_rx_pdo] : _internal_pump_status_map){
         QTreeWidgetItem *topLevel= retrieve_treewid_item(esc_id,"pump",PumpPdoRx::name,"Rx");
         if(PumpPdoRx::make_vector_from_tuple(pump_rx_pdo,_pdo_v[esc_id])){
             fill_data(esc_id,topLevel,PumpPdoRx::name,_pdo_v[esc_id]);
