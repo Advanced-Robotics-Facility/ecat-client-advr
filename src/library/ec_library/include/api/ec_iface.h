@@ -39,8 +39,8 @@ public:
     CLIENT_THREAD_INFO get_client_thread_info();
     
     // EtherCAT Client ADVR Facilty update getters/setters
-    void read(void);
-    void write(void);
+    virtual void read(void);
+    virtual void write(void);
     
     // EtherCAT Client ADVR Facilty getters
     void get_motor_status(MotorStatusMap &motor_status_map);
