@@ -70,9 +70,17 @@ void EcBoostPdo::motor_status_handler(char *buf, size_t size)
     auto ret = proto.getEscStatus(buf,size,UdpPackMsg::MSG_MOTOR_STS, motors_status);
 
     // NOTE add extra PDO like pos_ref, vel_ref, tor_ref, curr_ref feedback
-    for ( const auto &[id,link_pos,motor_pos,link_vel,motor_vel,torque,motor_temp,board_temp,fault,rtt,op_idx_ack,aux,cmd_aux_sts] : motors_status) {
+    for ( const auto &[id,status_word,
+                       link_pos,motor_pos,link_vel,motor_vel,
+                       torque,current,motor_temp,board_temp,
+                       fault,rtt,
+                       pos_ref_fb,vel_ref_fb,tor_ref_fb,curr_ref_fb] : motors_status) {
         if(_internal_motor_status_map.count(id)>0){
-            _internal_motor_status_map[id] = std::make_tuple(0,link_pos,motor_pos,link_vel,motor_vel,torque,aux,motor_temp,board_temp,fault,rtt,0,0,0,0);
+            _internal_motor_status_map[id] = std::make_tuple(status_word,
+                                                             link_pos,motor_pos,link_vel,motor_vel,
+                                                             torque,current,motor_temp,board_temp,
+                                                             fault,rtt,
+                                                             pos_ref_fb,vel_ref_fb,tor_ref_fb,curr_ref_fb);
         }
         else{
             _consoleLog->error( "Id {} is not a motor",id);
