@@ -52,12 +52,19 @@ EcGuiWrapper::EcGuiWrapper(QWidget *parent) :
 
     connect(_send_stop_btn, &QPushButton::released,this, &EcGuiWrapper::onSendStopBtnReleased);
     
-    // create a timer for receiving PDO
+    // create a timer for showing PDO
     _show_timer = new QTimer(this);
     _show_timer->setTimerType(Qt::PreciseTimer);
 
     // setup signal and slot
     connect(_show_timer, SIGNAL(timeout()),this, SLOT(show()));
+
+    // create a timer for logging PDO
+    _log_timer = new QTimer(this);
+    _log_timer->setTimerType(Qt::PreciseTimer);
+
+    // setup signal and slot
+    connect(_log_timer, SIGNAL(timeout()),this, SLOT(log()));
 
     _time_ms = 4;
     _max_stop_write=4;
@@ -194,9 +201,8 @@ void EcGuiWrapper::start_stop_record()
         else{
             if(!_record_started && _run_wrapper_thread){
                 _record_started = true;
-                _mutex_log.lock();
                 _ec_logger->start_mat_logger();
-                _mutex_log.unlock();
+                _log_timer->start(_time_ms+2); // not precise timer. 
                 _record_action->setIcon(QIcon(":/icon/stop_record.png"));
                 _record_action->setText("Stop Record");
                 return;
@@ -211,12 +217,16 @@ void EcGuiWrapper::stop_record()
 {
     if(_record_started){
         _record_started = false;
-        _mutex_log.lock();
-        _ec_logger->stop_mat_logger();
-        _mutex_log.unlock();
         _record_action->setIcon(QIcon(":/icon/record.png"));
         _record_action->setText("Record");
+        _log_timer->stop();
+        _ec_logger->stop_mat_logger();
     }
+}
+
+void EcGuiWrapper::log()
+{
+    _ec_gui_pdo->log();
 }
 
 void EcGuiWrapper::start_stop_receive()
@@ -289,13 +299,6 @@ void EcGuiWrapper::send()
     _mutex_send.unlock();
 }
 
-void EcGuiWrapper::log()
-{
-    _mutex_log.lock();
-    _ec_gui_pdo->log();
-    _mutex_log.unlock();
-}
-
 void EcGuiWrapper::wrapper_thread()
 {
     while(_run_wrapper_thread){
@@ -304,8 +307,7 @@ void EcGuiWrapper::wrapper_thread()
             
             receive();
             send();
-            log();
-
+            
             _loop_time = _loop_time + std::chrono::milliseconds(_time_ms);
             std::this_thread::sleep_until(_loop_time);
         }
@@ -316,7 +318,7 @@ void EcGuiWrapper::wrapper_thread()
                 _send_stop_btn->click();
             }
             
-            _receive_action->trigger();
+            _receive_action->trigger(); // ONLY send a trigger to receive action for showing that client is not alive!
             stop_record();
 
             _ec_gui_cmd->set_command_sts(false);
@@ -340,9 +342,7 @@ void EcGuiWrapper::stop_wrapper_thread()
         std::this_thread::sleep_for(std::chrono::milliseconds(5*_time_ms));
     }
 
-    _mutex_log.lock();
     _ec_logger->stop_mat_logger();
-    _mutex_log.unlock();
 
     _run_wrapper_thread=false;
     if(_ec_wrapper_thread){
