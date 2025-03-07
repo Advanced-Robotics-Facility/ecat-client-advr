@@ -242,8 +242,8 @@ void EcGuiPdo::update_plot()
 
 void EcGuiPdo::show_motor_status()
 {
-    _internal_motor_status_map=_motor_status_map;
-    for ( const auto &[esc_id, motor_rx_pdo] : _internal_motor_status_map){
+    _show_motor_status_map=_motor_status_map;
+    for ( const auto &[esc_id, motor_rx_pdo] : _show_motor_status_map){
         QTreeWidgetItem *topLevel= retrieve_treewid_item(esc_id,"motor",MotorPdoRx::name,"Rx");
         if(MotorPdoRx::make_vector_from_tuple(motor_rx_pdo,_pdo_v[esc_id])){
             fill_data(esc_id,topLevel,MotorPdoRx::name,_pdo_v[esc_id]);
@@ -260,8 +260,8 @@ void EcGuiPdo::show_motor_status()
 
 void EcGuiPdo::show_ft_status()
 {
-    _internal_ft_status_map=_ft_status_map;
-    for ( const auto &[esc_id, ft_rx_pdo] : _internal_ft_status_map){
+    _show_ft_status_map=_ft_status_map;
+    for ( const auto &[esc_id, ft_rx_pdo] : _show_ft_status_map){
         QTreeWidgetItem *topLevel= retrieve_treewid_item(esc_id,"ft",FtPdoRx::name,"Rx");
         if(FtPdoRx::make_vector_from_tuple(ft_rx_pdo,_pdo_v[esc_id])){
             fill_data(esc_id,topLevel,FtPdoRx::name,_pdo_v[esc_id]);
@@ -271,8 +271,8 @@ void EcGuiPdo::show_ft_status()
 
 inline void EcGuiPdo::show_pow_status()
 {
-    _internal_pow_status_map=_pow_status_map;
-    for ( const auto &[esc_id, pow_rx_pdo] : _internal_pow_status_map){
+    _show_pow_status_map=_pow_status_map;
+    for ( const auto &[esc_id, pow_rx_pdo] : _show_pow_status_map){
         if(_counter_buffer==_buffer_size-1){
             _battery_level->display(std::get<0>(pow_rx_pdo));
         }
@@ -285,8 +285,8 @@ inline void EcGuiPdo::show_pow_status()
 
 void EcGuiPdo::show_imu_status()
 {
-    _internal_imu_status_map=_imu_status_map;
-    for ( const auto &[esc_id, imu_rx_pdo] : _internal_imu_status_map){
+    _show_imu_status_map=_imu_status_map;
+    for ( const auto &[esc_id, imu_rx_pdo] : _show_imu_status_map){
         QTreeWidgetItem *topLevel= retrieve_treewid_item(esc_id,"imu",ImuPdoRx::name,"Rx");
         if(ImuPdoRx::make_vector_from_tuple(imu_rx_pdo,_pdo_v[esc_id])){
             fill_data(esc_id,topLevel,ImuPdoRx::name,_pdo_v[esc_id]);
@@ -295,8 +295,8 @@ void EcGuiPdo::show_imu_status()
 }
 void EcGuiPdo::show_valve_status()
 {    
-    _internal_valve_status_map=_valve_status_map;
-    for ( const auto &[esc_id, valve_rx_pdo] : _internal_valve_status_map){
+    _show_valve_status_map=_valve_status_map;
+    for ( const auto &[esc_id, valve_rx_pdo] : _show_valve_status_map){
         QTreeWidgetItem *topLevel= retrieve_treewid_item(esc_id,"valve",ValvePdoRx::name,"Rx");
         if(ValvePdoRx::make_vector_from_tuple(valve_rx_pdo,_pdo_v[esc_id])){
             fill_data(esc_id,topLevel,ValvePdoRx::name,_pdo_v[esc_id]);
@@ -312,8 +312,8 @@ void EcGuiPdo::show_valve_status()
 
 void EcGuiPdo::show_pump_status()
 {
-    _internal_pump_status_map=_pump_status_map;
-    for ( const auto &[esc_id, pump_rx_pdo] : _internal_pump_status_map){
+    _show_pump_status_map=_pump_status_map;
+    for ( const auto &[esc_id, pump_rx_pdo] : _show_pump_status_map){
         QTreeWidgetItem *topLevel= retrieve_treewid_item(esc_id,"pump",PumpPdoRx::name,"Rx");
         if(PumpPdoRx::make_vector_from_tuple(pump_rx_pdo,_pdo_v[esc_id])){
             fill_data(esc_id,topLevel,PumpPdoRx::name,_pdo_v[esc_id]);
@@ -347,6 +347,10 @@ void EcGuiPdo::starting_write(int time_ms)
     double ts=((double) _time_ms)/1000;
     _ec_gui_slider->set_sliders_info(ts,false);
     _send_timer->restart();
+
+    _motors_selected=check_write_device(_slider_map.motor_sw_map);
+    _valves_selected=check_write_device(_slider_map.valve_sw_map);
+    _pumps_selected=check_write_device(_slider_map.pump_sw_map);
 }
 
 void EcGuiPdo::stopping_write()
@@ -366,17 +370,27 @@ void EcGuiPdo::write()
     write_pump_pdo();
 }
 
+bool EcGuiPdo::check_write_device(std::map<int, SliderWidget*> slider_map)
+{
+    for (auto& [slave_id, slider_wid]: slider_map){
+        if(slider_wid->is_slider_checked()){
+            return true;
+        }
+    }
+    return false;
+}
+
 void EcGuiPdo::write_motor_pdo()
 {
-    _motors_selected=false;
+    if(!_motors_selected){
+        return;
+    }
+
     for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
-        if(_motor_reference_map.count(slave_id)==0){
-            float motor_pos=slider_wid->get_spinbox_value(1); // DONE read function!!
-            _motor_reference_map[slave_id]={0,motor_pos,0,0,0,0,0,0,0,0,0,0};
-        }
+        float motor_pos=slider_wid->get_spinbox_value(1); // DONE read function!!
+        _motor_reference_map[slave_id]={0,motor_pos,0,0,0,0,0,0,0,0,0,0};
         std::get<0>(_motor_reference_map[slave_id])=0x00;
         if(slider_wid->is_slider_checked()){
-            _motors_selected=true;
             std::get<0>(_motor_reference_map[slave_id])=slider_wid->get_spinbox_value(0);
             std::get<1>(_motor_reference_map[slave_id])=slider_wid->compute_wave(1,_s_send_time); 
             std::get<2>(_motor_reference_map[slave_id])=slider_wid->compute_wave(2,_s_send_time); 
@@ -391,21 +405,20 @@ void EcGuiPdo::write_motor_pdo()
             std::get<11>(_motor_reference_map[slave_id])=slider_wid->compute_wave(11,_s_send_time);  
         }
     }
-    if(_motors_selected){
-       _client->set_motor_reference(_motor_reference_map);
-    }
+
+    _client->set_motor_reference(_motor_reference_map);
 }
 
 void EcGuiPdo::write_valve_pdo()
 {
-    _valves_selected=false;
+    if(!_valves_selected){
+        return;
+    }
+
     for (auto& [slave_id, slider_wid]:_slider_map.valve_sw_map){
-        if(_valve_reference_map.count(slave_id)==0){
-            float enc_pos=slider_wid->get_spinbox_value(0); // DONE read function!!
-            _valve_reference_map[slave_id]={0,enc_pos,0,0,0,0,0,0,0,0,0,0};
-        }
+        float enc_pos=slider_wid->get_spinbox_value(0); // DONE read function!!
+        _valve_reference_map[slave_id]={0,enc_pos,0,0,0,0,0,0,0,0,0,0};
         if(slider_wid->is_slider_checked()){
-            _valves_selected=true;
             std::get<0>(_valve_reference_map[slave_id])=slider_wid->compute_wave(0,_s_send_time);
             std::get<1>(_valve_reference_map[slave_id])=slider_wid->compute_wave(1,_s_send_time); 
             std::get<2>(_valve_reference_map[slave_id])=slider_wid->compute_wave(2,_s_send_time); 
@@ -420,21 +433,20 @@ void EcGuiPdo::write_valve_pdo()
             std::get<11>(_valve_reference_map[slave_id])=slider_wid->compute_wave(11,_s_send_time);  
         }
     }
-    if(_valves_selected){
-       _client->set_valve_reference(_valve_reference_map);
-    }
+    
+    _client->set_valve_reference(_valve_reference_map);
 }
 
 void EcGuiPdo::write_pump_pdo()
 {
-    _pumps_selected=false;
+    if(!_pumps_selected){
+        return;
+    }
+
     for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
-        if(_pump_reference_map.count(slave_id)==0){
-            float pressure=slider_wid->get_spinbox_value(0); // DONE read function!!
-            _pump_reference_map[slave_id]={pressure,0,0,0,0,0,0,0,0};
-        }
+        float pressure=slider_wid->get_spinbox_value(0); // DONE read function!!
+        _pump_reference_map[slave_id]={pressure,0,0,0,0,0,0,0,0};
         if(slider_wid->is_slider_checked()){
-            _pumps_selected=true;
             std::get<0>(_pump_reference_map[slave_id])=slider_wid->compute_wave(0,_s_send_time);
             std::get<1>(_pump_reference_map[slave_id])=slider_wid->get_spinbox_value(1);
             std::get<2>(_pump_reference_map[slave_id])=slider_wid->get_spinbox_value(2); 
@@ -446,33 +458,24 @@ void EcGuiPdo::write_pump_pdo()
             std::get<8>(_pump_reference_map[slave_id])=slider_wid->get_spinbox_value(8); 
         }
     }
-    if(_pumps_selected){
-       _client->set_pump_reference(_pump_reference_map);
-    }
+
+    _client->set_pump_reference(_pump_reference_map);
 }
 /********************************************************* WRITE PDO***********************************************************************************************/
 /********************************************************* LOG PDO***********************************************************************************************/
 void EcGuiPdo::log()
 {
     _ec_logger->log_motor_status(_motor_status_map);
-    if(_motors_selected){
-       _ec_logger->log_motor_reference(_motor_reference_map); 
-    }
-    _motors_selected=false;
-    
+    _ec_logger->log_motor_reference(_motor_reference_map); 
+
     _ec_logger->log_ft_status(_ft_status_map);
     _ec_logger->log_pow_status(_pow_status_map);
     _ec_logger->log_imu_status(_imu_status_map);
 
     _ec_logger->log_valve_status(_valve_status_map);
-    if(_valves_selected){
-       _ec_logger->log_valve_reference(_valve_reference_map);
-    }
-    _valves_selected=false;
+    _ec_logger->log_valve_reference(_valve_reference_map);
 
     _ec_logger->log_pump_status(_pump_status_map);
-    if(_pumps_selected){
-       _ec_logger->log_pump_reference(_pump_reference_map);
-    }
-    _pumps_selected=false;
+    _ec_logger->log_pump_reference(_pump_reference_map);
 }
+/********************************************************* LOG PDO***********************************************************************************************/
