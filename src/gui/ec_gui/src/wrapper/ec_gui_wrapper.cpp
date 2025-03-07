@@ -59,13 +59,6 @@ EcGuiWrapper::EcGuiWrapper(QWidget *parent) :
     // setup signal and slot
     connect(_show_timer, SIGNAL(timeout()),this, SLOT(show()));
 
-    // create a timer for logging PDO
-    _log_timer = new QTimer(this);
-    _log_timer->setTimerType(Qt::PreciseTimer);
-
-    // setup signal and slot
-    connect(_log_timer, SIGNAL(timeout()),this, SLOT(log()));
-
     _time_ms = 4;
     _max_stop_write=4;
     _stopping_write_counter=_max_stop_write;
@@ -164,14 +157,16 @@ void EcGuiWrapper::onSendStopBtnReleased()
     
     if((_send_stop_btn->text()=="Start Motion")&&(devices_controlled)){
         _send_stop_btn->setText("Stop Motion");
+        _record_action->setEnabled(false);
         _ec_gui_slider->enable_sliders();
         _mutex_send.lock();
-        _ec_gui_pdo->starting_write(_time_ms);
         _send_pdo=true;
         _stopping_write_counter=_max_stop_write;
+        _ec_gui_pdo->starting_write(_time_ms);
         _mutex_send.unlock();
     }
     else{ 
+        _record_action->setEnabled(true);
         _ec_gui_slider->disable_sliders();
         _mutex_send.lock();
         _send_pdo=false;
@@ -202,9 +197,10 @@ void EcGuiWrapper::start_stop_record()
         }
         else{
             if(!_record_started && _run_wrapper_thread){
-                _record_started = true;
+                _mutex_log.lock();
                 _ec_logger->start_mat_logger();
-                _log_timer->start(_time_ms+2); // not precise timer. 
+                _mutex_log.unlock();
+                _record_started = true;
                 _record_action->setIcon(QIcon(":/icon/stop_record.png"));
                 _record_action->setText("Stop Record");
                 return;
@@ -218,17 +214,13 @@ void EcGuiWrapper::start_stop_record()
 void EcGuiWrapper::stop_record()
 {
     if(_record_started){
+        _mutex_log.lock();
+        _ec_logger->stop_mat_logger();
+        _mutex_log.unlock();
         _record_started = false;
         _record_action->setIcon(QIcon(":/icon/record.png"));
         _record_action->setText("Record");
-        _log_timer->stop();
-        _ec_logger->stop_mat_logger();
     }
-}
-
-void EcGuiWrapper::log()
-{
-    _ec_gui_pdo->log();
 }
 
 void EcGuiWrapper::start_stop_receive()
@@ -280,7 +272,7 @@ void EcGuiWrapper::receive()
 void EcGuiWrapper::send()
 {
     _mutex_send.lock();
-    if(_send_pdo || _stopping_write_counter<=3){
+    if(_send_pdo || _stopping_write_counter< _max_stop_write){
         // **************Delay stop**************
         if(!_send_pdo){
             _stopping_write_counter++; //4*ts delayed write
@@ -297,6 +289,13 @@ void EcGuiWrapper::send()
     _mutex_send.unlock();
 }
 
+void EcGuiWrapper::log()
+{
+    _mutex_log.lock();
+    _ec_gui_pdo->log();
+    _mutex_log.unlock();
+}
+
 void EcGuiWrapper::wrapper_thread()
 {
     while(_run_wrapper_thread){
@@ -305,6 +304,7 @@ void EcGuiWrapper::wrapper_thread()
             
             receive();
             send();
+            log();
             
             _loop_time = _loop_time + std::chrono::milliseconds(_time_ms);
             std::this_thread::sleep_until(_loop_time);
@@ -315,7 +315,7 @@ void EcGuiWrapper::wrapper_thread()
             if(_send_pdo){
                 _send_stop_btn->click();
             }
-            
+
             _receive_action->trigger(); // ONLY send a trigger to receive action for showing that client is not alive!
             stop_record();
 
@@ -340,7 +340,9 @@ void EcGuiWrapper::stop_wrapper_thread()
         std::this_thread::sleep_for(std::chrono::milliseconds(5*_time_ms));
     }
 
+    _mutex_log.lock();
     _ec_logger->stop_mat_logger();
+    _mutex_log.unlock();
 
     _run_wrapper_thread=false;
     if(_ec_wrapper_thread){

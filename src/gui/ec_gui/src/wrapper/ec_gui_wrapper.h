@@ -35,9 +35,8 @@ public:
     void restart_gui_wrapper(ec_wrapper_info_t ec_wrapper_info);
     bool get_wrapper_send_sts();
     bool get_wrapper_cmd_sts();
-    void onSendStopBtnReleased();
 
-public slots:
+private slots:
     void DwTopLevelChanged(bool isFloating);
     void start_stop_receive();
     void stop_receive();
@@ -57,7 +56,7 @@ private:
   EcLogger::Ptr _ec_logger;
 
   std::shared_ptr<std::thread> _ec_wrapper_thread;
-  std::mutex _mutex_send;
+  std::mutex _mutex_send,_mutex_log;
   std::chrono::high_resolution_clock::time_point _loop_time,_start_loop_time;
 
   int _time_ms;
@@ -65,9 +64,11 @@ private:
   
   QPushButton *_send_stop_btn;
 
-  QTimer *_show_timer,*_log_timer;
+  QTimer *_show_timer;
   QAction *_receive_action,*_record_action;
   bool _receive_started,_record_started;
+
+  void onSendStopBtnReleased();
 
   bool check_client_setup();
   void stop_wrapper_thread();
