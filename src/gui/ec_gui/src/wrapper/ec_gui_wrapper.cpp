@@ -27,9 +27,9 @@ EcGuiWrapper::EcGuiWrapper(QWidget *parent) :
     connect(_graphics_dw, SIGNAL(topLevelChanged(bool)), this, SLOT(DwTopLevelChanged(bool)));
     _graphics_dw->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
 
-    _receive_action = parent->findChild<QAction *>("actionReceive");
+    _receive_action=new QAction();
     connect(_receive_action, SIGNAL(triggered()), this, SLOT(start_stop_receive()));
-    
+
     _record_action = parent->findChild<QAction *>("actionRecord");
     connect(_record_action, SIGNAL(triggered()), this, SLOT(start_stop_record()));
     
@@ -128,6 +128,8 @@ void EcGuiWrapper::restart_gui_wrapper(ec_wrapper_info_t ec_wrapper_info)
     _start_loop_time = std::chrono::high_resolution_clock::now();
     _loop_time = _start_loop_time;
     _run_wrapper_thread=true;
+
+    start_stop_receive();
 }
 
 bool EcGuiWrapper::check_client_setup()
@@ -242,11 +244,9 @@ void EcGuiWrapper::start_stop_receive()
         else{
             if(!_receive_started && _run_wrapper_thread){
                 _receive_started = true;
-                _receive_action->setIcon(QIcon(":/icon/stop_read.png"));
-                _receive_action->setText("Stop Receive");
                 _ec_gui_pdo->restart_receive_timer();
-                _show_timer->start(_time_ms+2); // not precise timer. 
-                return;
+                _show_timer->start(_time_ms+2); // not precise timer.
+                return; 
             }
         }
     }
@@ -258,8 +258,6 @@ void EcGuiWrapper::stop_receive()
 {
     if(_receive_started){
         _receive_started = false;
-        _receive_action->setIcon(QIcon(":/icon/read.png"));
-        _receive_action->setText("Receive");
         _show_timer->stop();
     }
 }

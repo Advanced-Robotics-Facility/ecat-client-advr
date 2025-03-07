@@ -176,9 +176,6 @@ void EcGuiStart::restart_gui()
 {
     add_device();
     _ec_gui_wrapper->restart_gui_wrapper(_ec_wrapper_info);
-    if(_ec_wrapper_info.client != nullptr){ // the restart-gui function can be used for cleaning the entire gui without reading the pdo.
-        _ec_gui_wrapper->start_stop_receive(); // auto-start of receiving
-    }
 }
 
 void EcGuiStart::error_on_scannig()

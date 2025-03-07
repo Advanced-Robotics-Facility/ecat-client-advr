@@ -49,9 +49,7 @@
     <property name="title">
      <string>Measurement</string>
     </property>
-    <addaction name="actionReceive"/>
     <addaction name="actionRecord"/>
-    <addaction name="actionCut"/>
    </widget>
    <widget class="QMenu" name="menuConnection">
     <property name="title">
@@ -115,7 +113,6 @@
    <addaction name="actionConnnect_to"/>
    <addaction name="actionConfiguration"/>
    <addaction name="separator"/>
-   <addaction name="actionReceive"/>
    <addaction name="actionRecord"/>
   </widget>
   <widget class="QDockWidget" name="DataObject">
