@@ -71,10 +71,18 @@ void EcBoostCmd::repl_replies_handler(char *buf, size_t size)
                 uint32_t esc_id;
                 _rr_sdo.clear();
                 ret = proto.getReplReplySdoCmd(buf,size, esc_id, _rr_sdo,_reply_err_msg);
-                for ( auto &[k,v] : _rr_sdo ) {
+                /*for ( auto &[k,v] : _rr_sdo ) {
                     _consoleLog->info( " <-- id {} : {} = {}", esc_id, k, v);
-                }
+                }*/
         }break;
+        case ReplReqRep::SDO_INFO:{
+            uint32_t esc_id;
+            _sdo_names.clear();
+            ret = proto.getReplReplySdoNames(buf,size, esc_id, _sdo_names,_reply_err_msg);
+            /*for ( auto sdo : _sdo_names ) {
+                _consoleLog->info( " <-- id {} : {} = {}", esc_id,sdo);
+            }*/
+    }break;
 
         default:
             break;
@@ -226,7 +234,7 @@ bool EcBoostCmd::retrieve_slaves_info(SSI &slave_info)
 
 void EcBoostCmd::getAndset_slaves_sdo(uint32_t esc_id, const RD_SDO &rd_sdo, const WR_SDO &wr_sdo)
 {
-    CBuffT<4096u> sendBuffer{};
+    CBuffT<8192u> sendBuffer{};
     
     RDWR_SDO rdwr_sdo = std::make_tuple(esc_id,rd_sdo,wr_sdo);
 
@@ -237,7 +245,34 @@ void EcBoostCmd::getAndset_slaves_sdo(uint32_t esc_id, const RD_SDO &rd_sdo, con
 
 bool EcBoostCmd::retrieve_all_sdo(uint32_t esc_id,RR_SDOS &rr_sdo)
 {
-    return false;
+    int attemps_cnt = 0;
+    bool ret_cmd_status=false;
+    
+    while(rr_sdo.empty() && attemps_cnt < _max_cmd_attemps){
+        if(_client_status.status!=ClientStatusEnum::NOT_ALIVE){
+            CBuffT<8192u> sendBuffer{};
+
+            auto sizet = proto.packReplRequestSdoNames (sendBuffer, esc_id);
+            do_send(sendBuffer.data(), sendBuffer.size() );
+            _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
+
+            ret_cmd_status = get_reply_from_server(ReplReqRep::SDO_INFO);
+
+            if(ret_cmd_status){
+                attemps_cnt = _max_cmd_attemps;
+                ret_cmd_status = retrieve_rr_sdo(esc_id,_sdo_names,{},rr_sdo);
+            }
+            else{
+                attemps_cnt++;
+            }
+        }
+        else{
+            _consoleLog->error("Client in not alive state, please stop the main process!");
+            return false;
+        }
+    }
+
+    return ret_cmd_status;
 }
 
 bool EcBoostCmd::retrieve_rr_sdo(uint32_t esc_id,
@@ -256,9 +291,7 @@ bool EcBoostCmd::retrieve_rr_sdo(uint32_t esc_id,
             
             ret_cmd_status = get_reply_from_server(ReplReqRep::SDO_CMD);
             if(ret_cmd_status){
-                for ( auto &[k,v] : _rr_sdo ) {
-                    rr_sdo[k] = std::to_string(v);
-                }
+                rr_sdo= _rr_sdo;
                 attemps_cnt = _max_cmd_attemps;
             }
             else{

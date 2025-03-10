@@ -51,7 +51,8 @@ private:
     
     std::shared_ptr<std::condition_variable> _cv_repl_reply;
     
-    std::map<std::string, float> _rr_sdo;
+    std::map<std::string,std::string> _rr_sdo;
+    std::vector<std::string> _sdo_names;
     
     const int _max_cmd_attemps=3;
     uint32_t _wait_reply_time;
