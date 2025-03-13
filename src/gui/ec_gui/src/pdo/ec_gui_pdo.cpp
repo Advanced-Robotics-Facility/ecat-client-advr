@@ -21,8 +21,8 @@ _ec_gui_slider(ec_gui_slider)
 
 
     QSharedPointer<QCPAxisTickerTime> timeTicker(new QCPAxisTickerTime);
-    timeTicker->setTimeFormat("%s");
-    _custom_plot->xAxis->setTicker(timeTicker);
+    timeTicker->setTimeFormat("%z");
+    //_custom_plot->xAxis->setTicker(timeTicker);
     _custom_plot->xAxis->setLabel("Time [s]");
     _custom_plot->axisRect()->setupFullAxesBox();
     _custom_plot->yAxis->setRange(-100, 100);
