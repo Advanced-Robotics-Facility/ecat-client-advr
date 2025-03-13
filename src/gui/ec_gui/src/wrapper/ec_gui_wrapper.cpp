@@ -52,12 +52,19 @@ EcGuiWrapper::EcGuiWrapper(QWidget *parent) :
 
     connect(_send_stop_btn, &QPushButton::released,this, &EcGuiWrapper::onSendStopBtnReleased);
     
-    // create a timer for showing PDO
+    // create a timer for receiving PDO
     _receive_timer = new QTimer(this);
     _receive_timer->setTimerType(Qt::PreciseTimer);
 
     // setup signal and slot
     connect(_receive_timer, SIGNAL(timeout()),this, SLOT(receive()));
+
+    // create a timer for showing PDO
+    _log_timer = new QTimer(this);
+    _log_timer->setTimerType(Qt::PreciseTimer);
+
+    // setup signal and slot
+    connect(_log_timer, SIGNAL(timeout()),this, SLOT(log()));
 
     _time_ms = 4;
     _max_stop_write=4;
@@ -201,6 +208,7 @@ void EcGuiWrapper::start_stop_record()
                 _record_started = true;
                 _record_action->setIcon(QIcon(":/icon/stop_record.png"));
                 _record_action->setText("Stop Record");
+                _log_timer->start(_time_ms+1); // not precise timer.
                 return;
             }
         }
@@ -216,6 +224,7 @@ void EcGuiWrapper::stop_record()
         _record_started = false;
         _record_action->setIcon(QIcon(":/icon/record.png"));
         _record_action->setText("Record");
+        _log_timer->stop();
     }
 }
 
@@ -260,6 +269,9 @@ void EcGuiWrapper::receive()
 
 void EcGuiWrapper::log()
 {
+    _mutex_send.lock();
+    _ec_gui_pdo->sync_write();
+    _mutex_send.unlock();
     _ec_gui_pdo->log();
 }
 

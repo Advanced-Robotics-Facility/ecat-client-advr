@@ -43,6 +43,7 @@ private slots:
     void start_stop_record();
     void stop_record();
     void receive();
+    void log();
 private:
   
   ec_wrapper_info_t _ec_wrapper_info;
@@ -64,7 +65,7 @@ private:
   
   QPushButton *_send_stop_btn;
 
-  QTimer *_receive_timer;
+  QTimer *_receive_timer,*_log_timer;
   QAction *_receive_action,*_record_action;
   bool _receive_started,_record_started;
 
@@ -74,7 +75,6 @@ private:
   void stop_wrapper_thread();
   void wrapper_thread();
   void send();
-  void log();
   uint8_t _stopping_write_counter=0;
   uint8_t _max_stop_write;
 };
