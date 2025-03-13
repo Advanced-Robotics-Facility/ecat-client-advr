@@ -23,6 +23,7 @@ public:
         EcIface::Ptr client;
         SSI device_info;
         SRD_SDO sdo_map;
+        EcGuiSlider::device_ctrl_t device_ctrl;
     };
 
     typedef std::shared_ptr<EcGuiWrapper> Ptr;

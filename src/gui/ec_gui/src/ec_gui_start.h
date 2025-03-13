@@ -41,6 +41,10 @@ private:
   void restart_gui();
   void add_device();
   void scan_device();
+  void read_sdo_info(const int32_t device_id,
+                     const std::vector<std::string> sdo_name,
+                     std::vector<float> &sdo_info);
+  void setup_motor_device(int32_t device_id,int32_t device_type);
   void clear_device();
   void clear_gui();
   void create_ec_iface();

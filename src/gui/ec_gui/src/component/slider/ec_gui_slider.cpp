@@ -24,10 +24,11 @@ QVBoxLayout* EcGuiSlider::retrieve_slider_layout(const std::string &tab_name,
     return _sliders_window_map[tab_name]->get_layout();
 }
 
-void EcGuiSlider::create_sliders(SSI device_info)
+void EcGuiSlider::create_sliders(SSI device_info,device_ctrl_t device_ctrl)
 {
     
     delete_sliders();
+    _device_ctrl=device_ctrl;
     int device_list_index=0;
     for ( auto &[device_id, device_type, device_pos] : device_info ) {
         if(ec_motors.count(device_type)>0){
@@ -101,6 +102,8 @@ void EcGuiSlider::delete_sliders()
     for(auto [tab_name,vertical_layout]: _sliders_window_map){
         delete_items(vertical_layout->layout());
     }
+
+    _old_ctrl_mode=_ctrl_mode=0x00;
     
     _devicecontrol->clear();
     _sliders_window_map.clear();
@@ -108,6 +111,8 @@ void EcGuiSlider::delete_sliders()
     _slider_map.valve_sw_map.clear();
     _slider_map.pump_sw_map.clear();    
     _device_list_wid->clear();
+    _device_ctrl.device_gains.clear();
+    _device_ctrl.device_limits.clear();
 }
 
 void EcGuiSlider::reset_sliders()
@@ -235,24 +240,41 @@ void EcGuiSlider::control_mode_change()
     set_control_mode(tab_name);
 }
 
-
 void EcGuiSlider::set_control_mode(const std::string &tab_name)
 {
     if(tab_name=="Motors"){
-        int ctrl_mode=_sliders_window_map[tab_name]->read_control_mode();
+        _ctrl_mode=_sliders_window_map[tab_name]->read_control_mode();
         for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
-            slider_wid->align_spinbox(0,ctrl_mode);
+            slider_wid->align_spinbox(0,_ctrl_mode);
+            if(_device_ctrl.device_gains.count(slave_id)>0){
+                int gain_start_index=4; 
+                // save gains of the old ctrl mode.
+                if(_device_ctrl.device_gains[slave_id].count(_old_ctrl_mode)>0){
+                    for(auto & gain_value: _device_ctrl.device_gains[slave_id][_old_ctrl_mode]){
+                        gain_value=slider_wid->get_spinbox_value(gain_start_index);
+                        gain_start_index++;
+                    } 
+                }
+                gain_start_index=4;
+                // load gains of the actual ctrl mode.
+                if(_device_ctrl.device_gains[slave_id].count(_ctrl_mode)>0){
+                    for(const auto & gain_value: _device_ctrl.device_gains[slave_id][_ctrl_mode]){
+                        slider_wid->align_spinbox(gain_start_index,gain_value);
+                        gain_start_index++;
+                    }
+                }
+            }
         }
+        _old_ctrl_mode=_ctrl_mode;
     }
 }
 
 int EcGuiSlider::get_control_mode(std::string tab_name)
 {
-    int ctrl_mode=0x00;
     if(_sliders_window_map.count(tab_name)>0){
-        ctrl_mode=_sliders_window_map[tab_name]->read_control_mode();
+        _ctrl_mode=_sliders_window_map[tab_name]->read_control_mode();
     }
-    return ctrl_mode;
+    return _ctrl_mode;
 }
 
 void EcGuiSlider::enable_control_mode(const std::string& tab_name)

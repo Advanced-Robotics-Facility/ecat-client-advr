@@ -231,6 +231,62 @@ void EcGuiStart::clear_gui()
     _ec_gui_wrapper->clear_gui_wrapper();
 }
 
+void EcGuiStart::read_sdo_info(const int32_t device_id,
+                               const std::vector<std::string> sdo_name,
+                               std::vector<float> &sdo_info)
+{
+    int i=0;
+    for(auto &sdo:sdo_name){
+        if(_ec_wrapper_info.sdo_map[device_id].count(sdo)){
+            sdo_info[i] = std::stof(sdo);
+        }
+    }
+}
+
+void EcGuiStart::setup_motor_device(int32_t device_id,int32_t device_type)
+{
+    std::vector<std::string> sdo_gains;
+    std::vector<std::string> sdo_limits;
+    if(ec_motors[device_type]=="Synapticon_Motor"){
+
+        sdo_gains={"Position_loop_Kp","Position_loop_Ki","Position_loop_Kd",
+                    "Velocity_loop_Kp","Velocity_loop_Ki"};
+        
+        _ec_wrapper_info.device_ctrl.device_gains[device_id][0x3B]={0.0,0.0,0.0,0.0,0.0};
+        read_sdo_info(device_id,sdo_gains,_ec_wrapper_info.device_ctrl.device_gains[device_id][0x3B]);
+
+        sdo_gains.clear();
+        sdo_gains={"Controller_Kp","Controller_Ki","Controller_Kd"};
+        _ec_wrapper_info.device_ctrl.device_gains[device_id][0x71]={0.0,0.0,0.0,0.0,0.0};
+        read_sdo_info(device_id,sdo_gains,_ec_wrapper_info.device_ctrl.device_gains[device_id][0x71]);
+
+        sdo_gains.clear();
+        sdo_gains={"Torque_Controller_Kp","Torque_Controller_Ki","Torque_Controller_Kd"};
+        _ec_wrapper_info.device_ctrl.device_gains[device_id][0xD4]={0.0,0.0,0.0,0.0,0.0};
+        read_sdo_info(device_id,sdo_gains,_ec_wrapper_info.device_ctrl.device_gains[device_id][0xD4]);
+
+        sdo_gains.clear();
+        sdo_gains={"Damping_ratio","Settling_time"};
+        _ec_wrapper_info.device_ctrl.device_gains[device_id][0xCC]={0.0,0.0,0.0,0.0,0.0};
+        read_sdo_info(device_id,sdo_gains,_ec_wrapper_info.device_ctrl.device_gains[device_id][0xCC]);
+
+        _ec_wrapper_info.device_ctrl.device_gains[device_id][0xDD]={0.0,0.0,0.0,0.0,0.0};
+        _ec_wrapper_info.device_ctrl.device_gains[device_id][0x00]={0.0,0.0,0.0,0.0,0.0};
+    }else{
+        _ec_wrapper_info.device_ctrl.device_gains[device_id][0x3B]={200,0,10,0,0};
+        _ec_wrapper_info.device_ctrl.device_gains[device_id][0x71]={20,0,0,0,0};
+        _ec_wrapper_info.device_ctrl.device_gains[device_id][0xD4]={500.0,10.0,1.0,0.7,0.007};
+        _ec_wrapper_info.device_ctrl.device_gains[device_id][0xCC]={0.18,0.01,0.0,0.0,0.0};
+        _ec_wrapper_info.device_ctrl.device_gains[device_id][0xDD]={0.18,0.01,0.0,0.0,0.0};
+        _ec_wrapper_info.device_ctrl.device_gains[device_id][0x00]={0.0,0.0,0.0,0.0,0.0};
+
+        sdo_limits={"Min_pos","Max_pos","Max_vel","Max_tor","Max_cur"};
+
+        _ec_wrapper_info.device_ctrl.device_limits[device_id]={0.0,0.0,0.0,0.0,0.0};
+        read_sdo_info(device_id,sdo_limits,_ec_wrapper_info.device_ctrl.device_limits[device_id]);                        
+    }
+}
+
 void EcGuiStart::scan_device()
 {
     if(_ec_wrapper_info.client->retrieve_slaves_info(_ec_wrapper_info.device_info)){
@@ -242,6 +298,9 @@ void EcGuiStart::scan_device()
                 RR_SDOS rr_sdo;
                 if(_ec_wrapper_info.client->retrieve_all_sdo(device_id,rr_sdo)){
                     _ec_wrapper_info.sdo_map[device_id]=rr_sdo;
+                }
+                if(ec_motors.count(device_type)>0){
+                    setup_motor_device(device_id,device_type);
                 }
             }
         }

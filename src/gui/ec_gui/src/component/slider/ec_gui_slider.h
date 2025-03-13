@@ -49,6 +49,11 @@ public:
       std::map<int, SliderWidget*> pump_sw_map;
     };
 
+    struct device_ctrl_t{
+      std::map<int32_t,std::map<int32_t,std::vector<float>>> device_gains;
+      std::map<int32_t,std::vector<float>> device_limits;
+    };
+
     typedef std::shared_ptr<EcGuiSlider> Ptr;
     
     explicit EcGuiSlider(QWidget *parent = nullptr);
@@ -57,7 +62,7 @@ public:
 
     slider_map_t get_sliders();
     
-    void create_sliders(SSI device_info);
+    void create_sliders(SSI device_info,device_ctrl_t device_ctrl);
     void delete_sliders();
     void reset_sliders();
     void enable_sliders();
@@ -69,7 +74,7 @@ public:
     void enable_control_mode(const std::string& tab_name);
     void disable_control_mode(const std::string& tab_name);
 
-public slots:
+private slots:
     void control_mode_change();
 
 private:
@@ -83,12 +88,15 @@ private:
   QVBoxLayout *_sliders_motorlayout;
   QVBoxLayout *_sliders_valvelayout,*_sliders_pumplayout;
   QListWidget* _device_list_wid;
+  std::map<int32_t,std::map<int32_t,std::vector<float>>> _device_gains;
   void delete_items(QLayout * layout);
   void on_checkbox_clicked(QCheckBox *,int);
   void set_control_mode(const std::string &tab_name);
   QVBoxLayout* retrieve_slider_layout(const std::string &tab_name,
                                       const QStringList &control_mode,
                                       const std::vector<int> control_mode_hex);
+  device_ctrl_t _device_ctrl;
+  int _ctrl_mode,_old_ctrl_mode;
 };
 
 #endif // EC_GUI_SLIDER_H

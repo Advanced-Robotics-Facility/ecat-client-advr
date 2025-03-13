@@ -97,7 +97,10 @@ void EcGuiWrapper::clear_gui_wrapper()
     stop_wrapper_thread();
 
     _ec_wrapper_info.client.reset();
+    _ec_wrapper_info.device_info.clear();
     _ec_wrapper_info.sdo_map.clear();
+    _ec_wrapper_info.device_ctrl.device_gains.clear();
+    _ec_wrapper_info.device_ctrl.device_limits.clear();
 
     _ec_gui_slider->delete_sliders();
 
@@ -115,7 +118,7 @@ void EcGuiWrapper::restart_gui_wrapper(ec_wrapper_info_t ec_wrapper_info)
 
     _ec_logger->init_mat_logger(_ec_wrapper_info.device_info);
     
-    _ec_gui_slider->create_sliders(_ec_wrapper_info.device_info);
+    _ec_gui_slider->create_sliders(_ec_wrapper_info.device_info,_ec_wrapper_info.device_ctrl);
     
     _ec_gui_cmd->restart_ec_gui_cmd(_ec_wrapper_info.client);
     
