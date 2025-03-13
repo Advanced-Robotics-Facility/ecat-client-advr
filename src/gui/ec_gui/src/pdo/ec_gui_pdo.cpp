@@ -191,19 +191,19 @@ void EcGuiPdo::onStopPlotting()
 }
 
 
-void EcGuiPdo::show()
+void EcGuiPdo::read()
 {
     _ms_receive_time= _receive_timer->elapsed();
     _s_receive_time=(double) _ms_receive_time/1000;
     _buffer_time[_counter_buffer]=_s_receive_time;
 
     /************************************* READ Rx PDOs  ********************************************/
-    show_motor_status();
-    show_ft_status();
-    show_pow_status();
-    show_imu_status();
-    show_valve_status();
-    show_pump_status();
+    read_motor_status();
+    read_ft_status();
+    read_pow_status();
+    read_imu_status();
+    read_valve_status();
+    read_pump_status();
     /************************************* READ Rx PDOs  ********************************************/
 
     update_plot();
@@ -240,10 +240,10 @@ void EcGuiPdo::update_plot()
     }
 }
 
-void EcGuiPdo::show_motor_status()
+void EcGuiPdo::read_motor_status()
 {
-    _show_motor_status_map=_motor_status_map;
-    for ( const auto &[esc_id, motor_rx_pdo] : _show_motor_status_map){
+    _client->get_motor_status(_motor_status_map);
+    for ( const auto &[esc_id, motor_rx_pdo] : _motor_status_map){
         QTreeWidgetItem *topLevel= retrieve_treewid_item(esc_id,"motor",MotorPdoRx::name,"Rx");
         if(MotorPdoRx::make_vector_from_tuple(motor_rx_pdo,_pdo_v[esc_id])){
             fill_data(esc_id,topLevel,MotorPdoRx::name,_pdo_v[esc_id]);
@@ -258,10 +258,10 @@ void EcGuiPdo::show_motor_status()
     }  
 }
 
-void EcGuiPdo::show_ft_status()
+void EcGuiPdo::read_ft_status()
 {
-    _show_ft_status_map=_ft_status_map;
-    for ( const auto &[esc_id, ft_rx_pdo] : _show_ft_status_map){
+    _client->get_ft_status(_ft_status_map);
+    for ( const auto &[esc_id, ft_rx_pdo] : _ft_status_map){
         QTreeWidgetItem *topLevel= retrieve_treewid_item(esc_id,"ft",FtPdoRx::name,"Rx");
         if(FtPdoRx::make_vector_from_tuple(ft_rx_pdo,_pdo_v[esc_id])){
             fill_data(esc_id,topLevel,FtPdoRx::name,_pdo_v[esc_id]);
@@ -269,10 +269,10 @@ void EcGuiPdo::show_ft_status()
     }
 }
 
-inline void EcGuiPdo::show_pow_status()
+void EcGuiPdo::read_pow_status()
 {
-    _show_pow_status_map=_pow_status_map;
-    for ( const auto &[esc_id, pow_rx_pdo] : _show_pow_status_map){
+    _client->get_pow_status(_pow_status_map);
+    for ( const auto &[esc_id, pow_rx_pdo] : _pow_status_map){
         if(_counter_buffer==_buffer_size-1){
             _battery_level->display(std::get<0>(pow_rx_pdo));
         }
@@ -283,20 +283,20 @@ inline void EcGuiPdo::show_pow_status()
     }
 }
 
-void EcGuiPdo::show_imu_status()
+void EcGuiPdo::read_imu_status()
 {
-    _show_imu_status_map=_imu_status_map;
-    for ( const auto &[esc_id, imu_rx_pdo] : _show_imu_status_map){
+    _client->get_imu_status(_imu_status_map);
+    for ( const auto &[esc_id, imu_rx_pdo] : _imu_status_map){
         QTreeWidgetItem *topLevel= retrieve_treewid_item(esc_id,"imu",ImuPdoRx::name,"Rx");
         if(ImuPdoRx::make_vector_from_tuple(imu_rx_pdo,_pdo_v[esc_id])){
             fill_data(esc_id,topLevel,ImuPdoRx::name,_pdo_v[esc_id]);
         }
     }
 }
-void EcGuiPdo::show_valve_status()
+void EcGuiPdo::read_valve_status()
 {    
-    _show_valve_status_map=_valve_status_map;
-    for ( const auto &[esc_id, valve_rx_pdo] : _show_valve_status_map){
+    _client->get_valve_status(_valve_status_map);
+    for ( const auto &[esc_id, valve_rx_pdo] : _valve_status_map){
         QTreeWidgetItem *topLevel= retrieve_treewid_item(esc_id,"valve",ValvePdoRx::name,"Rx");
         if(ValvePdoRx::make_vector_from_tuple(valve_rx_pdo,_pdo_v[esc_id])){
             fill_data(esc_id,topLevel,ValvePdoRx::name,_pdo_v[esc_id]);
@@ -310,10 +310,10 @@ void EcGuiPdo::show_valve_status()
     }
 }
 
-void EcGuiPdo::show_pump_status()
+void EcGuiPdo::read_pump_status()
 {
-    _show_pump_status_map=_pump_status_map;
-    for ( const auto &[esc_id, pump_rx_pdo] : _show_pump_status_map){
+    _client->get_pump_status(_pump_status_map);
+    for ( const auto &[esc_id, pump_rx_pdo] : _pump_status_map){
         QTreeWidgetItem *topLevel= retrieve_treewid_item(esc_id,"pump",PumpPdoRx::name,"Rx");
         if(PumpPdoRx::make_vector_from_tuple(pump_rx_pdo,_pdo_v[esc_id])){
             fill_data(esc_id,topLevel,PumpPdoRx::name,_pdo_v[esc_id]);
@@ -327,18 +327,25 @@ void EcGuiPdo::show_pump_status()
         /************************************* ALIGN PUMP SLIDERS with the actual pressure********************************************/
     }
 }
-
-void EcGuiPdo::read()
-{
-    _client->get_motor_status(_motor_status_map);
-    _client->get_ft_status(_ft_status_map);
-    _client->get_pow_status(_pow_status_map);
-    _client->get_imu_status(_imu_status_map);
-    _client->get_valve_status(_valve_status_map);
-    _client->get_pump_status(_pump_status_map);
-}
-
 /********************************************************* READ PDO***********************************************************************************************/
+
+/********************************************************* LOG PDO***********************************************************************************************/
+void EcGuiPdo::log()
+{
+    _ec_logger->log_motor_status(_motor_status_map);
+    _ec_logger->log_motor_reference(_motor_ref_map); 
+
+    _ec_logger->log_ft_status(_ft_status_map);
+    _ec_logger->log_pow_status(_pow_status_map);
+    _ec_logger->log_imu_status(_imu_status_map);
+
+    _ec_logger->log_valve_status(_valve_status_map);
+    _ec_logger->log_valve_reference(_valve_ref_map);
+
+    _ec_logger->log_pump_status(_pump_status_map);
+    _ec_logger->log_pump_reference(_pump_ref_map);
+}
+/********************************************************* LOG PDO***********************************************************************************************/
 
 /********************************************************* WRITE PDO***********************************************************************************************/
 void EcGuiPdo::starting_write(int time_ms)
@@ -462,20 +469,3 @@ void EcGuiPdo::write_pump_pdo()
     _client->set_pump_reference(_pump_reference_map);
 }
 /********************************************************* WRITE PDO***********************************************************************************************/
-/********************************************************* LOG PDO***********************************************************************************************/
-void EcGuiPdo::log()
-{
-    _ec_logger->log_motor_status(_motor_status_map);
-    _ec_logger->log_motor_reference(_motor_reference_map); 
-
-    _ec_logger->log_ft_status(_ft_status_map);
-    _ec_logger->log_pow_status(_pow_status_map);
-    _ec_logger->log_imu_status(_imu_status_map);
-
-    _ec_logger->log_valve_status(_valve_status_map);
-    _ec_logger->log_valve_reference(_valve_reference_map);
-
-    _ec_logger->log_pump_status(_pump_status_map);
-    _ec_logger->log_pump_reference(_pump_reference_map);
-}
-/********************************************************* LOG PDO***********************************************************************************************/

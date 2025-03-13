@@ -53,11 +53,11 @@ EcGuiWrapper::EcGuiWrapper(QWidget *parent) :
     connect(_send_stop_btn, &QPushButton::released,this, &EcGuiWrapper::onSendStopBtnReleased);
     
     // create a timer for showing PDO
-    _show_timer = new QTimer(this);
-    _show_timer->setTimerType(Qt::PreciseTimer);
+    _receive_timer = new QTimer(this);
+    _receive_timer->setTimerType(Qt::PreciseTimer);
 
     // setup signal and slot
-    connect(_show_timer, SIGNAL(timeout()),this, SLOT(show()));
+    connect(_receive_timer, SIGNAL(timeout()),this, SLOT(receive()));
 
     _time_ms = 4;
     _max_stop_write=4;
@@ -197,9 +197,7 @@ void EcGuiWrapper::start_stop_record()
         }
         else{
             if(!_record_started && _run_wrapper_thread){
-                _mutex_log.lock();
                 _ec_logger->start_mat_logger();
-                _mutex_log.unlock();
                 _record_started = true;
                 _record_action->setIcon(QIcon(":/icon/stop_record.png"));
                 _record_action->setText("Stop Record");
@@ -214,9 +212,7 @@ void EcGuiWrapper::start_stop_record()
 void EcGuiWrapper::stop_record()
 {
     if(_record_started){
-        _mutex_log.lock();
         _ec_logger->stop_mat_logger();
-        _mutex_log.unlock();
         _record_started = false;
         _record_action->setIcon(QIcon(":/icon/record.png"));
         _record_action->setText("Record");
@@ -237,7 +233,7 @@ void EcGuiWrapper::start_stop_receive()
             if(!_receive_started && _run_wrapper_thread){
                 _receive_started = true;
                 _ec_gui_pdo->restart_receive_timer();
-                _show_timer->start(_time_ms+2); // not precise timer.
+                _receive_timer->start(_time_ms+1); // not precise timer.
                 return; 
             }
         }
@@ -250,16 +246,9 @@ void EcGuiWrapper::stop_receive()
 {
     if(_receive_started){
         _receive_started = false;
-        _show_timer->stop();
+        _receive_timer->stop();
     }
 }
-
-void EcGuiWrapper::show()
-{
-    _ec_gui_pdo->show();
-}
-
-////*************************** EC GUI WRAPPER THREAD ************************************
 
 void EcGuiWrapper::receive()
 {
@@ -269,6 +258,12 @@ void EcGuiWrapper::receive()
     }
 }
 
+void EcGuiWrapper::log()
+{
+    _ec_gui_pdo->log();
+}
+
+////*************************** EC GUI WRAPPER THREAD ************************************
 void EcGuiWrapper::send()
 {
     _mutex_send.lock();
@@ -289,22 +284,13 @@ void EcGuiWrapper::send()
     _mutex_send.unlock();
 }
 
-void EcGuiWrapper::log()
-{
-    _mutex_log.lock();
-    _ec_gui_pdo->log();
-    _mutex_log.unlock();
-}
-
 void EcGuiWrapper::wrapper_thread()
 {
     while(_run_wrapper_thread){
         
         if(_ec_wrapper_info.client->get_client_status().run_loop){
             
-            receive();
             send();
-            log();
             
             _loop_time = _loop_time + std::chrono::milliseconds(_time_ms);
             std::this_thread::sleep_until(_loop_time);
@@ -340,9 +326,7 @@ void EcGuiWrapper::stop_wrapper_thread()
         std::this_thread::sleep_for(std::chrono::milliseconds(5*_time_ms));
     }
 
-    _mutex_log.lock();
     _ec_logger->stop_mat_logger();
-    _mutex_log.unlock();
 
     _run_wrapper_thread=false;
     if(_ec_wrapper_thread){

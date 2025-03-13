@@ -23,8 +23,6 @@ public:
     
       void restart_ec_gui_pdo(EcIface::Ptr client,EcLogger::Ptr ec_logger);
       void restart_receive_timer();
-      void show();
-      
       void read();
       void starting_write(int time_ms);
       void stopping_write();
@@ -59,20 +57,20 @@ private:
       uint16_t _buffer_size;
 
       // last received motor data
-      MotorStatusMap _motor_status_map,_show_motor_status_map;
-      MotorReferenceMap _motor_reference_map;
+      MotorStatusMap _motor_status_map;
+      MotorReferenceMap _motor_reference_map,_motor_ref_map;
       // last received ft data
-      FtStatusMap _ft_status_map,_show_ft_status_map;
+      FtStatusMap _ft_status_map;
       // last received pow data
-      PwrStatusMap _pow_status_map,_show_pow_status_map;
+      PwrStatusMap _pow_status_map;
       // last received imu data
-      ImuStatusMap _imu_status_map,_show_imu_status_map;
+      ImuStatusMap _imu_status_map;
       // last received valve data
-      ValveStatusMap _valve_status_map,_show_valve_status_map;
-      ValveReferenceMap _valve_reference_map;
+      ValveStatusMap _valve_status_map;
+      ValveReferenceMap _valve_reference_map,_valve_ref_map;
       // last received pump data
-      PumpStatusMap _pump_status_map,_show_pump_status_map;
-      PumpReferenceMap _pump_reference_map;
+      PumpStatusMap _pump_status_map;
+      PumpReferenceMap _pump_reference_map,_pump_ref_map;
 
       QLCDNumber *_battery_level;
     
@@ -89,12 +87,12 @@ private:
 
       void update_plot();
       
-      void show_motor_status();
-      void show_ft_status();
-      void show_pow_status();
-      void show_imu_status();
-      void show_valve_status();
-      void show_pump_status();
+      void read_motor_status();
+      void read_ft_status();
+      void read_pow_status();
+      void read_imu_status();
+      void read_valve_status();
+      void read_pump_status();
     //************************ READ PDO ******************************
     
     //************************ WRITE PDO ******************************

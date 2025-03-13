@@ -42,7 +42,7 @@ private slots:
     void stop_receive();
     void start_stop_record();
     void stop_record();
-    void show();
+    void receive();
 private:
   
   ec_wrapper_info_t _ec_wrapper_info;
@@ -56,7 +56,7 @@ private:
   EcLogger::Ptr _ec_logger;
 
   std::shared_ptr<std::thread> _ec_wrapper_thread;
-  std::mutex _mutex_send,_mutex_log;
+  std::mutex _mutex_send;
   std::chrono::high_resolution_clock::time_point _loop_time,_start_loop_time;
 
   int _time_ms;
@@ -64,7 +64,7 @@ private:
   
   QPushButton *_send_stop_btn;
 
-  QTimer *_show_timer;
+  QTimer *_receive_timer;
   QAction *_receive_action,*_record_action;
   bool _receive_started,_record_started;
 
@@ -73,7 +73,6 @@ private:
   bool check_client_setup();
   void stop_wrapper_thread();
   void wrapper_thread();
-  void receive();
   void send();
   void log();
   uint8_t _stopping_write_counter=0;
