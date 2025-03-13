@@ -27,6 +27,7 @@ public:
       void starting_write(int time_ms);
       void stopping_write();
       void write();
+      void sync_write();
       void log();
 
 private:
@@ -98,6 +99,7 @@ private:
     //************************ WRITE PDO ******************************
       int _time_ms;
       bool check_write_device(std::map<int, SliderWidget*> slider_map);
+      void init_write_pdo();
       void write_motor_pdo();
       void write_valve_pdo();
       void write_pump_pdo();

@@ -89,6 +89,7 @@ void EcGuiPdo::restart_ec_gui_pdo(EcIface::Ptr client,EcLogger::Ptr ec_logger)
 
     _slider_map=_ec_gui_slider->get_sliders(); // read only actual slider widget map.
     _motors_selected=_valves_selected=_pumps_selected=false;
+    init_write_pdo();
 
 }
 /************************************* GENERATE GRAPH ***************************************/
@@ -348,6 +349,33 @@ void EcGuiPdo::log()
 /********************************************************* LOG PDO***********************************************************************************************/
 
 /********************************************************* WRITE PDO***********************************************************************************************/
+void EcGuiPdo::sync_write()
+{
+    _motor_ref_map = _motor_reference_map;
+    _valve_ref_map = _valve_reference_map;
+    _pump_ref_map  = _pump_reference_map;
+}
+
+void EcGuiPdo::init_write_pdo()
+{
+    _motor_reference_map.clear();
+    for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
+        _motor_reference_map[slave_id]={0,0,0,0,0,0,0,0,0,0,0,0};
+    }
+
+    _valve_reference_map.clear();
+    for (auto& [slave_id, slider_wid]:_slider_map.valve_sw_map){
+        _valve_reference_map[slave_id]={0,0,0,0,0,0,0,0,0,0,0,0};
+    }
+
+    _pump_reference_map.clear();
+    for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
+        _pump_reference_map[slave_id]={0,0,0,0,0,0,0,0,0};
+    }
+
+    sync_write();
+}
+
 void EcGuiPdo::starting_write(int time_ms)
 {
     _time_ms = time_ms;
@@ -395,8 +423,8 @@ void EcGuiPdo::write_motor_pdo()
 
     for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
         float motor_pos=slider_wid->get_spinbox_value(1); // DONE read function!!
-        _motor_reference_map[slave_id]={0,motor_pos,0,0,0,0,0,0,0,0,0,0};
         std::get<0>(_motor_reference_map[slave_id])=0x00;
+        std::get<1>(_motor_reference_map[slave_id])=motor_pos;
         if(slider_wid->is_slider_checked()){
             std::get<0>(_motor_reference_map[slave_id])=slider_wid->get_spinbox_value(0);
             std::get<1>(_motor_reference_map[slave_id])=slider_wid->compute_wave(1,_s_send_time); 
@@ -424,7 +452,7 @@ void EcGuiPdo::write_valve_pdo()
 
     for (auto& [slave_id, slider_wid]:_slider_map.valve_sw_map){
         float enc_pos=slider_wid->get_spinbox_value(0); // DONE read function!!
-        _valve_reference_map[slave_id]={0,enc_pos,0,0,0,0,0,0,0,0,0,0};
+        std::get<1>(_valve_reference_map[slave_id])=enc_pos;
         if(slider_wid->is_slider_checked()){
             std::get<0>(_valve_reference_map[slave_id])=slider_wid->compute_wave(0,_s_send_time);
             std::get<1>(_valve_reference_map[slave_id])=slider_wid->compute_wave(1,_s_send_time); 
@@ -452,7 +480,7 @@ void EcGuiPdo::write_pump_pdo()
 
     for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
         float pressure=slider_wid->get_spinbox_value(0); // DONE read function!!
-        _pump_reference_map[slave_id]={pressure,0,0,0,0,0,0,0,0};
+        std::get<0>(_pump_reference_map[slave_id])=pressure;
         if(slider_wid->is_slider_checked()){
             std::get<0>(_pump_reference_map[slave_id])=slider_wid->compute_wave(0,_s_send_time);
             std::get<1>(_pump_reference_map[slave_id])=slider_wid->get_spinbox_value(1);
