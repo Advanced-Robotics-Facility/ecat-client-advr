@@ -7,6 +7,18 @@ EcGuiSlider::EcGuiSlider(QWidget *parent) :
     _device_list_wid = parent->findChild<QListWidget *>("devicelistWidget");
 }
 
+template<typename T>
+std::string to_string(T value)
+{
+    int value_int = static_cast<int>(value*100+0.5);
+    T round = static_cast<T>(value_int)/100; 
+
+    std::stringstream string_stream;
+    string_stream << std::fixed << std::setprecision(2) << value;
+
+    return string_stream.str();;
+}
+
 QVBoxLayout* EcGuiSlider::retrieve_slider_layout(const std::string &tab_name,
                                                  const QStringList &control_mode,
                                                  const std::vector<int> control_mode_hex)
@@ -32,6 +44,24 @@ void EcGuiSlider::create_sliders(SSI device_info,device_ctrl_t device_ctrl)
         if(ec_motors.count(device_type)>0){
             std::string motor_name_s="motor_"+std::to_string(device_id);
             QString motor_name = QString::fromStdString(motor_name_s);
+            if(_device_ctrl.device_limits.count(device_id)>0){
+                auto limits = _device_ctrl.device_limits[device_id];
+                int start_device_info=1;
+                if(limits[0]!=FLT_MIN && limits[1]!=FLT_MAX){
+                    motor_info.slider_min[start_device_info] = to_string(limits[0]);
+                    motor_info.slider_max[start_device_info] = to_string(limits[1]);
+                }
+                
+                int limits_size = static_cast<int>(limits.size());
+                start_device_info++;
+                for(int i=2;i<limits_size-1;i++){
+                    if(limits[i]>0.0){
+                        motor_info.slider_min[start_device_info] = to_string(-limits[i]);
+                        motor_info.slider_max[start_device_info] = to_string(limits[i]);
+                    }
+                    start_device_info++;
+                }   
+            }
             auto wid_motor=new SliderWidget(motor_name,motor_info,this);
             _slider_map.motor_sw_map[device_id]=wid_motor;
 

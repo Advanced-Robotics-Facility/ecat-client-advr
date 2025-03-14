@@ -7,8 +7,9 @@
 #include "slider_window.h"
 #include "slider_widget.h"
 #include "utils/ec_utils.h"
+#include <cfloat>
 
-static const SliderWidget::slider_info_s motor_info={
+static SliderWidget::slider_info_s motor_info={
   MotorPdoTx::name,
   {"[uless]","[rad]","[rad/s]","[Nm]---[A]","[arbu]", "[arbu]","[arbu]","[arbu]","[arbu]","[uless]","[uless]","[arbu]"},
   {0,2,2,2,4,4,4,4,4,0,0,2},
