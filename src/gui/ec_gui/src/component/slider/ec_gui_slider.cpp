@@ -19,8 +19,6 @@ QVBoxLayout* EcGuiSlider::retrieve_slider_layout(const std::string &tab_name,
         _devicecontrol->insertTab(tab_actual_index,_sliders_window_map[tab_name],QString::fromStdString(tab_name));
     }
     
-    set_control_mode(tab_name);
-    
     return _sliders_window_map[tab_name]->get_layout();
 }
 
@@ -87,6 +85,10 @@ void EcGuiSlider::create_sliders(SSI device_info,device_ctrl_t device_ctrl)
     for(int i=0;i<_device_list_wid->count();i++){
         _device_list_wid->item(i)->setHidden(true);
     }
+
+    set_control_mode("Motors");
+    set_control_mode("Valves");
+    set_control_mode("Pumps");
 }
 
 void EcGuiSlider::on_checkbox_clicked(QCheckBox * slider_enabled,int i)
