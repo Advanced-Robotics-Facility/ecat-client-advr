@@ -272,6 +272,51 @@ void EcGuiStart::setup_motor_device(int32_t device_id,int32_t device_type)
 
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0xDD]={0.0,0.0,0.0,0.0,0.0};
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0x00]={0.0,0.0,0.0,0.0,0.0};
+
+
+        sdo_limits.clear();
+        sdo_limits={"min_position_limit","max_position_limit","Singleturn_bits"};
+        std::vector<float> limits={FLT_MIN,FLT_MAX,0.0,0.0};
+        std::vector<float> final_limits={FLT_MIN,FLT_MAX,0.0,0.0,0.0};
+        read_sdo_info(device_id,sdo_limits,limits);
+        if(limits[0]!=FLT_MIN && limits[1]!=FLT_MAX){
+            if(limits[2]>0.0 && limits[3]>0.0){
+                final_limits[0]=(limits[0]* (2*M_PI)/ pow(2,limits[2])); // (INC * 2pi /2^resolution)
+                final_limits[1]=(limits[1]* (2*M_PI)/ pow(2,limits[2])); // (INC * 2pi /2^resolution)
+                if(std::abs(final_limits[0])>3.14 || std::abs(final_limits[1])>3.14 ){
+                    final_limits[0]=FLT_MIN;
+                    final_limits[1]=FLT_MAX;
+                }
+            }
+        }
+        sdo_limits.clear();
+        sdo_limits={"Max_motor_speed","SI_unit_velocity"};
+        limits.clear();
+        limits={0.0,0.0};
+        read_sdo_info(device_id,sdo_limits,limits);
+        if(limits[0]>0.0 && limits[0]!=0.0){
+            final_limits[2]=(2*M_PI)/60*limits[0]*limits[1]; // 2pi/60*Max_motor_speed*SI_unit_velocity
+        }
+
+        sdo_limits.clear();
+        sdo_limits={"Motor_max_torque","Motor_rated_torque"};
+        limits.clear();
+        limits={0.0,0.0};
+        read_sdo_info(device_id,sdo_limits,limits);
+        if(limits[0]>0.0 && limits[0]>0.0){
+            final_limits[3]=limits[0]/1000*limits[1]; //Motor_max_torque/1000*Motor_rated_torque;
+        }
+
+        sdo_limits.clear();
+        sdo_limits={"Max_current","Motor_rated_current"};
+        limits.clear();
+        limits={0.0,0.0};
+        read_sdo_info(device_id,sdo_limits,limits);
+        if(limits[0]>0.0 && limits[0]>0.0){
+            final_limits[4]=limits[0]/1000*limits[1]; //Max_current/1000*Motor_rated_current;
+        }
+        _ec_wrapper_info.device_ctrl.device_limits[device_id]=final_limits;
+
     }else{
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0x3B]={200,0,10,0,0};
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0x71]={20,0,0,0,0};
