@@ -297,6 +297,7 @@ void EcGuiWrapper::send()
         _ec_wrapper_info.client->write();
 
         if(!_ec_gui_cmd->get_command_sts() && _send_pdo){
+            _send_pdo=false;
             _send_stop_btn->click();
         } 
     }
