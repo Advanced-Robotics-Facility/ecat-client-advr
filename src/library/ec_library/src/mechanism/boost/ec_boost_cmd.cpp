@@ -474,7 +474,7 @@ void EcBoostCmd::feed_motors()
                 }
                 
                 if(!mot_ref_v.empty()){
-                    MSR m_ref_flag=std::make_tuple(1, mot_ref_v); //RefFlags::FLAG_MULTI_REF
+                    MSR m_ref_flag=std::make_tuple(_reference_flag, mot_ref_v); //RefFlags::FLAG_MULTI_REF
                     CBuffT<4096u> sendBuffer{};
                     auto sizet = proto.packReplRequestSetMotorsRefs(sendBuffer, m_ref_flag);
                     do_send(sendBuffer.data(), sendBuffer.size() );

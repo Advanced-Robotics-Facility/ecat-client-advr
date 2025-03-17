@@ -52,7 +52,8 @@ public:
     bool pdo_aux_cmd_sts(const PAC & pac);
     
     // EtherCAT Client ADVR Facilty setters
-    void set_motor_reference(const MotorReferenceMap motor_reference);
+    void set_reference_flag(uint32_t reference_flag);
+    void set_motor_reference(const MotorReferenceMap motor_references);
     void set_valve_reference(const ValveReferenceMap valve_reference);
     void set_pump_reference(const PumpReferenceMap pump_reference);
     
@@ -120,6 +121,7 @@ protected:
     pthread_condattr_t _update_attr;
     int _update_count=0;
     unsigned int _waiting_client_counter=0;
+    uint32_t _reference_flag=0;
     
     void sync_client_thread();
     void wake_client_thread();

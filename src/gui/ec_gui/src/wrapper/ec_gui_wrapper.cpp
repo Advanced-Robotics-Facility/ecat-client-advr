@@ -173,6 +173,7 @@ void EcGuiWrapper::onSendStopBtnReleased()
         _send_pdo=true;
         _stopping_write_counter=_max_stop_write;
         _ec_gui_pdo->starting_write(_time_ms);
+        _ec_wrapper_info.client->set_reference_flag(1); // multi-reference for UDP protocol
         _mutex_send.unlock();
     }
     else{ 
@@ -285,6 +286,9 @@ void EcGuiWrapper::send()
     if(_send_pdo || _stopping_write_counter< _max_stop_write){
         // **************Delay stop**************
         if(!_send_pdo){
+            if(_stopping_write_counter== _max_stop_write-1){
+                _ec_wrapper_info.client->set_reference_flag(2); // last reference for UDP protocol
+            }
             _stopping_write_counter++; //4*ts delayed write
         }
         // **************Delay stop**************
