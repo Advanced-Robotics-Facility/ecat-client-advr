@@ -911,7 +911,7 @@
               <string>localhost</string>
              </property>
              <property name="text">
-              <string>5000</string>
+              <string>54321</string>
              </property>
             </item>
             <item>
@@ -929,7 +929,7 @@
               <string>localhost</string>
              </property>
              <property name="text">
-              <string>5000</string>
+              <string>54321</string>
              </property>
             </item>
             <item>
@@ -1082,19 +1082,19 @@
               </font>
              </property>
              <property name="currentText">
-              <string>tcp</string>
+              <string>udp</string>
              </property>
              <property name="currentIndex">
               <number>0</number>
              </property>
              <item>
               <property name="text">
-               <string>tcp</string>
+               <string>udp</string>
               </property>
              </item>
              <item>
               <property name="text">
-               <string>udp</string>
+               <string>tcp</string>
               </property>
              </item>
              <item>
