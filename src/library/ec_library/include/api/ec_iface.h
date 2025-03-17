@@ -121,7 +121,7 @@ protected:
     pthread_condattr_t _update_attr;
     int _update_count=0;
     unsigned int _waiting_client_counter=0;
-    uint32_t _reference_flag=0;
+    uint32_t _reference_flag=1; // default multi-ref value.
     
     void sync_client_thread();
     void wake_client_thread();
