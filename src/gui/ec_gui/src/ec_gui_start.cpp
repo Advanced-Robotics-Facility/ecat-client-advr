@@ -302,13 +302,20 @@ void EcGuiStart::setup_motor_device(int32_t device_id,int32_t device_type)
         read_sdo_info(device_id,sdo_limits,limits);
         float SI_velocity=1.0;
         if(limits[0]>0.0 && limits[1]!=0.0 && limits[2]!=0.0){
-            if(limits[1]>11814656 && limits[1]<=4290004736){
+            /**
+            0x60A9 SI unit velocity
+            1 RPM (value 0x00B44700 or 11814656) - default, but may not be precise enough for some applications.
+            0.1 RPM (value 0xFFB44700 or 4290004736)
+            0.01 RPM (value 0xFEB44700 or 4273227520)
+            0.001 RPM (value 0xFDB44700 or 4256450304)
+            */
+            if(limits[1]>0x00B44700 && limits[1]<=0xFFB44700){
                 SI_velocity=0.1;
             }
-            else if(limits[1]>4290004736 && limits[1]<=4273227520){
+            else if(limits[1]>0xFFB44700 && limits[1]<=0xFEB44700){
                 SI_velocity=0.01;
             }
-            else if(limits[1]>4273227520 && limits[1]<=4256450304){
+            else if(limits[1]>0xFEB44700 && limits[1]<=0xFDB44700){
                 SI_velocity=0.001;
             }
             else{
