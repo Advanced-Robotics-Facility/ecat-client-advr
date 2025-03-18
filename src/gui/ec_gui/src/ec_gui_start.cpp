@@ -237,10 +237,12 @@ void EcGuiStart::read_sdo_info(const int32_t device_id,
 {
     int i=0;
     for(auto &sdo:sdo_name){
-        if(_ec_wrapper_info.sdo_map[device_id].count(sdo)){
-            std::stringstream out;
-            out << std::fixed << std::setprecision(5) << _ec_wrapper_info.sdo_map[device_id][sdo];
-            out >> sdo_info[i];
+        if(_ec_wrapper_info.sdo_map.count(device_id)>0){
+            if(_ec_wrapper_info.sdo_map[device_id].count(sdo)){
+                std::stringstream out;
+                out << std::fixed << std::setprecision(5) << _ec_wrapper_info.sdo_map[device_id][sdo];
+                out >> sdo_info[i];
+            }
         }
         i++;
     }
