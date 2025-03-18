@@ -289,9 +289,9 @@ void EcGuiStart::setup_motor_device(int32_t device_id,int32_t device_type)
             if(limits[2]>0.0 && limits[3]>0.0){
                 final_limits[0]=(limits[0]* (2*M_PI)/ pow(2,limits[2]))/limits[3]; // (INC * 2pi /2^resolution)/gear_ration
                 final_limits[1]=(limits[1]* (2*M_PI)/ pow(2,limits[2]))/limits[3]; // (INC * 2pi /2^resolution)/gear_ration
-                if(std::abs(final_limits[0])>3.14 || std::abs(final_limits[1])>3.14 ){
-                    //final_limits[0]=FLT_MIN;
-                    //final_limits[1]=FLT_MAX;
+                if(std::abs(final_limits[0])>2*M_PI || std::abs(final_limits[1])>2*M_PI ){
+                    final_limits[0]=-3.14;
+                    final_limits[1]=3.14; // to be verified!!!
                 }
             }
         }
