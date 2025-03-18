@@ -81,15 +81,14 @@ void EcUDP::start_client(uint32_t period_ms)
 
 void EcUDP::stop_client()
 {
-    if(_client_status.status!=ClientStatusEnum::IDLE){ 
-
+    if(_client_status.run_loop){
         stop();
-        
-        disconnect();
-        
-        _client_status.run_loop=false;
-        _client_status.status=ClientStatusEnum::NOT_ALIVE;
     }
+        
+    disconnect();
+    
+    _client_status.run_loop=false;
+    _client_status.status=ClientStatusEnum::NOT_ALIVE;
 }
 
 
@@ -107,7 +106,7 @@ void EcUDP::periodicActivity()
     
     // Server alive checking //
     auto client_alive_elapsed_ms=duration_cast<milliseconds>(sample_time-_client_alive_time);
-    
+
     if(_actual_server_status==ServerStatus::IDLE){
         if(client_alive_elapsed_ms >= _server_alive_check_ms){
             // Stop receiving motors, imu, ft, power board pdo information // 
