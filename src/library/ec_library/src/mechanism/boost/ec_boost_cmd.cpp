@@ -12,7 +12,7 @@ EcBoostCmd::EcBoostCmd()
     _reply_err_msg="";
     
     _wait_reply_time = 1000;  //1s
-    
+
     _server_alive_check_ms=std::chrono::milliseconds(_wait_reply_time)+std::chrono::milliseconds(500); //1.5s
 }
 
@@ -89,6 +89,10 @@ void EcBoostCmd::repl_replies_handler(char *buf, size_t size)
     }
     
     if(_cmd_req_reply){
+        if(_reply_err_msg.find("RECV_FAIL")!=std::string::npos){
+            _req_reply_timeout=true; //repl timeout
+             _consoleLog->error("Repl replies timeout, restart the request!");
+        }
         _cv_repl_reply->notify_one();
         _cmd_req_reply=false;
     }
@@ -155,8 +159,12 @@ bool EcBoostCmd::get_reply_from_server(ReplReqRep cmd_req)
     std::unique_lock<std::mutex> lk(_cv_m);
     
     _cmd_req_reply=true;
-    _cv_repl_reply->wait_for(lk,std::chrono::milliseconds(_wait_reply_time)); // timer for ACK and NACK from udp server
-    
+    auto cv_status= _cv_repl_reply->wait_for(lk,std::chrono::milliseconds(_wait_reply_time)); // timer for ACK and NACK from udp server
+    if(cv_status==std::cv_status::timeout){
+        _req_reply_timeout=true;
+        _consoleLog->error("Command timeout, restart the request!"); // server timeout 
+    }
+
     if(_client_status.status!=ClientStatusEnum::NOT_ALIVE){
         _consoleLog->info(" Command requested ---> {} Command reply--->{} ", cmd_req, _repl_req_rep);
         if(cmd_req == _repl_req_rep){
@@ -196,12 +204,16 @@ bool EcBoostCmd::retrieve_slaves_info(SSI &slave_info)
     }
 
     _slave_info.clear();
+    _req_reply_timeout=false;
     while(slave_info.empty() && attemps_cnt < _max_cmd_attemps){
         if(_client_status.status!=ClientStatusEnum::NOT_ALIVE){
             
             get_slaves_info();
+
             ret_cmd_status = get_reply_from_server(ReplReqRep::SLAVES_INFO);
-            
+            if(_req_reply_timeout){
+                return false;
+            }
             if(ret_cmd_status){
                 slave_info = _slave_info;
                 attemps_cnt = _max_cmd_attemps;
@@ -248,6 +260,7 @@ bool EcBoostCmd::retrieve_all_sdo(uint32_t esc_id,RR_SDOS &rr_sdo)
     int attemps_cnt = 0;
     bool ret_cmd_status=false;
     
+    _req_reply_timeout=false;
     while(rr_sdo.empty() && attemps_cnt < _max_cmd_attemps){
         if(_client_status.status!=ClientStatusEnum::NOT_ALIVE){
             CBuffT<8192u> sendBuffer{};
@@ -257,7 +270,9 @@ bool EcBoostCmd::retrieve_all_sdo(uint32_t esc_id,RR_SDOS &rr_sdo)
             _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
 
             ret_cmd_status = get_reply_from_server(ReplReqRep::SDO_INFO);
-
+            if(_req_reply_timeout){
+                return false;
+            }
             if(ret_cmd_status){
                 attemps_cnt = _max_cmd_attemps;
                 ret_cmd_status = retrieve_rr_sdo(esc_id,_sdo_names,{},rr_sdo);
@@ -285,11 +300,15 @@ bool EcBoostCmd::retrieve_rr_sdo(uint32_t esc_id,
     bool ret_cmd_status=false;
     
     _rr_sdo.clear();
+    _req_reply_timeout=false;
     while(rr_sdo.empty() && attemps_cnt < _max_cmd_attemps){
         if(_client_status.status!=ClientStatusEnum::NOT_ALIVE){
             getAndset_slaves_sdo(esc_id,rd_sdo,wr_sdo);
             
             ret_cmd_status = get_reply_from_server(ReplReqRep::SDO_CMD);
+            if(_req_reply_timeout){
+                return false;
+            }
             if(ret_cmd_status){
                 rr_sdo= _rr_sdo;
                 attemps_cnt = _max_cmd_attemps;
@@ -313,12 +332,15 @@ bool EcBoostCmd::set_wr_sdo(uint32_t esc_id,
 {
     int attemps_cnt = 0;
     bool ret_cmd_status=false;
-
+    _req_reply_timeout=false;
     while(attemps_cnt < _max_cmd_attemps){
         if(_client_status.status!=ClientStatusEnum::NOT_ALIVE){
             getAndset_slaves_sdo(esc_id,rd_sdo,wr_sdo);
 
             ret_cmd_status = get_reply_from_server(ReplReqRep::SDO_CMD);
+            if(_req_reply_timeout){
+                return false;
+            }
             if(ret_cmd_status){
                 attemps_cnt = _max_cmd_attemps;
             }
@@ -350,15 +372,18 @@ bool EcBoostCmd::start_devices(const DST &devices_start)
         restore_wait_reply_time(); //restore default wait reply time.
         uint32_t extend_wait_reply_time = _wait_reply_time + 1000 * (devices_start.size() / 10 );
         set_wait_reply_time(extend_wait_reply_time);
-
+        _req_reply_timeout=false;
         while(attemps_cnt < _max_cmd_attemps){
             if(_client_status.status!=ClientStatusEnum::NOT_ALIVE){
                 CBuffT<4096u> sendBuffer{};
                 auto sizet = proto.packReplRequestMotorsStart(sendBuffer, devices_start);
                 do_send(sendBuffer.data(), sendBuffer.size() );
                 _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
+                
                 ret_cmd_status = get_reply_from_server(ReplReqRep::START_MOTOR);
-
+                if(_req_reply_timeout){
+                    return false;
+                }
                 if(ret_cmd_status){
                     attemps_cnt = _max_cmd_attemps;
                     _client_status.status=ClientStatusEnum::DEVICES_STARTED;
@@ -384,6 +409,7 @@ bool EcBoostCmd::stop_devices()
 {
     int attemps_cnt=0;
     bool ret_cmd_status=false;
+    _req_reply_timeout=false;
     while(attemps_cnt < _max_cmd_attemps){
         if(_client_status.status!=ClientStatusEnum::NOT_ALIVE){
             CBuff sendBuffer{};
@@ -392,6 +418,9 @@ bool EcBoostCmd::stop_devices()
             _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
             
             ret_cmd_status = get_reply_from_server(ReplReqRep::STOP_MOTOR);
+            if(_req_reply_timeout){
+                    return false;
+            }
             if(ret_cmd_status){
                 attemps_cnt = _max_cmd_attemps;
                 _client_status.status=ClientStatusEnum::DEVICES_STOPPED;

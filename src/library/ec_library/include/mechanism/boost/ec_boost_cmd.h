@@ -56,7 +56,7 @@ private:
     
     const int _max_cmd_attemps=3;
     uint32_t _wait_reply_time;
-    bool _cmd_req_reply;
+    bool _cmd_req_reply,_req_reply_timeout;
     
 protected:
     void connect();
