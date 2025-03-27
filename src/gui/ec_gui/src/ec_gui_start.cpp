@@ -50,9 +50,6 @@ EcGuiStart::EcGuiStart(QWidget *parent) :
     /* Load ui */
     auto wid = LoadUiFile(this);
     
-    auto measurement_setup_dw= findChild<QDockWidget *>("MeasurementSetup"); 
-    measurement_setup_dw->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
-    
     _net_tree_wid = findChild<QTreeWidget *>("NetworkSetup");
     _net_tree_wid->resizeColumnToContents(0);
     _net_tree_wid->expandAll();

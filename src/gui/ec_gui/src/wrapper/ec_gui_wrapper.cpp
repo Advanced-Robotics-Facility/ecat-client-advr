@@ -14,18 +14,38 @@ using namespace std::chrono;
 EcGuiWrapper::EcGuiWrapper(QWidget *parent) :
     QWidget(parent)
 {
+    _measurement_setup_dw= parent->findChild<QDockWidget *>("MeasurementSetup"); 
+    _measurement_setup_dw->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+    auto measurement_float_btn = _measurement_setup_dw->findChild<QAbstractButton*>("qt_dockwidget_floatbutton");
+    connect(measurement_float_btn, SIGNAL(clicked()), this, SLOT(click_dock_button()));
+    connect(_measurement_setup_dw, SIGNAL(topLevelChanged(bool)), this, SLOT(DwTopLevelChanged(bool)));
+    _floating_sts["MeasurementSetup"]=false;
+    _measurement_setup_dw->installEventFilter(this);
 
     _command_dw = parent->findChild<QDockWidget *>("Command");
-    connect(_command_dw, SIGNAL(topLevelChanged(bool)), this, SLOT(DwTopLevelChanged(bool)));
     _command_dw->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+    auto commad_float_btn = _command_dw->findChild<QAbstractButton*>("qt_dockwidget_floatbutton");
+    connect(commad_float_btn, SIGNAL(clicked()), this, SLOT(click_dock_button()));
+    connect(_command_dw, SIGNAL(topLevelChanged(bool)), this, SLOT(DwTopLevelChanged(bool)));
+    _floating_sts["Command"]=false;
+    _command_dw->installEventFilter(this);
     
     _pdo_sdo_dw = parent->findChild<QDockWidget *>("DataObject");
-    connect(_pdo_sdo_dw, SIGNAL(topLevelChanged(bool)), this, SLOT(DwTopLevelChanged(bool)));
     _pdo_sdo_dw->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+    auto pdo_float_btn = _pdo_sdo_dw->findChild<QAbstractButton*>("qt_dockwidget_floatbutton");
+    connect(pdo_float_btn, SIGNAL(clicked()), this, SLOT(click_dock_button()));
+    connect(_pdo_sdo_dw, SIGNAL(topLevelChanged(bool)), this, SLOT(DwTopLevelChanged(bool)));
+    _floating_sts["DataObject"]=false;
+    _pdo_sdo_dw->installEventFilter(this);
+    
     
     _graphics_dw = parent->findChild<QDockWidget *>("Graphics");
-    connect(_graphics_dw, SIGNAL(topLevelChanged(bool)), this, SLOT(DwTopLevelChanged(bool)));
     _graphics_dw->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+    auto graphics_float_btn = _graphics_dw->findChild<QAbstractButton*>("qt_dockwidget_floatbutton");
+    connect(graphics_float_btn, SIGNAL(clicked()), this, SLOT(click_dock_button()));
+    connect(_graphics_dw, SIGNAL(topLevelChanged(bool)), this, SLOT(DwTopLevelChanged(bool)));
+    _floating_sts["Graphics"]=false;
+    _graphics_dw->installEventFilter(this);
 
     _receive_action=new QAction();
     connect(_receive_action, SIGNAL(triggered()), this, SLOT(start_stop_receive()));
@@ -71,13 +91,43 @@ EcGuiWrapper::EcGuiWrapper(QWidget *parent) :
     _stopping_write_counter=_max_stop_write;
 }
 
+void EcGuiWrapper::click_dock_button()
+{
+    auto btn=qobject_cast<QAbstractButton*>(sender());
+    if(btn!=nullptr){
+        auto dw = qobject_cast<QDockWidget*>(btn->parent());
+        if(dw->isFloating()){
+            dw->close();
+            dw->setWindowFlags(Qt::Window);
+            dw->show();
+        }
+    }
+}
+
+bool EcGuiWrapper::eventFilter( QObject* o, QEvent* e )
+{
+    auto dw = qobject_cast<QDockWidget*>(o);
+    if( dw!=nullptr){ 
+        if (e->type () == QEvent::MouseButtonDblClick ||
+            e->type () == QEvent::ActivationChange){
+            std::string dw_name=dw->objectName().toStdString();
+            if(!dw->isWindow() || _floating_sts[dw_name]){
+                _floating_sts[dw_name]=false;
+                dw->close();
+                dw->setWindowFlags(Qt::Window);
+                dw->show();
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 void EcGuiWrapper::DwTopLevelChanged(bool isFloating)
 {
     auto dw = qobject_cast<QDockWidget*>(sender());
-    if(isFloating){
-        dw->setWindowFlags(Qt::Window);
-        dw->show();
-    }
+    std::string dw_name=dw->objectName().toStdString();
+    _floating_sts[dw_name]=isFloating;
 }
 
 bool EcGuiWrapper::get_wrapper_send_sts()

@@ -39,16 +39,20 @@ public:
 
 private slots:
     void DwTopLevelChanged(bool isFloating);
+    void click_dock_button();
     void start_stop_receive();
     void stop_receive();
     void start_stop_record();
     void stop_record();
     void receive();
     void log();
+protected:
+    bool eventFilter( QObject* o, QEvent* e );
 private:
   
   ec_wrapper_info_t _ec_wrapper_info;
-  QDockWidget *_command_dw,*_pdo_sdo_dw,*_graphics_dw;
+  QDockWidget *_command_dw,*_pdo_sdo_dw,*_graphics_dw,*_measurement_setup_dw;
+  std::map<std::string,bool> _floating_sts;
   
   EcGuiSlider::Ptr _ec_gui_slider;
   EcGuiSlider::slider_map_t _slider_map;
