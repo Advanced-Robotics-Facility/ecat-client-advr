@@ -102,6 +102,7 @@ bool EcGuiNet::eventFilter( QObject* o, QEvent* e )
         QKeyEvent *qkey = static_cast<QKeyEvent*>(e);
         if(qkey->key() == Qt::Key_Return){
             set_ec_network();
+            //return true;
         }
     }
     return false;

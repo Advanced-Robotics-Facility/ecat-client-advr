@@ -285,6 +285,7 @@ bool EcGuiSdo::eventFilter( QObject* o, QEvent* e )
                 _sdo_column=-1;
                 _old_sdo_value="";
             }
+            //retun true; ??
         }
     }
     
