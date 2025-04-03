@@ -370,7 +370,7 @@ void EcGuiPdo::init_write_pdo()
 
     _pump_reference_map.clear();
     for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
-        _pump_reference_map[slave_id]={0,0,0,0,0,0,0,0,0};
+        _pump_reference_map[slave_id]={0,0,0,0,0,0,0,0,0,0};
     }
 
     sync_write();

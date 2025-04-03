@@ -7,14 +7,13 @@
 
 namespace PumpPdoRx{
     // not used tempExpansionBoard, vesc1SwVer, vesc2SwVer
-    static const std::vector<std::string>name = {"pressure", "statusWord","vesc1BoardTemp", "vesc1MotTemp","vesc2BoardTemp",
-                                                 "vesc2MotTemp","vesc1ActCur","vesc1ActSpd","vesc1Status",
-                                                 "vesc2ActCur","vesc2ActSpd","vesc2Status","temp1","temp2","temp3",
-                                                 "vesc1FBDutyCycle","vesc2FBDutyCycle","vesc1Demand","vesc2Demand","pwm1DutyCycle","pwm2DutyCycle"};
-    static const int pdo_size=21;
-    using pdo_t=std::tuple<uint8_t,uint16_t,uint8_t,uint8_t,uint8_t,uint8_t,float,
-                           uint16_t,uint16_t,float,uint16_t,uint16_t,uint8_t,uint8_t,uint8_t,
-                           uint32_t,uint32_t,float,float,uint32_t,uint32_t>;
+    static const std::vector<std::string>name = {"Motor_Current", "Motor_Speed","Pressure1", "Pressure2",
+                                                 "temperature","MOSFET_temperature","motor_temperature",
+                                                 "fault","rtt","op_idx_ack","aux"};
+    static const int pdo_size=11;
+    using pdo_t=std::tuple<float,float,float,float,
+                           uint16_t,uint16_t,int16_t,
+                           uint16_t,uint16_t,uint16_t,float>;
     template <typename T>
     inline bool make_vector_from_tuple(const pdo_t &pdo_tuple,std::vector<T> &pdo_vector){
         if(pdo_vector.size()!=pdo_size){
@@ -31,25 +30,18 @@ namespace PumpPdoRx{
         pdo_vector[8]= static_cast<T>(std::get<8>(pdo_tuple));
         pdo_vector[9]= static_cast<T>(std::get<9>(pdo_tuple));
         pdo_vector[10]= static_cast<T>(std::get<10>(pdo_tuple));
-        pdo_vector[11]= static_cast<T>(std::get<11>(pdo_tuple));
-        pdo_vector[12]= static_cast<T>(std::get<12>(pdo_tuple));
-        pdo_vector[13]= static_cast<T>(std::get<13>(pdo_tuple));
-        pdo_vector[14]= static_cast<T>(std::get<14>(pdo_tuple));
-        pdo_vector[15]= static_cast<T>(std::get<15>(pdo_tuple));
-        pdo_vector[16]= static_cast<T>(std::get<16>(pdo_tuple));
-        pdo_vector[17]= static_cast<T>(std::get<17>(pdo_tuple));
-        pdo_vector[18]= static_cast<T>(std::get<18>(pdo_tuple));
-        pdo_vector[19]= static_cast<T>(std::get<19>(pdo_tuple));
-        pdo_vector[20]= static_cast<T>(std::get<20>(pdo_tuple));
         return true;
     }
 };
 
 namespace PumpPdoTx{
-    static const std::vector<std::string>name = {"demandPressure", "singlePumpHighLt","singlePumpLowLt", "HPUDemandMode",
-                                                 "vesc1Mode","vesc2Mode","fan1Spd","fan2Spd","sysStateCmd"};
-    static const int pdo_size=9;
-    using pdo_t=std::tuple<uint8_t, uint8_t, uint8_t, uint16_t, uint8_t,uint8_t,uint8_t,uint8_t,uint8_t>;
+    static const std::vector<std::string>name = {"Pump_Target",
+                                                 "pressure_P_gain","pressure_I_gain", "pressure_D_gain","pressure_I_limit",
+                                                 "fault_ack","SolenoidOut","ts","op_idx_aux","aux"};
+    static const int pdo_size=10;
+    using pdo_t=std::tuple<float, 
+                           float, float, float, float,
+                           uint16_t,uint16_t,uint16_t,uint16_t,float>;
     template <typename T>
     inline bool make_vector_from_tuple(const pdo_t &pdo_tuple,std::vector<T> &pdo_vector){
         if(pdo_vector.size()!=pdo_size){
@@ -64,6 +56,7 @@ namespace PumpPdoTx{
         pdo_vector[6]= static_cast<T>(std::get<6>(pdo_tuple));
         pdo_vector[7]= static_cast<T>(std::get<7>(pdo_tuple));
         pdo_vector[8]= static_cast<T>(std::get<8>(pdo_tuple));
+        pdo_vector[9]= static_cast<T>(std::get<9>(pdo_tuple));
         return true;
     }
 };
@@ -80,8 +73,8 @@ public:
 
     void set_to_pb();
 
-    PumpPdoRx::pdo_t rx_pdo={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-    PumpPdoTx::pdo_t tx_pdo={0,0,0,0,0,0,0,0,0};
+    PumpPdoRx::pdo_t rx_pdo={0,0,0,0,0,0,0,0,0,0,0};
+    PumpPdoTx::pdo_t tx_pdo={0,0,0,0,0,0,0,0,0,0};
     bool init_rx_pdo=false;
 private:
     void init_pb();
@@ -117,28 +110,18 @@ inline PumpPdo<T>::~PumpPdo()
 template < class T >
 inline void PumpPdo<T>::get_from_pb() 
 {
-    std::get<0>(rx_pdo)  = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->pressure();
-    std::get<1>(rx_pdo)  = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->statusword();
-    std::get<2>(rx_pdo)  = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->vesc1boardtemp();
-    std::get<3>(rx_pdo)  = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->vesc1mottemp();
-    std::get<4>(rx_pdo)  = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->vesc2boardtemp();
-    std::get<5>(rx_pdo)  = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->vesc2mottemp();
-    std::get<6>(rx_pdo)  = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->vesc1actcur();
-    std::get<7>(rx_pdo)  = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->vesc1actspd();
-    std::get<8>(rx_pdo)  = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->vesc1status();
-    std::get<9>(rx_pdo)  = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->vesc2actcur();
-    std::get<10>(rx_pdo) = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->vesc2actspd();
-    std::get<11>(rx_pdo) = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->vesc2status();
-    std::get<12>(rx_pdo) = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->temp1();
-    std::get<13>(rx_pdo) = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->temp2();
-    std::get<14>(rx_pdo) = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->temp3();
-    std::get<15>(rx_pdo) = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->vesc1fbdutycycle();
-    std::get<16>(rx_pdo) = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->vesc2fbdutycycle();
-    std::get<17>(rx_pdo) = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->vesc1demand();
-    std::get<18>(rx_pdo) = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->vesc2demand();
-    std::get<19>(rx_pdo) = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->pwm1dutycycle();
-    std::get<20>(rx_pdo) = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->pwm2dutycycle();
-
+    std::get<0>(rx_pdo)  = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->motor_current();
+    std::get<1>(rx_pdo)  = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->motor_speed();
+    std::get<2>(rx_pdo)  = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->pressure1();
+    std::get<3>(rx_pdo)  = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->pressure2();
+    std::get<4>(rx_pdo)  = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->temperature();
+    std::get<5>(rx_pdo)  = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->mosfet_temperature();
+    std::get<6>(rx_pdo)  = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->motor_temperature();
+    std::get<7>(rx_pdo)  = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->fault();
+    std::get<8>(rx_pdo)  = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->rtt();
+    std::get<9>(rx_pdo)  = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->op_idx_ack();
+    std::get<10>(rx_pdo) = T::pb_rx_pdos.mutable_hyqhpu_rx_pdo()->aux();
+   
     if(!init_rx_pdo){
         init_rx_pdo=true;   
     }
@@ -151,15 +134,16 @@ inline void PumpPdo<T>::set_to_pb()
     // Type
     T::pb_tx_pdos.set_type(iit::advr::Ec_slave_pdo::TX_HYQ_HPU);
     
-    T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_demandpressure(std::get<0>(tx_pdo));   
-    T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_singlepumphighlt(std::get<1>(tx_pdo));
-    T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_singlepumplowlt(std::get<2>(tx_pdo));
-    T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_hpudemandmode(std::get<3>(tx_pdo));
-    T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_vesc1mode(std::get<4>(tx_pdo));
-    T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_vesc2mode(std::get<5>(tx_pdo));
-    T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_fan1spd(std::get<5>(tx_pdo));
-    T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_fan2spd(std::get<7>(tx_pdo));
-    T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_sysstatecmd(std::get<8>(tx_pdo));
+    T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_pump_target(std::get<0>(tx_pdo));   
+    T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_pressure_p_gain(std::get<1>(tx_pdo));
+    T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_pressure_i_gain(std::get<2>(tx_pdo));
+    T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_pressure_d_gain(std::get<3>(tx_pdo));
+    T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_pressure_i_limit(std::get<4>(tx_pdo));
+    T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_fault_ack(std::get<5>(tx_pdo));
+    T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_solenoidout(std::get<5>(tx_pdo));
+    T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_ts(std::get<7>(tx_pdo));
+    T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_op_idx_aux(std::get<8>(tx_pdo));
+    T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_aux(std::get<8>(tx_pdo));
 }
 
 template class PumpPdo<EcPipePdo>;

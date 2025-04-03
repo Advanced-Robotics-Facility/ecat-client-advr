@@ -208,7 +208,7 @@ void EcWrapper::safe_init()
     // init valve reference map
     _client->get_pump_status(pump_status_map);
     for (const auto &[esc_id, pump_rx_pdo] : pump_status_map){
-        pump_reference_map[esc_id] = std::make_tuple(0, 0, 0, 0, 0, 0, 0, 0, 0);
+        pump_reference_map[esc_id] = std::make_tuple(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
 
     _client->write();
