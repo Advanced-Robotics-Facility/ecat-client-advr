@@ -17,11 +17,16 @@ EcUtils::EcUtils()
 {   
     _ec_cfg_file= getenv ("EC_CFG");
     
-    if (_ec_cfg_file.c_str()==NULL){
+    if (_ec_cfg_file.empty()){
         throw std::runtime_error("EtherCAT Client configuration not found, setup the environment variable: EC_CFG ");
     }
     
-    auto ec_cfg_node=YAML::LoadFile(_ec_cfg_file);
+    YAML::Node ec_cfg_node;
+    try{
+        ec_cfg_node=YAML::LoadFile(_ec_cfg_file);
+    }catch(std::exception& e){
+        throw std::runtime_error(e.what());
+    }
 
     // Read the EC Client configuration.
     
