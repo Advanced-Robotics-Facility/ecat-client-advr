@@ -77,9 +77,26 @@ int main(int argc, char *const argv[])
         for (const auto &[esc_id, pump_rx_pdo] : pump_status_map){
             if(ec_cfg.trj_config_map.count("pump")>0){
                 if(ec_cfg.trj_config_map["pump"].set_point.count(esc_id)>0){
-                    pumps_trj_1[esc_id] = static_cast<double>(ec_cfg.trj_config_map["pump"].set_point[esc_id]["pressure"]);
-                    pumps_set_ref[esc_id] = pumps_start[esc_id] = pumps_actual_read[esc_id] = std::get<2>(pump_rx_pdo); //pressure1
-                    pumps_set_trj[esc_id] = pumps_trj_1[esc_id];
+                    std::string set_point_type="";
+                    pumps_actual_read[esc_id] = std::get<2>(pump_rx_pdo); //pressure1
+                    pumps_start[esc_id] = 0.0;
+ 
+                    if(ec_cfg.device_config_map[esc_id].control_mode_type==0x39){
+                        //set_point_type="pwm";
+                    }
+                    else if(ec_cfg.device_config_map[esc_id].control_mode_type==iit::advr::Gains_Type_VELOCITY){
+                        //set_point_type="velocity";
+                    }
+                    else{
+                        set_point_type="pressure";
+                        pumps_start[esc_id]=pumps_actual_read[esc_id];
+                    }
+
+                    if(ec_cfg.trj_config_map["pump"].set_point[esc_id].count(set_point_type)>0){
+                        pumps_trj_1[esc_id] = static_cast<double>(ec_cfg.trj_config_map["pump"].set_point[esc_id][set_point_type]);
+                        pumps_set_ref[esc_id] =pumps_start[esc_id];
+                        pumps_set_trj[esc_id] = pumps_trj_1[esc_id];
+                    }
                 }
             }
         }
@@ -144,35 +161,39 @@ int main(int argc, char *const argv[])
         }
 
         if (motors_set_ref.empty() && valves_set_ref.empty() && pumps_set_ref.empty()){
-            throw std::runtime_error("fatal error: motor references, pump reference and valves references are both empty");
+            run_loop=false;
+            DPRINTF("fatal error: motor references, pump reference and valves references are both empty\n");
         }
+        else{
 
-        if (!pump_reference_map.empty()){
-            STM_sts = "Pressure";
-        }
-        else{
-            STM_sts = "Homing";
-            set_trj_time_ms = hm_time_ms;
-        }
-        // memory allocation
-        
-        if (ec_cfg.protocol == "iddp"){
-            // add SIGALRM
-            signal ( SIGALRM, sig_handler );
-            //avoid map swap
-            main_common (&argc, (char*const**)&argv, sig_handler);
-        }
-        else{
-            struct sigaction sa;
-            sa.sa_handler = sig_handler;
-            sa.sa_flags = 0;  // receive will return EINTR on CTRL+C!
-            sigaction(SIGINT,&sa, nullptr);
-        }
-        // process scheduling
-        try{
-            ec_wrapper.ec_self_sched(argv[0]);
-        }catch(std::exception& e){
-            throw std::runtime_error(e.what());
+            if (!pump_reference_map.empty()){
+                STM_sts = "Pressure";
+            }
+            else{
+                STM_sts = "Homing";
+                set_trj_time_ms = hm_time_ms;
+            }
+            // memory allocation
+            
+            if (ec_cfg.protocol == "iddp"){
+                // add SIGALRM
+                signal ( SIGALRM, sig_handler );
+                //avoid map swap
+                main_common (&argc, (char*const**)&argv, sig_handler);
+            }
+            else{
+                struct sigaction sa;
+                sa.sa_handler = sig_handler;
+                sa.sa_flags = 0;  // receive will return EINTR on CTRL+C!
+                sigaction(SIGINT,&sa, nullptr);
+            }
+            // process scheduling
+            try{
+                ec_wrapper.ec_self_sched(argv[0]);
+            }catch(std::exception& e){
+                DPRINTF("fatal error: %s\n",e.what());
+                run_loop=false;
+            }
         }
 
         auto start_time = std::chrono::high_resolution_clock::now();
