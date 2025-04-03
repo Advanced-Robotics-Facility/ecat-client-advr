@@ -84,7 +84,9 @@ void EcWrapper::find_devices()
     for(const auto& device_id:_start_devices_vector){
         bool device_found=false;
         for ( auto &[id, type, pos] : _slave_info ) {
-            if(ec_motors.count(type)>0 || ec_valves.count(type)){
+            if(ec_motors.count(type)>0 || 
+               ec_valves.count(type)>0 ||
+               ec_pumps.count(type)>0){
                 if(id == device_id){
                     device_found=true;
                     break;
@@ -208,16 +210,23 @@ void EcWrapper::safe_init()
     // init valve reference map
     _client->get_pump_status(pump_status_map);
     for (const auto &[esc_id, pump_rx_pdo] : pump_status_map){
-        pump_reference_map[esc_id] = std::make_tuple(   0,                                                    // Pump_Target
-                                                        _ec_cfg.device_config_map[esc_id].gains[0],           // pressure_P_gain
-                                                        _ec_cfg.device_config_map[esc_id].gains[1],           // pressure_I_gain
-                                                        _ec_cfg.device_config_map[esc_id].gains[2],           // pressure_D_gain
-                                                        _ec_cfg.device_config_map[esc_id].gains[3],           // pressure_I_limit
-                                                        0,                                                    // fault_ack
-                                                        0,                                                    // SolenoidOut
-                                                        0,                                                    // ts
-                                                        0,                                                    // op_idx_aux
-                                                        0);                                                   // aux
+        float pump_target=0.0;
+        pump_reference_map[esc_id] = {pump_target,0,0,0,0,0,0,0,0,0};
+        if(_ec_cfg.device_config_map.count(esc_id)>0){
+            if(_ec_cfg.device_config_map[esc_id].control_mode_type==0xD4){
+                pump_target =    std::get<2>(pump_rx_pdo);  //pressure1
+            }
+            pump_reference_map[esc_id] = std::make_tuple(   pump_target,                                          // Pump_Target
+                                                            _ec_cfg.device_config_map[esc_id].gains[0],           // pressure_P_gain
+                                                            _ec_cfg.device_config_map[esc_id].gains[1],           // pressure_I_gain
+                                                            _ec_cfg.device_config_map[esc_id].gains[2],           // pressure_D_gain
+                                                            _ec_cfg.device_config_map[esc_id].gains[3],           // pressure_I_limit
+                                                            0,                                                    // fault_ack
+                                                            0,                                                    // SolenoidOut
+                                                            0,                                                    // ts
+                                                            0,                                                    // op_idx_aux
+                                                            0);                                                   // aux
+        }
     }
 
     _client->write();

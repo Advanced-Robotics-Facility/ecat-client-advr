@@ -62,12 +62,10 @@ int main(int argc, char *const argv[])
         std::map<int, double> motors_trj_1,motors_trj_2, motors_set_zero, motors_set_trj;
         std::map<int, double> motors_set_ref, motors_start;
 
-        std::map<int, uint8_t> pumps_trj_1, pumps_set_trj;
-        std::map<int, uint8_t> pumps_set_ref, pumps_start, pumps_actual_read;
-        uint16_t pump_status_word;
-        int pump_req_op = PUMP_PRE_OP;
+        std::map<int, double> pumps_trj_1, pumps_set_trj;
+        std::map<int, double> pumps_set_ref, pumps_start, pumps_actual_read;
         double error_pressure_set;
-        bool pump_req_sts, pump_in_pressure;
+        bool pump_in_pressure;
 
         std::map<int, double> valves_trj_1, valves_trj_2, valves_set_zero, valves_set_trj;
         std::map<int, double> valves_set_ref, valves_start;
@@ -79,8 +77,8 @@ int main(int argc, char *const argv[])
         for (const auto &[esc_id, pump_rx_pdo] : pump_status_map){
             if(ec_cfg.trj_config_map.count("pump")>0){
                 if(ec_cfg.trj_config_map["pump"].set_point.count(esc_id)>0){
-                    pumps_trj_1[esc_id] = static_cast<uint8_t>(ec_cfg.trj_config_map["pump"].set_point[esc_id]["pressure"]);
-                    pumps_set_ref[esc_id] = pumps_start[esc_id] = pumps_actual_read[esc_id] = std::get<0>(pump_rx_pdo);
+                    pumps_trj_1[esc_id] = static_cast<double>(ec_cfg.trj_config_map["pump"].set_point[esc_id]["pressure"]);
+                    pumps_set_ref[esc_id] = pumps_start[esc_id] = pumps_actual_read[esc_id] = std::get<2>(pump_rx_pdo); //pressure1
                     pumps_set_trj[esc_id] = pumps_trj_1[esc_id];
                 }
             }
@@ -150,7 +148,7 @@ int main(int argc, char *const argv[])
         }
 
         if (!pump_reference_map.empty()){
-            STM_sts = "PumpPreOp";
+            STM_sts = "Pressure";
         }
         else{
             STM_sts = "Homing";
@@ -188,19 +186,8 @@ int main(int argc, char *const argv[])
             //DPRINTF("Time elapsed ms: [%f]\n",time_elapsed_ms);
 
             client->get_pump_status(pump_status_map);
-            pump_req_sts = true;
             for (const auto &[esc_id, pump_rx_pdo] : pump_status_map){
-                pumps_actual_read[esc_id] = std::get<0>(pump_rx_pdo);
-                pump_status_word = std::get<1>(pump_rx_pdo);
-                if (pump_status_word != pump_req_op){
-                    pump_req_sts &= false;
-                }
-
-#ifdef TEST_EXAMPLES
-                if (ec_cfg.protocol != "iddp"){
-                    pump_req_sts = true;
-                }
-#endif
+                pumps_actual_read[esc_id] = std::get<2>(pump_rx_pdo); //pressure1
             }
 
             // define a simplistic linear trajectory
@@ -215,7 +202,6 @@ int main(int argc, char *const argv[])
                     for (const auto &[esc_id, target] : pumps_set_trj){
                         pumps_set_ref[esc_id] = pumps_start[esc_id] + alpha * (target - pumps_start[esc_id]);
                         std::get<0>(pump_reference_map[esc_id]) = pumps_set_ref[esc_id];
-                        std::get<8>(pump_reference_map[esc_id]) = pump_req_op;
                     }
                 }
                 // ************************* SEND ALWAYS REFERENCES***********************************//
@@ -274,40 +260,7 @@ int main(int argc, char *const argv[])
 
             time = time + period;
 
-            if (STM_sts == "PumpPreOp"){
-                if (pump_req_sts){
-                    if (trajectory_counter == ec_cfg.repeat_trj){
-                        run_loop = false;
-                    }
-                    else{
-                        STM_sts = "PumpOp";
-                        pump_req_op = PUMP_OP;
-                        start_time = time;
-                        tau = alpha = 0;
-                    }
-                }
-                else{
-                    if (time_elapsed_ms >= 500){ // 500ms
-                        DPRINTF("Cannot setup the pump in pre-operational mode\n");
-                        run_loop = false;
-                    }
-                }
-            }
-            else if (STM_sts == "PumpOp"){
-                if (pump_req_sts){
-                    STM_sts = "Pressure";
-                    start_time = time;
-                    set_trj_time_ms = pressure_time_ms;
-                    tau = alpha = 0;
-                }
-                else{
-                    if (time_elapsed_ms >= 500){ // 500ms
-                        DPRINTF("Cannot setup the pump in operational mode\n");
-                        run_loop = false;
-                    }
-                }
-            }
-            else if ((time_elapsed_ms >= pressure_time_ms) && (STM_sts == "Pressure")){
+            if ((time_elapsed_ms >= pressure_time_ms) && (STM_sts == "Pressure")){
                 pump_in_pressure = true;
                 for (const auto &[esc_id, press_ref] : pumps_set_ref){
                     error_pressure_set = std::abs(press_ref - pumps_actual_read[esc_id]);
@@ -317,46 +270,33 @@ int main(int argc, char *const argv[])
                         break;
                     }
                 }
-#ifdef TEST_EXAMPLES
-                if (ec_cfg.protocol != "iddp"){
-                    pump_in_pressure = true;
-                }
-#endif
-                if (!pump_in_pressure){
+                if (!pump_in_pressure || trajectory_counter == ec_cfg.repeat_trj){
                     run_loop = false;
                 }
                 else{
-                    if (trajectory_counter == ec_cfg.repeat_trj){
-                        STM_sts = "PumpPreOp";
-                        pump_req_op = PUMP_PRE_OP;
+                    if (motor_reference_map.empty() && valve_reference_map.empty()){
+                        STM_sts = "Pressure";
                         start_time = time;
+                        set_trj_time_ms = pressure_time_ms;
+
+                        pumps_set_trj = pumps_start;
+                        pumps_start =   pumps_set_ref;
+
                         tau = alpha = 0;
+                        trajectory_counter = ec_cfg.repeat_trj; // exit
                     }
                     else{
-                        if (motor_reference_map.empty() && valve_reference_map.empty()){
-                            STM_sts = "Pressure";
-                            start_time = time;
-                            set_trj_time_ms = pressure_time_ms;
+                        STM_sts = "Homing";
+                        start_time = time;
+                        set_trj_time_ms = hm_time_ms;
 
-                            pumps_set_trj = pumps_start;
-                            pumps_start =   pumps_set_ref;
+                        motors_set_trj = motors_trj_1;
+                        motors_start =   motors_set_ref;
 
-                            tau = alpha = 0;
-                            trajectory_counter = ec_cfg.repeat_trj; // exit
-                        }
-                        else{
-                            STM_sts = "Homing";
-                            start_time = time;
-                            set_trj_time_ms = hm_time_ms;
+                        valves_set_trj = valves_trj_1;
+                        valves_start =   valves_set_ref;
 
-                            motors_set_trj = motors_trj_1;
-                            motors_start =   motors_set_ref;
-
-                            valves_set_trj = valves_trj_1;
-                            valves_start =   valves_set_ref;
-
-                            tau = alpha = 0;
-                        }
+                        tau = alpha = 0;
                     }
                 }
             }

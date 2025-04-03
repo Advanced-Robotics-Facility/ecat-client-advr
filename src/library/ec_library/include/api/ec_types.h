@@ -24,6 +24,10 @@ static std::map<uint32_t,std::string>ec_valves={
     {iit::ecat::HYQ_KNEE,"ADVRF_Valve"}
 };   
 
+static std::map<uint32_t,std::string>ec_pumps={
+    {iit::ecat::HYQ_HPU,"ADVRF_Pump"}
+};   
+
 using MotorStatusMap =   std::map<int32_t, MotorPdoRx::pdo_t>;
 using MotorReferenceMap= std::map<int32_t, MotorPdoTx::pdo_t>; 
 using PwrStatusMap=      std::map<int32_t, PowPdoRx::pdo_t>;
