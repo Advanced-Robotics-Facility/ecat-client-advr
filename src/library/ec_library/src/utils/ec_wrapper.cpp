@@ -208,7 +208,16 @@ void EcWrapper::safe_init()
     // init valve reference map
     _client->get_pump_status(pump_status_map);
     for (const auto &[esc_id, pump_rx_pdo] : pump_status_map){
-        pump_reference_map[esc_id] = std::make_tuple(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        pump_reference_map[esc_id] = std::make_tuple(   0,                                                    // Pump_Target
+                                                        _ec_cfg.device_config_map[esc_id].gains[0],           // pressure_P_gain
+                                                        _ec_cfg.device_config_map[esc_id].gains[1],           // pressure_I_gain
+                                                        _ec_cfg.device_config_map[esc_id].gains[2],           // pressure_D_gain
+                                                        _ec_cfg.device_config_map[esc_id].gains[3],           // pressure_I_limit
+                                                        0,                                                    // fault_ack
+                                                        0,                                                    // SolenoidOut
+                                                        0,                                                    // ts
+                                                        0,                                                    // op_idx_aux
+                                                        0);                                                   // aux
     }
 
     _client->write();
