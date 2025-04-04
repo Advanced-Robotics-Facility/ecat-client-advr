@@ -33,7 +33,7 @@ int main(int argc, char * const argv[])
     EcUtils::EC_CONFIG ec_cfg;
     EcIface::Ptr client;
     EcWrapper ec_wrapper;
-    
+    std::string fatal_error="";
     try{
         ec_wrapper.create_ec(client,ec_cfg);
     }catch(std::exception &ex){
@@ -91,29 +91,30 @@ int main(int argc, char * const argv[])
         }
 
         if(motors_set_ref.empty()){
-            throw std::runtime_error("fatal error: motors references structure empty!");
-        }
-        // memory allocation
+            fatal_error="fatal error: motors references structure empty!";
+            run_loop=false;
+        }else{
+            if (ec_cfg.protocol == "iddp"){
+                // add SIGALRM
+                signal ( SIGALRM, sig_handler );
+                //avoid map swap
+                main_common (&argc, (char*const**)&argv, sig_handler);
+            }
+            else{
+                struct sigaction sa;
+                sa.sa_handler = sig_handler;
+                sa.sa_flags = 0;  // receive will return EINTR on CTRL+C!
+                sigaction(SIGINT,&sa, nullptr);
+            }
 
-
-        if (ec_cfg.protocol == "iddp"){
-            // add SIGALRM
-            signal ( SIGALRM, sig_handler );
-            //avoid map swap
-            main_common (&argc, (char*const**)&argv, sig_handler);
-        }
-        else{
-            struct sigaction sa;
-            sa.sa_handler = sig_handler;
-            sa.sa_flags = 0;  // receive will return EINTR on CTRL+C!
-            sigaction(SIGINT,&sa, nullptr);
-        }
-
-        // process scheduling
-        try{
-            ec_wrapper.ec_self_sched(argv[0]);
-        }catch(std::exception& e){
-            throw std::runtime_error(e.what());
+            // process scheduling
+            try{
+                ec_wrapper.ec_self_sched(argv[0]);
+            }catch(std::exception& e){
+                std::string error=e.what();
+                fatal_error="fatal error: "+ error;
+                run_loop=false;
+            }
         }
        
         auto start_time = std::chrono::high_resolution_clock::now();
@@ -161,6 +162,11 @@ int main(int argc, char * const argv[])
     }
     
     ec_wrapper.stop_ec_sys();
+
+    if(fatal_error!=""){
+        DPRINTF("%s\n",fatal_error.c_str());
+        return 1;
+    }
     
     return 0;
 }

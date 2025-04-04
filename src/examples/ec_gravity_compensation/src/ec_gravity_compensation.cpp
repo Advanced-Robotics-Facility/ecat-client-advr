@@ -37,7 +37,7 @@ int main(int argc, char * const argv[])
     EcUtils::EC_CONFIG ec_cfg;
     EcIface::Ptr client;
     EcWrapper ec_wrapper;
-    
+    std::string fatal_error="";
     try{
         ec_wrapper.create_ec(client,ec_cfg);
     }catch(std::exception &ex){
@@ -117,42 +117,44 @@ int main(int argc, char * const argv[])
         }
 
         if(q_ref.empty()){
-            throw std::runtime_error("fatal error: motors references structure empty!");
-        }
+            fatal_error="fatal error: motors references structure empty!";
+            run_loop=false;
+        }else{
+            size_t join_num= static_cast<size_t>(model->getJointNum());
+            if(model->isFloatingBase()){
+                join_num=join_num-6;
+            }
+            if(q.size() != join_num){
+                fatal_error="fatal error: different size of initial position from joint of the model";
+                run_loop=false;
+            }else{
+                float set_gain_time_ms=3000; // Default 3s 
+                std::map<int,std::vector<float>> gain_start_map=imp_gains_map;
+                std::map<int,std::vector<float>> gain_trj_map=imp_zero_gains_map;
+                std::map<int,std::vector<float>> gain_ref_map=gain_start_map;        
 
-        size_t join_num= static_cast<size_t>(model->getJointNum());
-        if(model->isFloatingBase()){
-            join_num=join_num-6;
-        }
-        if(q.size() != join_num){
-            throw std::runtime_error("fatal error: different size of initial position from joint of the model");
-        }
+                if (ec_cfg.protocol == "iddp"){
+                    // add SIGALRM
+                    signal ( SIGALRM, sig_handler );
+                    //avoid map swap
+                    main_common (&argc, (char*const**)&argv, sig_handler);
+                }
+                else{
+                    struct sigaction sa;
+                    sa.sa_handler = sig_handler;
+                    sa.sa_flags = 0;  // receive will return EINTR on CTRL+C!
+                    sigaction(SIGINT,&sa, nullptr);
+                }
 
-        float set_gain_time_ms=3000; // Default 3s 
-        std::map<int,std::vector<float>> gain_start_map=imp_gains_map;
-        std::map<int,std::vector<float>> gain_trj_map=imp_zero_gains_map;
-        std::map<int,std::vector<float>> gain_ref_map=gain_start_map;        
-        // memory allocation
-    
-
-        if (ec_cfg.protocol == "iddp"){
-            // add SIGALRM
-            signal ( SIGALRM, sig_handler );
-            //avoid map swap
-            main_common (&argc, (char*const**)&argv, sig_handler);
-        }
-        else{
-            struct sigaction sa;
-            sa.sa_handler = sig_handler;
-            sa.sa_flags = 0;  // receive will return EINTR on CTRL+C!
-            sigaction(SIGINT,&sa, nullptr);
-        }
-
-        // process scheduling
-        try{
-            ec_wrapper.ec_self_sched(argv[0]);
-        }catch(std::exception& e){
-            throw std::runtime_error(e.what());
+                // process scheduling
+                try{
+                    ec_wrapper.ec_self_sched(argv[0]);
+                }catch(std::exception& e){
+                    std::string error=e.what();
+                    fatal_error="fatal error: "+ error;
+                    run_loop=false;
+                }
+            }
         }
         
         auto start_time = std::chrono::high_resolution_clock::now();
@@ -247,6 +249,11 @@ int main(int argc, char * const argv[])
     }
     
     ec_wrapper.stop_ec_sys();
+
+    if(fatal_error!=""){
+        DPRINTF("%s\n",fatal_error.c_str());
+        return 1;
+    }
     
     return 0;
 }

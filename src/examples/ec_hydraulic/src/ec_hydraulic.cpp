@@ -24,7 +24,7 @@ int main(int argc, char *const argv[])
     EcUtils::EC_CONFIG ec_cfg;
     EcIface::Ptr client;
     EcWrapper ec_wrapper;
-
+    std::string fatal_error="";
     try{
         ec_wrapper.create_ec(client, ec_cfg);
     }
@@ -38,7 +38,6 @@ int main(int argc, char *const argv[])
         homing=ec_cfg.trj_config_map["motor"].homing;    
         trajectory=ec_cfg.trj_config_map["motor"].trajectory;    
     }
-
 
     bool ec_sys_started = true;
     try{
@@ -161,11 +160,9 @@ int main(int argc, char *const argv[])
         }
 
         if (motors_set_ref.empty() && valves_set_ref.empty() && pumps_set_ref.empty()){
+            fatal_error="fatal error: motor references, pump reference and valves references are both empty";
             run_loop=false;
-            DPRINTF("fatal error: motor references, pump reference and valves references are both empty\n");
-        }
-        else{
-
+        }else{
             if (!pump_reference_map.empty()){
                 STM_sts = "Pressure";
             }
@@ -173,7 +170,6 @@ int main(int argc, char *const argv[])
                 STM_sts = "Homing";
                 set_trj_time_ms = hm_time_ms;
             }
-            // memory allocation
             
             if (ec_cfg.protocol == "iddp"){
                 // add SIGALRM
@@ -191,7 +187,8 @@ int main(int argc, char *const argv[])
             try{
                 ec_wrapper.ec_self_sched(argv[0]);
             }catch(std::exception& e){
-                DPRINTF("fatal error: %s\n",e.what());
+                std::string error=e.what();
+                fatal_error="fatal error: "+ error;
                 run_loop=false;
             }
         }
@@ -394,6 +391,11 @@ int main(int argc, char *const argv[])
     }
 
     ec_wrapper.stop_ec_sys();
+
+    if(fatal_error!=""){
+        DPRINTF("%s\n",fatal_error.c_str());
+        return 1;
+    }
 
     return 0;
 }
