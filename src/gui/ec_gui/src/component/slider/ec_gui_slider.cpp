@@ -148,8 +148,8 @@ void EcGuiSlider::create_sliders(SSI device_info,device_ctrl_t device_ctrl)
             auto wid_pump=new SliderWidget(pump_name,pump_info,this);
             _slider_map.pump_sw_map[device_id]=wid_pump;
 
-            QStringList control_mode= {"Pressure", "Idle"};
-            std::vector<int> control_mode_hex= {0x3B,0x00};
+            QStringList control_mode= {"Pressure","Velocity","PWM","Idle"};
+            std::vector<int> control_mode_hex= {0xD4,0x71,0x39,0x00};
 
             auto pump_layout= retrieve_slider_layout("Pumps",control_mode,control_mode_hex);
             pump_layout->addWidget(wid_pump,0, Qt::AlignTop);

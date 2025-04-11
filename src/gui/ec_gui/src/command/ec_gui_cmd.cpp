@@ -168,6 +168,18 @@ void EcGuiCmd::fill_start_stop_pump()
     for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
         if(slider_wid->is_slider_checked()){
             _pumps_selected |= true;
+            if(_ctrl_cmd_type==ClientCmdType::START){
+                int ctrl_mode=_ec_gui_slider->get_control_mode("Pumps");
+                if(ctrl_mode!= 0x00){
+                    std::vector<float> gains;
+                    gains.push_back(slider_wid->get_spinbox_value(2));
+                    gains.push_back(slider_wid->get_spinbox_value(3));
+                    gains.push_back(slider_wid->get_spinbox_value(4));
+                    gains.push_back(slider_wid->get_spinbox_value(5));
+                    gains.push_back(slider_wid->get_spinbox_value(6));
+                    _start_devices.push_back(std::make_tuple(slave_id,ctrl_mode,gains));
+                }
+            }
         }
     }
 }
@@ -218,12 +230,6 @@ void EcGuiCmd::onApplyCmd()
         }
     }
 
-    if(_pumps_selected){
-        if(_ctrl_cmd_type==ClientCmdType::START){
-            _device_start_req |= true;
-        }
-    }
-    
     if(!_brake_cmds.empty()){
         bool braking_cmd_fdb = braking_cmd_req(); // release or engage the brakes
         if(braking_cmd_fdb){
