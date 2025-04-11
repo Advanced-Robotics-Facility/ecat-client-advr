@@ -11,6 +11,11 @@ void EcBoostPdo::esc_factory(SSI slave_descr)
                 case iit::ecat::SYNAPTICON_v5_1:{
                     _internal_motor_status_map[id]=_motor_status_map[id]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
                     _internal_motor_reference_map[id]=_motor_reference_map[id]={0,0,0,0,0,0,0,0,0,0,0,0};
+                    if(ec_motors.count(esc_type)>0){
+                        if(ec_motors[esc_type] == "ADVRF_Motor"){
+                            _advrf_motor_map[id]=esc_type;
+                        }
+                    } 
                 }break;
                 case iit::ecat::FT6_MSP432:{
                     _internal_ft_status_map[id]=_ft_status_map[id]={0,0,0,0,0,0,0,0};
@@ -70,12 +75,19 @@ void EcBoostPdo::motor_status_handler(char *buf, size_t size)
     auto ret = proto.getEscStatus(buf,size,UdpPackMsg::MSG_MOTOR_STS, motors_status);
 
     // NOTE add extra PDO like pos_ref, vel_ref, tor_ref, curr_ref feedback
-    for ( const auto &[id,status_word,
-                       link_pos,motor_pos,link_vel,motor_vel,
-                       torque,current,motor_temp,board_temp,
-                       fault,rtt,
-                       pos_ref_fb,vel_ref_fb,tor_ref_fb,curr_ref_fb] : motors_status) {
+    for ( auto &[id,status_word,
+                 link_pos,motor_pos,link_vel,motor_vel,
+                 torque,current,motor_temp,board_temp,
+                 fault,rtt,
+                 pos_ref_fb,vel_ref_fb,tor_ref_fb,curr_ref_fb] : motors_status) {
         if(_internal_motor_status_map.count(id)>0){
+            if(_advrf_motor_map.count(id)>0 && 
+               _internal_motor_reference_map.count(id)>0){
+                if(std::get<0>(_internal_motor_reference_map[id])==0xDD){
+                    curr_ref_fb=tor_ref_fb;
+                    tor_ref_fb=0.0;
+                }
+            }
             _internal_motor_status_map[id] = std::make_tuple(status_word,
                                                              link_pos,motor_pos,link_vel,motor_vel,
                                                              torque,current,motor_temp,board_temp,

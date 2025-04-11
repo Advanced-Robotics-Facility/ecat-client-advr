@@ -55,7 +55,10 @@ inline void AdvrfPdo<T>::get_from_pb()
     std::get<11>(MotorPdo<T>::rx_pdo)   = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->pos_ref();
     std::get<12>(MotorPdo<T>::rx_pdo)   = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->vel_ref();
     std::get<13>(MotorPdo<T>::rx_pdo)   = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->tor_ref();
-    std::get<14>(MotorPdo<T>::rx_pdo)   = 0;
+    if(MotorPdo<T>::_ctrl_type_cast == iit::advr::Gains_Type_CURRENT){
+        std::get<13>(MotorPdo<T>::rx_pdo)   = 0;
+        std::get<14>(MotorPdo<T>::rx_pdo)   = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->tor_ref();
+    }
     
     if(!MotorPdo<T>::init_rx_pdo){
         MotorPdo<T>::init_rx_pdo=true;   
@@ -79,10 +82,10 @@ inline void AdvrfPdo<T>::set_to_pb()
     T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_gain_3(std::get<7>(MotorPdo<T>::tx_pdo));
     T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_gain_4(std::get<8>(MotorPdo<T>::tx_pdo));
     
-    auto ctrl_type_cast = static_cast<iit::advr::Gains_Type>(std::get<0>(MotorPdo<T>::tx_pdo));
+    MotorPdo<T>::_ctrl_type_cast = static_cast<iit::advr::Gains_Type>(std::get<0>(MotorPdo<T>::tx_pdo));
 
-    if((ctrl_type_cast == iit::advr::Gains_Type_POSITION ||
-        ctrl_type_cast == iit::advr::Gains_Type_VELOCITY)) {
+    if((MotorPdo<T>::_ctrl_type_cast == iit::advr::Gains_Type_POSITION ||
+        MotorPdo<T>::_ctrl_type_cast == iit::advr::Gains_Type_VELOCITY)) {
         T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_gain_0(std::get<4>(MotorPdo<T>::tx_pdo));
         T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_gain_1(std::get<6>(MotorPdo<T>::tx_pdo));
         T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_gain_2(0.0);

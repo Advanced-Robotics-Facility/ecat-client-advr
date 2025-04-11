@@ -17,6 +17,7 @@ private:
     void motor_status_handler(char*buf, size_t size);
     void ft6_status_handler(char*buf, size_t size);
     void pwr_status_handler(char*buf, size_t size);
+    std::map <int,int> _advrf_motor_map;
 };
 
 #endif
