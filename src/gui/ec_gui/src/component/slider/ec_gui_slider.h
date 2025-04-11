@@ -9,41 +9,11 @@
 #include "utils/ec_utils.h"
 #include <cfloat>
 
-static SliderWidget::slider_info_s motor_info={
-  MotorPdoTx::name,
-  {"[uless]","[rad]","[rad/s]","[Nm]---[A]","[arbu]", "[arbu]","[arbu]","[arbu]","[arbu]","[uless]","[uless]","[arbu]"},
-  {0,2,2,2,4,4,4,4,4,0,0,2},
-  {"0","-3.14","-6.28","-10.0","0","0","0","0","0","0","0","-10000"},
-  {"500","3.14","6.28","10.0","10000","10000","10000","10000","10000","2","65535","10000"},
-  {0,1,1,1,2,2,2,2,2,3,3,1}
-};
-
-static const SliderWidget::slider_info_s valve_info= {
-  ValvePdoTx::name,
-  {"[mA]", "[um]", "[N]","[arbu]", "[arbu]","[arbu]","[arbu]","[arbu]","[uless]","[uless]","[uless]","[arbu]"},
-  {2,2,2,4,4,4,4,4,0,0,0,2},
-  {"-25.0","-2000.0","-100","-100.0","-100","-100","-100","-100","0","0","0","-10000"},
-  {"25.0","2000.0","100","100.0","100","100","100","100","1","1","1","10000"},
-  {1,1,1,2,2,2,2,2,3,3,3,1}
-};
-
-static const SliderWidget::slider_info_s pump_info= {
-  PumpPdoTx::name,
-  {"[bar]", "[uless]", "[uless]","[uless]", "[uless]","[uless]","[uless]","[uless]","[uless]"},
-  {0,0,0,0,0,0,0,0,0},
-  {"0","0","0","0","0","0","0","0","0"},
-  {"255","255","255","65535","255","255","255","255","255"},
-  {1,1,1,1,1,1,1,1}
-};
-
-
-
 class EcGuiSlider : public QWidget
 {
     Q_OBJECT
 
 public:
-
     struct slider_map_t{
       std::map<int, SliderWidget*> motor_sw_map;
       std::map<int, SliderWidget*> valve_sw_map;
@@ -79,7 +49,7 @@ private slots:
     void control_mode_change();
 
 private:
-  
+
   slider_map_t _slider_map;
 
   float _control_mode;
@@ -98,6 +68,9 @@ private:
                                       const std::vector<int> control_mode_hex);
   device_ctrl_t _device_ctrl;
   int _ctrl_mode,_old_ctrl_mode;
+  void adjust_slave_info(SliderWidget::slider_info_s &slide_info,
+                         int index,
+                         std::vector<std::string> new_fields);
 };
 
 #endif // EC_GUI_SLIDER_H

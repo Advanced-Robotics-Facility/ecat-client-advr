@@ -20,6 +20,7 @@ public:
         pos_ref=pb.mutable_motor_xt_tx_pdo()->pos_ref();
         vel_ref=pb.mutable_motor_xt_tx_pdo()->vel_ref();
         tor_ref=pb.mutable_motor_xt_tx_pdo()->tor_ref();
+        curr_ref=pb.mutable_motor_xt_tx_pdo()->tor_ref();
     }
     
     virtual void  pbSerialize(iit::advr::Ec_slave_pdo& pb)

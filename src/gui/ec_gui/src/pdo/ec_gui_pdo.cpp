@@ -430,14 +430,17 @@ void EcGuiPdo::write_motor_pdo()
             std::get<1>(_motor_reference_map[slave_id])=slider_wid->compute_wave(1,_s_send_time); 
             std::get<2>(_motor_reference_map[slave_id])=slider_wid->compute_wave(2,_s_send_time); 
             std::get<3>(_motor_reference_map[slave_id])=slider_wid->compute_wave(3,_s_send_time); 
-            std::get<4>(_motor_reference_map[slave_id])=slider_wid->compute_wave(4,_s_send_time); 
-            std::get<5>(_motor_reference_map[slave_id])=slider_wid->compute_wave(5,_s_send_time); 
-            std::get<6>(_motor_reference_map[slave_id])=slider_wid->compute_wave(6,_s_send_time); 
-            std::get<7>(_motor_reference_map[slave_id])=slider_wid->compute_wave(7,_s_send_time); 
-            std::get<8>(_motor_reference_map[slave_id])=slider_wid->compute_wave(8,_s_send_time); 
+            if(slider_wid->get_spinbox_value(0)==0xDD){
+                std::get<3>(_motor_reference_map[slave_id])=slider_wid->compute_wave(4,_s_send_time);
+            } 
+            std::get<4>(_motor_reference_map[slave_id])=slider_wid->compute_wave(5,_s_send_time); 
+            std::get<5>(_motor_reference_map[slave_id])=slider_wid->compute_wave(6,_s_send_time); 
+            std::get<6>(_motor_reference_map[slave_id])=slider_wid->compute_wave(7,_s_send_time); 
+            std::get<7>(_motor_reference_map[slave_id])=slider_wid->compute_wave(8,_s_send_time); 
+            std::get<8>(_motor_reference_map[slave_id])=slider_wid->compute_wave(9,_s_send_time); 
             std::get<9>(_motor_reference_map[slave_id])=1;
-            std::get<10>(_motor_reference_map[slave_id])=slider_wid->get_spinbox_value(10); 
-            std::get<11>(_motor_reference_map[slave_id])=slider_wid->compute_wave(11,_s_send_time);  
+            std::get<10>(_motor_reference_map[slave_id])=slider_wid->get_spinbox_value(11); 
+            std::get<11>(_motor_reference_map[slave_id])=slider_wid->compute_wave(12,_s_send_time);  
         }
     }
 

@@ -1,10 +1,44 @@
 ﻿#include "ec_gui_slider.h"
 
+static SliderWidget::slider_info_s motor_info={
+    MotorPdoTx::name,
+    {"[uless]","[rad]","[rad/s]","[Nm]","[arbu]", "[arbu]","[arbu]","[arbu]","[arbu]","[uless]","[uless]","[arbu]"},
+    {0,2,2,2,4,4,4,4,4,0,0,2},
+    {"0","-3.14","-6.28","-10.0","0","0","0","0","0","0","0","-10000"},
+    {"500","3.14","6.28","10.0","10000","10000","10000","10000","10000","2","65535","10000"},
+    {0,1,1,1,2,2,2,2,2,3,3,1}
+};
+static int gain_start_pos=4;
+
+static SliderWidget::slider_info_s valve_info= {
+    ValvePdoTx::name,
+    {"[mA]", "[um]", "[N]","[arbu]", "[arbu]","[arbu]","[arbu]","[arbu]","[uless]","[uless]","[uless]","[arbu]"},
+    {2,2,2,4,4,4,4,4,0,0,0,2},
+    {"-25.0","-2000.0","-100","-100.0","-100","-100","-100","-100","0","0","0","-10000"},
+    {"25.0","2000.0","100","100.0","100","100","100","100","1","1","1","10000"},
+    {1,1,1,2,2,2,2,2,3,3,3,1}
+};
+  
+static SliderWidget::slider_info_s pump_info= {
+    PumpPdoTx::name,
+    {"[bar]", "[arbu]", "[arbu]","[arbu]", "[arbu]","[uless]","[uless]","[uless]","[uless]","[arbu]"},
+    {2,4,4,4,4,0,0,0,0,2},
+    {"-150","-2000.0","-2000.0","-2000.0","-2000.0","0","0","0","0","-10000"},
+    {"150","2000.0","2000.0","2000.0","2000.0","65536","65536","65536","65536","10000"},
+    {1,2,2,2,2,3,3,3,3,1}
+};
+  
+
 EcGuiSlider::EcGuiSlider(QWidget *parent) :
     QWidget(parent)
 {
     _devicecontrol=parent->findChild<QTabWidget *>("deviceControl");
     _device_list_wid = parent->findChild<QListWidget *>("devicelistWidget");
+    if(motor_info.slider_name.size()==static_cast<size_t>(MotorPdoTx::pdo_size)){
+        std::vector<std::string> new_fields={"curr_ref","[A]","2","-30.0","30.0","1"};
+        adjust_slave_info(motor_info,4,new_fields);
+        gain_start_pos=5;
+    }
 }
 
 template<typename T>
@@ -16,7 +50,22 @@ std::string to_string(T value)
     std::stringstream string_stream;
     string_stream << std::fixed << std::setprecision(2) << value;
 
-    return string_stream.str();;
+    return string_stream.str();
+}
+
+void EcGuiSlider::adjust_slave_info(SliderWidget::slider_info_s &slide_info,
+                                    int index,
+                                    std::vector<std::string> new_fields)
+{   
+    if(new_fields.size()!=6){
+        return;
+    }
+    slide_info.slider_name.insert(slide_info.slider_name.begin()+index,new_fields[0]);
+    slide_info.slider_unit.insert(slide_info.slider_unit.begin()+index,new_fields[1]);
+    slide_info.slider_decimal.insert(slide_info.slider_decimal.begin()+index,std::atoi(new_fields[2].c_str()));
+    slide_info.slider_min.insert(slide_info.slider_min.begin()+index,new_fields[3]);
+    slide_info.slider_max.insert(slide_info.slider_max.begin()+index,new_fields[4]);
+    slide_info.slider_property.insert(slide_info.slider_property.begin()+index,std::atoi(new_fields[5].c_str()));
 }
 
 QVBoxLayout* EcGuiSlider::retrieve_slider_layout(const std::string &tab_name,
@@ -153,7 +202,8 @@ void EcGuiSlider::reset_sliders()
         slider_wid->align_spinbox(1); // pos_ref=actual motor position
         slider_wid->align_spinbox(2,0.0); // vel_ref=0.0
         slider_wid->align_spinbox(3,0.0); // tor_ref=0.0
-        slider_wid->align_spinbox(11,0.0); // aux=0.0
+        slider_wid->align_spinbox(4,0.0); // curr_ref=0.0
+        slider_wid->align_spinbox(12,0.0); // aux=0.0
     }
     for (auto& [slave_id, slider_wid]:_slider_map.valve_sw_map){
         slider_wid->align_all_spinbox(0.0);
@@ -279,7 +329,7 @@ void EcGuiSlider::set_control_mode(const std::string &tab_name)
         for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
             slider_wid->align_spinbox(0,_ctrl_mode);
             if(_device_ctrl.device_gains.count(slave_id)>0){
-                int gain_start_index=4; 
+                int gain_start_index=gain_start_pos; 
                 // save gains of the old ctrl mode.
                 if(_device_ctrl.device_gains[slave_id].count(_old_ctrl_mode)>0){
                     for(auto & gain_value: _device_ctrl.device_gains[slave_id][_old_ctrl_mode]){
@@ -287,7 +337,7 @@ void EcGuiSlider::set_control_mode(const std::string &tab_name)
                         gain_start_index++;
                     } 
                 }
-                gain_start_index=4;
+                gain_start_index=gain_start_pos;
                 // load gains of the actual ctrl mode.
                 if(_device_ctrl.device_gains[slave_id].count(_ctrl_mode)>0){
                     for(const auto & gain_value: _device_ctrl.device_gains[slave_id][_ctrl_mode]){
