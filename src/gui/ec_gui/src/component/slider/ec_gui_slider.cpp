@@ -103,7 +103,7 @@ void EcGuiSlider::create_sliders(SSI device_info,device_ctrl_t device_ctrl)
                 
                 int limits_size = static_cast<int>(limits.size());
                 start_device_info++;
-                for(int i=2;i<limits_size-1;i++){
+                for(int i=2;i<limits_size;i++){
                     if(limits[i]>0.0){
                         motor_info.slider_min[start_device_info] = to_string(-limits[i]);
                         motor_info.slider_max[start_device_info] = to_string(limits[i]);

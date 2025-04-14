@@ -350,7 +350,7 @@ void EcGuiStart::setup_motor_device(int32_t device_id,int32_t device_type)
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0xDD]={0.18,0.01,0.0,0.0,0.0};
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0x00]={0.0,0.0,0.0,0.0,0.0};
 
-        sdo_limits={"Min_pos","Max_pos","Max_vel","Max_tor","Max_cur"};
+        sdo_limits={"Min_pos","Max_pos","Max_vel","Max_tor","Max_ref"};
         _ec_wrapper_info.device_ctrl.device_limits[device_id]={FLT_MIN,FLT_MAX,0.0,0.0,0.0};
         read_sdo_info(device_id,sdo_limits,_ec_wrapper_info.device_ctrl.device_limits[device_id]);        
     }
