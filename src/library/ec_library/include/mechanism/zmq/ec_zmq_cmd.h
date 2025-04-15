@@ -34,7 +34,7 @@ public:
     void stop_cmd();
 
 private:
-    
+    int sdo_cmd(uint32_t esc_id,const RD_SDO &rd_sdo,const std::map<std::string,std::string> &wr_sdo);
     void feed_motors(); 
     void feed_valves();
     void feed_pumps();
@@ -43,6 +43,7 @@ private:
     const int _max_cmd_attemps=3;
     SSI _slave_info;
     DST _devices_started;
+    RR_SDOS _rr_sdo;
 };
 
 #endif

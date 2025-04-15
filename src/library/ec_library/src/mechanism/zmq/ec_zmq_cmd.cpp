@@ -145,30 +145,90 @@ bool EcZmqCmd::retrieve_all_sdo(uint32_t esc_id,RR_SDOS &rr_sdo)
     return false;
 }
 
+int EcZmqCmd::sdo_cmd(uint32_t esc_id,
+                      const RD_SDO &rd_sdo,
+                      const std::map<std::string,std::string> &wr_sdo)
+{
+    std::string sdo_cmd_type="retrieve_rr_sdo";
+    if(!wr_sdo.empty()){
+        sdo_cmd_type="set_wr_sdo";
+    }
+
+    int attemps_cnt = 0;
+
+    while(_client_status.status!=ClientStatusEnum::NOT_ALIVE && attemps_cnt < _max_cmd_attemps){
+        std::string sdo_msg;
+        auto fault=_ec_repl_cmd->Slave_SDO_cmd(esc_id, 
+                                               rd_sdo,
+                                               wr_sdo,
+                                               sdo_msg);
+        
+        if(!cmd_error_status(fault, sdo_cmd_type,sdo_msg)){
+            if(sdo_cmd_type=="retrieve_rr_sdo"){
+                auto rd_sdo_read = YAML::Load(sdo_msg);
+                _rr_sdo = rd_sdo_read.as<std::map<std::string, std::string>>();
+            }
+            return 1;
+        }
+        else{
+            attemps_cnt++;
+        } 
+    }
+
+    int ret=0;
+    if(_client_status.status==ClientStatusEnum::NOT_ALIVE){
+        ret=-1;
+    }
+    return ret;
+}
+
 bool EcZmqCmd::retrieve_rr_sdo(uint32_t esc_id,
                             const RD_SDO &rd_sdo, 
                             const WR_SDO &wr_sdo,
                             RR_SDOS &rr_sdo)
 
 {
-    int attemps_cnt = 0; 
-    while(_client_status.status!=ClientStatusEnum::NOT_ALIVE && attemps_cnt < _max_cmd_attemps){
-        std::string msg,rd_sdo_msg;
-        auto fault=_ec_repl_cmd->Slave_SDO_cmd(esc_id, 
-                                               rd_sdo,
-                                               {},  // ignored
-                                               rd_sdo_msg);
-        
-        if(!cmd_error_status(fault, "retrieve_rr_sdo",msg)){
-            auto rd_sdo_read = YAML::Load(rd_sdo_msg);
-            rr_sdo = rd_sdo_read.as<std::map<std::string, std::string>>();
-            return true;
+    RD_SDO rd_sdo_chunk;
+    size_t count_sdo_chunk=0;
+    size_t count_sdo=0;
+    const size_t max_chunk_sdo=5;
+    for(const auto &sdo_name:rd_sdo){
+        if(count_sdo_chunk<max_chunk_sdo && count_sdo<rd_sdo.size()-1){
+            rd_sdo_chunk.push_back(sdo_name);
+            count_sdo_chunk++;
         }
         else{
-            attemps_cnt++;
-        } 
+            if(count_sdo_chunk<max_chunk_sdo){
+                rd_sdo_chunk.push_back(sdo_name); // get last element
+            }
+
+            _rr_sdo.clear();
+            if(sdo_cmd(esc_id,rd_sdo_chunk,{})<0){
+                return false;
+            }
+
+            for(const auto&[sdo_name,sdo_value]:_rr_sdo){
+                rr_sdo[sdo_name]=sdo_value;
+            }
+
+            std::string sdo_name_error="";
+            for(const auto &sdo_name_chunk:rd_sdo_chunk){
+                if(rr_sdo.count(sdo_name_chunk)==0){
+                    sdo_name_error=sdo_name_error+" "+sdo_name_chunk;
+                }
+            }
+
+            if(sdo_name_error!=""){
+                _consoleLog->error("Error on read the SDO(s),",sdo_name_error);
+            }
+            
+            count_sdo_chunk=0;
+            rd_sdo_chunk.clear();
+        }
+        count_sdo++;
     }
-    return false;
+
+    return true;
 }
 
 bool EcZmqCmd::set_wr_sdo(uint32_t esc_id,
@@ -176,28 +236,30 @@ bool EcZmqCmd::set_wr_sdo(uint32_t esc_id,
                        const WR_SDO &wr_sdo)
 
 {
-    std::map<std::string ,std::string> wr_sdo_map;
-    for (auto &[sdo_name ,value] : wr_sdo) {
-        wr_sdo_map[sdo_name]=value;
-    }
-        
-    int attemps_cnt = 0; 
-    while(_client_status.status!=ClientStatusEnum::NOT_ALIVE && attemps_cnt < _max_cmd_attemps){
-        std::string msg,wd_sdo_msg;
-        auto fault=_ec_repl_cmd->Slave_SDO_cmd(esc_id, 
-                                              {},  // ignored
-                                              wr_sdo_map,
-                                              wd_sdo_msg);
-        
-        if(!cmd_error_status(fault, "set_wr_sdo",msg)){
-            return true;
+    std::map<std::string ,std::string> wr_sdo_chunk;
+    size_t count_sdo_chunk=0;
+    size_t count_sdo=0;
+    const size_t max_chunk_sdo=5;
+    for(const auto &[sdo_name ,value]:wr_sdo){
+        if(count_sdo_chunk<max_chunk_sdo && count_sdo<wr_sdo.size()-1){
+            wr_sdo_chunk[sdo_name]=value;
+            count_sdo_chunk++;
         }
         else{
-            attemps_cnt++;
+            if(count_sdo_chunk<max_chunk_sdo){
+                wr_sdo_chunk[sdo_name]=value; // get last element
+            }
+
+            if(sdo_cmd(esc_id,{},wr_sdo_chunk)<0){
+                return false;
+            }
+            count_sdo_chunk=0;
+            wr_sdo_chunk.clear();
         }
+        count_sdo++;
     }
-    
-    return false;
+
+    return true;
 }
 
 bool EcZmqCmd::start_devices(const DST &devices_start)
