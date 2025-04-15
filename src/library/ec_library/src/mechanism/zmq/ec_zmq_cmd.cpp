@@ -193,14 +193,12 @@ bool EcZmqCmd::retrieve_rr_sdo(uint32_t esc_id,
     size_t count_sdo=0;
     const size_t max_chunk_sdo=5;
     for(const auto &sdo_name:rd_sdo){
-        if(count_sdo_chunk<max_chunk_sdo && count_sdo<rd_sdo.size()-1){
+        if(count_sdo_chunk<max_chunk_sdo-1 && count_sdo<rd_sdo.size()-1){
             rd_sdo_chunk.push_back(sdo_name);
             count_sdo_chunk++;
         }
         else{
-            if(count_sdo_chunk<max_chunk_sdo){
-                rd_sdo_chunk.push_back(sdo_name); // get last element
-            }
+            rd_sdo_chunk.push_back(sdo_name); // get last element
 
             _rr_sdo.clear();
             if(sdo_cmd(esc_id,rd_sdo_chunk,{})<0){
@@ -219,7 +217,7 @@ bool EcZmqCmd::retrieve_rr_sdo(uint32_t esc_id,
             }
 
             if(sdo_name_error!=""){
-                _consoleLog->error("Error on read the SDO(s),",sdo_name_error);
+                _consoleLog->error("Error on read the SDO(s): {}",sdo_name_error);
             }
             
             count_sdo_chunk=0;
@@ -241,14 +239,12 @@ bool EcZmqCmd::set_wr_sdo(uint32_t esc_id,
     size_t count_sdo=0;
     const size_t max_chunk_sdo=5;
     for(const auto &[sdo_name ,value]:wr_sdo){
-        if(count_sdo_chunk<max_chunk_sdo && count_sdo<wr_sdo.size()-1){
+        if(count_sdo_chunk<max_chunk_sdo-1 && count_sdo<wr_sdo.size()-1){
             wr_sdo_chunk[sdo_name]=value;
             count_sdo_chunk++;
         }
         else{
-            if(count_sdo_chunk<max_chunk_sdo){
-                wr_sdo_chunk[sdo_name]=value; // get last element
-            }
+            wr_sdo_chunk[sdo_name]=value; // get last element
 
             if(sdo_cmd(esc_id,{},wr_sdo_chunk)<0){
                 return false;
