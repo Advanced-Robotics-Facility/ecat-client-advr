@@ -245,9 +245,17 @@ bool EcZmqCmd::set_wr_sdo(uint32_t esc_id,
         }
         else{
             wr_sdo_chunk[sdo_name]=value; // get last element
-
-            if(sdo_cmd(esc_id,{},wr_sdo_chunk)<0){
+            
+            int ret = sdo_cmd(esc_id,{},wr_sdo_chunk);
+            if(ret<0){
                 return false;
+            }
+            else if(ret==0){
+                std::string sdo_name_error="";
+                for(const auto &[sdo_name_chunk ,value]:wr_sdo_chunk){
+                    sdo_name_error=sdo_name_error+" "+sdo_name_chunk;
+                }
+                _consoleLog->error("Error on write the SDO(s): {}",sdo_name_error);
             }
             count_sdo_chunk=0;
             wr_sdo_chunk.clear();
