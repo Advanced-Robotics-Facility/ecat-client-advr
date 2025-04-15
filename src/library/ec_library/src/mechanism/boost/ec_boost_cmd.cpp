@@ -164,13 +164,14 @@ bool EcBoostCmd::get_reply_from_server(ReplReqRep cmd_req)
         _req_reply_timeout=true;
         _consoleLog->error("Command timeout, restart the request!"); // server timeout 
     }
-
-    if(_client_status.status!=ClientStatusEnum::NOT_ALIVE){
-        _consoleLog->info(" Command requested ---> {} Command reply--->{} ", cmd_req, _repl_req_rep);
-        if(cmd_req == _repl_req_rep){
-            if(_reply_err_msg == "OkI"){
-                _reply_err_msg = "";
-                return true;
+    else{
+        if(_client_status.status!=ClientStatusEnum::NOT_ALIVE && !_req_reply_timeout){
+            _consoleLog->info(" Command requested ---> {} Command reply--->{} ", cmd_req, _repl_req_rep);
+            if(cmd_req == _repl_req_rep){
+                if(_reply_err_msg == "OkI"){
+                    _reply_err_msg = "";
+                    return true;
+                }
             }
         }
     }
@@ -211,9 +212,7 @@ bool EcBoostCmd::retrieve_slaves_info(SSI &slave_info)
             get_slaves_info();
 
             ret_cmd_status = get_reply_from_server(ReplReqRep::SLAVES_INFO);
-            if(_req_reply_timeout){
-                return false;
-            }
+
             if(ret_cmd_status){
                 slave_info = _slave_info;
                 attemps_cnt = _max_cmd_attemps;
@@ -224,6 +223,9 @@ bool EcBoostCmd::retrieve_slaves_info(SSI &slave_info)
             }
             else{
                 attemps_cnt++;
+                if(_req_reply_timeout){
+                    return false;
+                }
             }
         }
         else{
@@ -270,15 +272,16 @@ bool EcBoostCmd::retrieve_all_sdo(uint32_t esc_id,RR_SDOS &rr_sdo)
             _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
 
             ret_cmd_status = get_reply_from_server(ReplReqRep::SDO_INFO);
-            if(_req_reply_timeout){
-                return false;
-            }
+    
             if(ret_cmd_status){
                 attemps_cnt = _max_cmd_attemps;
                 ret_cmd_status = retrieve_rr_sdo(esc_id,_sdo_names,{},rr_sdo);
             }
             else{
                 attemps_cnt++;
+                if(_req_reply_timeout){
+                    return false;
+                }
             }
         }
         else{
@@ -290,39 +293,82 @@ bool EcBoostCmd::retrieve_all_sdo(uint32_t esc_id,RR_SDOS &rr_sdo)
     return ret_cmd_status;
 }
 
-bool EcBoostCmd::retrieve_rr_sdo(uint32_t esc_id,
-                             const RD_SDO &rd_sdo, 
-                             const WR_SDO &wr_sdo,
-                             RR_SDOS &rr_sdo)
-
+int EcBoostCmd::sdo_cmd(uint32_t esc_id, 
+                        const RD_SDO &rd_sdo, 
+                        const WR_SDO &wr_sdo)
 {
     int attemps_cnt = 0;
-    bool ret_cmd_status=false;
-    
-    _rr_sdo.clear();
     _req_reply_timeout=false;
-    while(rr_sdo.empty() && attemps_cnt < _max_cmd_attemps){
+
+    while(attemps_cnt < _max_cmd_attemps){
         if(_client_status.status!=ClientStatusEnum::NOT_ALIVE){
             getAndset_slaves_sdo(esc_id,rd_sdo,wr_sdo);
-            
-            ret_cmd_status = get_reply_from_server(ReplReqRep::SDO_CMD);
-            if(_req_reply_timeout){
-                return false;
-            }
-            if(ret_cmd_status){
-                rr_sdo= _rr_sdo;
-                attemps_cnt = _max_cmd_attemps;
+
+            if(get_reply_from_server(ReplReqRep::SDO_CMD)){
+                return 1;
             }
             else{
                 attemps_cnt++;
+                if(_req_reply_timeout){
+                    return -1;
+                }
             }
         }
         else{
             _consoleLog->error("Client in not alive state, please stop the main process!");
-            return false;
+            return -1;
         }
     }
-    return ret_cmd_status;
+    return 0;
+}
+
+bool EcBoostCmd::retrieve_rr_sdo(uint32_t esc_id,
+                                 const RD_SDO &rd_sdo, 
+                                 const WR_SDO &wr_sdo,
+                                 RR_SDOS &rr_sdo)
+
+{
+    RD_SDO rd_sdo_chunk;
+    size_t count_sdo_chunk=0;
+    size_t count_sdo=0;
+    const size_t max_chunk_sdo=5;
+    for(const auto &sdo_name:rd_sdo){
+        if(count_sdo_chunk<max_chunk_sdo && count_sdo<rd_sdo.size()-1){
+            rd_sdo_chunk.push_back(sdo_name);
+            count_sdo_chunk++;
+        }
+        else{
+            if(count_sdo_chunk<max_chunk_sdo){
+                rd_sdo_chunk.push_back(sdo_name); // get last element
+            }
+
+            _rr_sdo.clear();
+            if(sdo_cmd(esc_id,rd_sdo_chunk,{})<0){
+                return false;
+            }
+
+            for(const auto&[sdo_name,sdo_value]:_rr_sdo){
+                rr_sdo[sdo_name]=sdo_value;
+            }
+
+            std::string sdo_name_error="";
+            for(const auto &sdo_name_chunk:rd_sdo_chunk){
+                if(rr_sdo.count(sdo_name_chunk)==0){
+                    sdo_name_error=sdo_name_error+" "+sdo_name_chunk;
+                }
+            }
+
+            if(sdo_name_error!=""){
+                _consoleLog->error("Error on read the SDO(s),",sdo_name_error);
+            }
+            
+            count_sdo_chunk=0;
+            rd_sdo_chunk.clear();
+        }
+        count_sdo++;
+    }
+
+    return true;
 }
 
 bool EcBoostCmd::set_wr_sdo(uint32_t esc_id,
@@ -330,30 +376,30 @@ bool EcBoostCmd::set_wr_sdo(uint32_t esc_id,
                         const WR_SDO &wr_sdo)
 
 {
-    int attemps_cnt = 0;
-    bool ret_cmd_status=false;
-    _req_reply_timeout=false;
-    while(attemps_cnt < _max_cmd_attemps){
-        if(_client_status.status!=ClientStatusEnum::NOT_ALIVE){
-            getAndset_slaves_sdo(esc_id,rd_sdo,wr_sdo);
-
-            ret_cmd_status = get_reply_from_server(ReplReqRep::SDO_CMD);
-            if(_req_reply_timeout){
-                return false;
-            }
-            if(ret_cmd_status){
-                attemps_cnt = _max_cmd_attemps;
-            }
-            else{
-                attemps_cnt++;
-            }
+    WR_SDO wr_sdo_chunk;
+    size_t count_sdo_chunk=0;
+    size_t count_sdo=0;
+    const size_t max_chunk_sdo=5;
+    for(const auto &sdo_tuple:wr_sdo){
+        if(count_sdo_chunk<max_chunk_sdo && count_sdo<wr_sdo.size()-1){
+            wr_sdo_chunk.push_back(sdo_tuple);
+            count_sdo_chunk++;
         }
         else{
-            _consoleLog->error("Client in not alive state, please stop the main process!");
-            return false;
+            if(count_sdo_chunk<max_chunk_sdo){
+                wr_sdo_chunk.push_back(sdo_tuple); // get last element
+            }
+
+            if(sdo_cmd(esc_id,{},wr_sdo_chunk)<0){
+                return false;
+            }
+            count_sdo_chunk=0;
+            wr_sdo_chunk.clear();
         }
+        count_sdo++;
     }
-    return ret_cmd_status;
+
+    return true;
 }
 
 bool EcBoostCmd::start_devices(const DST &devices_start)
@@ -381,15 +427,17 @@ bool EcBoostCmd::start_devices(const DST &devices_start)
                 _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
                 
                 ret_cmd_status = get_reply_from_server(ReplReqRep::START_MOTOR);
-                if(_req_reply_timeout){
-                    return false;
-                }
+
                 if(ret_cmd_status){
                     attemps_cnt = _max_cmd_attemps;
                     _client_status.status=ClientStatusEnum::DEVICES_STARTED;
                 }
                 else{
                     attemps_cnt++;
+                    restore_wait_reply_time();
+                    if(_req_reply_timeout){
+                        return false;
+                    }
                 }
             }
             else{
@@ -418,15 +466,16 @@ bool EcBoostCmd::stop_devices()
             _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
             
             ret_cmd_status = get_reply_from_server(ReplReqRep::STOP_MOTOR);
-            if(_req_reply_timeout){
-                    return false;
-            }
+  
             if(ret_cmd_status){
                 attemps_cnt = _max_cmd_attemps;
                 _client_status.status=ClientStatusEnum::DEVICES_STOPPED;
             }
             else{
                 attemps_cnt++;
+                if(_req_reply_timeout){
+                    return false;
+                }
             }
         }
         else{

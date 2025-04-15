@@ -40,6 +40,7 @@ private:
     //COMMANDS
     void get_slaves_info();
     void getAndset_slaves_sdo(uint32_t esc_id, const RD_SDO &rd_sdo, const WR_SDO &wr_sdo);
+    int sdo_cmd(uint32_t esc_id, const RD_SDO &rd_sdo, const WR_SDO &wr_sdo);
     
     void feed_motors();
     void set_motors_gains(const MSG &);
