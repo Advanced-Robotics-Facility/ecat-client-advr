@@ -219,7 +219,13 @@ void EcGuiNet::start_process(QProcess *process,QString bin_file_path,QString opt
 {
     QStringList cmd;
     
-    cmd=_ssh_command;  
+    cmd=_ssh_command; 
+    /*Force pseudo-terminal allocation.  This can be used to
+    execute arbitrary screen-based programs on a remote
+    machine, which can be very useful, e.g. when implementing
+    menu services.  Multiple -t options force tty allocation,
+    even if ssh has no local tty.*/
+    cmd.insert(3,"-tt"); 
     cmd.append(bin_file_path);
     if(option!=""){
         cmd.append(option);
