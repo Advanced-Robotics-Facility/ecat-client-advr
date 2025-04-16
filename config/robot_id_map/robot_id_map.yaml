@@ -11,3 +11,4 @@ joint_map:
   7: leg_4_joint_1
   8: leg_4_joint_2
   123: leg_4_joint_3
+  210: pump
