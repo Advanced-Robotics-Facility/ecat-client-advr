@@ -144,12 +144,9 @@ bool EcGuiStart::stopping_ec_sys()
         /******************************STOP EtherCAT Master and Server ************************************************/
         _ec_gui_net->stop_network();
         /******************************CLEAN UP THE GUI ************************************************/
-        clear_device();
+        clear_gui();
         EcGuiWrapper::ec_wrapper_info_t _ec_wrapper_info_reset;
         _ec_wrapper_info=_ec_wrapper_info_reset;
-        
-        restart_gui();
-
         _etherCAT_sys_started=false;
         etherCAT_sys_stopped=true;
     }
