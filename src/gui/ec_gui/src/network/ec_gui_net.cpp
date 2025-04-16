@@ -34,7 +34,7 @@ EcGuiNet::EcGuiNet(QWidget *parent) :
     connect(_net_tree_wid, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)),this, SLOT(OnMouseClicked(QTreeWidgetItem*, int)));
 
 
-    _ec_master_file_path =QDir::homePath()+"/ec_master_terminal.txt";
+    _ec_master_file_path =QDir::tempPath()+"/ec_master_log.txt";
     _ec_master_process = new QProcess(this);
     _ec_master_process->setReadChannel(QProcess::StandardOutput);
     _ec_master_process->setProcessChannelMode(QProcess::MergedChannels);
@@ -44,7 +44,7 @@ EcGuiNet::EcGuiNet(QWidget *parent) :
     connect(_ec_master_process , SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(ec_master_processFinished(int, QProcess::ExitStatus)));
     connect(_ec_master_process, &QProcess::readyReadStandardOutput,this, &EcGuiNet::ec_master_readyStdO);
 
-    _server_file_path =QDir::homePath()+"/server_terminal.txt";
+    _server_file_path =QDir::tempPath()+"/udp_server_log.txt";
     _server_process = new QProcess(this);
     _server_process->setReadChannel(QProcess::StandardOutput);
     _server_process->setProcessChannelMode(QProcess::MergedChannels);
