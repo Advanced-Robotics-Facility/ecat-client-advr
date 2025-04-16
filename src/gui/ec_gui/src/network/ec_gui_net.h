@@ -49,8 +49,10 @@ private:
   QProcess *_ec_master_process,*_server_process;
   QStringList _ssh_command;
   QString _ec_master_stdout,_server_stdout;
-  QFile *_ec_master_file,*_server_file;
+  QString _ec_master_file_path,_server_file_path;
+  QFile *_ec_master_file=nullptr,*_server_file=nullptr;
   QTextStream *_ec_master_stream,*_server_stream;
+  QProcess *_view_master_process,*_view_server_process;
   QString _server_hostname,_server_ip,_server_port,_server_protocol,_server_pwd;
   
   QComboBox * _protocol_combobox;
@@ -62,7 +64,9 @@ private:
   void kill_process(QProcess *process,QString bin_name,QString& stdout);
   
   void ec_master_readyStdO();
+  void view_master_process();
   void server_readyStdO();
+  void view_server_process();
   void set_ec_network();      
 };
 #endif // EC_GUI_NET_H

@@ -34,18 +34,22 @@ EcGuiNet::EcGuiNet(QWidget *parent) :
     connect(_net_tree_wid, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)),this, SLOT(OnMouseClicked(QTreeWidgetItem*, int)));
 
 
+    _ec_master_file_path =QDir::homePath()+"/ec_master_terminal.txt";
     _ec_master_process = new QProcess(this);
     _ec_master_process->setReadChannel(QProcess::StandardOutput);
     _ec_master_process->setProcessChannelMode(QProcess::MergedChannels);
     _ec_master_process->setCurrentReadChannel(QProcess::StandardOutput);
+    _view_master_process = new QProcess(this);
 
     connect(_ec_master_process , SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(ec_master_processFinished(int, QProcess::ExitStatus)));
     connect(_ec_master_process, &QProcess::readyReadStandardOutput,this, &EcGuiNet::ec_master_readyStdO);
 
+    _server_file_path =QDir::homePath()+"/server_terminal.txt";
     _server_process = new QProcess(this);
     _server_process->setReadChannel(QProcess::StandardOutput);
     _server_process->setProcessChannelMode(QProcess::MergedChannels);
     _server_process->setCurrentReadChannel(QProcess::StandardOutput);
+    _view_server_process = new QProcess(this);
 
     connect(_server_process , SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(server_processFinished(int, QProcess::ExitStatus)));
     connect(_server_process, &QProcess::readyReadStandardOutput,this, &EcGuiNet::server_readyStdO);
@@ -138,6 +142,15 @@ void EcGuiNet::server_processFinished(int exitCode, QProcess::ExitStatus exitSta
     server_readyStdO();
 }
 
+void EcGuiNet::view_master_process()
+{
+    if(_view_master_process->state()==QProcess::NotRunning){
+        QStringList cmd={"-x","tail","-f","-n","+1"};
+        cmd.append(_ec_master_file_path);
+        _view_master_process->startDetached("terminator",cmd);
+    }
+}
+
 void EcGuiNet::ec_master_readyStdO()
 {
     if(_ec_master_process->canReadLine()){
@@ -148,6 +161,15 @@ void EcGuiNet::ec_master_readyStdO()
                 _ec_master_stream->flush();
             }
         } 
+    }
+}
+
+void EcGuiNet::view_server_process()
+{
+    if(_view_server_process->state()==QProcess::NotRunning){
+        QStringList cmd={"-x","tail","-f","-n","+1"};
+        cmd.append(_server_file_path);
+        _view_server_process->startDetached("terminator",cmd);
     }
 }
 
@@ -222,8 +244,7 @@ void EcGuiNet::kill_process(QProcess *process,QString bin_name,QString& stdout)
 void EcGuiNet::start_process(QProcess *process,QString bin_file_path,QString option)
 {
     QStringList cmd;
-    
-    cmd=_ssh_command; 
+    cmd.append(_ssh_command); 
     /*Force pseudo-terminal allocation.  This can be used to
     execute arbitrary screen-based programs on a remote
     machine, which can be very useful, e.g. when implementing
@@ -282,11 +303,11 @@ bool EcGuiNet::start_network()
         }
         start_process(_ec_master_process,bin_file_path,option);
 
-        QString ec_master_file_path =QDir::homePath()+"/ec_master_terminal.txt";
-        QFile(ec_master_file_path).remove();
-        _ec_master_file=new QFile(ec_master_file_path);
+        QFile(_ec_master_file_path).remove();
+        _ec_master_file=new QFile(_ec_master_file_path);
         if (_ec_master_file->open(QFile::WriteOnly | QFile::Truncate)) {
             _ec_master_stream=new QTextStream(_ec_master_file);
+            view_master_process();
         }
     }
     
@@ -301,16 +322,14 @@ bool EcGuiNet::start_network()
         if(!bin_file_path.isEmpty()){
             start_process(_server_process,bin_file_path,"");
         }
-        QString server_file_path =QDir::homePath()+"/server_terminal.txt";
-        QFile(server_file_path).remove();
-        _server_file=new QFile(server_file_path);
+        QFile(_server_file_path).remove();
+        _server_file=new QFile(_server_file_path);
         if (_server_file->open(QFile::WriteOnly | QFile::Truncate)) {
             _server_stream=new QTextStream(_server_file);
+            view_server_process();
         }
-
-        //QProcess proc;
-        //proc.startDetached("gedit "+server_file_path.toStdString);
     }
+
     return true;
 }
 
