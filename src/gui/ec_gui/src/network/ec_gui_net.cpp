@@ -142,9 +142,11 @@ void EcGuiNet::ec_master_readyStdO()
 {
     if(_ec_master_process->canReadLine()){
         _ec_master_stdout = _ec_master_process->readAllStandardOutput();
-        if(_ec_master_stream){
-            *_ec_master_stream << _ec_master_stdout;
-            _ec_master_stream->flush();
+        if(_ec_master_file && _ec_master_stream){
+            if(_ec_master_file->isOpen()){
+                *_ec_master_stream << _ec_master_stdout;
+                _ec_master_stream->flush();
+            }
         } 
     }
 }
@@ -153,9 +155,11 @@ void EcGuiNet::server_readyStdO()
 {
     if(_server_process->canReadLine()){
         _server_stdout = _server_process->readAllStandardOutput();
-        if(_server_stream){
-            *_server_stream << _server_stdout;
-            _server_stream->flush();
+        if(_server_file && _server_stream){
+                if(_server_file->isOpen()){
+                    *_server_stream << _server_stdout;
+                    _server_stream->flush();
+                }
         } 
     }
 }
@@ -303,6 +307,9 @@ bool EcGuiNet::start_network()
         if (_server_file->open(QFile::WriteOnly | QFile::Truncate)) {
             _server_stream=new QTextStream(_server_file);
         }
+
+        //QProcess proc;
+        //proc.startDetached("gedit "+server_file_path.toStdString);
     }
     return true;
 }
@@ -312,14 +319,28 @@ void EcGuiNet::stop_network()
     QString bin_file_name;
     /******************************STOP Server ************************************************/
     if(_server_protocol=="udp"){
-        bin_file_name = "'udp_server'";
-        _server_process->close();
-        kill_process(_server_process,bin_file_name,_server_stdout);
+        if(_server_file){
+            if(_server_file->isOpen()){
+                _server_file->close();
+            }
+        }
+        if(_server_process->state()!=QProcess::NotRunning){
+            _server_process->close();
+            bin_file_name = "'udp_server'";
+            kill_process(_server_process,bin_file_name,_server_stdout);
+        }
     }
     /******************************STOP EtherCAT Master ************************************************/
-    _ec_master_process->close();
-    bin_file_name = "'repl'";
-    kill_process(_ec_master_process,bin_file_name,_ec_master_stdout);
+    if(_ec_master_file){
+        if(_ec_master_file->isOpen()){
+            _ec_master_file->close();
+        }
+    }
+    if(_ec_master_process->state()!=QProcess::NotRunning){
+        _ec_master_process->close();
+        bin_file_name = "'repl'";
+        kill_process(_ec_master_process,bin_file_name,_ec_master_stdout);
+    }
 }
 
 EcGuiNet::ec_net_info_t EcGuiNet::get_net_setup()
@@ -335,15 +356,5 @@ EcGuiNet::ec_net_info_t EcGuiNet::get_net_setup()
 
 EcGuiNet::~EcGuiNet()
 {
-    if(_server_protocol=="udp"){
-        _server_process->kill();
-        if(_server_file){
-            _server_file->close();
-        }
-    }
-    
-    _ec_master_process->kill();
-    if(_ec_master_file){
-        _ec_master_file->close();
-    }
+    stop_network();
 }
