@@ -145,9 +145,14 @@ void EcGuiNet::server_processFinished(int exitCode, QProcess::ExitStatus exitSta
 void EcGuiNet::view_master_process()
 {
     if(_view_master_process->state()==QProcess::NotRunning){
-        QStringList cmd={"-x","tail","-f","-n","+1"};
+        QStringList cmd={"-x","echo","$$",">","/tmp/terminal_pid.txt"};
+        cmd.append("&&");
+        cmd.append({"tail","-f","-n","+1"});
         cmd.append(_ec_master_file_path);
-        _view_master_process->startDetached("terminator",cmd);
+        _view_master_process->start("terminator",cmd);
+        if(_view_master_process->waitForFinished()){
+            
+        }
     }
 }
 
@@ -167,9 +172,14 @@ void EcGuiNet::ec_master_readyStdO()
 void EcGuiNet::view_server_process()
 {
     if(_view_server_process->state()==QProcess::NotRunning){
-        QStringList cmd={"-x","tail","-f","-n","+1"};
+        QStringList cmd={"-x","echo","$$",">","/tmp/terminal_pid.txt"};
+        cmd.append("&&");
+        cmd.append({"tail","-f","-n","+1"});
         cmd.append(_server_file_path);
-        _view_server_process->startDetached("terminator",cmd);
+        _view_server_process->start("terminator",cmd);
+        if(_view_server_process->waitForFinished()){
+
+        }
     }
 }
 
@@ -234,6 +244,7 @@ void EcGuiNet::kill_process(QProcess *process,QString bin_name,QString& stdout)
         
         cmd=_ssh_command;
         cmd.append("'killall'");
+        cmd.append("-9");
         cmd.append(bin_name);
         
         process->start("sshpass", cmd);
@@ -342,6 +353,9 @@ void EcGuiNet::stop_network()
             if(_server_file->isOpen()){
                 _server_file->close();
             }
+            //if(_view_server_process->state()!=QProcess::NotRunning){
+                _view_server_process->close();
+            //}
         }
         if(_server_process->state()!=QProcess::NotRunning){
             _server_process->close();
@@ -354,6 +368,9 @@ void EcGuiNet::stop_network()
         if(_ec_master_file->isOpen()){
             _ec_master_file->close();
         }
+        //if(_view_master_process->state()!=QProcess::NotRunning){
+            _view_master_process->kill();
+        //}
     }
     if(_ec_master_process->state()!=QProcess::NotRunning){
         _ec_master_process->close();
