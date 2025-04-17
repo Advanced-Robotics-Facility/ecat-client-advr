@@ -142,6 +142,16 @@ void EcGuiNet::server_processFinished(int exitCode, QProcess::ExitStatus exitSta
     server_readyStdO();
 }
 
+void EcGuiNet::kill_view_process()
+{
+    QStringList cmd={"-9"};
+    cmd.append(_master_terminal_pid);
+    cmd.append(_server_terminal_pid);
+    QProcess kill_view_proc;
+    kill_view_proc.start("kill",cmd);
+    kill_view_proc.waitForFinished();
+}
+
 void EcGuiNet::view_master_process()
 {
     if(_view_master_process->state()==QProcess::NotRunning){
@@ -151,7 +161,15 @@ void EcGuiNet::view_master_process()
         cmd.append(_ec_master_file_path);
         _view_master_process->start("terminator",cmd);
         if(_view_master_process->waitForFinished()){
-            
+            QFile file("/tmp/terminal_pid.txt");
+            if (file.open(QFile::ReadOnly)){
+                QTextStream in(&file);
+                while (!in.atEnd()){
+                    _master_terminal_pid= in.readLine();
+                    break;
+                }
+            }
+            file.close();
         }
     }
 }
@@ -178,7 +196,15 @@ void EcGuiNet::view_server_process()
         cmd.append(_server_file_path);
         _view_server_process->start("terminator",cmd);
         if(_view_server_process->waitForFinished()){
-
+            QFile file("/tmp/terminal_pid.txt");
+            if (file.open(QFile::ReadOnly)){
+                QTextStream in(&file);
+                while (!in.atEnd()){
+                    _server_terminal_pid= in.readLine();
+                    break;
+                }
+            }
+            file.close();
         }
     }
 }
@@ -353,9 +379,6 @@ void EcGuiNet::stop_network()
             if(_server_file->isOpen()){
                 _server_file->close();
             }
-            //if(_view_server_process->state()!=QProcess::NotRunning){
-                _view_server_process->close();
-            //}
         }
         if(_server_process->state()!=QProcess::NotRunning){
             _server_process->close();
@@ -368,15 +391,14 @@ void EcGuiNet::stop_network()
         if(_ec_master_file->isOpen()){
             _ec_master_file->close();
         }
-        //if(_view_master_process->state()!=QProcess::NotRunning){
-            _view_master_process->kill();
-        //}
     }
     if(_ec_master_process->state()!=QProcess::NotRunning){
         _ec_master_process->close();
         bin_file_name = "'repl'";
         kill_process(_ec_master_process,bin_file_name,_ec_master_stdout);
     }
+
+    kill_view_process();
 }
 
 EcGuiNet::ec_net_info_t EcGuiNet::get_net_setup()

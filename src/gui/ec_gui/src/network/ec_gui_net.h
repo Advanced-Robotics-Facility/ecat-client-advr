@@ -54,6 +54,7 @@ private:
   QTextStream *_ec_master_stream,*_server_stream;
   QProcess *_view_master_process,*_view_server_process;
   QString _server_hostname,_server_ip,_server_port,_server_protocol,_server_pwd;
+  QString _master_terminal_pid="",_server_terminal_pid="";
   
   QComboBox * _protocol_combobox;
   
@@ -63,6 +64,7 @@ private:
   void start_process(QProcess *process,QString bin_file_path,QString option);
   void kill_process(QProcess *process,QString bin_name,QString& stdout);
   
+  void kill_view_process();
   void ec_master_readyStdO();
   void view_master_process();
   void server_readyStdO();
