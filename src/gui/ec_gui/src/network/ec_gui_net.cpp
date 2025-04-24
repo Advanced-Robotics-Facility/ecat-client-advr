@@ -142,11 +142,10 @@ void EcGuiNet::server_processFinished(int exitCode, QProcess::ExitStatus exitSta
     server_readyStdO();
 }
 
-void EcGuiNet::kill_view_process()
+void EcGuiNet::kill_view_process(const QString& terminal_pid)
 {
     QStringList cmd={"-9"};
-    cmd.append(_master_terminal_pid);
-    cmd.append(_server_terminal_pid);
+    cmd.append(terminal_pid);
     QProcess kill_view_proc;
     kill_view_proc.start("kill",cmd);
     kill_view_proc.waitForFinished();
@@ -154,23 +153,27 @@ void EcGuiNet::kill_view_process()
 
 void EcGuiNet::view_master_process()
 {
-    if(_view_master_process->state()==QProcess::NotRunning){
-        QStringList cmd={"-x","echo","$$",">","/tmp/terminal_pid.txt"};
-        cmd.append("&&");
-        cmd.append({"tail","-f","-n","+1"});
-        cmd.append(_ec_master_file_path);
-        _view_master_process->start("terminator",cmd);
-        if(_view_master_process->waitForFinished()){
-            QFile file("/tmp/terminal_pid.txt");
-            if (file.open(QFile::ReadOnly)){
-                QTextStream in(&file);
-                while (!in.atEnd()){
-                    _master_terminal_pid= in.readLine();
-                    break;
-                }
+    if(_master_terminal_pid!=""){
+        kill_view_process(_master_terminal_pid);
+        _master_terminal_pid="";
+    }
+    
+    QStringList cmd={"-x","echo","$$",">","/tmp/terminal_pid.txt"};
+    cmd.append("&&");
+    cmd.append({"tail","-f","-n","+1"});
+    cmd.append(_ec_master_file_path);
+    _view_master_process->start("terminator",cmd);
+    if(_view_master_process->waitForFinished()){
+        QFile file("/tmp/terminal_pid.txt");
+        if (file.open(QFile::ReadOnly)){
+            QTextStream in(&file);
+            while (!in.atEnd()){
+                _master_terminal_pid= in.readLine();
+                break;
             }
-            file.close();
         }
+        file.close();
+        file.remove();
     }
 }
 
@@ -189,23 +192,27 @@ void EcGuiNet::ec_master_readyStdO()
 
 void EcGuiNet::view_server_process()
 {
-    if(_view_server_process->state()==QProcess::NotRunning){
-        QStringList cmd={"-x","echo","$$",">","/tmp/terminal_pid.txt"};
-        cmd.append("&&");
-        cmd.append({"tail","-f","-n","+1"});
-        cmd.append(_server_file_path);
-        _view_server_process->start("terminator",cmd);
-        if(_view_server_process->waitForFinished()){
-            QFile file("/tmp/terminal_pid.txt");
-            if (file.open(QFile::ReadOnly)){
-                QTextStream in(&file);
-                while (!in.atEnd()){
-                    _server_terminal_pid= in.readLine();
-                    break;
-                }
+    if(_server_terminal_pid!=""){
+        kill_view_process(_server_terminal_pid);
+        _server_terminal_pid="";
+    }
+
+    QStringList cmd={"-x","echo","$$",">","/tmp/terminal_pid.txt"};
+    cmd.append("&&");
+    cmd.append({"tail","-f","-n","+1"});
+    cmd.append(_server_file_path);
+    _view_server_process->start("terminator",cmd);
+    if(_view_server_process->waitForFinished()){
+        QFile file("/tmp/terminal_pid.txt");
+        if (file.open(QFile::ReadOnly)){
+            QTextStream in(&file);
+            while (!in.atEnd()){
+                _server_terminal_pid= in.readLine();
+                break;
             }
-            file.close();
         }
+        file.close();
+        file.remove();
     }
 }
 
@@ -214,10 +221,10 @@ void EcGuiNet::server_readyStdO()
     if(_server_process->canReadLine()){
         _server_stdout = _server_process->readAllStandardOutput();
         if(_server_file && _server_stream){
-                if(_server_file->isOpen()){
-                    *_server_stream << _server_stdout;
-                    _server_stream->flush();
-                }
+            if(_server_file->isOpen()){
+                *_server_stream << _server_stdout;
+                _server_stream->flush();
+            }
         } 
     }
 }
@@ -384,6 +391,7 @@ void EcGuiNet::stop_network()
             _server_process->close();
             bin_file_name = "'udp_server'";
             kill_process(_server_process,bin_file_name,_server_stdout);
+            kill_view_process(_server_terminal_pid);
         }
     }
     /******************************STOP EtherCAT Master ************************************************/
@@ -396,9 +404,8 @@ void EcGuiNet::stop_network()
         _ec_master_process->close();
         bin_file_name = "'repl'";
         kill_process(_ec_master_process,bin_file_name,_ec_master_stdout);
+        kill_view_process(_master_terminal_pid);
     }
-
-    kill_view_process();
 }
 
 EcGuiNet::ec_net_info_t EcGuiNet::get_net_setup()

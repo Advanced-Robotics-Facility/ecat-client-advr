@@ -64,7 +64,7 @@ private:
   void start_process(QProcess *process,QString bin_file_path,QString option);
   void kill_process(QProcess *process,QString bin_name,QString& stdout);
   
-  void kill_view_process();
+  void kill_view_process(const QString& terminal_pid);
   void ec_master_readyStdO();
   void view_master_process();
   void server_readyStdO();
