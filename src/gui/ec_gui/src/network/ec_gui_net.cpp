@@ -34,13 +34,12 @@ EcGuiNet::EcGuiNet(QWidget *parent) :
     
     connect(_net_tree_wid, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)),this, SLOT(OnMouseClicked(QTreeWidgetItem*, int)));
 
-
+    _gui_file_path= QDir::tempPath()+"/ec_gui_log.txt";
     _ec_master_file_path =QDir::tempPath()+"/ec_master_log.txt";
     _ec_master_process = new QProcess(this);
     _ec_master_process->setReadChannel(QProcess::StandardOutput);
     _ec_master_process->setProcessChannelMode(QProcess::MergedChannels);
     _ec_master_process->setCurrentReadChannel(QProcess::StandardOutput);
-    _view_master_process = new QProcess(this);
 
     connect(_ec_master_process , SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(ec_master_processFinished(int, QProcess::ExitStatus)));
     connect(_ec_master_process, &QProcess::readyReadStandardOutput,this, &EcGuiNet::ec_master_readyStdO);
@@ -50,7 +49,6 @@ EcGuiNet::EcGuiNet(QWidget *parent) :
     _server_process->setReadChannel(QProcess::StandardOutput);
     _server_process->setProcessChannelMode(QProcess::MergedChannels);
     _server_process->setCurrentReadChannel(QProcess::StandardOutput);
-    _view_server_process = new QProcess(this);
 
     connect(_server_process , SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(server_processFinished(int, QProcess::ExitStatus)));
     connect(_server_process, &QProcess::readyReadStandardOutput,this, &EcGuiNet::server_readyStdO);
@@ -62,6 +60,7 @@ EcGuiNet::EcGuiNet(QWidget *parent) :
     
     /* connection of frequency function */
     connect(_protocol_combobox, SIGNAL(currentIndexChanged(int)),this,SLOT(OnProtocolChanged()));
+    set_ec_network();
 }
 
 void EcGuiNet::OnPasswordEntered()
@@ -153,13 +152,16 @@ void EcGuiNet::OnMouseClicked(QTreeWidgetItem* item, int column)
             }
         }
         else{
-            error_on_terminal=false;
+            if(QFile(_gui_file_path).exists()){
+                error_on_terminal=false;
+                view_gui_process();
+            }
         }
         
         if(error_on_terminal){
             QMessageBox msgBox;
             msgBox.critical(this,msgBox.windowTitle(),
-            tr("Cannot open the terminal requested!, Start the EtherCAT system using the GUI!\n"));
+            tr("Cannot open the terminal requested!, log file not found!\n"));
         }
     }
 }
@@ -183,30 +185,42 @@ void EcGuiNet::kill_view_process(const QString& terminal_pid)
     kill_view_proc.waitForFinished();
 }
 
-void EcGuiNet::view_master_process()
+void EcGuiNet::view_process(const QString &file_path,QString &terminal_pid)
 {
-    if(_master_terminal_pid!=""){
-        kill_view_process(_master_terminal_pid);
-        _master_terminal_pid="";
+    if(terminal_pid!=""){
+        kill_view_process(terminal_pid);
+        terminal_pid="";
     }
-    
+
     QStringList cmd={"-x","echo","$$",">","/tmp/terminal_pid.txt"};
     cmd.append("&&");
     cmd.append({"tail","-f","-n","+1"});
-    cmd.append(_ec_master_file_path);
-    _view_master_process->start("terminator",cmd);
-    if(_view_master_process->waitForFinished()){
+    cmd.append(file_path);
+
+    QProcess view_proc;
+    view_proc.start("terminator",cmd);
+    if(view_proc.waitForFinished()){
         QFile file("/tmp/terminal_pid.txt");
         if (file.open(QFile::ReadOnly)){
             QTextStream in(&file);
             while (!in.atEnd()){
-                _master_terminal_pid= in.readLine();
+                terminal_pid= in.readLine();
                 break;
             }
         }
         file.close();
         file.remove();
     }
+}
+
+void EcGuiNet::view_gui_process()
+{
+    view_process(_gui_file_path,_gui_terminal_pid);
+}
+
+void EcGuiNet::view_master_process()
+{
+    view_process(_ec_master_file_path,_master_terminal_pid);
 }
 
 void EcGuiNet::ec_master_readyStdO()
@@ -224,28 +238,7 @@ void EcGuiNet::ec_master_readyStdO()
 
 void EcGuiNet::view_server_process()
 {
-    if(_server_terminal_pid!=""){
-        kill_view_process(_server_terminal_pid);
-        _server_terminal_pid="";
-    }
-
-    QStringList cmd={"-x","echo","$$",">","/tmp/terminal_pid.txt"};
-    cmd.append("&&");
-    cmd.append({"tail","-f","-n","+1"});
-    cmd.append(_server_file_path);
-    _view_server_process->start("terminator",cmd);
-    if(_view_server_process->waitForFinished()){
-        QFile file("/tmp/terminal_pid.txt");
-        if (file.open(QFile::ReadOnly)){
-            QTextStream in(&file);
-            while (!in.atEnd()){
-                _server_terminal_pid= in.readLine();
-                break;
-            }
-        }
-        file.close();
-        file.remove();
-    }
+    view_process(_server_file_path,_server_terminal_pid);
 }
 
 void EcGuiNet::server_readyStdO()
@@ -438,6 +431,8 @@ void EcGuiNet::stop_network()
         kill_process(_ec_master_process,bin_file_name,_ec_master_stdout);
         kill_view_process(_master_terminal_pid);
     }
+
+    kill_view_process(_gui_terminal_pid);
 }
 
 EcGuiNet::ec_net_info_t EcGuiNet::get_net_setup()
