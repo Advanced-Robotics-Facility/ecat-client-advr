@@ -16,7 +16,8 @@ EcGuiNet::EcGuiNet(QWidget *parent) :
     _net_column=-1;
     
     _server_hostname=_net_tree_wid->topLevelItem(0)->child(1)->text(1);
-    
+    QString client_user_name = qgetenv("USER");
+    _net_tree_wid->topLevelItem(0)->child(0)->setText(HOSTNAME_COL,client_user_name);
     
     if(_net_tree_wid->topLevelItem(0)->child(1)->text(2)=="localhost") {
         _server_ip="127.0.0.1";
