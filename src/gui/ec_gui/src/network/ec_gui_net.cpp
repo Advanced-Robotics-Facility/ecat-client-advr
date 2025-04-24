@@ -4,6 +4,7 @@
 #define HOSTNAME_COL 1
 #define HOSTIP_COL 2
 #define HOSTPORT_COL 3
+#define TERMINAL_COL 4
 
 EcGuiNet::EcGuiNet(QWidget *parent) :
     QWidget(parent)
@@ -74,9 +75,11 @@ void EcGuiNet::OnPasswordChanged()
     _server_pwd= _password->text();
 }
 
+
 void EcGuiNet::OnProtocolChanged()
 {
     _server_protocol = _protocol_combobox->currentText();
+    set_ec_network();
 }
 
 void EcGuiNet::set_ec_network()
@@ -93,7 +96,11 @@ void EcGuiNet::set_ec_network()
     }
     
     _server_port=_net_tree_wid->topLevelItem(0)->child(1)->text(3);
-    _net_tree_wid->topLevelItem(0)->child(0)->setText(HOSTPORT_COL,_server_port);
+    QString client_port=_server_port;
+    if(_server_protocol=="udp"){
+        client_port=QString::number(_server_port.toInt()-1);
+    }
+    _net_tree_wid->topLevelItem(0)->child(0)->setText(HOSTPORT_COL,client_port);
     
     _net_tree_wid->closePersistentEditor(_net_item,_net_column); // close old editor
     _net_item = nullptr;
@@ -129,7 +136,32 @@ void EcGuiNet::OnMouseClicked(QTreeWidgetItem* item, int column)
     }
     else{
         _net_tree_wid->closePersistentEditor(item,column);
-    } 
+    }
+
+    if(column==TERMINAL_COL){
+        bool error_on_terminal=true;
+        if(item->text(0)=="Server"){
+            if(_server_file){
+                error_on_terminal=false;
+                view_server_process();
+            }
+        }
+        else if(item->text(0)=="EtherCAT Master"){
+            if(_ec_master_file){
+                error_on_terminal=false;
+                view_master_process();
+            }
+        }
+        else{
+            error_on_terminal=false;
+        }
+        
+        if(error_on_terminal){
+            QMessageBox msgBox;
+            msgBox.critical(this,msgBox.windowTitle(),
+            tr("Cannot open the terminal requested!, Start the EtherCAT system using the GUI!\n"));
+        }
+    }
 }
 
 void EcGuiNet::ec_master_processFinished(int exitCode, QProcess::ExitStatus exitStatus)

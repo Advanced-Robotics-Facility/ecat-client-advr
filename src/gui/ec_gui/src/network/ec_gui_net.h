@@ -69,6 +69,6 @@ private:
   void view_master_process();
   void server_readyStdO();
   void view_server_process();
-  void set_ec_network();      
+  void set_ec_network();    
 };
 #endif // EC_GUI_NET_H

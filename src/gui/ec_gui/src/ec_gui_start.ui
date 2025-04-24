@@ -797,8 +797,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>475</width>
-          <height>395</height>
+          <width>476</width>
+          <height>409</height>
          </rect>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -838,7 +838,7 @@
             <bool>true</bool>
            </property>
            <property name="columnCount">
-            <number>4</number>
+            <number>5</number>
            </property>
            <attribute name="headerVisible">
             <bool>true</bool>
@@ -878,6 +878,11 @@
              <string>Port</string>
             </property>
            </column>
+           <column>
+            <property name="text">
+             <string>Terminal</string>
+            </property>
+           </column>
            <item>
             <property name="text">
              <string>EtherCAT System Setup                 </string>
@@ -886,6 +891,9 @@
              <font>
               <pointsize>9</pointsize>
              </font>
+            </property>
+            <property name="text">
+             <string/>
             </property>
             <property name="text">
              <string/>
@@ -911,7 +919,14 @@
               <string>localhost</string>
              </property>
              <property name="text">
-              <string>54321</string>
+              <string>54320</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="ec_gui_start_resources.qrc">
+               <normaloff>:/icon/terminal.png</normaloff>:/icon/terminal.png</iconset>
              </property>
             </item>
             <item>
@@ -931,6 +946,13 @@
              <property name="text">
               <string>54321</string>
              </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="ec_gui_start_resources.qrc">
+               <normaloff>:/icon/terminal.png</normaloff>:/icon/terminal.png</iconset>
+             </property>
             </item>
             <item>
              <property name="text">
@@ -948,6 +970,13 @@
              </property>
              <property name="text">
               <string/>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="ec_gui_start_resources.qrc">
+               <normaloff>:/icon/terminal.png</normaloff>:/icon/terminal.png</iconset>
              </property>
              <item>
               <property name="text">
