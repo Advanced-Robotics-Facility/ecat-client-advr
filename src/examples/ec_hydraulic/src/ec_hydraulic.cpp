@@ -53,7 +53,7 @@ int main(int argc, char *const argv[])
         float time_elapsed_ms;
         float hm_time_ms = ec_cfg.trj_time * 1000;
         float trj_time_ms = hm_time_ms;
-        float pressure_time_ms = 1000; // 2minutes.
+        float pressure_time_ms = 60000; // 2minutes.
         float set_trj_time_ms = hm_time_ms;
 
         std::string STM_sts;
@@ -165,6 +165,7 @@ int main(int argc, char *const argv[])
         }else{
             if (!pump_reference_map.empty()){
                 STM_sts = "Pressure";
+                set_trj_time_ms = pressure_time_ms;
             }
             else{
                 STM_sts = "Homing";
