@@ -124,11 +124,11 @@ void EcGuiCmd::fill_start_stop_motor()
                 int ctrl_mode=_ec_gui_slider->get_control_mode("Motors");
                 if(ctrl_mode!= 0x00){
                     std::vector<float> gains;
-                    gains.push_back(slider_wid->get_spinbox_value(4));
                     gains.push_back(slider_wid->get_spinbox_value(5));
                     gains.push_back(slider_wid->get_spinbox_value(6));
                     gains.push_back(slider_wid->get_spinbox_value(7));
                     gains.push_back(slider_wid->get_spinbox_value(8));
+                    gains.push_back(slider_wid->get_spinbox_value(9));
                     _start_devices.push_back(std::make_tuple(slave_id,ctrl_mode,gains));
                 }
                 
