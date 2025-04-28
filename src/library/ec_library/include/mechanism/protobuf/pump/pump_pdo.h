@@ -140,10 +140,10 @@ inline void PumpPdo<T>::set_to_pb()
     T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_pressure_d_gain(std::get<3>(tx_pdo));
     T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_pressure_i_limit(std::get<4>(tx_pdo));
     T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_fault_ack(std::get<5>(tx_pdo));
-    T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_solenoidout(std::get<5>(tx_pdo));
+    T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_solenoidout(std::get<6>(tx_pdo));
     T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_ts(std::get<7>(tx_pdo));
     T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_op_idx_aux(std::get<8>(tx_pdo));
-    T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_aux(std::get<8>(tx_pdo));
+    T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_aux(std::get<9>(tx_pdo));
 }
 
 template class PumpPdo<EcPipePdo>;

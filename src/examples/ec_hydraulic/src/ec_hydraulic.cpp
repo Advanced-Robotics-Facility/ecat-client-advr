@@ -221,6 +221,7 @@ int main(int argc, char *const argv[])
                     for (const auto &[esc_id, target] : pumps_set_trj){
                         pumps_set_ref[esc_id] = pumps_start[esc_id] + alpha * (target - pumps_start[esc_id]);
                         std::get<0>(pump_reference_map[esc_id]) = pumps_set_ref[esc_id];
+                        std::get<6>(pump_reference_map[esc_id]) = 1;
                     }
                 }
                 // ************************* SEND ALWAYS REFERENCES***********************************//
@@ -283,7 +284,7 @@ int main(int argc, char *const argv[])
                 pump_in_pressure = true;
                 for (const auto &[esc_id, press_ref] : pumps_set_ref){
                     error_pressure_set = std::abs(press_ref - pumps_actual_read[esc_id]);
-                    if (error_pressure_set >= 2.0){ // 2bar
+                    if (error_pressure_set >= 5.0){ // 5bar
                         pump_in_pressure &= false;
                         DPRINTF("Pump id: %d has an error on demanded pressure= %f\n", esc_id, error_pressure_set);
                         break;
