@@ -36,6 +36,7 @@ public:
     void restart_gui_wrapper(ec_wrapper_info_t ec_wrapper_info);
     bool get_wrapper_send_sts();
     bool get_wrapper_cmd_sts();
+    void set_expert_user();
 
 private slots:
     void DwTopLevelChanged(bool isFloating);

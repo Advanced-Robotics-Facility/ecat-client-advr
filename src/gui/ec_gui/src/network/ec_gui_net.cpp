@@ -62,6 +62,10 @@ EcGuiNet::EcGuiNet(QWidget *parent) :
     /* connection of frequency function */
     connect(_protocol_combobox, SIGNAL(currentIndexChanged(int)),this,SLOT(OnProtocolChanged()));
     set_ec_network();
+
+    _firmware_update_btn=parent->findChild<QPushButton *>("FirmwareUpdate");
+    _firmware_update_btn->setEnabled(false);
+    connect(_firmware_update_btn, &QPushButton::released,this, &EcGuiNet::onFirmwareUpdateReleased);
 }
 
 void EcGuiNet::OnPasswordEntered()
@@ -80,6 +84,11 @@ void EcGuiNet::OnProtocolChanged()
 {
     _server_protocol = _protocol_combobox->currentText();
     set_ec_network();
+}
+
+void EcGuiNet::set_expert_user()
+{
+    _firmware_update_btn->setEnabled(true);
 }
 
 void EcGuiNet::set_ec_network()
@@ -445,6 +454,17 @@ EcGuiNet::ec_net_info_t EcGuiNet::get_net_setup()
     ec_net_info.host_port=_server_port.toUInt();
     
     return ec_net_info;
+}
+
+
+void EcGuiNet::onFirmwareUpdateReleased()
+{
+    QWizard wizard;
+    QWizardPage *page = new QWizardPage;
+    page->setTitle("Firmware update wizard");
+    page->setSubTitle("Select all binaries or configuration files for the firmware update procedure");
+    wizard.addPage(page);
+    wizard.exec();
 }
 
 EcGuiNet::~EcGuiNet()

@@ -140,6 +140,11 @@ bool EcGuiWrapper::get_wrapper_cmd_sts()
     return _ec_gui_cmd->get_command_sts();
 }
 
+void EcGuiWrapper::set_expert_user()
+{
+    _ec_gui_sdo->set_expert_user();
+}
+
 void EcGuiWrapper::clear_gui_wrapper()
 {
     stop_receive();

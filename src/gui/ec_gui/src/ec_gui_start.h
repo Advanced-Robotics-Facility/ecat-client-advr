@@ -23,10 +23,11 @@ public:
 
     ~EcGuiStart();
 
-public slots:
+private slots:
     void onStartEtherCATSystem();
     void onStopEtherCATSystem();
     void onScanDeviceReleased();
+    void ExpertUserPassChanged();
     
 private:
   
@@ -35,6 +36,7 @@ private:
   EcGuiNet::Ptr _ec_gui_net;
   
   QTreeWidget * _net_tree_wid;
+  QLineEdit *_expert_user;
   bool _etherCAT_sys_started;
   
   void error_on_scannig();

@@ -17,13 +17,13 @@ public:
         EcGuiSdo(QWidget * parent = 0);
 
         ~EcGuiSdo();
-        
+
+        void set_expert_user();
         void restart_ec_gui_sdo(EcIface::Ptr client,SRD_SDO sdo_map);
  
-public slots:
+private slots:
         void OnMouseClicked(QTreeWidgetItem* item, int column);
         void OnItemExapanded(QTreeWidgetItem* item);
-        void ExpertUserPassChanged();
         void SdoSearchChanged();
         void onSaveSdoReleased();
         void onRescanSdoReleased();
@@ -39,7 +39,7 @@ private:
         EcIface::Ptr _client;
         QTreeWidget *_sdo_tree_wid;
         QTreeWidgetItem *_sdo_item;
-        QLineEdit *_expert_user, *_sdo_search;
+        QLineEdit *_sdo_search;
         QDialogButtonBox *_sdo_manager,*_sdo_flash_manager;
         int _sdo_column;
         std::map<uint32_t,std::map<std::string,QTreeWidgetItem *>> _sdo_item_map;

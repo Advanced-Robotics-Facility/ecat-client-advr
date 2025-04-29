@@ -13,7 +13,7 @@
 
 #define _HYST_THRESHOLD 5 // 5s
 
-
+static const std::string expert_user_password="facility";
 
 using namespace std::chrono;
 using namespace std::chrono_literals;
@@ -62,6 +62,9 @@ EcGuiStart::EcGuiStart(QWidget *parent) :
     
     auto scan_device = findChild<QPushButton *>("ScanDevice");
     connect(scan_device, &QPushButton::released,this, &EcGuiStart::onScanDeviceReleased);
+
+    _expert_user = findChild<QLineEdit *>("ExpertUserPass");
+    connect(_expert_user, &QLineEdit::returnPressed,std::bind(&EcGuiStart::ExpertUserPassChanged, this));
     
     _ec_gui_net = std::make_shared<EcGuiNet>(this);
     _ec_gui_wrapper = std::make_shared<EcGuiWrapper>(this);
@@ -105,6 +108,20 @@ void EcGuiStart::create_ec_iface()
         QMessageBox msgBox;
         msgBox.critical(this,msgBox.windowTitle(),tr(e.what()));
     }
+}
+
+void EcGuiStart::ExpertUserPassChanged()
+{
+    QMessageBox msgBox;
+    QString message="export user password incorrect!";
+    if(_expert_user->text().toStdString()==expert_user_password){
+        message="export user password correct!";
+        _ec_gui_wrapper->set_expert_user();
+        _ec_gui_net->set_expert_user();
+        _expert_user->setEnabled(false);
+    }
+    msgBox.setText(message);
+    msgBox.exec();
 }
 
 void EcGuiStart::onStartEtherCATSystem()

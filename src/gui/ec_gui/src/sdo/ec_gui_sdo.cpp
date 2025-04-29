@@ -2,8 +2,6 @@
 #include "ec_gui_utils.h"
 #define SDO_VALUE_COL 2
 
-static const std::string expert_user_password="facility";
-
 EcGuiSdo::EcGuiSdo(QWidget *parent):
 QWidget(parent)
 {
@@ -16,11 +14,7 @@ QWidget(parent)
     _sdo_item = nullptr;
     _sdo_column=-1;
     _old_sdo_value="";
-
-    _expert_user = parent->findChild<QLineEdit *>("ExpertUserPass");
-    connect(_expert_user, &QLineEdit::returnPressed,std::bind(&EcGuiSdo::ExpertUserPassChanged, this));
     _user_expert=false;
-
 
     _sdo_search = parent->findChild<QLineEdit *>("SDOSearch");
     connect(_sdo_search, &QLineEdit::textChanged,std::bind(&EcGuiSdo::SdoSearchChanged, this));
@@ -318,17 +312,10 @@ void EcGuiSdo::OnItemExapanded(QTreeWidgetItem* item)
     search_sdo();
 }
 
-void EcGuiSdo::ExpertUserPassChanged()
+void EcGuiSdo::set_expert_user()
 {
-    QMessageBox msgBox;
-    QString message="export user password incorrect!";
-    if(_expert_user->text().toStdString()==expert_user_password){
-        message="export user password correct!";
-        _user_expert=true;
-        _sdo_flash_manager->setEnabled(true);
-    }
-    msgBox.setText(message);
-    msgBox.exec();
+    _user_expert=true;
+    _sdo_flash_manager->setEnabled(true);
 }
 
 void EcGuiSdo::SdoSearchChanged()

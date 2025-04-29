@@ -27,14 +27,16 @@ public:
     bool start_network();
     void stop_network();
     ec_net_info_t get_net_setup();
+    void set_expert_user();
 
-public slots:
+private slots:
     void ec_master_processFinished(int, QProcess::ExitStatus);
     void server_processFinished(int, QProcess::ExitStatus);
     void OnMouseClicked(QTreeWidgetItem* item, int column);
     void OnPasswordEntered();
     void OnPasswordChanged();
     void OnProtocolChanged();
+    void onFirmwareUpdateReleased();
 
 protected:
     bool eventFilter( QObject* o, QEvent* e );
@@ -56,6 +58,7 @@ private:
   QString _master_terminal_pid="",_server_terminal_pid="",_gui_terminal_pid="";
   
   QComboBox * _protocol_combobox;
+  QPushButton *_firmware_update_btn;
   
   bool create_ssh_cmd(QProcess *process,QString& stdout);
   QString find_running_process(QProcess * process,QString bin_name,QString& stdout);
