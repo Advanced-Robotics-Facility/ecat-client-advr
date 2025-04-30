@@ -456,15 +456,10 @@ EcGuiNet::ec_net_info_t EcGuiNet::get_net_setup()
     return ec_net_info;
 }
 
-
 void EcGuiNet::onFirmwareUpdateReleased()
 {
-    QWizard wizard;
-    QWizardPage *page = new QWizardPage;
-    page->setTitle("Firmware update wizard");
-    page->setSubTitle("Select all binaries or configuration files for the firmware update procedure");
-    wizard.addPage(page);
-    wizard.exec();
+    EcGuiFirmware firmware_update;
+    firmware_update.run_wizard();
 }
 
 EcGuiNet::~EcGuiNet()

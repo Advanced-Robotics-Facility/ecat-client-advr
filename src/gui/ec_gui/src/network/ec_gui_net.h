@@ -6,7 +6,6 @@
 
 #include "ec_gui_terminal.h"
 
-
 class EcGuiNet : public QWidget
 {
     Q_OBJECT
@@ -75,4 +74,77 @@ private:
   void set_ec_network();    
   void view_gui_process();
 };
+
+class EcGuiFirmware : public QWidget
+{
+    Q_OBJECT
+public:
+    
+    EcGuiFirmware(QWidget * parent = 0){
+    
+        _firmware_files_tree = new QTreeWidget();
+        _firmware_files_tree->setColumnCount(1);
+        _firmware_files_tree->setHeaderLabels({"Firmware files"});
+
+        auto firmware_manager = new QDialogButtonBox(QDialogButtonBox::RestoreDefaults | 
+                                                     QDialogButtonBox::Ignore |
+                                                     QDialogButtonBox::Retry |
+                                                     QDialogButtonBox::Save );
+
+        auto select_files = firmware_manager->button(QDialogButtonBox::RestoreDefaults);
+        select_files->setText("Select all bin or config files");
+        connect(select_files, &QPushButton::released,this, &EcGuiFirmware::onSelectFilesReleased);
+        auto copy_files = firmware_manager->button(QDialogButtonBox::Ignore);
+        copy_files->setText("Copy files to embedded PC");
+        auto open_firmware_config = firmware_manager->button(QDialogButtonBox::Retry);
+        open_firmware_config->setText("Open firmware configuration file");
+        auto start_firmware_update = firmware_manager->button(QDialogButtonBox::Save);
+        open_firmware_config->setText("Start_firmware update");
+
+        QWizardPage *firmware_wizard_page = new QWizardPage();
+        firmware_wizard_page->setTitle("Firmware update wizard");
+        QVBoxLayout *layout = new QVBoxLayout;
+        layout->addWidget(_firmware_files_tree);
+        layout->addWidget(firmware_manager);
+        firmware_wizard_page->setLayout(layout);
+        _firmware_wizard.addPage(firmware_wizard_page);
+    };
+
+    ~EcGuiFirmware(){};
+
+    void run_wizard(){
+        _firmware_wizard.exec();
+    };
+
+private slots:
+    void onSelectFilesReleased(){
+
+        QStringList fileNames = QFileDialog::getOpenFileNames(
+            this,
+            "Select one or more files",
+            QDir::homePath(),
+            "Bin files (*.bin);;Config files (*.csv)");
+        for(const auto& file_path:fileNames){
+            if(!file_listed(file_path)){
+                QTreeWidgetItem * file_item = new QTreeWidgetItem();
+                file_item->setText(0,file_path);
+                _firmware_files_tree->addTopLevelItem(file_item);
+            }
+        }
+    };
+
+private:
+    QWizard _firmware_wizard;
+    QTreeWidget *_firmware_files_tree;
+    bool file_listed(const QString &file_name){
+        for(int i=0;i<_firmware_files_tree->topLevelItemCount();i++){
+            auto topLevel =_firmware_files_tree->topLevelItem(i);
+            if(topLevel->text(0)==file_name){
+                return true;
+            }
+        }
+        return false;
+   };
+};
+
 #endif // EC_GUI_NET_H
