@@ -94,12 +94,15 @@ public:
         auto select_files = firmware_manager->button(QDialogButtonBox::RestoreDefaults);
         select_files->setText("Select all bin or config files");
         connect(select_files, &QPushButton::released,this, &EcGuiFirmware::onSelectFilesReleased);
-        auto copy_files = firmware_manager->button(QDialogButtonBox::Ignore);
-        copy_files->setText("Copy files to embedded PC");
-        auto open_firmware_config = firmware_manager->button(QDialogButtonBox::Retry);
-        open_firmware_config->setText("Open firmware configuration file");
-        auto start_firmware_update = firmware_manager->button(QDialogButtonBox::Save);
-        open_firmware_config->setText("Start_firmware update");
+        
+        auto copy_files_btn = firmware_manager->button(QDialogButtonBox::Ignore);
+        copy_files_btn->setText("Copy files to embedded PC");
+        
+        auto open_config_btn = firmware_manager->button(QDialogButtonBox::Retry);
+        open_config_btn->setText("Open firmware configuration file");
+
+        auto start_update_btn = firmware_manager->button(QDialogButtonBox::Save);
+        start_update_btn->setText("Start firmware update");
 
         QWizardPage *firmware_wizard_page = new QWizardPage();
         firmware_wizard_page->setTitle("Firmware update wizard");
