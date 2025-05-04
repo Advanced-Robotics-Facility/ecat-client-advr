@@ -66,6 +66,11 @@ EcGuiNet::EcGuiNet(QWidget *parent) :
     _firmware_update_btn=parent->findChild<QPushButton *>("FirmwareUpdate");
     _firmware_update_btn->setEnabled(false);
     connect(_firmware_update_btn, &QPushButton::released,this, &EcGuiNet::onFirmwareUpdateReleased);
+
+    auto firmware_update_btns=_firmware_update_wizard.get_firmware_update_btns();
+    connect(firmware_update_btns[0], &QPushButton::released,this, &EcGuiNet::onFirmwareUpdateCopyFiles);
+    connect(firmware_update_btns[1], &QPushButton::released,this, &EcGuiNet::onFirmwareUpdateOpenConfig);
+    connect(firmware_update_btns[2], &QPushButton::released,this, &EcGuiNet::onFirmwareUpdateStart);
 }
 
 void EcGuiNet::OnPasswordEntered()
@@ -364,24 +369,13 @@ bool EcGuiNet::create_ssh_cmd(QProcess *process,QString& stdout)
     return true;
 }
 
-bool EcGuiNet::start_network()
-{
-    if(!create_ssh_cmd(_ec_master_process,_ec_master_stdout)){
-        return false;
-    }
-
-    QString bin_file_name = "'repl'";
+void EcGuiNet::start_master_process(const QString &bin_file_name,const QString &option)
+{    
     kill_process(_ec_master_process,bin_file_name,_ec_master_stdout);
     auto bin_file_path = find_process(_ec_master_process,bin_file_name,_ec_master_stdout);
-
-    /******************************START EtherCAT Master ************************************************/
+    
     if(!bin_file_path.isEmpty()){
-        QString option="";
-        if(_server_protocol=="udp"){
-            option="-f ~/.ecat_master/configs/zipc_config.yaml";  
-        }
         start_process(_ec_master_process,bin_file_path,option);
-
         QFile(_ec_master_file_path).remove();
         _ec_master_file=new QFile(_ec_master_file_path);
         if (_ec_master_file->open(QFile::WriteOnly | QFile::Truncate)) {
@@ -389,14 +383,27 @@ bool EcGuiNet::start_network()
             view_master_process();
         }
     }
-    
+}
+
+bool EcGuiNet::start_network()
+{
+    if(!create_ssh_cmd(_ec_master_process,_ec_master_stdout)){
+        return false;
+    }
+
+    /******************************START EtherCAT Master ************************************************/
+    QString bin_file_name = "'repl'";
+    QString option="";
+    if(_server_protocol=="udp"){
+        option="-f ~/.ecat_master/configs/zipc_config.yaml";  
+    }
+    start_master_process(bin_file_name,option);
     /******************************START SEVER ************************************************/
     if(_server_protocol=="udp") {
         bin_file_name = "'udp_server'";
         kill_process(_server_process,bin_file_name,_server_stdout);
         
-        bin_file_path.clear();
-        bin_file_path = find_process(_server_process,bin_file_name,_server_stdout);
+        auto bin_file_path = find_process(_server_process,bin_file_name,_server_stdout);
 
         if(!bin_file_path.isEmpty()){
             start_process(_server_process,bin_file_path,"");
@@ -458,8 +465,27 @@ EcGuiNet::ec_net_info_t EcGuiNet::get_net_setup()
 
 void EcGuiNet::onFirmwareUpdateReleased()
 {
-    EcGuiFirmware firmware_update;
-    firmware_update.run_wizard();
+    _firmware_update_wizard.run_wizard();
+    _ec_master_process->close();
+    kill_process(_ec_master_process,"'fw_update'",_ec_master_stdout);
+    kill_view_process(_master_terminal_pid);
+}
+
+void EcGuiNet::onFirmwareUpdateCopyFiles()
+{
+
+}
+
+void EcGuiNet::onFirmwareUpdateOpenConfig()
+{
+    
+}
+
+void EcGuiNet::onFirmwareUpdateStart()
+{
+    if(create_ssh_cmd(_ec_master_process,_ec_master_stdout)){
+        start_master_process("'fw_update'","");
+    }
 }
 
 EcGuiNet::~EcGuiNet()
