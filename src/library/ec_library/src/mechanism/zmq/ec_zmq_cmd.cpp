@@ -157,13 +157,13 @@ int EcZmqCmd::sdo_cmd(uint32_t esc_id,
     int attemps_cnt = 0;
 
     while(_client_status.status!=ClientStatusEnum::NOT_ALIVE && attemps_cnt < _max_cmd_attemps){
-        std::string sdo_msg;
+        std::string sdo_msg,msg="";
         auto fault=_ec_repl_cmd->Slave_SDO_cmd(esc_id, 
                                                rd_sdo,
                                                wr_sdo,
                                                sdo_msg);
         
-        if(!cmd_error_status(fault, sdo_cmd_type,sdo_msg)){
+        if(!cmd_error_status(fault, sdo_cmd_type,msg)){
             if(sdo_cmd_type=="retrieve_rr_sdo"){
                 auto rd_sdo_read = YAML::Load(sdo_msg);
                 _rr_sdo = rd_sdo_read.as<std::map<std::string, std::string>>();
