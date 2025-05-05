@@ -53,8 +53,13 @@ public:
         return _firmware_update_btns;
     }
 
+    QStringList get_files_list(){
+        return _files_list;
+    }
+
     void run_wizard(){
         _firmware_files_tree->clear();
+        _files_list.clear();
         _firmware_wizard.exec();
     };
 
@@ -71,6 +76,7 @@ private slots:
                 QTreeWidgetItem * file_item = new QTreeWidgetItem();
                 file_item->setText(0,file_path);
                 _firmware_files_tree->addTopLevelItem(file_item);
+                _files_list.append(file_path);
             }
         }
     };
@@ -78,6 +84,7 @@ private slots:
 private:
     QWizard _firmware_wizard;
     QTreeWidget *_firmware_files_tree;
+    QStringList _files_list;
     std::vector<QPushButton *> _firmware_update_btns;
     bool file_listed(const QString &file_name){
         for(int i=0;i<_firmware_files_tree->topLevelItemCount();i++){

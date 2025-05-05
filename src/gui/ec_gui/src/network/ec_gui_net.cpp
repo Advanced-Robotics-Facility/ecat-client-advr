@@ -473,18 +473,70 @@ void EcGuiNet::onFirmwareUpdateReleased()
 
 void EcGuiNet::onFirmwareUpdateCopyFiles()
 {
-
+    bool show_message=true;
+    QMessageBox msgBox;
+    msgBox.setText("Problem on copy file(s) command!");
+    if(_ec_master_process->state()==QProcess::NotRunning){
+        auto files_list=_firmware_update_wizard.get_files_list();
+        if(!files_list.empty()){
+            if(create_ssh_cmd(_ec_master_process,_ec_master_stdout)){
+                QStringList scp_cmd={"-p",_server_pwd,"scp"};
+                scp_cmd.append("-o StrictHostKeyChecking=no");
+                for (const auto &file_path:files_list){
+                    scp_cmd.append(file_path);
+                }
+                scp_cmd.append(_server_hostname+"@"+_server_ip+":/$HOME/.ecat_master/firmware/");
+                _ec_master_process->start("sshpass", scp_cmd);
+                if(_ec_master_process->waitForFinished()){
+                    msgBox.setText("File(s) copied!");
+                }
+            }
+            else{
+                show_message=false;
+            }
+        }
+        else{
+            msgBox.setText("No file(s) selected!");
+        }
+    }
+    if(show_message){
+        msgBox.exec();
+    }
 }
 
 void EcGuiNet::onFirmwareUpdateOpenConfig()
 {
-    
+    bool show_message=true;
+    QMessageBox msgBox;
+    msgBox.setText("Problem on open configuration file command");
+    if(_ec_master_process->state()==QProcess::NotRunning){
+        show_message=false;
+        if(create_ssh_cmd(_ec_master_process,_ec_master_stdout)){
+            QStringList cmd;
+            cmd.append(_ssh_command); 
+            cmd.append("gedit");
+            cmd.append("$HOME/.ecat_master/configs/microCTRL_config.yaml");
+            _ec_master_process->start("sshpass", cmd);
+        }
+    }
+    if(show_message){
+        msgBox.exec();
+    }
 }
 
 void EcGuiNet::onFirmwareUpdateStart()
 {
-    if(create_ssh_cmd(_ec_master_process,_ec_master_stdout)){
-        start_master_process("'fw_update'","");
+    bool show_message=true;
+    QMessageBox msgBox;
+    msgBox.setText("Problem on start firmware update command!");
+    if(_ec_master_process->state()==QProcess::NotRunning){
+        show_message=false;
+        if(create_ssh_cmd(_ec_master_process,_ec_master_stdout)){
+            start_master_process("'fw_update'","");
+        }
+    }
+    if(show_message){
+        msgBox.exec();
     }
 }
 
