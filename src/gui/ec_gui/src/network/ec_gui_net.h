@@ -154,6 +154,7 @@ private:
   QComboBox * _protocol_combobox;
   QPushButton *_firmware_update_btn;
   EcGuiFirmware _firmware_update_wizard;
+  bool _open_config_file=false;
   
   bool create_ssh_cmd(QProcess *process,QString& stdout);
   QString find_running_process(QProcess * process,QString bin_name,QString& stdout);
@@ -170,5 +171,7 @@ private:
   void view_server_process();
   void set_ec_network();    
   void view_gui_process();
+  bool copy_config_file();
+  void save_config_file();
 };
 #endif // EC_GUI_NET_H

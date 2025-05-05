@@ -184,6 +184,9 @@ void EcGuiNet::OnMouseClicked(QTreeWidgetItem* item, int column)
 void EcGuiNet::ec_master_processFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
     ec_master_readyStdO();
+    if(_open_config_file){
+        save_config_file();
+    }
 }
 
 void EcGuiNet::server_processFinished(int exitCode, QProcess::ExitStatus exitStatus)
@@ -504,6 +507,33 @@ void EcGuiNet::onFirmwareUpdateCopyFiles()
     }
 }
 
+bool EcGuiNet::copy_config_file()
+{
+    QStringList scp_cmd={"-p",_server_pwd,"scp"};
+    scp_cmd.append("-o StrictHostKeyChecking=no");
+    scp_cmd.append(_server_hostname+"@"+_server_ip+":/$HOME/.ecat_master/configs/microCTRL_config.yaml");
+    scp_cmd.append("/tmp/microCTRL_config.yaml");
+    _ec_master_process->start("sshpass", scp_cmd);
+    return _ec_master_process->waitForFinished();
+}
+
+void EcGuiNet::save_config_file()
+{
+    _open_config_file=false;
+    QMessageBox msgBox;
+    msgBox.setText("Problem on save configuration file command");
+    QStringList scp_cmd={"-p",_server_pwd,"scp"};
+    scp_cmd.append("-o StrictHostKeyChecking=no");
+    scp_cmd.append("/tmp/microCTRL_config.yaml");
+    scp_cmd.append(_server_hostname+"@"+_server_ip+":/$HOME/.ecat_master/configs/");
+    _ec_master_process->start("sshpass", scp_cmd);
+    if(_ec_master_process->waitForFinished()){
+        msgBox.setText("Firmware configuration file saved!");
+    }
+    QFile("/tmp/microCTRL_config.yaml").remove();
+    msgBox.exec();
+}
+
 void EcGuiNet::onFirmwareUpdateOpenConfig()
 {
     bool show_message=true;
@@ -512,11 +542,13 @@ void EcGuiNet::onFirmwareUpdateOpenConfig()
     if(_ec_master_process->state()==QProcess::NotRunning){
         show_message=false;
         if(create_ssh_cmd(_ec_master_process,_ec_master_stdout)){
-            QStringList cmd;
-            cmd.append(_ssh_command); 
-            cmd.append("gedit");
-            cmd.append("$HOME/.ecat_master/configs/microCTRL_config.yaml");
-            _ec_master_process->start("sshpass", cmd);
+            if(copy_config_file()){
+                QStringList cmd;
+                cmd.append("gedit");
+                cmd.append("/tmp/microCTRL_config.yaml");
+                _ec_master_process->start("sshpass", cmd);
+                _open_config_file=true;
+            }
         }
     }
     if(show_message){
