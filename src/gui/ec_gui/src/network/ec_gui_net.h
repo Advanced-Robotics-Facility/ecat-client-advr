@@ -60,7 +60,7 @@ public:
         firmware_wizard_page->setLayout(layout_page);
         _firmware_wizard.addPage(firmware_wizard_page);
         _firmware_wizard.setFixedSize(layout_page->geometry().width(),layout_page->geometry().height());
-        _firmware_wizard.setWindowFlags(Qt::Window);
+        //_firmware_wizard.setWindowFlags(Qt::Window);
     };
 
     ~EcGuiFirmware(){};
