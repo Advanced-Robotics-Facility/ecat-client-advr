@@ -37,6 +37,8 @@
         <file>icon/TrapezoidalWave.png</file>
         <file>icon/ChirpWave.png</file>
         <file>icon/oscilloscope.png</file>
+        <file>icon/firmware.png</file>
+        <file>icon/calibration.png</file>
         <file>component/slider/wave_widget.ui</file>
     </qresource>
 </RCC>

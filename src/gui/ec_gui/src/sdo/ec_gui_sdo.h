@@ -68,6 +68,7 @@ public:
             _sdo_wizard_tree->setHeaderLabels({"SDO Name","SDO Value"});
             _sdo_wizard_tree->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
             _sdo_wizard_tree->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+            _sdo_wizard_tree->setMinimumSize(600,600);
 
             auto sdo_sel_manager = new QDialogButtonBox(QDialogButtonBox::YesToAll| QDialogButtonBox::NoToAll);
             sdo_sel_manager->setLayoutDirection(Qt::RightToLeft);
@@ -77,13 +78,21 @@ public:
             connect(no_all_btn, &QPushButton::released,this, &EcGuiSdoWizard::onNoToAllSdoReleased);
 
             QWizardPage *sdo_wizard_page = new QWizardPage();
-            sdo_wizard_page->setTitle("SDO Wizard");
+            sdo_wizard_page->setTitle("Calibration Wizard");
             QVBoxLayout *layout = new QVBoxLayout;
             layout->addWidget(_sdo_wizard_tree);
             layout->addWidget(sdo_sel_manager);
-            sdo_wizard_page->setLayout(layout);
 
+            QHBoxLayout *layout_page = new QHBoxLayout;
+            QLabel *calib_image=new QLabel;
+            QPixmap calib_logo_pic;
+            calib_logo_pic.load(":/icon/calibration.png");
+            calib_image->setPixmap(calib_logo_pic);
+            layout_page->addWidget(calib_image);
+            layout_page->addLayout(layout);
+            sdo_wizard_page->setLayout(layout_page);
             _sdo_wizard.addPage(sdo_wizard_page);
+            _sdo_wizard.setFixedSize(layout_page->geometry().width(),layout_page->geometry().height());
         };
 
         WR_SDO run_sdo_wizard(){

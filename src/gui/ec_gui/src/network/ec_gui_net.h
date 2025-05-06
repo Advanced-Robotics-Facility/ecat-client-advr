@@ -14,13 +14,19 @@ public:
     EcGuiFirmware(QWidget * parent = 0){
     
         _firmware_files_tree = new QTreeWidget();
-        _firmware_files_tree->setColumnCount(1);
-        _firmware_files_tree->setHeaderLabels({"Firmware files"});
+        _firmware_files_tree->setColumnCount(2);
+        _firmware_files_tree->setHeaderLabels({"Firmware files",""});
+        _firmware_files_tree->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+        _firmware_files_tree->header()->setMinimumSectionSize(0);
+        _firmware_files_tree->header()->resizeSection(1,0);
+        _firmware_files_tree->header()->setStretchLastSection(false); // QTreeWidget problem for resizing added another column!!
+
 
         auto firmware_manager = new QDialogButtonBox(QDialogButtonBox::RestoreDefaults | 
                                                      QDialogButtonBox::Ignore |
                                                      QDialogButtonBox::Retry |
                                                      QDialogButtonBox::Save );
+
 
         auto select_files = firmware_manager->button(QDialogButtonBox::RestoreDefaults);
         select_files->setText("Select all bin or config files");
@@ -43,8 +49,16 @@ public:
         QVBoxLayout *layout = new QVBoxLayout;
         layout->addWidget(_firmware_files_tree);
         layout->addWidget(firmware_manager);
-        firmware_wizard_page->setLayout(layout);
+        QHBoxLayout *layout_page = new QHBoxLayout;
+        QLabel *firmware_image=new QLabel;
+        QPixmap firmware_logo_pic;
+        firmware_logo_pic.load(":/icon/firmware.png");
+        firmware_image->setPixmap(firmware_logo_pic);
+        layout_page->addWidget(firmware_image);
+        layout_page->addLayout(layout);
+        firmware_wizard_page->setLayout(layout_page);
         _firmware_wizard.addPage(firmware_wizard_page);
+        _firmware_wizard.setFixedSize(layout_page->geometry().width(),layout_page->geometry().height());
     };
 
     ~EcGuiFirmware(){};
