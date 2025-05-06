@@ -44,8 +44,6 @@ public:
         start_update_btn->setText("Start firmware update");
         _firmware_update_btns.push_back(start_update_btn);
 
-        QWizardPage *firmware_wizard_page = new QWizardPage();
-        firmware_wizard_page->setTitle("Firmware update wizard");
         QVBoxLayout *layout = new QVBoxLayout;
         layout->addWidget(_firmware_files_tree);
         layout->addWidget(firmware_manager);
@@ -56,9 +54,13 @@ public:
         firmware_image->setPixmap(firmware_logo_pic);
         layout_page->addWidget(firmware_image);
         layout_page->addLayout(layout);
+
+        QWizardPage *firmware_wizard_page = new QWizardPage();
+        firmware_wizard_page->setTitle("Firmware update wizard");
         firmware_wizard_page->setLayout(layout_page);
         _firmware_wizard.addPage(firmware_wizard_page);
         _firmware_wizard.setFixedSize(layout_page->geometry().width(),layout_page->geometry().height());
+        _firmware_wizard.setWindowFlags(Qt::Window);
     };
 
     ~EcGuiFirmware(){};
