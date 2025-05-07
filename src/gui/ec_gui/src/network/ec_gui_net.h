@@ -6,113 +6,6 @@
 
 #include "ec_gui_terminal.h"
 
-class EcGuiFirmware : public QWidget
-{
-    Q_OBJECT
-public:
-    
-    EcGuiFirmware(QWidget * parent = 0){
-    
-        _firmware_files_tree = new QTreeWidget();
-        _firmware_files_tree->setColumnCount(2);
-        _firmware_files_tree->setHeaderLabels({"Firmware files",""});
-        _firmware_files_tree->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-        _firmware_files_tree->header()->setMinimumSectionSize(0);
-        _firmware_files_tree->header()->resizeSection(1,0);
-        _firmware_files_tree->header()->setStretchLastSection(false); // QTreeWidget problem for resizing added another column!!
-
-
-        auto firmware_manager = new QDialogButtonBox(QDialogButtonBox::RestoreDefaults | 
-                                                     QDialogButtonBox::Ignore |
-                                                     QDialogButtonBox::Retry |
-                                                     QDialogButtonBox::Save );
-
-
-        auto select_files = firmware_manager->button(QDialogButtonBox::RestoreDefaults);
-        select_files->setText("Select all bin or config files");
-        connect(select_files, &QPushButton::released,this, &EcGuiFirmware::onSelectFilesReleased);
-        
-        auto copy_files_btn = firmware_manager->button(QDialogButtonBox::Ignore);
-        copy_files_btn->setText("Copy files to embedded PC");
-        _firmware_update_btns.push_back(copy_files_btn);
-        
-        auto open_config_btn = firmware_manager->button(QDialogButtonBox::Retry);
-        open_config_btn->setText("Open firmware configuration file");
-        _firmware_update_btns.push_back(open_config_btn);
-
-        auto start_update_btn = firmware_manager->button(QDialogButtonBox::Save);
-        start_update_btn->setText("Start firmware update");
-        _firmware_update_btns.push_back(start_update_btn);
-
-        QVBoxLayout *layout = new QVBoxLayout;
-        layout->addWidget(_firmware_files_tree);
-        layout->addWidget(firmware_manager);
-        QHBoxLayout *layout_page = new QHBoxLayout;
-        QLabel *firmware_image=new QLabel;
-        QPixmap firmware_logo_pic;
-        firmware_logo_pic.load(":/icon/firmware.png");
-        firmware_image->setPixmap(firmware_logo_pic);
-        layout_page->addWidget(firmware_image);
-        layout_page->addLayout(layout);
-
-        QWizardPage *firmware_wizard_page = new QWizardPage();
-        firmware_wizard_page->setTitle("Firmware update wizard");
-        firmware_wizard_page->setLayout(layout_page);
-        _firmware_wizard.addPage(firmware_wizard_page);
-        _firmware_wizard.setFixedSize(layout_page->geometry().width(),layout_page->geometry().height());
-        //_firmware_wizard.setWindowFlags(Qt::Window);
-    };
-
-    ~EcGuiFirmware(){};
-
-    std::vector<QPushButton *> get_firmware_update_btns(){
-        return _firmware_update_btns;
-    }
-
-    QStringList get_files_list(){
-        return _files_list;
-    }
-
-    void run_wizard(){
-        _firmware_files_tree->clear();
-        _files_list.clear();
-        _firmware_wizard.exec();
-    };
-
-private slots:
-    void onSelectFilesReleased(){
-
-        QStringList fileNames = QFileDialog::getOpenFileNames(
-            this,
-            "Select one or more files",
-            QDir::homePath(),
-            "Bin files (*.bin);;Config files (*.csv)");
-        for(const auto& file_path:fileNames){
-            if(!file_listed(file_path)){
-                QTreeWidgetItem * file_item = new QTreeWidgetItem();
-                file_item->setText(0,file_path);
-                _firmware_files_tree->addTopLevelItem(file_item);
-                _files_list.append(file_path);
-            }
-        }
-    };
-
-private:
-    QWizard _firmware_wizard;
-    QTreeWidget *_firmware_files_tree;
-    QStringList _files_list;
-    std::vector<QPushButton *> _firmware_update_btns;
-    bool file_listed(const QString &file_name){
-        for(int i=0;i<_firmware_files_tree->topLevelItemCount();i++){
-            auto topLevel =_firmware_files_tree->topLevelItem(i);
-            if(topLevel->text(0)==file_name){
-                return true;
-            }
-        }
-        return false;
-   };
-};
-
 class EcGuiNet : public QWidget
 {
     Q_OBJECT
@@ -132,8 +25,11 @@ public:
 
     bool start_network();
     void stop_network();
+    void copy_files_network(const QStringList &files_list);
+    void open_firmware_config();
+    void start_firmware_update();
+    void stop_firmware_update();
     ec_net_info_t get_net_setup();
-    void set_expert_user();
 
 private slots:
     void ec_master_processFinished(int, QProcess::ExitStatus);
@@ -142,11 +38,6 @@ private slots:
     void OnPasswordEntered();
     void OnPasswordChanged();
     void OnProtocolChanged();
-    void onFirmwareUpdateReleased();
-    void onFirmwareUpdateCopyFiles(); 
-    void onFirmwareUpdateOpenConfig(); 
-    void onFirmwareUpdateStart();
-
 
 protected:
     bool eventFilter( QObject* o, QEvent* e );
@@ -168,8 +59,6 @@ private:
   QString _master_terminal_pid="",_server_terminal_pid="",_gui_terminal_pid="";
   
   QComboBox * _protocol_combobox;
-  QPushButton *_firmware_update_btn;
-  EcGuiFirmware _firmware_update_wizard;
   bool _open_config_file=false;
   
   bool create_ssh_cmd(QProcess *process,QString& stdout);
@@ -178,7 +67,7 @@ private:
   void start_process(QProcess *process,QString bin_file_path,QString option);
   void kill_process(QProcess *process,QString bin_name,QString& stdout);
   
-  void kill_view_process(const QString &terminal_pid);
+  void kill_view_process(QString &terminal_pid);
   void view_process(const QString &file_path,QString &terminal_pid);
   void start_master_process(const QString &bin_file_name,const QString &option);
   void ec_master_readyStdO();

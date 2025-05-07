@@ -54,14 +54,26 @@ EcGuiStart::EcGuiStart(QWidget *parent) :
     _net_tree_wid->resizeColumnToContents(0);
     _net_tree_wid->expandAll();
     
-    auto ec_sys_start = findChild<QPushButton *>("StartEthercatSystem");
-    connect(ec_sys_start, &QPushButton::released,this, &EcGuiStart::onStartEtherCATSystem);
+    _ec_sys_start = findChild<QPushButton *>("StartEthercatSystem");
+    connect(_ec_sys_start, &QPushButton::released,this, &EcGuiStart::onStartEtherCATSystem);
     
-    auto ec_sys_stop = findChild<QPushButton *>("StopEthercatSystem");
-    connect(ec_sys_stop, &QPushButton::released,this, &EcGuiStart::onStopEtherCATSystem);
+    _ec_sys_stop = findChild<QPushButton *>("StopEthercatSystem");
+    connect(_ec_sys_stop, &QPushButton::released,this, &EcGuiStart::onStopEtherCATSystem);
     
     auto scan_device = findChild<QPushButton *>("ScanDevice");
     connect(scan_device, &QPushButton::released,this, &EcGuiStart::onScanDeviceReleased);
+
+    _firmware_update_btn=findChild<QPushButton *>("FirmwareUpdate");
+    _firmware_update_btn->setEnabled(false);
+    connect(_firmware_update_btn, &QPushButton::released,this, &EcGuiStart::onFirmwareUpdateReleased);
+    
+    _firmware_update_wizard = new EcGuiFirmware(this);
+    connect(_firmware_update_wizard, SIGNAL(finished(int)), this, SLOT(onFirmwarewizardClosed(int)));
+
+    auto firmware_update_btns=_firmware_update_wizard->get_firmware_update_btns();
+    connect(firmware_update_btns[0], &QPushButton::released,this, &EcGuiStart::onFirmwareUpdateCopyFiles);
+    connect(firmware_update_btns[1], &QPushButton::released,this, &EcGuiStart::onFirmwareUpdateOpenConfig);
+    connect(firmware_update_btns[2], &QPushButton::released,this, &EcGuiStart::onFirmwareUpdateStart);
 
     _expert_user = findChild<QLineEdit *>("ExpertUserPass");
     connect(_expert_user, &QLineEdit::returnPressed,std::bind(&EcGuiStart::ExpertUserPassChanged, this));
@@ -117,7 +129,7 @@ void EcGuiStart::ExpertUserPassChanged()
     if(_expert_user->text().toStdString()==expert_user_password){
         message="export user password correct!";
         _ec_gui_wrapper->set_expert_user();
-        _ec_gui_net->set_expert_user();
+        _firmware_update_btn->setEnabled(true);
         _expert_user->setEnabled(false);
     }
     msgBox.setText(message);
@@ -181,6 +193,36 @@ void EcGuiStart::onStopEtherCATSystem()
         msgBox.setText("EtherCAT Master system already stopped");
     }
     msgBox.exec();
+}
+
+void EcGuiStart::onFirmwareUpdateReleased()
+{
+    _ec_sys_start->setEnabled(false);
+    _ec_sys_stop->setEnabled(false);
+    stopping_ec_sys();
+    _firmware_update_wizard->run_wizard();
+}
+
+void EcGuiStart::onFirmwareUpdateCopyFiles()
+{
+    _ec_gui_net->copy_files_network(_firmware_update_wizard->get_files_list());
+}
+
+void EcGuiStart::onFirmwareUpdateOpenConfig()
+{
+    _ec_gui_net->open_firmware_config();
+}
+
+void EcGuiStart::onFirmwareUpdateStart()
+{
+    _ec_gui_net->start_firmware_update();
+}
+
+void EcGuiStart::onFirmwarewizardClosed(int ret)
+{
+    _ec_sys_start->setEnabled(true);
+    _ec_sys_stop->setEnabled(true);
+    _ec_gui_net->stop_firmware_update();
 }
 
 void EcGuiStart::restart_gui()
@@ -431,5 +473,4 @@ void EcGuiStart::onScanDeviceReleased()
 
 EcGuiStart::~EcGuiStart()
 {
-
 }

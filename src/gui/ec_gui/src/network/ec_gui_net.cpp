@@ -62,15 +62,6 @@ EcGuiNet::EcGuiNet(QWidget *parent) :
     /* connection of frequency function */
     connect(_protocol_combobox, SIGNAL(currentIndexChanged(int)),this,SLOT(OnProtocolChanged()));
     set_ec_network();
-
-    _firmware_update_btn=parent->findChild<QPushButton *>("FirmwareUpdate");
-    _firmware_update_btn->setEnabled(false);
-    connect(_firmware_update_btn, &QPushButton::released,this, &EcGuiNet::onFirmwareUpdateReleased);
-
-    auto firmware_update_btns=_firmware_update_wizard.get_firmware_update_btns();
-    connect(firmware_update_btns[0], &QPushButton::released,this, &EcGuiNet::onFirmwareUpdateCopyFiles);
-    connect(firmware_update_btns[1], &QPushButton::released,this, &EcGuiNet::onFirmwareUpdateOpenConfig);
-    connect(firmware_update_btns[2], &QPushButton::released,this, &EcGuiNet::onFirmwareUpdateStart);
 }
 
 void EcGuiNet::OnPasswordEntered()
@@ -89,11 +80,6 @@ void EcGuiNet::OnProtocolChanged()
 {
     _server_protocol = _protocol_combobox->currentText();
     set_ec_network();
-}
-
-void EcGuiNet::set_expert_user()
-{
-    _firmware_update_btn->setEnabled(true);
 }
 
 void EcGuiNet::set_ec_network()
@@ -194,21 +180,21 @@ void EcGuiNet::server_processFinished(int exitCode, QProcess::ExitStatus exitSta
     server_readyStdO();
 }
 
-void EcGuiNet::kill_view_process(const QString& terminal_pid)
+void EcGuiNet::kill_view_process(QString& terminal_pid)
 {
-    QStringList cmd={"-9"};
-    cmd.append(terminal_pid);
-    QProcess kill_view_proc;
-    kill_view_proc.start("kill",cmd);
-    kill_view_proc.waitForFinished();
+    if(terminal_pid!=""){
+        QStringList cmd={"-9"};
+        cmd.append(terminal_pid);
+        QProcess kill_view_proc;
+        kill_view_proc.start("kill",cmd);
+        kill_view_proc.waitForFinished();
+    }
+    terminal_pid="";
 }
 
 void EcGuiNet::view_process(const QString &file_path,QString &terminal_pid)
 {
-    if(terminal_pid!=""){
-        kill_view_process(terminal_pid);
-        terminal_pid="";
-    }
+    kill_view_process(terminal_pid);
 
     QStringList cmd={"-x","echo","$$",">","/tmp/terminal_pid.txt"};
     cmd.append("&&");
@@ -424,7 +410,6 @@ bool EcGuiNet::start_network()
 
 void EcGuiNet::stop_network()
 {
-    QString bin_file_name;
     /******************************STOP Server ************************************************/
     if(_server_protocol=="udp"){
         if(_server_file){
@@ -434,8 +419,7 @@ void EcGuiNet::stop_network()
         }
         if(_server_process->state()!=QProcess::NotRunning){
             _server_process->close();
-            bin_file_name = "'udp_server'";
-            kill_process(_server_process,bin_file_name,_server_stdout);
+            kill_process(_server_process,"'udp_server'",_server_stdout);
             kill_view_process(_server_terminal_pid);
         }
     }
@@ -447,12 +431,10 @@ void EcGuiNet::stop_network()
     }
     if(_ec_master_process->state()!=QProcess::NotRunning){
         _ec_master_process->close();
-        bin_file_name = "'repl'";
-        kill_process(_ec_master_process,bin_file_name,_ec_master_stdout);
+        kill_process(_ec_master_process,"'repl'",_ec_master_stdout);
+        kill_process(_ec_master_process,"'fw_update'",_ec_master_stdout);
         kill_view_process(_master_terminal_pid);
     }
-
-    kill_view_process(_gui_terminal_pid);
 }
 
 EcGuiNet::ec_net_info_t EcGuiNet::get_net_setup()
@@ -466,21 +448,12 @@ EcGuiNet::ec_net_info_t EcGuiNet::get_net_setup()
     return ec_net_info;
 }
 
-void EcGuiNet::onFirmwareUpdateReleased()
-{
-    _firmware_update_wizard.run_wizard();
-    _ec_master_process->close();
-    kill_process(_ec_master_process,"'fw_update'",_ec_master_stdout);
-    kill_view_process(_master_terminal_pid);
-}
-
-void EcGuiNet::onFirmwareUpdateCopyFiles()
+void EcGuiNet::copy_files_network(const QStringList &files_list)
 {
     bool show_message=true;
     QMessageBox msgBox;
     msgBox.setText("Problem on copy file(s) command!");
     if(_ec_master_process->state()==QProcess::NotRunning){
-        auto files_list=_firmware_update_wizard.get_files_list();
         if(!files_list.empty()){
             if(create_ssh_cmd(_ec_master_process,_ec_master_stdout)){
                 QStringList scp_cmd={"-p",_server_pwd,"scp"};
@@ -534,7 +507,7 @@ void EcGuiNet::save_config_file()
     msgBox.exec();
 }
 
-void EcGuiNet::onFirmwareUpdateOpenConfig()
+void EcGuiNet::open_firmware_config()
 {
     bool show_message=true;
     QMessageBox msgBox;
@@ -556,7 +529,7 @@ void EcGuiNet::onFirmwareUpdateOpenConfig()
     }
 }
 
-void EcGuiNet::onFirmwareUpdateStart()
+void EcGuiNet::start_firmware_update()
 {
     bool show_message=true;
     QMessageBox msgBox;
@@ -564,6 +537,7 @@ void EcGuiNet::onFirmwareUpdateStart()
     if(_ec_master_process->state()==QProcess::NotRunning){
         show_message=false;
         if(create_ssh_cmd(_ec_master_process,_ec_master_stdout)){
+            kill_process(_ec_master_process,"'repl'",_ec_master_stdout); // kill repl before the fw_update
             start_master_process("'fw_update'","");
         }
     }
@@ -572,7 +546,15 @@ void EcGuiNet::onFirmwareUpdateStart()
     }
 }
 
+void EcGuiNet::stop_firmware_update()
+{
+    _ec_master_process->close();
+    kill_process(_ec_master_process,"'fw_update'",_ec_master_stdout);
+    kill_view_process(_master_terminal_pid);
+}
+
 EcGuiNet::~EcGuiNet()
 {
     stop_network();
+    kill_view_process(_gui_terminal_pid);
 }
