@@ -93,7 +93,6 @@ public:
             sdo_wizard_page->setLayout(layout_page);
             _sdo_wizard.addPage(sdo_wizard_page);
             _sdo_wizard.setFixedSize(layout_page->geometry().width(),layout_page->geometry().height());
-            //_sdo_wizard.setWindowFlags(Qt::Window);
         };
 
         WR_SDO run_sdo_wizard(){

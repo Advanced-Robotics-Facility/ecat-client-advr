@@ -96,7 +96,7 @@ void EcGuiSdo::search_sdo()
             if(sdo_item->parent()->isExpanded()){
                 sdo_item->setHidden(false);
                 if(_sdo_search_req!=""){
-                    if(sdo_item->text(1).indexOf(_sdo_search_req,0,Qt::CaseInsensitive) != 0){
+                    if(sdo_item->text(1).indexOf(_sdo_search_req,0,Qt::CaseInsensitive)==-1){
                         sdo_item->setHidden(true);
                     }
                 }
