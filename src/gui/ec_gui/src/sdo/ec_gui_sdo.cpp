@@ -24,6 +24,13 @@ QWidget(parent)
     _sdo_flash_manager = parent->findChild<QDialogButtonBox *>("SDOFlashManager"); 
     _sdo_flash_manager->setEnabled(false);
 
+    auto escid_sdo_manager = parent->findChild<QDialogButtonBox *>("EscIDSdoManager");
+
+    auto yes_all_btn = escid_sdo_manager->button(QDialogButtonBox::YesToAll);
+    connect(yes_all_btn, &QPushButton::released,this, &EcGuiSdo::onYesToAllSdoReleased);
+    auto no_all_btn = escid_sdo_manager->button(QDialogButtonBox::NoToAll);
+    connect(no_all_btn, &QPushButton::released,this, &EcGuiSdo::onNoToAllSdoReleased);
+
     auto save_btn = _sdo_flash_manager->button(QDialogButtonBox::Save);
     connect(save_btn, &QPushButton::released,this, &EcGuiSdo::onSaveSdoReleased);
 
@@ -49,7 +56,6 @@ QWidget(parent)
     auto save_file_btn = _sdo_manager->button(QDialogButtonBox::RestoreDefaults);
     save_file_btn->setText(" Save  SDO file");
     connect(save_file_btn, &QPushButton::released,this, &EcGuiSdo::onSaveFileSdoReleased);
-
 }
       
 EcGuiSdo::~EcGuiSdo(){}
@@ -89,6 +95,7 @@ void EcGuiSdo::add_esc_sdo()
     _sdo_tree_wid->header()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
 }
 
+
 void EcGuiSdo::search_sdo()
 {
     for(auto&[esc_id,name_item_map]: _sdo_item_map){
@@ -111,7 +118,7 @@ void EcGuiSdo::rescan_sdo()
     bool rescan_cmd_ok=true;
     for(auto&[esc_id,name_item_map]: _sdo_item_map){
         for(auto&[sdo_name,sdo_item]: name_item_map){
-            if(sdo_item->parent()->isExpanded()){
+            if(sdo_item->parent()->checkState(0)==Qt::Checked){
                 RD_SDO rd_sdo={sdo_name};
                 RR_SDOS rr_sdo;
                 try_rescan_cmd=true;
@@ -146,7 +153,7 @@ void EcGuiSdo::flash_cmd(int value)
 
     for(auto&[esc_id,name_item_map]: _sdo_item_map){
         if(name_item_map.count("flash_params_cmd")>0 && name_item_map.count("flash_params_cmd_ack")>0){
-            if(name_item_map["flash_params_cmd"]->parent()->isExpanded()){
+            if(name_item_map["flash_params_cmd"]->parent()->checkState(0)==Qt::Checked){
                 try_flash_cmd=true;
                 if(_client->set_wr_sdo(esc_id,{},wr_sdo)){
                     RR_SDOS rr_sdo;
@@ -179,7 +186,7 @@ void EcGuiSdo::save_sdo_file()
         QFile *sdo_file=nullptr;
         bool sdo_file_open=false;
         for(auto&[sdo_name,sdo_item]: name_item_map){
-            if(sdo_item->parent()->isExpanded()){
+            if(sdo_item->parent()->checkState(0)==Qt::Checked){
                 try_save_cmd=true;
                 if(!sdo_file){
                     QString sdo_file_path =QDir::homePath()+"/"+sdo_item->parent()->text(0)+"_"+formatted_time+".csv";
@@ -213,7 +220,7 @@ void EcGuiSdo::open_sdo_file()
         bool new_write_ok=true;
         for(auto&[esc_id,name_item_map]: _sdo_item_map){
             for(auto&[sdo_name,sdo_item]: name_item_map){
-                if(sdo_item->parent()->isExpanded()){
+                if(sdo_item->parent()->checkState(0)==Qt::Checked){
                     try_write_cmd=true;
                     if(!_client->set_wr_sdo(esc_id,{},new_wr_sdo)){
                         new_write_ok=false;

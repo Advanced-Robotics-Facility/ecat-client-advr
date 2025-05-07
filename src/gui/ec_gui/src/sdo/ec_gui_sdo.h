@@ -31,6 +31,8 @@ private slots:
         void onLoadSdoReleased();
         void onSaveFileSdoReleased();
         void onOpenFileSdoReleased();
+        void onYesToAllSdoReleased();
+        void onNoToAllSdoReleased();
         
 protected:
         bool eventFilter( QObject* o, QEvent* e );
@@ -47,6 +49,7 @@ private:
         std::string _old_sdo_value;
         bool _user_expert;
         QString _sdo_search_req;
+        Qt::CheckState _esc_id_state=Qt::Unchecked;
         
         void add_esc_sdo();
         void search_sdo();
@@ -55,6 +58,7 @@ private:
         void save_sdo_file();
         void open_sdo_file();
         void cmd_feedback(bool try_cmd,bool cmd_ok,QString cmd_name);
+        void esc_id_check();
 };
 
 class EcGuiSdoWizard : public QWidget
