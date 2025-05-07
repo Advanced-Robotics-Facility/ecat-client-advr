@@ -81,6 +81,7 @@ void EcGuiSdo::add_esc_sdo()
         QTreeWidgetItem * esc_item = new QTreeWidgetItem();
         std::string esc_id_name = "esc_id_"+std::to_string(esc_id);
         esc_item->setText(0,QString::fromStdString(esc_id_name));
+        esc_item->setCheckState(0,_esc_id_state);
         for ( auto &[sdo_name, sdo_value] : rr_sdo ){
             QTreeWidgetItem * sdo_entry = new QTreeWidgetItem();
             sdo_entry->setText(1,QString::fromStdString(sdo_name));
@@ -95,6 +96,26 @@ void EcGuiSdo::add_esc_sdo()
     _sdo_tree_wid->header()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
 }
 
+void EcGuiSdo::onYesToAllSdoReleased()
+{   
+    _esc_id_state=Qt::Checked;
+    esc_id_check();
+}
+
+void EcGuiSdo::onNoToAllSdoReleased()
+{
+    _esc_id_state=Qt::Unchecked;
+    esc_id_check();
+}
+
+void EcGuiSdo::esc_id_check()
+{
+    for(auto&[esc_id,name_item_map]: _sdo_item_map){
+        for(auto&[sdo_name,sdo_item]: name_item_map){
+            sdo_item->parent()->setCheckState(0,_esc_id_state);
+        }
+    }
+}
 
 void EcGuiSdo::search_sdo()
 {
