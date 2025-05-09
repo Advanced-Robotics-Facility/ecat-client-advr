@@ -55,7 +55,7 @@ private:
   QString _ec_master_file_path,_server_file_path,_gui_file_path;
   QFile *_ec_master_file=nullptr,*_server_file=nullptr;
   QTextStream *_ec_master_stream,*_server_stream;
-  QString _server_hostname,_server_ip,_server_port,_server_protocol,_server_pwd;
+  QString _server_username,_server_hostname,_server_port,_server_protocol,_server_pwd;
   QString _master_terminal_pid="",_server_terminal_pid="",_gui_terminal_pid="";
   
   QComboBox * _protocol_combobox;

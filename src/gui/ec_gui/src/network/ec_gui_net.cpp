@@ -1,8 +1,8 @@
 ﻿#include "ec_gui_net.h"
 #include "iostream"
 
-#define HOSTNAME_COL 1
-#define HOSTIP_COL 2
+#define USERNAME_COL 1
+#define HOSTNAME_COL 2
 #define HOSTPORT_COL 3
 #define TERMINAL_COL 4
 
@@ -15,15 +15,15 @@ EcGuiNet::EcGuiNet(QWidget *parent) :
     _net_item = nullptr;
     _net_column=-1;
     
-    _server_hostname=_net_tree_wid->topLevelItem(0)->child(1)->text(1);
+    _server_username=_net_tree_wid->topLevelItem(0)->child(1)->text(1);
     QString client_user_name = qgetenv("USER");
-    _net_tree_wid->topLevelItem(0)->child(0)->setText(HOSTNAME_COL,client_user_name);
+    _net_tree_wid->topLevelItem(0)->child(0)->setText(USERNAME_COL,client_user_name);
     
     if(_net_tree_wid->topLevelItem(0)->child(1)->text(2)=="localhost") {
-        _server_ip="127.0.0.1";
+        _server_hostname="127.0.0.1";
     }
     else{
-        _server_ip=_net_tree_wid->topLevelItem(0)->child(1)->text(2);
+        _server_hostname=_net_tree_wid->topLevelItem(0)->child(1)->text(2);
     }
     _server_port=_net_tree_wid->topLevelItem(0)->child(1)->text(3);
     
@@ -84,15 +84,15 @@ void EcGuiNet::OnProtocolChanged()
 
 void EcGuiNet::set_ec_network()
 {
-    _server_hostname=_net_tree_wid->topLevelItem(0)->child(1)->text(1);
-    _net_tree_wid->topLevelItem(0)->child(2)->setText(HOSTNAME_COL,_server_hostname);
+    _server_username=_net_tree_wid->topLevelItem(0)->child(1)->text(1);
+    _net_tree_wid->topLevelItem(0)->child(2)->setText(USERNAME_COL,_server_username);
     
-    _net_tree_wid->topLevelItem(0)->child(2)->setText(HOSTIP_COL,_net_tree_wid->topLevelItem(0)->child(1)->text(2));
+    _net_tree_wid->topLevelItem(0)->child(2)->setText(HOSTNAME_COL,_net_tree_wid->topLevelItem(0)->child(1)->text(2));
     if(_net_tree_wid->topLevelItem(0)->child(1)->text(2)=="localhost"){
-        _server_ip="127.0.0.1";
+        _server_hostname="127.0.0.1";
     }
     else{
-        _server_ip=_net_tree_wid->topLevelItem(0)->child(1)->text(2);
+        _server_hostname=_net_tree_wid->topLevelItem(0)->child(1)->text(2);
     }
     
     _server_port=_net_tree_wid->topLevelItem(0)->child(1)->text(3);
@@ -129,8 +129,8 @@ void EcGuiNet::OnMouseClicked(QTreeWidgetItem* item, int column)
     _net_column=column;
 
     if((item->text(0)=="Server") &&
-       ((column == HOSTNAME_COL) || 
-        (column == HOSTIP_COL)   ||
+       ((column == USERNAME_COL) || 
+        (column == HOSTNAME_COL)   ||
         (column == HOSTPORT_COL))){
         _net_tree_wid->openPersistentEditor(item,column);
     }
@@ -339,16 +339,16 @@ bool EcGuiNet::create_ssh_cmd(QProcess *process,QString& stdout)
     _ssh_command.append(_server_pwd);
     _ssh_command.append("ssh");
     _ssh_command.append("-o StrictHostKeyChecking=no");
-    _ssh_command.append(_server_hostname+"@"+_server_ip);
+    _ssh_command.append(_server_username+"@"+_server_hostname);
 
     QStringList cmd = _ssh_command;
     cmd.append("'whoami'");
     process->start("sshpass", cmd);
     process->waitForFinished();
 
-    auto host_name = stdout.remove(QChar('\n'));
+    auto user_name = stdout.remove(QChar('\n'));
     
-    if(host_name != _server_hostname){
+    if(user_name != _server_username){
         QMessageBox msgBox;
         msgBox.setText("Problem on the ssh command, please verify the EtherCAT system setup");
         msgBox.exec();
@@ -442,7 +442,7 @@ EcGuiNet::ec_net_info_t EcGuiNet::get_net_setup()
     ec_net_info_t ec_net_info;
 
     ec_net_info.protocol=_server_protocol.toStdString();
-    ec_net_info.host_name=_server_ip.toStdString();
+    ec_net_info.host_name=_server_hostname.toStdString();
     ec_net_info.host_port=_server_port.toUInt();
     
     return ec_net_info;
@@ -461,7 +461,7 @@ void EcGuiNet::copy_files_network(const QStringList &files_list)
                 for (const auto &file_path:files_list){
                     scp_cmd.append(file_path);
                 }
-                scp_cmd.append(_server_hostname+"@"+_server_ip+":/$HOME/.ecat_master/firmware/");
+                scp_cmd.append(_server_username+"@"+_server_hostname+":/$HOME/.ecat_master/firmware/");
                 _ec_master_process->start("sshpass", scp_cmd);
                 if(_ec_master_process->waitForFinished()){
                     msgBox.setText("File(s) copied!");
@@ -484,7 +484,7 @@ bool EcGuiNet::copy_config_file()
 {
     QStringList scp_cmd={"-p",_server_pwd,"scp"};
     scp_cmd.append("-o StrictHostKeyChecking=no");
-    scp_cmd.append(_server_hostname+"@"+_server_ip+":/$HOME/.ecat_master/configs/microCTRL_config.yaml");
+    scp_cmd.append(_server_username+"@"+_server_hostname+":/$HOME/.ecat_master/configs/microCTRL_config.yaml");
     scp_cmd.append("/tmp/microCTRL_config.yaml");
     _ec_master_process->start("sshpass", scp_cmd);
     return _ec_master_process->waitForFinished();
@@ -498,7 +498,7 @@ void EcGuiNet::save_config_file()
     QStringList scp_cmd={"-p",_server_pwd,"scp"};
     scp_cmd.append("-o StrictHostKeyChecking=no");
     scp_cmd.append("/tmp/microCTRL_config.yaml");
-    scp_cmd.append(_server_hostname+"@"+_server_ip+":/$HOME/.ecat_master/configs/");
+    scp_cmd.append(_server_username+"@"+_server_hostname+":/$HOME/.ecat_master/configs/");
     _ec_master_process->start("sshpass", scp_cmd);
     if(_ec_master_process->waitForFinished()){
         msgBox.setText("Firmware configuration file saved!");

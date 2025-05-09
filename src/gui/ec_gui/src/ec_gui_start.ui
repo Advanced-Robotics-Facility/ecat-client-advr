@@ -124,7 +124,7 @@
    </property>
    <property name="maximumSize">
     <size>
-     <width>500</width>
+     <width>520</width>
      <height>524287</height>
     </size>
    </property>
@@ -779,7 +779,7 @@
    </property>
    <property name="maximumSize">
     <size>
-     <width>500</width>
+     <width>520</width>
      <height>524287</height>
     </size>
    </property>
@@ -807,7 +807,7 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>476</width>
+          <width>499</width>
           <height>409</height>
          </rect>
         </property>
@@ -875,17 +875,17 @@
            </column>
            <column>
             <property name="text">
+             <string>User Name</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
              <string>Host Name</string>
             </property>
            </column>
            <column>
             <property name="text">
-             <string>IP</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Port</string>
+             <string>Host IP</string>
             </property>
            </column>
            <column>
