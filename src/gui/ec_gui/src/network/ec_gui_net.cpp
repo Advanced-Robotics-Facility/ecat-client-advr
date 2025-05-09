@@ -1,6 +1,9 @@
 ﻿#include "ec_gui_net.h"
 #include "iostream"
 
+#include <QNetworkInterface>
+#include <QHostAddress>
+
 #define USERNAME_COL 1
 #define HOSTNAME_COL 2
 #define HOSTPORT_COL 3
@@ -84,16 +87,48 @@ void EcGuiNet::OnProtocolChanged()
 
 void EcGuiNet::set_ec_network()
 {
+    QString client_host_name;
+    for (const QNetworkInterface &netInterface: QNetworkInterface::allInterfaces()) {
+        if(netInterface.type()==QNetworkInterface::Ethernet ||
+           netInterface.type()==QNetworkInterface::Wifi){
+            bool ip_found=false;
+            for (const QNetworkAddressEntry &address: netInterface.addressEntries()) {
+                if(address.ip().protocol() == QAbstractSocket::IPv4Protocol){
+                    ip_found=true;
+                    client_host_name=address.ip().toString();
+                }
+            }
+            if(netInterface.type()==QNetworkInterface::Ethernet && ip_found){
+                break;
+            } 
+        }
+    }
+
+    auto client_user_name=_net_tree_wid->topLevelItem(0)->child(0)->text(1);
     _server_username=_net_tree_wid->topLevelItem(0)->child(1)->text(1);
-    _net_tree_wid->topLevelItem(0)->child(2)->setText(USERNAME_COL,_server_username);
+    if(_server_username!=client_user_name){
+        _real_server_username=_server_username;
+    }
+    _server_username=_real_server_username;
     
-    _net_tree_wid->topLevelItem(0)->child(2)->setText(HOSTNAME_COL,_net_tree_wid->topLevelItem(0)->child(1)->text(2));
     if(_net_tree_wid->topLevelItem(0)->child(1)->text(2)=="localhost"){
         _server_hostname="127.0.0.1";
+        client_host_name="localhost";
+        _server_username=client_user_name;
     }
     else{
         _server_hostname=_net_tree_wid->topLevelItem(0)->child(1)->text(2);
+        if(_server_hostname=="127.0.0.1"){
+            client_host_name="127.0.0.1";
+            _server_username=client_user_name;
+        }
     }
+    _net_tree_wid->topLevelItem(0)->child(0)->setText(HOSTNAME_COL,client_host_name);
+
+    _net_tree_wid->topLevelItem(0)->child(1)->setText(USERNAME_COL,_server_username);
+
+    _net_tree_wid->topLevelItem(0)->child(2)->setText(USERNAME_COL,_server_username);
+    _net_tree_wid->topLevelItem(0)->child(2)->setText(HOSTNAME_COL,_net_tree_wid->topLevelItem(0)->child(1)->text(2));
     
     _server_port=_net_tree_wid->topLevelItem(0)->child(1)->text(3);
     QString client_port=_server_port;
