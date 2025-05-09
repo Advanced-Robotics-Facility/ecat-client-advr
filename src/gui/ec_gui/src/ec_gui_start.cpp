@@ -147,6 +147,7 @@ void EcGuiStart::onStartEtherCATSystem()
         _ec_gui_net->setObjectName("ec_gui_net");
     
         _etherCAT_sys_started=true;
+        _ec_gui_net->set_protocol_enabled(false);
         
         msgBox.setText("EtherCAT Master system started");
         
@@ -169,7 +170,6 @@ bool EcGuiStart::stopping_ec_sys()
 {
     bool etherCAT_sys_stopped=false;
     if(_etherCAT_sys_started){
-        //stopping_client();
         /******************************STOP EtherCAT Master and Server ************************************************/
         _ec_gui_net->stop_network();
         /******************************CLEAN UP THE GUI ************************************************/
@@ -178,6 +178,7 @@ bool EcGuiStart::stopping_ec_sys()
         _ec_wrapper_info=_ec_wrapper_info_reset;
         _etherCAT_sys_started=false;
         etherCAT_sys_stopped=true;
+        _ec_gui_net->set_protocol_enabled(true);
     }
     
     return etherCAT_sys_stopped;

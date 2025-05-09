@@ -29,6 +29,7 @@ public:
     void open_firmware_config();
     void start_firmware_update();
     void stop_firmware_update();
+    void set_protocol_enabled(bool enable);
     ec_net_info_t get_net_setup();
 
 private slots:

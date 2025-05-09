@@ -78,6 +78,10 @@ void EcGuiNet::OnPasswordChanged()
     _server_pwd= _password->text();
 }
 
+void EcGuiNet::set_protocol_enabled(bool enable)
+{
+    _protocol_combobox->setEnabled(enable);
+}
 
 void EcGuiNet::OnProtocolChanged()
 {
@@ -446,30 +450,30 @@ bool EcGuiNet::start_network()
 void EcGuiNet::stop_network()
 {
     /******************************STOP Server ************************************************/
-    if(_server_protocol=="udp"){
-        if(_server_file){
-            if(_server_file->isOpen()){
-                _server_file->close();
-            }
+    if(_server_file){
+        if(_server_file->isOpen()){
+            _server_file->close();
         }
-        if(_server_process->state()!=QProcess::NotRunning){
-            _server_process->close();
-            kill_process(_server_process,"'udp_server'",_server_stdout);
-            kill_view_process(_server_terminal_pid);
-        }
+        _server_file=nullptr;
     }
+    if(_server_process->state()!=QProcess::NotRunning){
+        _server_process->close();
+        kill_process(_server_process,"'udp_server'",_server_stdout);
+    }
+    kill_view_process(_server_terminal_pid);
     /******************************STOP EtherCAT Master ************************************************/
     if(_ec_master_file){
         if(_ec_master_file->isOpen()){
             _ec_master_file->close();
         }
+        _ec_master_file=nullptr;
     }
     if(_ec_master_process->state()!=QProcess::NotRunning){
         _ec_master_process->close();
         kill_process(_ec_master_process,"'repl'",_ec_master_stdout);
         kill_process(_ec_master_process,"'fw_update'",_ec_master_stdout);
-        kill_view_process(_master_terminal_pid);
     }
+    kill_view_process(_master_terminal_pid);
 }
 
 EcGuiNet::ec_net_info_t EcGuiNet::get_net_setup()
