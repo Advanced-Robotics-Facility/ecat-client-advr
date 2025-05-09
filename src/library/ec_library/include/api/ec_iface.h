@@ -12,7 +12,7 @@
 #include <boost/lockfree/queue.hpp>
 #include <boost/lockfree/stack.hpp>
 
-#define MAX_QUEUE_PDO 64
+#define MAX_QUEUE_PDO 5
 
 using namespace boost::lockfree;
 class EcIface
