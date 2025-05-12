@@ -538,7 +538,10 @@ void EcBoostCmd::restore_wait_reply_time()
 
 void EcBoostCmd::send_pdo()
 {
-    feed_motors();
+    if(_write_device[DeviceCtrlType::MOTOR]){
+        feed_motors();
+        _write_device[DeviceCtrlType::MOTOR]=false;
+    }
 }
 
 void EcBoostCmd::feed_motors()

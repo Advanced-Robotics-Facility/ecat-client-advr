@@ -50,6 +50,7 @@ EcIface::EcIface()
         createLogger("console","client");
         _consoleLog=spdlog::get("console");
     }
+    _write_device={false,false,false};
     
     _consoleLog->info("EtherCAT Client initialized");
 }
@@ -106,11 +107,28 @@ void EcIface::read()
 void EcIface::write()
 {
     ///note: only one thread is allowed to push data
-    _motor_reference_queue.push(_motor_reference_map);
-    _valve_reference_queue.push(_valve_reference_map);
-    _pump_reference_queue.push(_pump_reference_map);
+    _sync_write=false;
+    if(_write_device[DeviceCtrlType::MOTOR]){
+        _motor_reference_queue.push(_motor_reference_map);
+        _write_device[DeviceCtrlType::MOTOR]=false;
+        _sync_write=true;
+    }
 
-    wake_client_thread();
+    if(_write_device[DeviceCtrlType::VALVE]){
+        _valve_reference_queue.push(_valve_reference_map);
+        _write_device[DeviceCtrlType::VALVE]=false;
+        _sync_write=true;
+    }
+
+    if(_write_device[DeviceCtrlType::PUMP]){
+        _pump_reference_queue.push(_pump_reference_map);
+        _write_device[DeviceCtrlType::PUMP]=false;
+        _sync_write=true;
+    }
+
+    if(_sync_write){
+        wake_client_thread();
+    }
 }
 
 void EcIface::get_motor_status(MotorStatusMap &motor_status_map)
@@ -127,6 +145,7 @@ void EcIface::set_motor_reference(const MotorReferenceMap motor_reference_map)
 {
     if(check_maps(_motor_reference_map,motor_reference_map,"motor")){
         _motor_reference_map = motor_reference_map;
+        _write_device[DeviceCtrlType::MOTOR]=true;
     }
 }
 
@@ -155,6 +174,7 @@ void EcIface::set_valve_reference(const ValveReferenceMap valve_reference_map)
 {
     if(check_maps(_valve_reference_map,valve_reference_map,"valve")){
         _valve_reference_map=valve_reference_map;
+        _write_device[DeviceCtrlType::VALVE]=true;
     }
 }
 
@@ -167,6 +187,7 @@ void EcIface::set_pump_reference(const PumpReferenceMap pump_reference_map)
 {
     if(check_maps(_pump_reference_map,pump_reference_map,"pump")){
         _pump_reference_map=pump_reference_map;
+        _write_device[DeviceCtrlType::PUMP]=true;
     }
 }
  

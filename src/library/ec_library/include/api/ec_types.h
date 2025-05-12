@@ -90,5 +90,12 @@ enum class PdoAuxCmdTypeEnum : int32_t
     LED_OFF,
 };
 
+enum DeviceCtrlType{
+    MOTOR   = 0,
+    VALVE   = 1,
+    PUMP    = 2,
+};
+
+
 
 #endif // EC_TYPES_H

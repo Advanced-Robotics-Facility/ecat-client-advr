@@ -115,6 +115,8 @@ protected:
     
     PumpReferenceMap _pump_reference_map,_internal_pump_reference_map;
     spsc_queue<PumpReferenceMap,fixed_sized<true>> _pump_reference_queue{MAX_QUEUE_PDO};
+    std::vector<bool> _write_device;
+    bool _sync_write;
     
     pthread_mutex_t _mutex_update,_mutex_client_thread;
     pthread_cond_t _update_cond,_client_thread_cond;
