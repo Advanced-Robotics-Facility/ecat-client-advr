@@ -570,10 +570,11 @@ EcReplFault EcReplCmd::Motors_PDO_cmd(motors_ref_map motors_references)
      /***** set protocol buffer command */////
     pb_cmd.set_type(CmdType::MOTOR_PDO_CMD);
     
-    
+    bool send_motor_ref=false;
     for ( const auto &[bId,motor_ref] : motors_references ) {
         const auto &[ctrl_type,pos,vel,tor,g0,g1,g2,g3,g4,op,idx,aux]= motor_ref;
         if(ctrl_type!=0x00){
+            send_motor_ref=true;
             if ( ! iit::advr::Gains_Type_IsValid(ctrl_type) ) {
                 fault.set_zmq_cmd(get_cmd_type(CmdType::MOTOR_PDO_CMD));
                 fault.set_type(EC_REPL_CMD_STATUS::WRONG_CMD_TYPE);
@@ -609,8 +610,16 @@ EcReplFault EcReplCmd::Motors_PDO_cmd(motors_ref_map motors_references)
             motor_pdo_cmd->mutable_aux_pdo()->set_value(aux);
         }
     }
-    std::string msg;
-    zmq_do_cmd(pb_cmd,msg,_timeout,fault);
+    if(send_motor_ref){
+        std::string msg;
+        zmq_do_cmd(pb_cmd,msg,_timeout,fault);
+    }
+    else{
+        fault.set_zmq_cmd(get_cmd_type(CmdType::MOTOR_PDO_CMD));
+        fault.set_type(EC_REPL_CMD_STATUS::WRONG_COMPOSITION);
+        fault.set_info("Bad command: No motor reference detected");
+        fault.set_recovery_info("Retry command");
+    }
 
     return fault;
 }

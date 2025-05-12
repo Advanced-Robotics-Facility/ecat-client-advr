@@ -562,6 +562,9 @@ void EcBoostCmd::feed_motors()
                     do_send(sendBuffer.data(), sendBuffer.size() );
                     _consoleLog->info(" --{}--> {} ", sizet, __FUNCTION__);
                 }
+                else{
+                    _consoleLog->error("No motor reference detected , stop sending the command");
+                }
             }
         else{
             _consoleLog->error("Cannot send references to the motors since not controlled, stop sending them");
