@@ -53,6 +53,7 @@ private:
         
         void add_esc_sdo();
         void search_sdo();
+        bool check_client_setup();
         void rescan_sdo();
         void flash_cmd(int value);
         void save_sdo_file();
