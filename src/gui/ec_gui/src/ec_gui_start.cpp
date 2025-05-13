@@ -82,6 +82,12 @@ EcGuiStart::EcGuiStart(QWidget *parent) :
     _ec_gui_wrapper = std::make_shared<EcGuiWrapper>(this);
     
     _etherCAT_sys_started=false;
+    auto gui_status_bar = findChild<QStatusBar *>("Guistatusbar");
+    auto gui_status_label= new QLabel("Not Running"); 
+    gui_status_label->setStyleSheet("background-color : gray;color : black;border :3px solid blue;font: 16pt;");
+    gui_status_bar->showMessage("EtherCAT GUI v0.0.1"); 
+    gui_status_bar->setStyleSheet("font: 12pt;");
+    gui_status_bar->addPermanentWidget(gui_status_label); 
 }
 
 void EcGuiStart::create_ec_iface()

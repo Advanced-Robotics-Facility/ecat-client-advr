@@ -71,7 +71,7 @@
    <addaction name="menuEdit"/>
    <addaction name="menuRobot"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QStatusBar" name="Guistatusbar"/>
   <widget class="QToolBar" name="toolBar">
    <property name="minimumSize">
     <size>
@@ -807,7 +807,7 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>499</width>
+          <width>486</width>
           <height>409</height>
          </rect>
         </property>
