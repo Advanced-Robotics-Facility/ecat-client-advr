@@ -71,7 +71,9 @@ private:
   
   void kill_view_process(QString &terminal_pid);
   void view_process(const QString &file_path,QString &terminal_pid);
-  void start_master_process(const QString &bin_file_name,const QString &option);
+  bool start_master_process(const QString &bin_file_name,
+                            const QString &option,
+                            QString &error);
   void ec_master_readyStdO();
   void view_master_process();
   void server_readyStdO();

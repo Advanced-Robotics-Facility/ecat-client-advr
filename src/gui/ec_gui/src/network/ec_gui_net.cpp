@@ -397,12 +397,20 @@ bool EcGuiNet::create_ssh_cmd(QProcess *process,QString& stdout)
     return true;
 }
 
-void EcGuiNet::start_master_process(const QString &bin_file_name,const QString &option)
-{    
+bool EcGuiNet::start_master_process(const QString &bin_file_name,
+                                    const QString &option,
+                                    QString &error)
+{   
+    error=""; 
     kill_process(_ec_master_process,bin_file_name,_ec_master_stdout);
     auto bin_file_path = find_process(_ec_master_process,bin_file_name,_ec_master_stdout);
     
-    if(!bin_file_path.isEmpty()){
+    if(bin_file_path.isEmpty()){
+        error="cannot find the " + bin_file_name + " process on machine requested!!";
+        return false;
+    }
+
+    try{
         start_process(_ec_master_process,bin_file_path,option);
         QFile(_ec_master_file_path).remove();
         _ec_master_file=new QFile(_ec_master_file_path);
@@ -410,7 +418,12 @@ void EcGuiNet::start_master_process(const QString &bin_file_name,const QString &
             _ec_master_stream=new QTextStream(_ec_master_file);
             view_master_process();
         }
+    } catch ( std::exception &e ) {
+        error="error on starting " + bin_file_name + " process, " + QString(e.what());
+        return false;
     }
+
+    return true;
 }
 
 bool EcGuiNet::start_network()
@@ -418,30 +431,47 @@ bool EcGuiNet::start_network()
     if(!create_ssh_cmd(_ec_master_process,_ec_master_stdout)){
         return false;
     }
-
+    
     /******************************START EtherCAT Master ************************************************/
     QString bin_file_name = "'repl'";
     QString option="";
     if(_server_protocol=="udp"){
         option="-f ~/.ecat_master/configs/zipc_config.yaml";  
     }
-    start_master_process(bin_file_name,option);
-    /******************************START SEVER ************************************************/
-    if(_server_protocol=="udp") {
-        bin_file_name = "'udp_server'";
-        kill_process(_server_process,bin_file_name,_server_stdout);
+    QString cmd_error="";
+    if(start_master_process(bin_file_name,option,cmd_error)){
+        /******************************START SEVER ************************************************/
+        if(_server_protocol=="udp") {
+            bin_file_name = "'udp_server'";
+            kill_process(_server_process,bin_file_name,_server_stdout);
         
-        auto bin_file_path = find_process(_server_process,bin_file_name,_server_stdout);
+            auto bin_file_path = find_process(_server_process,bin_file_name,_server_stdout);
+            if(bin_file_path.isEmpty()){
+                cmd_error="cannot find the " + bin_file_name + " process on machine requested!!";
+            }
+            else{
+                try{
+                    start_process(_server_process,bin_file_path,"");
+                    QFile(_server_file_path).remove();
+                    _server_file=new QFile(_server_file_path);
+                    if (_server_file->open(QFile::WriteOnly | QFile::Truncate)) {
+                        _server_stream=new QTextStream(_server_file);
+                        view_server_process();
+                    }
+                } catch ( std::exception &e ) {
+                    cmd_error="error on starting udp server process, " + QString(e.what());
+                }
+            }
+        }
+    }
 
-        if(!bin_file_path.isEmpty()){
-            start_process(_server_process,bin_file_path,"");
-        }
-        QFile(_server_file_path).remove();
-        _server_file=new QFile(_server_file_path);
-        if (_server_file->open(QFile::WriteOnly | QFile::Truncate)) {
-            _server_stream=new QTextStream(_server_file);
-            view_server_process();
-        }
+    if(cmd_error!=""){
+        stop_network();
+        QMessageBox msgBox;
+        QString message="Problem on start EtherCAT system command, reason: "+cmd_error;
+        msgBox.setText(message);
+        msgBox.exec();
+        return false;
     }
 
     return true;
@@ -571,16 +601,21 @@ void EcGuiNet::open_firmware_config()
 void EcGuiNet::start_firmware_update()
 {
     bool show_message=true;
-    QMessageBox msgBox;
-    msgBox.setText("Problem on start firmware update command!");
+    QString cmd_error="";
     if(_ec_master_process->state()==QProcess::NotRunning){
         show_message=false;
         if(create_ssh_cmd(_ec_master_process,_ec_master_stdout)){
             kill_process(_ec_master_process,"'repl'",_ec_master_stdout); // kill repl before the fw_update
-            start_master_process("'fw_update'","");
+            if(!start_master_process("'fw_update'","",cmd_error)){
+                show_message=true;
+            }
         }
     }
     if(show_message){
+        stop_firmware_update();
+        QMessageBox msgBox;
+        QString message="Problem on start firmware update command! " + cmd_error;
+        msgBox.setText(message);
         msgBox.exec();
     }
 }
