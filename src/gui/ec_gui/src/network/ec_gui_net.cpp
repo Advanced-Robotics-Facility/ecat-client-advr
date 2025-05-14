@@ -176,18 +176,16 @@ void EcGuiNet::OnMouseClicked(QTreeWidgetItem* item, int column)
     _net_item = item;
     _net_column=column;
     
-    if(!_net_enabled){
-        return;
-    }
-
-    if((item->text(0)=="Server") &&
-       ((column == USERNAME_COL) || 
-        (column == HOSTNAME_COL)   ||
-        (column == HOSTPORT_COL))){
-        _net_tree_wid->openPersistentEditor(item,column);
-    }
-    else{
-        _net_tree_wid->closePersistentEditor(item,column);
+    if(_net_enabled){
+        if((item->text(0)=="Server") &&
+           ((column == USERNAME_COL) || 
+            (column == HOSTNAME_COL)   ||
+            (column == HOSTPORT_COL))){
+            _net_tree_wid->openPersistentEditor(item,column);
+        }
+        else{
+            _net_tree_wid->closePersistentEditor(item,column);
+        }
     }
 
     if(column==TERMINAL_COL){
@@ -386,7 +384,7 @@ void EcGuiNet::start_process(QProcess *process,QString bin_file_path,QString opt
 bool EcGuiNet::create_ssh_cmd(QProcess *process,QString& stdout)
 {
     process->close();
-    
+
     _ssh_command.clear();
     _ssh_command.append("-p");
 
