@@ -37,9 +37,9 @@ public:
     bool get_wrapper_send_sts();
     bool get_wrapper_cmd_sts();
     void set_expert_user();
-    void disable_ec_system();
-    void enable_ec_system();
 
+signals:
+    void clientStsChanged();
 
 private slots:
     void DwTopLevelChanged(bool isFloating);
@@ -57,7 +57,6 @@ private:
   ec_wrapper_info_t _ec_wrapper_info;
   QDockWidget *_command_dw,*_pdo_sdo_dw,*_graphics_dw,*_measurement_setup_dw;
   std::map<std::string,bool> _floating_sts;
-  QLabel *_ec_system_status;
   
   EcGuiSlider::Ptr _ec_gui_slider;
   EcGuiSlider::slider_map_t _slider_map;

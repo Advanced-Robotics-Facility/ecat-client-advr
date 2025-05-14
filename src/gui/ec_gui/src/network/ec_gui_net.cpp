@@ -144,6 +144,7 @@ void EcGuiNet::set_ec_network()
     _net_tree_wid->closePersistentEditor(_net_item,_net_column); // close old editor
     _net_item = nullptr;
     _net_column=-1;
+    _net_enabled=true;
 }
 
 bool EcGuiNet::eventFilter( QObject* o, QEvent* e )
@@ -158,6 +159,14 @@ bool EcGuiNet::eventFilter( QObject* o, QEvent* e )
     return false;
 }
 
+void EcGuiNet::set_net_enabled(bool enable)
+{
+    _net_enabled=enable;
+    if(_net_item != nullptr && !_net_enabled){
+        _net_tree_wid->closePersistentEditor(_net_item,_net_column); // close old editor
+    }
+}
+
 void EcGuiNet::OnMouseClicked(QTreeWidgetItem* item, int column)
 {
     if(_net_item != nullptr){
@@ -166,6 +175,10 @@ void EcGuiNet::OnMouseClicked(QTreeWidgetItem* item, int column)
 
     _net_item = item;
     _net_column=column;
+    
+    if(!_net_enabled){
+        return;
+    }
 
     if((item->text(0)=="Server") &&
        ((column == USERNAME_COL) || 
@@ -372,6 +385,8 @@ void EcGuiNet::start_process(QProcess *process,QString bin_file_path,QString opt
 
 bool EcGuiNet::create_ssh_cmd(QProcess *process,QString& stdout)
 {
+    process->close();
+    
     _ssh_command.clear();
     _ssh_command.append("-p");
 
@@ -477,7 +492,16 @@ bool EcGuiNet::start_network()
     return true;
 }
 
-void EcGuiNet::stop_network()
+bool EcGuiNet::stop_network()
+{
+    if(!create_ssh_cmd(_ec_master_process,_ec_master_stdout)){
+        return false;
+    }
+    stopping_network(true);
+    return true;
+}
+
+void EcGuiNet::stopping_network(bool force_stop)
 {
     /******************************STOP Server ************************************************/
     if(_server_file){
@@ -486,7 +510,7 @@ void EcGuiNet::stop_network()
         }
         _server_file=nullptr;
     }
-    if(_server_process->state()!=QProcess::NotRunning){
+    if(_server_process->state()!=QProcess::NotRunning || force_stop){
         _server_process->close();
         kill_process(_server_process,"'udp_server'",_server_stdout);
     }
@@ -498,7 +522,7 @@ void EcGuiNet::stop_network()
         }
         _ec_master_file=nullptr;
     }
-    if(_ec_master_process->state()!=QProcess::NotRunning){
+    if(_ec_master_process->state()!=QProcess::NotRunning || force_stop){
         _ec_master_process->close();
         kill_process(_ec_master_process,"'repl'",_ec_master_stdout);
         kill_process(_ec_master_process,"'fw_update'",_ec_master_stdout);
@@ -629,6 +653,6 @@ void EcGuiNet::stop_firmware_update()
 
 EcGuiNet::~EcGuiNet()
 {
-    stop_network();
+    stopping_network();
     kill_view_process(_gui_terminal_pid);
 }

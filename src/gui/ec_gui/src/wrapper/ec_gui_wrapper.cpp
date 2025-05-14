@@ -47,13 +47,6 @@ EcGuiWrapper::EcGuiWrapper(QWidget *parent) :
     _floating_sts["Graphics"]=false;
     _graphics_dw->installEventFilter(this);
 
-    auto gui_status_bar = parent->findChild<QStatusBar *>("Guistatusbar");
-    _ec_system_status=new QLabel("EtherCAT system not running");  
-    _ec_system_status->setStyleSheet("background-color : gray;color : black;border :3px solid blue;font: 16pt;");
-    gui_status_bar->showMessage("EtherCAT GUI v0.0.1"); 
-    gui_status_bar->setStyleSheet("font: 12pt;");
-    gui_status_bar->addPermanentWidget(_ec_system_status); 
-
     _receive_action=new QAction();
     connect(_receive_action, SIGNAL(triggered()), this, SLOT(start_stop_receive()));
 
@@ -96,18 +89,6 @@ EcGuiWrapper::EcGuiWrapper(QWidget *parent) :
     _time_ms = 4;
     _max_stop_write=4;
     _stopping_write_counter=_max_stop_write;
-}
-
-void EcGuiWrapper::disable_ec_system()
-{
-    _ec_system_status->setText("EtherCAT system not running");
-    _ec_system_status->setStyleSheet("background-color : gray;color : black;border :3px solid blue;font: 16pt;");
-}
-
-void EcGuiWrapper::enable_ec_system()
-{
-    _ec_system_status->setText("EtherCAT system running");
-    _ec_system_status->setStyleSheet("background-color : green;color : black;border :3px solid blue;font: 16pt;");
 }
 
 void EcGuiWrapper::click_dock_button()
@@ -219,7 +200,9 @@ bool EcGuiWrapper::check_client_setup()
     }
     else{
         if(!_ec_wrapper_info.client->get_client_status().run_loop){
-            disable_ec_system();
+            emit clientStsChanged();
+            stop_receive();
+            stop_record();
             msgBox.critical(this,msgBox.windowTitle(),
                 tr("EtherCAT Client loop is not running state"
                     ",please press scan device button.\n"));

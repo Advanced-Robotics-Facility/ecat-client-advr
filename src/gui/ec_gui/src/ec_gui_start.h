@@ -151,10 +151,11 @@ private:
   EcGuiWrapper::Ptr _ec_gui_wrapper;
   EcGuiNet::Ptr _ec_gui_net;
   QPushButton *_ec_sys_start,*_ec_sys_stop,*_firmware_update_btn;
+  QLabel *_ec_system_status;
+  bool _ec_sys_started;
   
   QTreeWidget * _net_tree_wid;
   QLineEdit *_expert_user;
-  bool _etherCAT_sys_started;
   EcGuiFirmware *_firmware_update_wizard;
   
   void error_on_scannig();
@@ -168,8 +169,9 @@ private:
   void clear_device();
   void clear_gui();
   bool create_ec_iface();
-  bool stopping_ec_sys();
-  void stopping_client();
+  void stopping_ec_sys();
+  void disable_ec_system();
+  void enable_ec_system();
 };
 
 #endif // EC_GUI_START_H

@@ -24,12 +24,13 @@ public:
     ~EcGuiNet();
 
     bool start_network();
-    void stop_network();
+    bool stop_network();
     void copy_files_network(const QStringList &files_list);
     void open_firmware_config();
     void start_firmware_update();
     void stop_firmware_update();
     void set_protocol_enabled(bool enable);
+    void set_net_enabled(bool enable);
     ec_net_info_t get_net_setup();
 
 private slots:
@@ -39,6 +40,7 @@ private slots:
     void OnPasswordEntered();
     void OnPasswordChanged();
     void OnProtocolChanged();
+    void stopping_network(bool force_stop=false);
 
 protected:
     bool eventFilter( QObject* o, QEvent* e );
@@ -49,6 +51,7 @@ private:
   QTreeWidgetItem* _net_item;
   QLineEdit *_password;
   int _net_column;
+  bool _net_enabled;
   
   QProcess *_ec_master_process,*_server_process;
   QStringList _ssh_command;

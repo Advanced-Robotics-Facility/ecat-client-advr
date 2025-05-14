@@ -80,8 +80,14 @@ EcGuiStart::EcGuiStart(QWidget *parent) :
     
     _ec_gui_net = std::make_shared<EcGuiNet>(this);
     _ec_gui_wrapper = std::make_shared<EcGuiWrapper>(this);
-    
-    _etherCAT_sys_started=false;
+    connect(_ec_gui_wrapper.get(),&EcGuiWrapper::clientStsChanged,this,&EcGuiStart::stopping_ec_sys);
+
+    auto gui_status_bar = findChild<QStatusBar *>("Guistatusbar");
+    _ec_system_status=new QLabel();  
+    disable_ec_system();
+    gui_status_bar->showMessage("EtherCAT GUI v0.0.1"); 
+    gui_status_bar->setStyleSheet("font: 12pt;");
+    gui_status_bar->addPermanentWidget(_ec_system_status); 
 }
 
 bool EcGuiStart::create_ec_iface()
@@ -140,19 +146,33 @@ void EcGuiStart::ExpertUserPassChanged()
     msgBox.exec();
 }
 
+void EcGuiStart::disable_ec_system()
+{
+    _ec_system_status->setText("EtherCAT system not running");
+    _ec_system_status->setStyleSheet("background-color : gray;color : black;border :3px solid blue;font: 16pt;");
+    _ec_sys_started=false;
+}
+
+void EcGuiStart::enable_ec_system()
+{
+    _ec_system_status->setText("EtherCAT system running");
+    _ec_system_status->setStyleSheet("background-color : green;color : black;border :3px solid blue;font: 16pt;");
+    _ec_sys_started=true;
+}
+
 void EcGuiStart::onStartEtherCATSystem()
 {
     QMessageBox msgBox;
-    if(!_etherCAT_sys_started){
+    if(!_ec_sys_started){
         /******************************STAR EtherCAT Master and Server ************************************************/
+        _ec_gui_net->set_net_enabled(false);
         if(!_ec_gui_net->start_network()){
             return;
         }
         _ec_gui_net->setObjectName("ec_gui_net");
     
-        _etherCAT_sys_started=true;
         _ec_gui_net->set_protocol_enabled(false);
-        _ec_gui_wrapper->enable_ec_system();
+        enable_ec_system();
         
         msgBox.setText("EtherCAT Master system started");
         
@@ -163,50 +183,60 @@ void EcGuiStart::onStartEtherCATSystem()
     msgBox.exec();
 }
 
-void EcGuiStart::stopping_client()
+void EcGuiStart::stopping_ec_sys()
 {
-    if(_ec_wrapper_info.client){
-        _ec_wrapper_info.client->stop_client();
-        _ec_wrapper_info.client.reset();
-    }
-}
+    disable_ec_system();
+    _ec_gui_net->set_protocol_enabled(true);
+    _ec_gui_net->set_net_enabled(true);
 
-bool EcGuiStart::stopping_ec_sys()
-{
-    bool etherCAT_sys_stopped=false;
-    if(_etherCAT_sys_started){
-        /******************************STOP EtherCAT Master and Server ************************************************/
-        _ec_gui_net->stop_network();
-        /******************************CLEAN UP THE GUI ************************************************/
-        _ec_gui_wrapper->disable_ec_system();
-        clear_gui();
-        EcGuiWrapper::ec_wrapper_info_t _ec_wrapper_info_reset;
-        _ec_wrapper_info=_ec_wrapper_info_reset;
-        _etherCAT_sys_started=false;
-        etherCAT_sys_stopped=true;
-        _ec_gui_net->set_protocol_enabled(true);
-    }
-    
-    return etherCAT_sys_stopped;
+    _ec_gui_net->stop_network();
+
+    return;
 }
 
 void EcGuiStart::onStopEtherCATSystem()
 {
-    QMessageBox msgBox;
-    if(stopping_ec_sys()){
-        msgBox.setText("EtherCAT Master system stopped");
+    QString msg="";
+    if(_ec_sys_started){
+        /******************************STOP EtherCAT Master and Server ************************************************/
+        if(_ec_gui_net->stop_network()){
+            /******************************CLEAN UP THE GUI ************************************************/
+            clear_gui();
+            msg="EtherCAT Master system stopped";
+        }
     }
     else{
-        msgBox.setText("EtherCAT Master system already stopped");
+        msg="EtherCAT Master system already stopped";
     }
-    msgBox.exec();
+    if(msg!=""){
+        QMessageBox msgBox;
+        msgBox.setText(msg);
+        msgBox.exec();
+    }
 }
 
 void EcGuiStart::onFirmwareUpdateReleased()
 {
+    if(_ec_sys_started){
+
+        QMessageBox::StandardButton reply;
+        QMessageBox msgBox;
+        reply = msgBox.warning(this,msgBox.windowTitle(),tr("Firmware wizard cannot be opened if the EtherCAT System is running state!\n"
+                               "Do you want to stop it?"),
+                                QMessageBox::Yes|QMessageBox::No);
+        if(reply == QMessageBox::Yes) {
+            if(!_ec_gui_net->stop_network()){
+                return;
+            }
+        }
+        else{
+            return;
+        }
+    }
+    
     _ec_sys_start->setEnabled(false);
     _ec_sys_stop->setEnabled(false);
-    stopping_ec_sys();
+    clear_gui();
     _firmware_update_wizard->run_wizard();
 }
 
@@ -235,7 +265,9 @@ void EcGuiStart::onFirmwarewizardClosed(int ret)
 void EcGuiStart::restart_gui()
 {
     add_device();
-    _ec_gui_wrapper->enable_ec_system();
+    enable_ec_system();
+    _ec_gui_net->set_protocol_enabled(false);
+    _ec_gui_net->set_net_enabled(false);
     _ec_gui_wrapper->restart_gui_wrapper(_ec_wrapper_info);
 }
 
@@ -288,8 +320,15 @@ void EcGuiStart::clear_device()
 
 void EcGuiStart::clear_gui()
 {
+    disable_ec_system();
+    _ec_gui_net->set_protocol_enabled(true);
+    _ec_gui_net->set_net_enabled(true);
+
     clear_device();
     _ec_gui_wrapper->clear_gui_wrapper();
+
+    EcGuiWrapper::ec_wrapper_info_t _ec_wrapper_info_reset;
+    _ec_wrapper_info=_ec_wrapper_info_reset;
 }
 
 void EcGuiStart::read_sdo_info(const int32_t device_id,
