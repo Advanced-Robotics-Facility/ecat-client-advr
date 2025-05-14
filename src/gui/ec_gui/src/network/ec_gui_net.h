@@ -85,5 +85,6 @@ private:
   void view_gui_process();
   bool copy_config_file();
   void save_config_file();
+  void close_net_setup();
 };
 #endif // EC_GUI_NET_H

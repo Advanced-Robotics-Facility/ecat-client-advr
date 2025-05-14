@@ -162,7 +162,14 @@ bool EcGuiNet::eventFilter( QObject* o, QEvent* e )
 void EcGuiNet::set_net_enabled(bool enable)
 {
     _net_enabled=enable;
-    if(_net_item != nullptr && !_net_enabled){
+    if(!_net_enabled){
+        close_net_setup();
+    }
+}
+
+void EcGuiNet::close_net_setup()
+{
+    if(_net_item != nullptr) {
         _net_tree_wid->closePersistentEditor(_net_item,_net_column); // close old editor
     }
 }
@@ -544,6 +551,7 @@ void EcGuiNet::copy_files_network(const QStringList &files_list)
     bool show_message=true;
     QMessageBox msgBox;
     msgBox.setText("Problem on copy file(s) command!");
+    close_net_setup();
     if(_ec_master_process->state()==QProcess::NotRunning){
         if(!files_list.empty()){
             if(create_ssh_cmd(_ec_master_process,_ec_master_stdout)){
@@ -603,6 +611,7 @@ void EcGuiNet::open_firmware_config()
     bool show_message=true;
     QMessageBox msgBox;
     msgBox.setText("Problem on open configuration file command");
+    close_net_setup();
     if(_ec_master_process->state()==QProcess::NotRunning){
         show_message=false;
         if(create_ssh_cmd(_ec_master_process,_ec_master_stdout)){
@@ -624,6 +633,7 @@ void EcGuiNet::start_firmware_update()
 {
     bool show_message=true;
     QString cmd_error="";
+    close_net_setup();
     if(_ec_master_process->state()==QProcess::NotRunning){
         show_message=false;
         if(create_ssh_cmd(_ec_master_process,_ec_master_stdout)){
