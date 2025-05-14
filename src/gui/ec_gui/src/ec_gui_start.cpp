@@ -84,7 +84,7 @@ EcGuiStart::EcGuiStart(QWidget *parent) :
     _etherCAT_sys_started=false;
 }
 
-void EcGuiStart::create_ec_iface()
+bool EcGuiStart::create_ec_iface()
 {
     try{
         if(_ec_wrapper_info.client){
@@ -95,6 +95,7 @@ void EcGuiStart::create_ec_iface()
     }catch ( std::exception &e ){
         QMessageBox msgBox;
         msgBox.critical(this,msgBox.windowTitle(),tr(e.what()));
+        return false;
     }
     
     auto ec_net_info = _ec_gui_net->get_net_setup();
@@ -119,7 +120,10 @@ void EcGuiStart::create_ec_iface()
     catch ( std::exception &e ){
         QMessageBox msgBox;
         msgBox.critical(this,msgBox.windowTitle(),tr(e.what()));
+        return false;
     }
+
+    return true;
 }
 
 void EcGuiStart::ExpertUserPassChanged()
@@ -451,8 +455,9 @@ void EcGuiStart::onScanDeviceReleased()
             if(!_ec_gui_wrapper->get_wrapper_send_sts() && 
                !_ec_gui_wrapper->get_wrapper_cmd_sts()){
                 clear_gui();
-                create_ec_iface();
-                scan_device();
+                if(create_ec_iface()){
+                    scan_device();
+                }
             }
             else{
                 msgBox.critical(this,msgBox.windowTitle(),
@@ -465,11 +470,11 @@ void EcGuiStart::onScanDeviceReleased()
         }
     }
     else{
-        create_ec_iface();
-        scan_device();
+        if(create_ec_iface()){
+            scan_device();
+        }
     }
     
-
     if(!_ec_wrapper_info.device_info.empty()){
         restart_gui();
     } 

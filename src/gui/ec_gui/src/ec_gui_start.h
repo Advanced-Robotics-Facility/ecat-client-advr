@@ -167,7 +167,7 @@ private:
   void setup_motor_device(int32_t device_id,int32_t device_type);
   void clear_device();
   void clear_gui();
-  void create_ec_iface();
+  bool create_ec_iface();
   bool stopping_ec_sys();
   void stopping_client();
 };
