@@ -82,12 +82,6 @@ EcGuiStart::EcGuiStart(QWidget *parent) :
     _ec_gui_wrapper = std::make_shared<EcGuiWrapper>(this);
     
     _etherCAT_sys_started=false;
-    auto gui_status_bar = findChild<QStatusBar *>("Guistatusbar");
-    auto gui_status_label= new QLabel("Not Running"); 
-    gui_status_label->setStyleSheet("background-color : gray;color : black;border :3px solid blue;font: 16pt;");
-    gui_status_bar->showMessage("EtherCAT GUI v0.0.1"); 
-    gui_status_bar->setStyleSheet("font: 12pt;");
-    gui_status_bar->addPermanentWidget(gui_status_label); 
 }
 
 void EcGuiStart::create_ec_iface()
@@ -154,6 +148,7 @@ void EcGuiStart::onStartEtherCATSystem()
     
         _etherCAT_sys_started=true;
         _ec_gui_net->set_protocol_enabled(false);
+        _ec_gui_wrapper->enable_ec_system();
         
         msgBox.setText("EtherCAT Master system started");
         
@@ -179,6 +174,7 @@ bool EcGuiStart::stopping_ec_sys()
         /******************************STOP EtherCAT Master and Server ************************************************/
         _ec_gui_net->stop_network();
         /******************************CLEAN UP THE GUI ************************************************/
+        _ec_gui_wrapper->disable_ec_system();
         clear_gui();
         EcGuiWrapper::ec_wrapper_info_t _ec_wrapper_info_reset;
         _ec_wrapper_info=_ec_wrapper_info_reset;
@@ -235,6 +231,7 @@ void EcGuiStart::onFirmwarewizardClosed(int ret)
 void EcGuiStart::restart_gui()
 {
     add_device();
+    _ec_gui_wrapper->enable_ec_system();
     _ec_gui_wrapper->restart_gui_wrapper(_ec_wrapper_info);
 }
 
