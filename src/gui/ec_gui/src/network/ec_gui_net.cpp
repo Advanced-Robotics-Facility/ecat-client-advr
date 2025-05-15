@@ -451,6 +451,7 @@ bool EcGuiNet::start_network()
     if(!create_ssh_cmd(_ec_master_process,_ec_master_stdout)){
         return false;
     }
+    stopping_network(true);
     
     /******************************START EtherCAT Master ************************************************/
     QString bin_file_name = "'repl'";

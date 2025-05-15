@@ -95,8 +95,8 @@ bool EcGuiStart::create_ec_iface()
     try{
         if(_ec_wrapper_info.client){
             _ec_wrapper_info.client->stop_client();
+            _ec_wrapper_info.client.reset();
         }
-        _ec_wrapper_info.client.reset();
         std::this_thread::sleep_for(100ms);
     }catch ( std::exception &e ){
         QMessageBox msgBox;
@@ -166,6 +166,15 @@ void EcGuiStart::onStartEtherCATSystem()
     if(!_ec_sys_started){
         /******************************STAR EtherCAT Master and Server ************************************************/
         _ec_gui_net->set_net_enabled(false);
+        // clear client 
+        // problem on udp bind netstat -antup | grep 54320 = client port
+        // sshpass
+        if(_ec_wrapper_info.client){
+            _ec_wrapper_info.client->stop_client();
+            _ec_wrapper_info.client.reset();
+            clear_gui();
+        }
+
         if(!_ec_gui_net->start_network()){
             return;
         }
@@ -273,6 +282,10 @@ void EcGuiStart::restart_gui()
 
 void EcGuiStart::error_on_scannig()
 {
+    disable_ec_system();
+    _ec_gui_net->set_protocol_enabled(true);
+    _ec_gui_net->set_net_enabled(true);
+
     QMessageBox msgBox;
     msgBox.setText("Cannot find EtherCAT devices on network"
                    ", please control the EtherCAT Master status or sever status");

@@ -101,6 +101,11 @@ void EcBoostCmd::repl_replies_handler(char *buf, size_t size)
 //******************************* COMMANDS *****************************************************//
 void EcBoostCmd::connect()
 {
+    if(_client_status.status==ClientStatusEnum::NOT_ALIVE){
+        _consoleLog->error("Client in not alive state!");
+        return;
+    }
+    
     if(_client_status.status==ClientStatusEnum::IDLE){
         CBuff sendBuffer{};
         _consoleLog->info(" Client port:{} and period_ms: {} \n", _client_port, get_period_ms());
@@ -117,6 +122,11 @@ void EcBoostCmd::connect()
 
 void EcBoostCmd::disconnect()
 {
+    if(_client_status.status==ClientStatusEnum::NOT_ALIVE){
+        _consoleLog->error("Client in not alive state!");
+        return;
+    }
+
     if(_client_status.status!=ClientStatusEnum::IDLE){
         CBuff sendBuffer{};
         uint32_t payload = 0xCACA0;
