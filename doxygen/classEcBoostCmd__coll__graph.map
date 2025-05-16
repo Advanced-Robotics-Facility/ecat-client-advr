@@ -1,0 +1,13 @@
+<map id="EcBoostCmd" name="EcBoostCmd">
+<area shape="rect" id="Node000001" title=" " alt="" coords="516,46,620,71"/>
+<area shape="rect" id="Node000002" href="$classEcBoost.html" title=" " alt="" coords="392,17,467,42"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="480,37,516,45,515,50,479,43"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,5,215,45"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="228,24,392,26,392,32,228,29"/>
+<area shape="rect" id="Node000004" href="$classEcIface.html" title=" " alt="" coords="395,70,464,95"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="477,72,515,65,516,70,478,77"/>
+<area shape="rect" id="Node000005" href="$structEcIface_1_1CLIENT__STATUS__t.html" title=" " alt="" coords="15,70,205,95"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="219,80,394,80,394,85,219,85"/>
+<area shape="rect" id="Node000006" href="$structEcIface_1_1CLIENT__THREAD__INFO__t.html" title=" " alt="" coords="18,120,202,160"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="216,126,291,115,367,100,394,92,395,98,369,105,291,121,216,132"/>
+</map>
