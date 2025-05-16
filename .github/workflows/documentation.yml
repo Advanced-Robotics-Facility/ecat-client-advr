@@ -27,6 +27,7 @@ jobs:
           cd ..
           mkdir docs/build/html/doxygen
           cp -r docs/html/* docs/build/html/doxygen/
+          cp -r docs/paper/* docs/build/html/paper/
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}

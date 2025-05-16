@@ -510,3 +510,10 @@ Note: this operation must be done once.
 * **systemctl disable serial-getty@ttyS0.service"**
 * **systemctl mask serial-getty@ttyS0.services**
 
+EtheCAT UDP Server
+=============================
+
+EtheCAT UDP Server is a ZMQ client that uses the ZMQ inter process (ZmqIPC) protocol for the communication with EtherCAT Master Server and udp boost asio and message pack libraries for communicating with an external UDP Client.
+
+.. image:: _static/EtherCAT_Master_Img/EtherCAT_Master_Img_19.png
+
