@@ -25,7 +25,7 @@ jobs:
           cd docs
           doxygen Doxyfile
           cd ..
-          mkdir docs/build/html/doxygen
+          mkdir docs/build/html/doxygen docs/build/html/paper
           cp -r docs/html/* docs/build/html/doxygen/
           cp -r docs/paper/* docs/build/html/paper/
       - name: Deploy to GitHub Pages
