@@ -135,6 +135,7 @@ public:
     ~EcGuiStart();
 
 private slots:
+    void onEcMasterProcessChanged(int index);
     void onStartEtherCATSystem();
     void onStopEtherCATSystem();
     void onScanDeviceReleased();
@@ -157,6 +158,7 @@ private:
   QTreeWidget * _net_tree_wid;
   QLineEdit *_expert_user;
   EcGuiFirmware *_firmware_update_wizard;
+  QComboBox *_master_process_type;
   
   void error_on_scannig();
   void restart_gui();

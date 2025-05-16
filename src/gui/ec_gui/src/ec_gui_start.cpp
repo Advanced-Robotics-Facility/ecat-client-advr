@@ -53,6 +53,12 @@ EcGuiStart::EcGuiStart(QWidget *parent) :
     _net_tree_wid = findChild<QTreeWidget *>("NetworkSetup");
     _net_tree_wid->resizeColumnToContents(0);
     _net_tree_wid->expandAll();
+    _master_process_type= new QComboBox();
+    _master_process_type->addItems({"Default Master", "Robot Master", "Ecat Master"});
+    connect(_master_process_type, SIGNAL(currentIndexChanged(int)),this,SLOT(onEcMasterProcessChanged(int)));
+    auto process_item =_net_tree_wid->topLevelItem(0)->child(2);
+    _net_tree_wid->setItemWidget(process_item,0, _master_process_type);
+
     
     _ec_sys_start = findChild<QPushButton *>("StartEthercatSystem");
     connect(_ec_sys_start, &QPushButton::released,this, &EcGuiStart::onStartEtherCATSystem);
@@ -146,11 +152,36 @@ void EcGuiStart::ExpertUserPassChanged()
     msgBox.exec();
 }
 
+void EcGuiStart::onEcMasterProcessChanged(int index)
+{
+    QString repl_config="";
+    switch (index)
+    {
+    case 0:
+        repl_config="";
+        break;
+    case 1:
+        repl_config="ROBOT_MASTER_CONFIG";
+        break;
+    case 2:
+        repl_config="ECAT_MASTER_CONFIG";
+        break;
+    
+    default:
+        repl_config="";
+        break;
+    }
+    _ec_gui_net->set_repl_config(repl_config);
+}
+
 void EcGuiStart::disable_ec_system()
 {
     _ec_system_status->setText("EtherCAT system not running");
     _ec_system_status->setStyleSheet("background-color : gray;color : black;border :3px solid blue;font: 16pt;");
     _ec_sys_started=false;
+    _ec_gui_net->set_protocol_enabled(true);
+    _ec_gui_net->set_net_enabled(true);
+    _master_process_type->setEnabled(true);
 }
 
 void EcGuiStart::enable_ec_system()
@@ -158,6 +189,9 @@ void EcGuiStart::enable_ec_system()
     _ec_system_status->setText("EtherCAT system running");
     _ec_system_status->setStyleSheet("background-color : green;color : black;border :3px solid blue;font: 16pt;");
     _ec_sys_started=true;
+    _ec_gui_net->set_protocol_enabled(false);
+    _ec_gui_net->set_net_enabled(false);
+    _master_process_type->setEnabled(false);
 }
 
 void EcGuiStart::onStartEtherCATSystem()
@@ -195,9 +229,6 @@ void EcGuiStart::onStartEtherCATSystem()
 void EcGuiStart::stopping_ec_sys()
 {
     disable_ec_system();
-    _ec_gui_net->set_protocol_enabled(true);
-    _ec_gui_net->set_net_enabled(true);
-
     _ec_gui_net->stop_network();
 
     return;
@@ -275,17 +306,12 @@ void EcGuiStart::restart_gui()
 {
     add_device();
     enable_ec_system();
-    _ec_gui_net->set_protocol_enabled(false);
-    _ec_gui_net->set_net_enabled(false);
     _ec_gui_wrapper->restart_gui_wrapper(_ec_wrapper_info);
 }
 
 void EcGuiStart::error_on_scannig()
 {
     disable_ec_system();
-    _ec_gui_net->set_protocol_enabled(true);
-    _ec_gui_net->set_net_enabled(true);
-
     QMessageBox msgBox;
     msgBox.setText("Cannot find EtherCAT devices on network"
                    ", please control the EtherCAT Master status or sever status");
@@ -334,8 +360,6 @@ void EcGuiStart::clear_device()
 void EcGuiStart::clear_gui()
 {
     disable_ec_system();
-    _ec_gui_net->set_protocol_enabled(true);
-    _ec_gui_net->set_net_enabled(true);
 
     clear_device();
     _ec_gui_wrapper->clear_gui_wrapper();

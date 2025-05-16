@@ -64,6 +64,7 @@ EcGuiNet::EcGuiNet(QWidget *parent) :
     
     /* connection of frequency function */
     connect(_protocol_combobox, SIGNAL(currentIndexChanged(int)),this,SLOT(OnProtocolChanged()));
+    _repl_config="";
     set_ec_network();
 }
 
@@ -76,6 +77,11 @@ void EcGuiNet::OnPasswordChanged()
 {
     _password->setEchoMode(QLineEdit::PasswordEchoOnEdit);
     _server_pwd= _password->text();
+}
+
+void EcGuiNet::set_repl_config(const QString& repl_config)
+{
+    _repl_config=repl_config;
 }
 
 void EcGuiNet::set_protocol_enabled(bool enable)
@@ -456,9 +462,18 @@ bool EcGuiNet::start_network()
     /******************************START EtherCAT Master ************************************************/
     QString bin_file_name = "'repl'";
     QString option="";
-    if(_server_protocol=="udp"){
-        option="-f ~/.ecat_master/configs/zipc_config.yaml";  
+    if(_repl_config!=""){
+        option="-f $"+_repl_config;
+        if(_server_protocol=="udp"){
+            option = option +"_UDP";
+        }
     }
+    else{
+        if(_server_protocol=="udp"){
+            option="-f ~/.ecat_master/configs/zipc_config.yaml"; 
+        }
+    }
+
     QString cmd_error="";
     if(start_master_process(bin_file_name,option,cmd_error)){
         /******************************START SEVER ************************************************/

@@ -29,6 +29,7 @@ public:
     void open_firmware_config();
     void start_firmware_update();
     void stop_firmware_update();
+    void set_repl_config(const QString& repl_bin);
     void set_protocol_enabled(bool enable);
     void set_net_enabled(bool enable);
     ec_net_info_t get_net_setup();
@@ -62,6 +63,7 @@ private:
   QString _server_username,_server_hostname,_server_port,_server_protocol,_server_pwd;
   QString _real_server_username;
   QString _master_terminal_pid="",_server_terminal_pid="",_gui_terminal_pid="";
+  QString _repl_config;
   
   QComboBox * _protocol_combobox;
   bool _open_config_file=false;
