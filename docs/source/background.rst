@@ -517,3 +517,6 @@ EtheCAT UDP Server is a ZMQ client that uses the ZMQ inter process (ZmqIPC) prot
 
 .. image:: _static/EtherCAT_Master_Img/EtherCAT_Master_Img_19.png
 
+`Link to the paper for more information <https://advanced-robotics-facility.github.io/ecat-client-advr/paper/ASTRA2023_MIRROR_Real_Time_Software_architecture_Paper.pdf>`__ 
+
+
