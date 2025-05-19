@@ -1,0 +1,5 @@
+<map id="QCPAbstractPaintBuffer" name="QCPAbstractPaintBuffer">
+<area shape="rect" id="Node000001" title="The abstract base class for paint buffers, which define the rendering backend." alt="" coords="5,5,207,351"/>
+<area shape="rect" id="Node000002" href="$classQCPPaintBufferPixmap.html" title="A paint buffer based on QPixmap, using software raster rendering." alt="" coords="7,399,205,564"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="109,364,109,398,103,398,103,364"/>
+</map>

@@ -1,0 +1,206 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Installation &mdash; EtherCAT Client 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=2709fde1"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="EtherCAT Client" href="ec_client.html" />
+    <link rel="prev" title="Background" href="background.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            EtherCAT Client
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="background.html">Background</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#git-and-cmake">Git and CMake</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#matlogger">MatLogger</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#zmq-protobuf-msgpack-boost">Zmq, Protobuf, Msgpack, Boost</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#yaml">YAML</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#qt-and-gui-tools">QT and GUI Tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#matlab-and-simulink">Matlab and Simulink</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#build-and-install-the-ethercat-client-library-from-sorce">Build and install the EtherCAT Client Library from sorce</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install-the-ethercat-client-library-from-debian-package">Install the EtherCAT Client Library from debian package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ec_client.html">EtherCAT Client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ec_client_gui.html">EtherCAT Client GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ec_client_block.html">EtherCAT Client Block (Matlab/Simulink)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">EtherCAT Client</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Installation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/installation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="installation">
+<span id="id1"></span><h1>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h1>
+<section id="git-and-cmake">
+<span id="id2"></span><h2>Git and CMake<a class="headerlink" href="#git-and-cmake" title="Link to this heading"></a></h2>
+<p>Install git package:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span> <span class="n">update</span>
+<span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="n">git</span> <span class="n">gitg</span> <span class="n">git</span><span class="o">-</span><span class="n">gui</span>
+<span class="n">git</span> <span class="o">--</span><span class="n">version</span>
+<span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="n">file</span> <span class="n">build</span><span class="o">-</span><span class="n">essential</span> <span class="n">curl</span> <span class="n">cmake</span> <span class="n">cmake</span><span class="o">-</span><span class="n">curses</span><span class="o">-</span><span class="n">gui</span>
+</pre></div>
+</div>
+</section>
+<section id="matlogger">
+<span id="id3"></span><h2>MatLogger<a class="headerlink" href="#matlogger" title="Link to this heading"></a></h2>
+<p>Install matlogger library:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="n">libmatio</span><span class="o">-</span><span class="n">dev</span> <span class="n">libfmt</span><span class="o">-</span><span class="n">dev</span> <span class="n">libgtest</span><span class="o">-</span><span class="n">dev</span> <span class="n">python3</span><span class="o">-</span><span class="n">pip</span> <span class="n">python3</span><span class="o">-</span><span class="n">pybind11</span>
+<span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ADVRHumanoids</span><span class="o">/</span><span class="n">MatLogger2</span>  <span class="p">(</span><span class="n">actual</span> <span class="n">branch</span><span class="p">:</span> <span class="n">v1</span><span class="mf">.5.0</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="zmq-protobuf-msgpack-boost">
+<span id="id4"></span><h2>Zmq, Protobuf, Msgpack, Boost<a class="headerlink" href="#zmq-protobuf-msgpack-boost" title="Link to this heading"></a></h2>
+<p>Install mechanism protocols:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="n">libzmq3</span><span class="o">-</span><span class="n">dev</span>
+<span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">protobuf</span><span class="o">-</span><span class="n">compiler</span>
+<span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">libmsgpack</span><span class="o">-</span><span class="n">dev</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">libboost</span><span class="o">-</span><span class="n">system</span><span class="o">-</span><span class="n">dev</span>
+</pre></div>
+</div>
+</section>
+<section id="yaml">
+<span id="id5"></span><h2>YAML<a class="headerlink" href="#yaml" title="Link to this heading"></a></h2>
+<p>Install yaml utils:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">libyaml</span><span class="o">-</span><span class="n">cpp</span><span class="o">-</span><span class="n">dev</span>
+</pre></div>
+</div>
+</section>
+<section id="qt-and-gui-tools">
+<span id="id6"></span><h2>QT and GUI Tools<a class="headerlink" href="#qt-and-gui-tools" title="Link to this heading"></a></h2>
+<p>Install GUI tools:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span>  <span class="n">qttools5</span><span class="o">-</span><span class="n">dev</span> <span class="n">libqt5charts5</span><span class="o">-</span><span class="n">dev</span> <span class="n">qtdeclarative5</span><span class="o">-</span><span class="n">dev</span> <span class="n">libtiff</span><span class="o">-</span><span class="n">dev</span> <span class="n">uuid</span><span class="o">-</span><span class="n">dev</span> <span class="n">libcurl4</span><span class="o">-</span><span class="n">openssl</span><span class="o">-</span><span class="n">dev</span>
+</pre></div>
+</div>
+</section>
+<section id="matlab-and-simulink">
+<span id="id7"></span><h2>Matlab and Simulink<a class="headerlink" href="#matlab-and-simulink" title="Link to this heading"></a></h2>
+<p>Install Matlab/Simulink tools:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">dpkg</span> <span class="o">--</span><span class="n">install</span> <span class="n">ecat</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">advr</span><span class="o">/</span><span class="n">src</span><span class="o">/</span><span class="n">matlab</span><span class="o">/</span><span class="n">ec_block</span><span class="o">/</span><span class="n">external</span><span class="o">/</span><span class="n">blockfactory</span><span class="o">/</span><span class="p">(</span><span class="n">OS</span><span class="p">)</span><span class="o">/</span><span class="n">blockfactory_package</span><span class="o">-</span><span class="mf">0.8.3</span><span class="o">-</span><span class="n">r0</span><span class="mf">.0.1</span><span class="o">-</span><span class="n">amd64</span><span class="o">.</span><span class="n">deb</span>
+</pre></div>
+</div>
+</section>
+<section id="build-and-install-the-ethercat-client-library-from-sorce">
+<span id="id8"></span><h2>Build and install the EtherCAT Client Library from sorce<a class="headerlink" href="#build-and-install-the-ethercat-client-library-from-sorce" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>Prepare the workspace::</dt><dd><p>ecat-client-advr/scripts/.create_ws.sh [name_ws] [dir_ws, default=HOME]</p>
+</dd>
+</dl>
+<p>Source into .bashrc the new workspace:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">~/</span><span class="n">name_workspace</span><span class="o">/</span><span class="n">setup</span><span class="o">.</span><span class="n">bash</span>
+</pre></div>
+</div>
+<p>Download and compile EtherCAT Client:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">src</span><span class="o">/</span>
+
+<span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">Advanced</span><span class="o">-</span><span class="n">Robotics</span><span class="o">-</span><span class="n">Facility</span><span class="o">/</span><span class="n">ecat</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">advr</span>
+
+<span class="n">cd</span> <span class="o">../</span><span class="n">build</span>
+<span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="n">ecat</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">advr</span> <span class="o">&amp;&amp;</span> <span class="n">cd</span> <span class="n">ecat</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">advr</span>
+<span class="p">(</span><span class="nb">compile</span> <span class="ow">and</span> <span class="n">build</span> <span class="n">the</span> <span class="n">client</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note: Select the variable to compile (EtherCAT Client Examples an Gravity compensation, the EtherCAT Client GUI and EtherCAT client block [Matlab/Simulink]):</p>
+<img alt="_images/EtherCAT_Installation_Img_0.png" src="_images/EtherCAT_Installation_Img_0.png" />
+<p><strong>Note: It’s possible to compile the EtherCAT Client Library with Xenomai Real-Time OS or Preempt-RT Real Times OS.</strong></p>
+</section>
+<section id="install-the-ethercat-client-library-from-debian-package">
+<span id="id9"></span><h2>Install the EtherCAT Client Library from debian package<a class="headerlink" href="#install-the-ethercat-client-library-from-debian-package" title="Link to this heading"></a></h2>
+<p>Download from this site the last version of EtherCAT Client Debian Package and install it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">Advanced</span><span class="o">-</span><span class="n">Robotics</span><span class="o">-</span><span class="n">Facility</span><span class="o">/</span><span class="n">ecat</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">advr</span><span class="o">/</span><span class="n">releases</span>
+</pre></div>
+</div>
+<p>Install EtherCAT Client Librarys:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">dpkg</span> <span class="o">--</span><span class="n">install</span> <span class="n">ecat</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">advr_nrt_package</span><span class="o">-</span><span class="mf">0.0.1</span><span class="o">-</span><span class="n">r0</span><span class="mf">.0.1</span><span class="o">-</span><span class="n">amd64</span><span class="o">.</span><span class="n">deb</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="background.html" class="btn btn-neutral float-left" title="Background" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ec_client.html" class="btn btn-neutral float-right" title="EtherCAT Client" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Davide Antonucci.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
