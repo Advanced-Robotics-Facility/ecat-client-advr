@@ -14,10 +14,10 @@ EtherCAT Client Architecture
 
 .. image:: _static/EtherCAT_Client_Img/EtherCAT_Client_Img_1.png
 
-.. _Code documentation:
+.. _EtherCAT Client Code documentation:
 
-Code documentation
-=====================================
+EtherCAT Client Code documentation
+==================================
 
 It's possible to generate the doxygen documentation to read the code of the EtherCAT client::
 
