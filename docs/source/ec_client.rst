@@ -23,7 +23,7 @@ It's possible to generate the doxygen documentation to read the code of the Ethe
 
    doxygen Doxyfile
 
-`Link to the documentation <https://advanced-robotics-facility.github.io/ecat-client-advr/doxygen/>`__ 
+`Link to the documentation <https://advanced-robotics-facility.github.io/ecat-client-advr/library/>`__ 
 
 
 EtherCAT Client Configuration files

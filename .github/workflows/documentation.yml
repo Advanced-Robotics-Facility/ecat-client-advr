@@ -22,11 +22,15 @@ jobs:
         run: |
           make -C docs clean
           make -C docs html
-          cd docs
+          mkdir docs/build/html/library/ docs/build/html/gui docs/build/html/paper
+          cd docs/library
           doxygen Doxyfile
-          cd ..
-          mkdir docs/build/html/doxygen docs/build/html/paper
-          cp -r docs/html/* docs/build/html/doxygen/
+          cd ../../
+          cp -r docs/library/html/* docs/build/html/library/
+          cd docs/gui
+          doxygen Doxyfile
+          cd ../../
+          cp -r docs/gui/html/* docs/build/html/gui/
           cp -r docs/paper/* docs/build/html/paper/
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
