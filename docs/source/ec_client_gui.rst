@@ -8,7 +8,7 @@ EtherCAT Client GUI
 
 .. _EtherCAT GUI Architecture:
 
-EtherCAT GUI Architecture
+Software architecture
 =============================
 
 .. image:: _static/EtherCAT_Client_GUI_Img/EtherCAT_Client_GUI_Img_1.png
@@ -27,7 +27,7 @@ Two sub-classes are used for different scopes:
 
 .. _EtherCAT Client GUI Code documentation:
 
-EtherCAT Client GUI Code documentation
+Code documentation
 ========================================
 
 It's possible to generate the doxygen documentation to read the code of the EtherCAT client GUI::
@@ -36,8 +36,50 @@ It's possible to generate the doxygen documentation to read the code of the Ethe
 
 `Link to the documentation <https://advanced-robotics-facility.github.io/ecat-client-advr/gui/>`__ 
 
-.. _EtherCAT Client GUI Network setup:
-
-EtherCAT Client GUI Network setup
+Measurement setup
 ========================================
+
+.. image:: _static/EtherCAT_Client_GUI_Img/EtherCAT_Client_GUI_Img_2.png
+
+The user can setup the EtherCAT system network using the **Server row**, specifying **the user name, host name/ip and port (UDP: 54321, TCP: 5000)**. Furthermore, it's possible to choose which kind of EtherCAT Master application has to be run on Embedded PC:
+
+* **Default Master:** Standard EtherCAT master (repl).
+* **Robot Master:** EtherCAT master (repl) specifying the low level setup (used on robot).
+* **Ecat Master:** EtherCAT master (repl) specifying the low level setup (used on robot).
+
+Once the user has setup the EtherCAT system adding the **EtherCAT System password** and choosing **the protocol (udp, tcp, ros2 not available yet)**, it's possible to start it:
+
+.. image:: _static/EtherCAT_Client_GUI_Img/EtherCAT_Client_GUI_Img_3.png
+
+**Note:** At the bottom right the user can check the status of the system.
+
+It's also possible to verify EtherCAT system status using the terminals opened during the starting phase, or clicking the terminal buttons in the Terminal column:
+
+.. image:: _static/EtherCAT_Client_GUI_Img/EtherCAT_Client_GUI_Img_4.png
+
+**Note:** It's possible to open the client terminal launching **ec_gui_log** instead of using the **ec_gui** where it's not possible to log the terminal.
+
+Now the user can start EtherCAT Client by clicking the **Scan Device button** initializing the GUI:
+
+.. image:: _static/EtherCAT_Client_GUI_Img/EtherCAT_Client_GUI_Img_5.png
+
+**Important:  The user can use the Scan device button if the EtherCAT system was already started externally on the Embedded PC**.
+
+**Note:**  The user can decide to rescan the device whenever necessary:
+
+.. image:: _static/EtherCAT_Client_GUI_Img/EtherCAT_Client_GUI_Img_6.png
+
+The EtherCAT Client is started and can check the EtherCAT system status, in case of communication problem a pop-up will appear, moving the status of not running:
+
+.. image:: _static/EtherCAT_Client_GUI_Img/EtherCAT_Client_GUI_Img_7.png
+
+In this case the user can restart the EtherCAT system following the previous procedure. 
+
+The user can **stop EtherCAT system** by clicking the stop button.
+
+Firmware update
+========================================
+ 
+
+
 

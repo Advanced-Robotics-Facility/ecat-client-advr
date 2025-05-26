@@ -5,9 +5,7 @@
 EtherCAT Client
 ***************
 
-.. _EtherCAT Client Architecture:
-
-EtherCAT Client Architecture
+Software architecture
 =============================
 
 .. image:: _static/EtherCAT_Client_Img/EtherCAT_Client_Img_0.png
@@ -16,7 +14,7 @@ EtherCAT Client Architecture
 
 .. _EtherCAT Client Code documentation:
 
-EtherCAT Client Code documentation
+Code documentation
 ==================================
 
 It's possible to generate the doxygen documentation to read the code of the EtherCAT client::
@@ -26,7 +24,7 @@ It's possible to generate the doxygen documentation to read the code of the Ethe
 `Link to the documentation <https://advanced-robotics-facility.github.io/ecat-client-advr/library/>`__ 
 
 
-EtherCAT Client Configuration files
+Configuration files
 =====================================
 
 The suggestion is to create a directory with this sub-directories:
@@ -39,7 +37,7 @@ The suggestion is to create a directory with this sub-directories:
 * **urdf:** The URDF of the robot that can be used for simulation or by internal libraries for mathematical calculations.
 * **srdf:** The URDF of the robot that can be used for simulation or by internal libraries for mathematical calculations.
 
-EtherCAT Cient file
+Client file
 --------------------------------------------
 .. image:: _static/EtherCAT_Client_Img/EtherCAT_Client_Img_2_1.png
 
@@ -62,7 +60,7 @@ Robot control
 * **pumps:** Setup the low level configuration file, ids, set points, homing and general trajectories. **(Optional)**
 * **simulation:** Setup other slaves for the simulation. **(Optional)**
 
-EtherCAT Client Examples
+Examples
 =====================================
 
 .. image:: _static/EtherCAT_Client_Img/EtherCAT_Client_Img_6.png
