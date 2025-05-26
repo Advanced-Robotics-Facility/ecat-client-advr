@@ -111,8 +111,8 @@ The user can check and plot the process data object:
 .. image:: _static/EtherCAT_Client_GUI_Img/EtherCAT_Client_GUI_Img_11.png
 
 The user can select which field of the PDO and device to plot by checking the box inside the PDO table.
-
 It's also possible to stop the auto-scroll and clear the plotting by clicking the stop plotting button.
+Furthermore, by clicking the record button on top the GUI the user can log the Rx-Tx PDOs.
 
 Service Data Object (SDO)
 --------------------------------------------
