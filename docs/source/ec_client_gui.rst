@@ -100,6 +100,6 @@ By clicking the firmware update button the Firmware wizard will appear:
 
 .. image:: _static/EtherCAT_Client_GUI_Img/EtherCAT_Client_GUI_Img_10.png
 
-Firmware update
+Data Object
 ========================================
 
