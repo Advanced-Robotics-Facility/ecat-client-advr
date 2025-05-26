@@ -632,10 +632,8 @@ void EcGuiNet::open_firmware_config()
         show_message=false;
         if(create_ssh_cmd(_ec_master_process,_ec_master_stdout)){
             if(copy_config_file()){
-                QStringList cmd;
-                cmd.append("gedit");
-                cmd.append("/tmp/microCTRL_config.yaml");
-                _ec_master_process->start("sshpass", cmd);
+                QStringList cmd={"-s","/tmp/microCTRL_config.yaml"};
+                _ec_master_process->start("gedit", cmd);
                 _open_config_file=true;
             }
         }
