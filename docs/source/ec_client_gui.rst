@@ -79,7 +79,27 @@ The user can **stop EtherCAT system** by clicking the stop button.
 
 Firmware update
 ========================================
+
+This feature is possible to use it only in **expert mode** inserting the **Expert User Password**:
  
+.. image:: _static/EtherCAT_Client_GUI_Img/EtherCAT_Client_GUI_Img_8.png
 
+**Important: The password can be delivered to expert users**.
 
+By clicking the firmware update button the Firmware wizard will appear:
+
+.. image:: _static/EtherCAT_Client_GUI_Img/EtherCAT_Client_GUI_Img_9.png
+
+* **Select all bin or config files:** This button helps the user to select all binaries (.bin) or configuration (.csv) files for flashing. 
+
+`i.e  Firmware update on Synapticon driver. <https://doc.synapticon.com/circulo/tutorials/foe_drive_operations.html?tocpath=Resources%7CTutorials%7C_____2/>`__
+
+* **Copy file to embedded PC:** Copy all files to embedded PC inside **.ecat_master/firmware/** directory.
+* **Open firmware configuration file:** This button will open the **.ecat_master/configs/microCTRL_config.yaml** file of the embedded PC. This is used by the firmware update procedure for flashing the specific device.
+* **Start firmware update:** This button will start the firmware update procedure: 
+
+.. image:: _static/EtherCAT_Client_GUI_Img/EtherCAT_Client_GUI_Img_10.png
+
+Firmware update
+========================================
 
