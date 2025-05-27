@@ -509,6 +509,16 @@ void EcGuiStart::scan_device()
                     _ec_wrapper_info.sdo_map[device_id]=rr_sdo;
                 }
                 if(ec_motors.count(device_type)>0){
+#ifdef TEST_GUI 
+                    if(_ec_wrapper_info.sdo_map.count(device_id)==0){
+                        RR_SDOS motor_sdo={{"Min_pos","-3.0"},
+                                           {"Max_pos","2.0"},
+                                           {"Max_vel","5.0"},
+                                           {"Max_tor","50.0"},
+                                           {"Max_ref","5.0"}};
+                        _ec_wrapper_info.sdo_map[device_id]=motor_sdo;
+                    }
+#endif
                     setup_motor_device(device_id,device_type);
                 }
             }
