@@ -110,15 +110,41 @@ The user can check and plot the process data object:
 
 .. image:: _static/EtherCAT_Client_GUI_Img/EtherCAT_Client_GUI_Img_11.png
 
-The user can select which field of the PDO and device to plot by checking the box inside the PDO table.
-It's also possible to stop the auto-scroll and clear the plotting by clicking the stop plotting button.
+The user can select which field of the PDO and device to plot by **checking the box** inside the PDO table.
+It's also possible to stop the **auto-scroll** and clear the plotting by clicking the **stop plotting button**.
 Furthermore, by clicking the record button on top the GUI the user can log the Rx-Tx PDOs.
 
 Service Data Object (SDO)
 --------------------------------------------
 
+.. image:: _static/EtherCAT_Client_GUI_Img/EtherCAT_Client_GUI_Img_12.png
+
+The user can work with the SDOs for monitoring the devices behaviour. Selecting the device (**Yes/No to All buttons** help for this procedure), it's also possible:
+
+* Read again the SDOs by clicking the **Rescan** button 
+* Save all SDOs into **.csv file** for all EtherCAT slave selected using **Save SDO file** button.
+* **Search the SDOs**, typing a specific content of them:
+
+.. image:: _static/EtherCAT_Client_GUI_Img/EtherCAT_Client_GUI_Img_13.png
+
+The expert user, inserting the **Expert User Password** (See Firmware Update session), can also **Open SDO File** calibrating the devices selected and use the **flashing features**:
+
+.. image:: _static/EtherCAT_Client_GUI_Img/EtherCAT_Client_GUI_Img_14.png
+
+The **Open SDO File** button helps the expert user to select the specific .csv file launching the **Calibration wizard**:
+
+.. image:: _static/EtherCAT_Client_GUI_Img/EtherCAT_Client_GUI_Img_15.png
+
+Selecting the SDO (**Yes/No to All buttons** help for this procedure) and by clicking the Finish button, the SDOs writing function is called, verifying the correct values by rescaning the SDOs automatically. 
+
+The **flashing features** can be used for:
+
+* **Restore the default** constructor parameters from the flash to the RAM of the EtherCAT slaves.
+* **Load** the parameters from the flash to the RAM of the EtherCAT slaves.
+* **Save** the parameters from the RAM to the flash of the EtherCAT slaves.
 
 Control
 ========================================
 
+.. image:: _static/EtherCAT_Client_GUI_Img/EtherCAT_Client_GUI_Img_16.png
 
