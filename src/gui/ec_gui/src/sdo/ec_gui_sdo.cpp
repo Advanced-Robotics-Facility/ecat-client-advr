@@ -111,9 +111,8 @@ void EcGuiSdo::onNoToAllSdoReleased()
 void EcGuiSdo::esc_id_check()
 {
     for(auto&[esc_id,name_item_map]: _sdo_item_map){
-        for(auto&[sdo_name,sdo_item]: name_item_map){
-            sdo_item->parent()->setCheckState(0,_esc_id_state);
-        }
+        auto sdo_item=name_item_map.begin()->second;
+        sdo_item->parent()->setCheckState(0,_esc_id_state);
     }
 }
 
@@ -161,11 +160,13 @@ void EcGuiSdo::rescan_sdo()
     if(check_client_setup()){
         bool try_rescan_cmd=false;
         bool rescan_cmd_ok=true;
+        QString cmd_name="";
         for(auto&[esc_id,name_item_map]: _sdo_item_map){
             for(auto&[sdo_name,sdo_item]: name_item_map){
                 if(sdo_item->parent()->checkState(0)==Qt::Checked){
                     RD_SDO rd_sdo={sdo_name};
                     RR_SDOS rr_sdo;
+                    cmd_name="rescan";
                     try_rescan_cmd=true;
                     if(_client->retrieve_rr_sdo(esc_id,rd_sdo,{},rr_sdo)){
                         if(rr_sdo.count(sdo_name)>0){
@@ -183,7 +184,7 @@ void EcGuiSdo::rescan_sdo()
             }
         }
 
-        cmd_feedback(try_rescan_cmd,rescan_cmd_ok,"rescan");
+        cmd_feedback(try_rescan_cmd,rescan_cmd_ok,cmd_name);
     }
 }
 
@@ -198,9 +199,12 @@ void EcGuiSdo::flash_cmd(int value)
         WR_SDO wr_sdo{std::make_tuple("flash_params_cmd",flash_cmd_str)};
         RD_SDO rd_sdo={"flash_params_cmd_ack"};
 
+        QString cmd_name="";
         for(auto&[esc_id,name_item_map]: _sdo_item_map){
-            if(name_item_map.count("flash_params_cmd")>0 && name_item_map.count("flash_params_cmd_ack")>0){
-                if(name_item_map["flash_params_cmd"]->parent()->checkState(0)==Qt::Checked){
+            auto sdo_item=name_item_map.begin()->second;
+            if(sdo_item->parent()->checkState(0)==Qt::Checked){
+                cmd_name="flash";
+                if(name_item_map.count("flash_params_cmd")>0 && name_item_map.count("flash_params_cmd_ack")>0){
                     try_flash_cmd=true;
                     if(_client->set_wr_sdo(esc_id,{},wr_sdo)){
                         RR_SDOS rr_sdo;
@@ -214,7 +218,7 @@ void EcGuiSdo::flash_cmd(int value)
             }
         }
 
-        cmd_feedback(try_flash_cmd,flash_cmd_ok,"flash");
+        cmd_feedback(try_flash_cmd,flash_cmd_ok,cmd_name);
         
         if(try_flash_cmd){
             rescan_sdo();
@@ -229,12 +233,13 @@ void EcGuiSdo::save_sdo_file()
     QString formatted_time = date.toString("dd_MM_yyyy__hh_mm_ss");
     bool try_save_cmd=false;
     bool save_cmd_ok=true;
-
+    QString cmd_name="";
     for(auto&[esc_id,name_item_map]: _sdo_item_map){
         QFile *sdo_file=nullptr;
         bool sdo_file_open=false;
         for(auto&[sdo_name,sdo_item]: name_item_map){
             if(sdo_item->parent()->checkState(0)==Qt::Checked){
+                cmd_name="save";
                 try_save_cmd=true;
                 if(!sdo_file){
                     QString sdo_file_path =QDir::homePath()+"/"+sdo_item->parent()->text(0)+"_"+formatted_time+".csv";
@@ -256,33 +261,42 @@ void EcGuiSdo::save_sdo_file()
         }
     }
 
-    cmd_feedback(try_save_cmd,save_cmd_ok,"save");
+    cmd_feedback(try_save_cmd,save_cmd_ok,cmd_name);
 }
 
 void EcGuiSdo::open_sdo_file()
 {
     if(check_client_setup()){
-        EcGuiSdoWizard sdo_wizard;
-        auto new_wr_sdo = sdo_wizard.run_sdo_wizard();
-        if(!new_wr_sdo.empty()){
-            bool try_write_cmd=false;
-            bool new_write_ok=true;
-            for(auto&[esc_id,name_item_map]: _sdo_item_map){
-                for(auto&[sdo_name,sdo_item]: name_item_map){
-                    if(sdo_item->parent()->checkState(0)==Qt::Checked){
-                        try_write_cmd=true;
-                        if(!_client->set_wr_sdo(esc_id,{},new_wr_sdo)){
-                            new_write_ok=false;
-                        }
-                    }
+        std::vector<uint32_t> esc_id_v;
+        for(auto&[esc_id,name_item_map]: _sdo_item_map){
+            auto sdo_item=name_item_map.begin()->second;
+            if(sdo_item->parent()->checkState(0)==Qt::Checked){
+                esc_id_v.push_back(esc_id);
+            }
+        }
+        bool try_write_cmd=false;
+        bool new_write_ok=true;
+        QString cmd_name="";
+        if(!esc_id_v.empty()){
+            EcGuiSdoWizard sdo_wizard;
+            auto new_wr_sdo = sdo_wizard.run_sdo_wizard();
+            if(new_wr_sdo.empty()){
+                return;
+            }
+
+            cmd_name="write";
+            try_write_cmd=true;
+            for(auto &esc_id: esc_id_v){
+                if(!_client->set_wr_sdo(esc_id,{},new_wr_sdo)){
+                    new_write_ok=false;
                 }
             }
+        }
 
-            cmd_feedback(try_write_cmd,new_write_ok,"write");
+        cmd_feedback(try_write_cmd,new_write_ok,cmd_name);
 
-            if(try_write_cmd){
-                rescan_sdo();
-            }
+        if(try_write_cmd){
+            rescan_sdo();
         }
     }
 }
@@ -290,11 +304,16 @@ void EcGuiSdo::open_sdo_file()
 void EcGuiSdo::cmd_feedback(bool try_cmd,bool cmd_ok,QString cmd_name)
 {   
     QMessageBox msgBox;
-    QString message="No "+cmd_name+" command executed";
+    QString message="No device selected, please select at least one";
     if(try_cmd){
         message="Success on "+cmd_name+" for all devices";
         if(!cmd_ok){
             message="Unsuccess on "+cmd_name+" for all or some devices";
+        }
+    }
+    else{
+        if(cmd_name!=""){
+            message="No "+cmd_name+" command executed";
         }
     }
     msgBox.setText(message);
