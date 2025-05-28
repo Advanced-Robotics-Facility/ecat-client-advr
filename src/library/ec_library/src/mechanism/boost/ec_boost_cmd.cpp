@@ -342,6 +342,7 @@ bool EcBoostCmd::retrieve_rr_sdo(uint32_t esc_id,
     size_t count_sdo_chunk=0;
     size_t count_sdo=0;
     const size_t max_chunk_sdo=5;
+    bool cmd_ret=false;
     for(const auto &sdo_name:rd_sdo){
         if(count_sdo_chunk<max_chunk_sdo-1 && count_sdo<rd_sdo.size()-1){
             rd_sdo_chunk.push_back(sdo_name);
@@ -369,6 +370,9 @@ bool EcBoostCmd::retrieve_rr_sdo(uint32_t esc_id,
             if(sdo_name_error!=""){
                 _consoleLog->error("Error on read the SDO(s): {}",sdo_name_error);
             }
+            else{
+                cmd_ret=true; // if I read at least a chunk of the SDO, return true
+            }
             
             count_sdo_chunk=0;
             rd_sdo_chunk.clear();
@@ -376,7 +380,7 @@ bool EcBoostCmd::retrieve_rr_sdo(uint32_t esc_id,
         count_sdo++;
     }
 
-    return true;
+    return cmd_ret;
 }
 
 bool EcBoostCmd::set_wr_sdo(uint32_t esc_id,
@@ -388,6 +392,7 @@ bool EcBoostCmd::set_wr_sdo(uint32_t esc_id,
     size_t count_sdo_chunk=0;
     size_t count_sdo=0;
     const size_t max_chunk_sdo=5;
+    bool cmd_ret=false;
     for(const auto &sdo_tuple:wr_sdo){
         if(count_sdo_chunk<max_chunk_sdo-1 && count_sdo<wr_sdo.size()-1){
             wr_sdo_chunk.push_back(sdo_tuple);
@@ -407,13 +412,16 @@ bool EcBoostCmd::set_wr_sdo(uint32_t esc_id,
                 }
                 _consoleLog->error("Error on write the SDO(s): {}",sdo_name_error);
             }
+            else{
+                cmd_ret=true; // if I write at least a chunk of the SDO, return true
+            }
             count_sdo_chunk=0;
             wr_sdo_chunk.clear();
         }
         count_sdo++;
     }
 
-    return true;
+    return cmd_ret;
 }
 
 bool EcBoostCmd::start_devices(const DST &devices_start)
