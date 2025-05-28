@@ -148,3 +148,24 @@ Control
 
 .. image:: _static/EtherCAT_Client_GUI_Img/EtherCAT_Client_GUI_Img_16.png
 
+The user can start or stop the controllers of the devices that can be controlled like motors, valves or pumps, by clicking **Start devices** or **Stop devices**.
+It's necessary, for the starting phase, select the device in every tab (**Yes/No to All buttons** help for this procedure),its gains and the control mode. 
+All devices selected will be shown into the **Devices Selected** list box.
+
+If the starting phase has a success result, it's possible to Start the motion using the specific button:
+
+.. image:: _static/EtherCAT_Client_GUI_Img/EtherCAT_Client_GUI_Img_17.png
+
+The user can decide to perform the trajectory using the **simple slider** or **wave generator** by selecting the specific tab:
+
+.. image:: _static/EtherCAT_Client_GUI_Img/EtherCAT_Client_GUI_Img_18.png
+
+.. image:: _static/EtherCAT_Client_GUI_Img/EtherCAT_Client_GUI_Img_19.png
+
+For the wave generator, the user can select the **wave type (Sine, Square, Triangle, Trapezoidal and Chirp), amplitude, frequency and phase**.
+It's possible to change on fly all the parameters during the motion.
+
+The user can stop the motion by clicking the **Stop Motion** or **Stop devices** buttons. This allows also to change the trajectory type (slider/wave geneator) and restart the motion if the devices are still controlled.
+
+**Note:** It's also possible to use **spin box** together with the slider for sending new values of the PDOs. Some of them have only that box for sending new values (i.e gains etc...).
+If the user uses the wave generator for a specific PDO, its spin box is disabled.
