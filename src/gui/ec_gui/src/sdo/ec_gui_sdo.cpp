@@ -200,6 +200,7 @@ void EcGuiSdo::flash_cmd(int value)
         RD_SDO rd_sdo={"flash_params_cmd_ack"};
 
         QString cmd_name="";
+        bool flash_cmd_done=false;
         for(auto&[esc_id,name_item_map]: _sdo_item_map){
             auto sdo_item=name_item_map.begin()->second;
             if(sdo_item->parent()->checkState(0)==Qt::Checked){
@@ -208,6 +209,7 @@ void EcGuiSdo::flash_cmd(int value)
                     try_flash_cmd=true;
                     if(_client->set_wr_sdo(esc_id,{},wr_sdo)){
                         RR_SDOS rr_sdo;
+                        flash_cmd_done=true;
                         if(_client->retrieve_rr_sdo(esc_id,rd_sdo,{},rr_sdo)){
                             if(rr_sdo["flash_params_cmd_ack"] != flash_cmd_ack_str){
                                 flash_cmd_ok=false;
@@ -220,7 +222,7 @@ void EcGuiSdo::flash_cmd(int value)
 
         cmd_feedback(try_flash_cmd,flash_cmd_ok,cmd_name);
         
-        if(try_flash_cmd){
+        if(flash_cmd_done){
             rescan_sdo();
         }
     }
@@ -295,7 +297,7 @@ void EcGuiSdo::open_sdo_file()
 
         cmd_feedback(try_write_cmd,new_write_ok,cmd_name);
 
-        if(try_write_cmd){
+        if(new_write_ok){
             rescan_sdo();
         }
     }
