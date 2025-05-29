@@ -19,7 +19,9 @@ Download from this site the latest version of Ubuntu OS for importing on WSL and
 
    https://github.com/Advanced-Robotics-Facility/ecat-client-advr/releases
    
-**Save the WSL configuration file (.wslconfig) into C:/%USERNAME%/**
+**Unzip the Ubuntu-22.04_Facility.zip file and copy Ubuntu-22.04_Facility.tar into C:/%USERNAME%/Desktop/**
+   
+**Rename and copy the WSL configuration file (.wslconfig) into C:/%USERNAME%/**
    
 Import Distro version::
 
