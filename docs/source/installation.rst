@@ -38,7 +38,7 @@ Network and Terminator
 
 Install network and terminator packages::
 
-   sudo apt install -y net-tools openssh-server sshpass curl terminator
+   sudo apt install -y net-tools openssh-server sshpass curl gnome-terminal terminator
    
 YAML and FMT
 ================================
