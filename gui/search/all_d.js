@@ -1,0 +1,24 @@
+var searchData=
+[
+  ['only_20a_20specific_20layer_0',['Replotting only a specific layer',['../classQCPLayer.html#qcplayer-buffering',1,'']]],
+  ['operator_2a_1',['operator*',['../classQCPRange.html#a5cb2332f6957021f47cc768089f4f090',1,'QCPRange::operator*'],['../classQCPRange.html#a558b1248ff6a9e41fd5b2630555a8acc',1,'QCPRange::operator*']]],
+  ['operator_2a_3d_2',['operator*=',['../classQCPVector2D.html#aa52a246d168f475a4231c7bdfdac7df1',1,'QCPVector2D::operator*=()'],['../classQCPRange.html#a6876aa9620ff2f0f7f1873f998372cef',1,'QCPRange::operator*=(const double &amp;value)']]],
+  ['operator_2b_3',['operator+',['../classQCPRange.html#af53ea6fb823a4a5897162b865841de04',1,'QCPRange::operator+'],['../classQCPRange.html#a9fb2e9941d32001482df670c0d704977',1,'QCPRange::operator+'],['../classQCPDataSelection.html#a49c0217af248959d59abfdd29401b678',1,'QCPDataSelection::operator+'],['../classQCPDataSelection.html#a5feed9419bd3df5cb4d4a761580545cc',1,'QCPDataSelection::operator+'],['../classQCPDataSelection.html#aa574f51a74d6998e9be95e252e6be287',1,'QCPDataSelection::operator+'],['../classQCPDataSelection.html#a0822e3133b80b5dedfc8050a19c1e0c5',1,'QCPDataSelection::operator+']]],
+  ['operator_2b_3d_4',['operator+=',['../classQCPDataSelection.html#a4584d4b0ea5c4f095bd7b70f88eb5d9d',1,'QCPDataSelection::operator+=(const QCPDataSelection &amp;other)'],['../classQCPDataSelection.html#a17058640d4e6f49984a0e7e42043df1b',1,'QCPDataSelection::operator+=(const QCPDataRange &amp;other)'],['../classQCPRange.html#afea7c1aa7d08f061cd9bd8832f957df8',1,'QCPRange::operator+=()'],['../classQCPVector2D.html#aa2c34754ce8839b2d074dec741783c5e',1,'QCPVector2D::operator+=()']]],
+  ['operator_2d_5',['operator-',['../classQCPRange.html#a797f82830b516646da8873f82e39e356',1,'QCPRange::operator-'],['../classQCPDataSelection.html#a41147ef7d6303c746e398278b7b624d1',1,'QCPDataSelection::operator-'],['../classQCPDataSelection.html#a726652cb9ed840e3025435cc2c266468',1,'QCPDataSelection::operator-'],['../classQCPDataSelection.html#a32c5784ac70946f09a09b2dd19816b78',1,'QCPDataSelection::operator-'],['../classQCPDataSelection.html#ad62dd67b505c1fa9c02d1aafabcb9acf',1,'QCPDataSelection::operator-']]],
+  ['operator_2d_3d_6',['operator-=',['../classQCPDataSelection.html#a8d18b20d20dde737eefc10967e31cf73',1,'QCPDataSelection::operator-=(const QCPDataRange &amp;other)'],['../classQCPDataSelection.html#a66f9fab70b026baa64bf8e52fe5de07e',1,'QCPDataSelection::operator-=(const QCPDataSelection &amp;other)'],['../classQCPRange.html#a95894bcb15a16a75ca564091374e2191',1,'QCPRange::operator-=()'],['../classQCPVector2D.html#a3a2e906bb924983bb801e89f28a3d566',1,'QCPVector2D::operator-=()']]],
+  ['operator_2f_7',['operator/',['../classQCPRange.html#a4b366a3a21974c88e09b0d39d4a24a4b',1,'QCPRange']]],
+  ['operator_2f_3d_8',['operator/=',['../classQCPVector2D.html#aefa55eb9282c066a330ca281881e0ec0',1,'QCPVector2D::operator/=()'],['../classQCPRange.html#a6137d8682b6835ace840730b4c1e2d63',1,'QCPRange::operator/=()']]],
+  ['operator_3c_3c_9',['operator&lt;&lt;',['../classQCPVector2D.html#a6c757af9671d925af4a36c2f58fb7234',1,'QCPVector2D::operator&lt;&lt;()'],['../classQCPRange.html#ab4b7d434541ec2e2e00ef3764dde90d8',1,'QCPRange::operator&lt;&lt;()'],['../classQCPDataRange.html#a486dd7af8a090ed069672e3510e6a082',1,'QCPDataRange::operator&lt;&lt;()'],['../classQCPDataSelection.html#aed65b8988afe6b03adeadf5edf663670',1,'QCPDataSelection::operator&lt;&lt;()']]],
+  ['operator_3d_10',['operator=',['../classQCPColorMapData.html#afdf4dd1b2f5714234fe84709b85c2a8d',1,'QCPColorMapData']]],
+  ['operator_3d_3d_11',['operator==',['../classQCPDataSelection.html#a664fa566569b17148abafd6b1dbbf347',1,'QCPDataSelection']]],
+  ['opposite_12',['opposite',['../classQCPAxis.html#aa85ba73dfee6483e23825461b725e363',1,'QCPAxis']]],
+  ['or_20between_20graphs_13',['Filling under or between graphs',['../classQCPGraph.html#filling',1,'']]],
+  ['order_20via_20layers_14',['Controlling the rendering order via layers',['../classQCPLayer.html#qcplayer-ordering',1,'']]],
+  ['orientation_15',['orientation',['../classQCPAxis.html#a9a68b3e45f1b1e33d4d807822342516c',1,'QCPAxis::orientation(AxisType type)'],['../classQCPAxis.html#ab988ef4538e2655bb77bd138189cd42e',1,'QCPAxis::orientation() const']]],
+  ['outerrect_16',['outerRect',['../classQCPLayoutElement.html#a2a32a12a6161c9dffbadeb9cc585510c',1,'QCPLayoutElement']]],
+  ['over_20a_20data_20selection_17',['Iterating over a data selection',['../classQCPDataSelection.html#qcpdataselection-iterating',1,'']]],
+  ['own_20axis_20tickers_18',['Creating own axis tickers',['../classQCPAxisTicker.html#axisticker-subclassing',1,'']]],
+  ['own_20items_19',['Creating own items',['../classQCPAbstractItem.html#items-subclassing',1,'']]],
+  ['own_20plottables_20',['Creating own plottables',['../classQCPAbstractPlottable.html#plottables-subclassing',1,'']]]
+];
