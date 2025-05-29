@@ -53,7 +53,7 @@ Example:
 
 List available Linux distributions::
 
-  wsl --list --online
+  wsl --list
 
 WSL Update::
 

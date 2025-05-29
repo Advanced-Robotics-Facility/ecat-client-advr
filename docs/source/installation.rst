@@ -23,7 +23,7 @@ Source into .bashrc the new workspace::
   
 Then use the **src** dir for downloading the packages and **build** dir, creating the relative package sub-directory (**mkdir package_name**) for compiling them.
 
-Git and CMake
+Git, CMake and Google test
 =============================
 
 Install git packages::
@@ -31,6 +31,7 @@ Install git packages::
    sudo apt update
    sudo apt install -y git gitg git-gui
    sudo apt install -y build-essential curl cmake cmake-curses-gui
+   sudo apt install -y libgtest-dev 
    
 Network and Terminator
 =============================
@@ -39,12 +40,12 @@ Install network and terminator packages::
 
    sudo apt install -y net-tools openssh-server sshpass curl terminator
    
-YAML
+YAML and FMT
 ================================
 
-Install yaml utils::
+Install yaml utils and fmt::
 
-   sudo apt install libyaml-cpp-dev
+   sudo apt install -y libyaml-cpp-dev libfmt-dev 
    
 EtherCAT Master Server
 =============================
@@ -87,7 +88,7 @@ MatLogger
 
 Install matlogger library::
 
-   sudo apt install -y libmatio-dev libfmt-dev libgtest-dev python3-pip
+   sudo apt install -y libmatio-dev python3-pip
    git clone https://github.com/ADVRHumanoids/MatLogger2
       
       
@@ -96,7 +97,7 @@ QT and GUI Tools
 
 Install GUI tools::
 
-  sudo apt install -y qtcreator qt6-tools-dev qt6-declarative-dev libqt6charts6-dev uuid-dev libtiff-dev qttools5-dev 
+  sudo apt install -y qt6-tools-dev qt6-declarative-dev libqt6charts6-dev uuid-dev libtiff-dev qttools5-dev 
   
 
 Matlab and Simulink
