@@ -19,9 +19,9 @@ Download from this site the latest version of Ubuntu OS for importing on WSL and
 
    https://github.com/Advanced-Robotics-Facility/ecat-client-advr/releases
    
-**Unzip the Ubuntu-22.04_Facility.zip file and copy Ubuntu-22.04_Facility.tar into C:/%USERNAME%/Desktop/**
+**Unzip the Ubuntu-22.04_Facility.zip file and copy Ubuntu-22.04_Facility.tar into C:/Users/%USERNAME%/Desktop**
    
-**Rename and copy the WSL configuration file (.wslconfig) into C:/%USERNAME%/**
+**Rename and copy the WSL configuration file (.wslconfig) into C:/Users/%USERNAME%/**
    
 Import Distro version::
 
@@ -30,12 +30,12 @@ Import Distro version::
 Example:
 
 * DistroName= Ubuntu-22.04
-* InstallLocation= **C:/%USERNAME%/Ubuntu-22.04/** (please create the specific directory).
-* InstallTarFile= **/path_of_download/Ubuntu-22.04_Facility.tar**, i.e C:/%USERNAME%/Desktop/Ubuntu-22.04_Facility.tar
+* InstallLocation= **C:/Users/%USERNAME%/Ubuntu-22.04/** (please create the specific directory).
+* InstallTarFile= **/path_of_download/Ubuntu-22.04_Facility.tar**, i.e C:/Users/%USERNAME%/Desktop/Ubuntu-22.04_Facility.tar
 
 ::
 
-   wsl --import Ubuntu-22.04 C:/%USERNAME%/Ubuntu-22.04/ C:/%USERNAME%/Desktop/Ubuntu-22.04_Facility.tar
+   wsl --import Ubuntu-22.04 C:/Users/%USERNAME%/Ubuntu-22.04/ C:/Users/%USERNAME%/Desktop/Ubuntu-22.04_Facility.tar
 
 Install Distro version::
 
