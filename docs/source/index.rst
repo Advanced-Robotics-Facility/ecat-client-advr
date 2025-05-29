@@ -40,6 +40,7 @@ Contents:
 
    background.rst
    installation.rst
+   wsl.rst
    ec_client.rst
    ec_client_gui.rst
    ec_client_block.rst
