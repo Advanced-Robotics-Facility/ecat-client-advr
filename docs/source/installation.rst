@@ -5,6 +5,8 @@
 Installation
 ***************
 
+The next steps show how to install the EtherCAT Client under **Ubuntu operating system**. It's also possible to use the framework under **Windows OS** using the **WSL (Windows Subsystem for Linux)**.
+
 **Important:** Some dependency packages are available by github cloning. The suggestion to follow these steps helping the user for finding the packages:
 
 Download manually create_ws.sh from ecat-client-advr repository inside the scripts directory and then::
@@ -122,10 +124,18 @@ Note: Select the variable to compile (EtherCAT Client Examples an Gravity compen
 Install the EtherCAT Client Library from debian package
 ==========================================================
 
-Download from this site the last version of EtherCAT Client Debian Package and install it::
+Download from this site the latest version of EtherCAT Client Debian Package and install it::
 
    https://github.com/Advanced-Robotics-Facility/ecat-client-advr/releases
 
 Install EtherCAT Client Librarys::
 
   sudo dpkg --install ecat-client-advr_nrt_package-0.0.1-r0.0.1-amd64.deb
+  
+
+Create environment variable EC_CFG
+==========================================================
+
+Export environment variable EC_CFG::
+
+ export EC_CFG=~/code_ws/src/ecat-client-advr/config/ec_cfg.yaml
