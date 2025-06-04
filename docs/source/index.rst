@@ -21,7 +21,7 @@ It's possible to compile and run the EtherCAT client and server in real-time wit
 
 Compatible with different types of motor drivers, IIT HHCM Research Line and Synapticon Somanet Circulo-Node:
 
-`HHCM motor documentation <https://hhcm.iit.it/it/robot-hardware>`__ 
+`HHCM motor documentation <https://hhcm.iit.it/robot-hardware>`__ 
 
 .. image:: _static/EtherCAT_Client_Img/EtherCAT_Client_Img_3.png
 
