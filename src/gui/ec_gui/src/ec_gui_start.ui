@@ -885,7 +885,7 @@
            </column>
            <column>
             <property name="text">
-             <string>Host IP</string>
+             <string>Host Port</string>
             </property>
            </column>
            <column>
