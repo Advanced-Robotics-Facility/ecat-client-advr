@@ -341,9 +341,8 @@ bool EcGuiSdo::eventFilter( QObject* o, QEvent* e )
                 if(_client->set_wr_sdo(esc_id,{},wr_sdo)){
                     RR_SDOS rr_sdo_new;
                     if(_client->retrieve_rr_sdo(esc_id,rd_sdo,{},rr_sdo_new)){
-                        if(rr_sdo_new[sdo_name] == new_sdo_value){
-                            write_read=true;
-                        }
+                        _sdo_item->setText(2,QString::fromStdString(rr_sdo_new[sdo_name]));
+                        write_read=true;
                     }
                 }
                 
