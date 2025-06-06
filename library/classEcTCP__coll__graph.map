@@ -1,0 +1,18 @@
+<map id="EcTCP" name="EcTCP">
+<area shape="rect" id="Node000001" title=" " alt="" coords="211,1491,341,1756"/>
+<area shape="rect" id="Node000002" href="$classEcZmqCmd.html" title=" " alt="" coords="5,856,176,1361"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="166,1373,190,1440,213,1493,208,1495,186,1442,161,1375"/>
+<area shape="rect" id="Node000003" href="$classEcIface.html" title=" " alt="" coords="146,188,361,713"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="188,727,156,856,151,855,183,726"/>
+<area shape="rect" id="Node000006" href="$classEcPdo.html" title=" " alt="" coords="200,776,352,1441"/>
+<area shape="poly" id="edge6_Node000006_Node000003" title=" " alt="" coords="266,727,267,776,262,776,260,727"/>
+<area shape="rect" id="Node000004" href="$structEcIface_1_1CLIENT__STATUS__t.html" title=" " alt="" coords="61,23,243,108"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="166,108,182,171,177,173,160,109"/>
+<area shape="rect" id="Node000005" href="$structEcIface_1_1CLIENT__THREAD__INFO__t.html" title=" " alt="" coords="268,5,444,125"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="343,126,330,173,325,171,338,125"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="279,1455,279,1490,273,1490,273,1455"/>
+<area shape="rect" id="Node000007" href="$classEcThread.html" title=" " alt="" coords="377,936,517,1281"/>
+<area shape="poly" id="edge7_Node000001_Node000007" title=" " alt="" coords="410,1296,390,1370,367,1442,344,1497,339,1495,361,1440,385,1368,405,1294"/>
+<area shape="rect" id="Node000008" href="$structec__period__t.html" title=" " alt="" coords="400,408,493,493"/>
+<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="449,493,449,919,444,919,444,493"/>
+</map>
