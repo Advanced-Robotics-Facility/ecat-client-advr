@@ -155,6 +155,53 @@ bool EcGuiSdo::check_client_setup()
     return ret;
 }
 
+bool EcGuiSdo::rescan_sdo_byId(uint32_t esc_id)
+{
+    if(_sdo_item_map.count(esc_id)>0){
+        for(auto&[sdo_name,sdo_item]: _sdo_item_map[esc_id]){
+            RD_SDO rd_sdo={sdo_name};
+            RR_SDOS rr_sdo;
+            if(_client->retrieve_rr_sdo(esc_id,rd_sdo,{},rr_sdo)){
+                if(rr_sdo.count(sdo_name)>0){
+                    std::string sdo_value= rr_sdo[sdo_name];
+                    sdo_item->setText(1,QString::fromStdString(sdo_name));
+                    sdo_item->setText(2,QString::fromStdString(sdo_value));
+                    _sdo_map[esc_id][sdo_name]=sdo_value;
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+bool EcGuiSdo::esc_cmd_byId(uint32_t esc_id,const std::string &cmd_type,int value)
+{
+    if(_sdo_item_map.count(esc_id)>0){
+        if(cmd_type=="ctrl_status_cmd" || cmd_type=="flash_params_cmd"){
+            std::string cmd_type_ack=cmd_type+"_ack";
+            if(_sdo_item_map[esc_id].count(cmd_type)>0 && _sdo_item_map[esc_id].count(cmd_type_ack)>0){
+                std::string value_str=std::to_string(value);
+                WR_SDO wr_sdo{std::make_tuple(cmd_type,value_str)};
+                if(_client->set_wr_sdo(esc_id,{},wr_sdo)){
+                    RD_SDO rd_sdo={cmd_type_ack};
+                    int value_ack=0x7800+value;
+                    std::string value_ack_str=std::to_string(value_ack);
+                    RR_SDOS rr_sdo;
+                    if(_client->retrieve_rr_sdo(esc_id,rd_sdo,{},rr_sdo)){
+                        _sdo_item_map[esc_id][cmd_type_ack]->setText(1,QString::fromStdString(cmd_type_ack));
+                        _sdo_item_map[esc_id][cmd_type_ack]->setText(2,QString::fromStdString(rr_sdo[cmd_type_ack]));
+                        if(rr_sdo[cmd_type_ack] == value_ack_str){
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
+
 void EcGuiSdo::rescan_sdo()
 {   
     if(check_client_setup()){
@@ -162,25 +209,11 @@ void EcGuiSdo::rescan_sdo()
         bool rescan_cmd_ok=true;
         QString cmd_name="";
         for(auto&[esc_id,name_item_map]: _sdo_item_map){
-            for(auto&[sdo_name,sdo_item]: name_item_map){
-                if(sdo_item->parent()->checkState(0)==Qt::Checked){
-                    RD_SDO rd_sdo={sdo_name};
-                    RR_SDOS rr_sdo;
-                    cmd_name="rescan";
-                    try_rescan_cmd=true;
-                    if(_client->retrieve_rr_sdo(esc_id,rd_sdo,{},rr_sdo)){
-                        if(rr_sdo.count(sdo_name)>0){
-                            std::string sdo_value= rr_sdo[sdo_name];
-                            sdo_item->setText(1,QString::fromStdString(sdo_name));
-                            sdo_item->setText(2,QString::fromStdString(sdo_value));
-                            _sdo_map[esc_id][sdo_name]=sdo_value;
-                        }else{
-                            rescan_cmd_ok=false;
-                        }
-                    }else{
-                        rescan_cmd_ok=false;
-                    }
-                }
+            auto sdo_item=name_item_map.begin()->second;
+            if(sdo_item->parent()->checkState(0)==Qt::Checked){
+                cmd_name="rescan";
+                try_rescan_cmd=true;
+                rescan_cmd_ok &= rescan_sdo_byId(esc_id);
             }
         }
 
@@ -193,11 +226,6 @@ void EcGuiSdo::flash_cmd(int value)
     if(check_client_setup()){
         bool flash_cmd_ok=true;
         bool try_flash_cmd=false;
-        int flash_cmd_ack=0x7800+value;
-        std::string flash_cmd_str=std::to_string(value);
-        std::string flash_cmd_ack_str=std::to_string(flash_cmd_ack);
-        WR_SDO wr_sdo{std::make_tuple("flash_params_cmd",flash_cmd_str)};
-        RD_SDO rd_sdo={"flash_params_cmd_ack"};
 
         QString cmd_name="";
         bool flash_cmd_done=false;
@@ -207,24 +235,16 @@ void EcGuiSdo::flash_cmd(int value)
                 cmd_name="flash";
                 if(name_item_map.count("flash_params_cmd")>0 && name_item_map.count("flash_params_cmd_ack")>0){
                     try_flash_cmd=true;
-                    if(_client->set_wr_sdo(esc_id,{},wr_sdo)){
-                        RR_SDOS rr_sdo;
-                        flash_cmd_done=true;
-                        if(_client->retrieve_rr_sdo(esc_id,rd_sdo,{},rr_sdo)){
-                            if(rr_sdo["flash_params_cmd_ack"] != flash_cmd_ack_str){
-                                flash_cmd_ok=false;
-                            }
-                        }
+                    bool ret = esc_cmd_byId(esc_id,"flash_params_cmd",value);
+                    flash_cmd_ok &= ret;
+                    if(ret){
+                        rescan_sdo_byId(esc_id);
                     }
                 }
             }
         }
 
         cmd_feedback(try_flash_cmd,flash_cmd_ok,cmd_name);
-        
-        if(flash_cmd_done){
-            rescan_sdo();
-        }
     }
 }
 
@@ -332,22 +352,28 @@ bool EcGuiSdo::eventFilter( QObject* o, QEvent* e )
                 
                 uint32_t esc_id =esc_id_pieces.value(2).toUInt();
                 std::string sdo_name= _sdo_item->text(1).toStdString();
-                std::string new_sdo_value= _sdo_item->text(2).toStdString();
-                
-                RD_SDO rd_sdo = {sdo_name};
-                WR_SDO wr_sdo{std::make_tuple(sdo_name,new_sdo_value)};
-                
-                bool write_read=false;
-                if(_client->set_wr_sdo(esc_id,{},wr_sdo)){
-                    RR_SDOS rr_sdo_new;
-                    if(_client->retrieve_rr_sdo(esc_id,rd_sdo,{},rr_sdo_new)){
-                        _sdo_item->setText(2,QString::fromStdString(rr_sdo_new[sdo_name]));
-                        write_read=true;
-                    }
+
+                if(sdo_name=="ctrl_status_cmd" || sdo_name=="flash_params_cmd"){
+                    int value = _sdo_item->text(2).toInt();
+                    esc_cmd_byId(esc_id,sdo_name,value);
                 }
-                
-                if(!write_read){
-                    _sdo_item->setText(2,QString::fromStdString(_old_sdo_value));
+                else{
+                    RD_SDO rd_sdo = {sdo_name};
+                    std::string new_sdo_value= _sdo_item->text(2).toStdString();
+                    WR_SDO wr_sdo{std::make_tuple(sdo_name,new_sdo_value)};
+                    
+                    bool write_read=false;
+                    if(_client->set_wr_sdo(esc_id,{},wr_sdo)){
+                        RR_SDOS rr_sdo_new;
+                        if(_client->retrieve_rr_sdo(esc_id,rd_sdo,{},rr_sdo_new)){
+                            _sdo_item->setText(2,QString::fromStdString(rr_sdo_new[sdo_name]));
+                            write_read=true;
+                        }
+                    }
+                    
+                    if(!write_read){
+                        _sdo_item->setText(2,QString::fromStdString(_old_sdo_value));
+                    }
                 }
 
                 

@@ -55,6 +55,8 @@ private:
         void search_sdo();
         bool check_client_setup();
         void rescan_sdo();
+        bool rescan_sdo_byId(uint32_t esc_id);
+        bool esc_cmd_byId(uint32_t esc_id,const std::string &cmd_type,int value);
         void flash_cmd(int value);
         void save_sdo_file();
         void open_sdo_file();
