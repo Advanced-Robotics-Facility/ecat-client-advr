@@ -33,21 +33,28 @@ void EcReplCmd::zmq_do_cmd(iit::advr::Repl_cmd  pb_cmd,
                            EcReplFault &fault)
 {
     try{
-        zmq::socket_t req_sock(*EcZmqCmdContext::cmd_context, ZMQ_REQ);
-        req_sock.setsockopt(ZMQ_LINGER,0);
-        req_sock.setsockopt(ZMQ_RCVTIMEO, timeout);
-        req_sock.setsockopt(ZMQ_CONNECT_TIMEOUT, 1);
-        req_sock.connect(_zmq_uri);
+        if(EcZmqCmdContext::cmd_context!=nullptr){
+            zmq::socket_t req_sock(*EcZmqCmdContext::cmd_context, ZMQ_REQ);
+            req_sock.setsockopt(ZMQ_LINGER,0);
+            req_sock.setsockopt(ZMQ_RCVTIMEO, timeout);
+            req_sock.setsockopt(ZMQ_CONNECT_TIMEOUT, 1);
+            req_sock.connect(_zmq_uri);
 
-        if(!zmq_cmd_send(pb_cmd,req_sock,fault)){
+            if(!zmq_cmd_send(pb_cmd,req_sock,fault)){
+                req_sock.disconnect(_zmq_uri);
+                return;
+            }
+            else{
+                zmq_cmd_recv(msg,pb_cmd.type(),req_sock,fault);
+            }
+
             req_sock.disconnect(_zmq_uri);
-            return;
         }
         else{
-            zmq_cmd_recv(msg,pb_cmd.type(),req_sock,fault);
+            fault.set_type(EC_REPL_CMD_STATUS::WRONG_COMPOSITION);
+            fault.set_info("zmq context closed");
+            fault.set_recovery_info("Retry command");
         }
-
-        req_sock.disconnect(_zmq_uri);
 
     }catch (const zmq::error_t &err){
         std::string zmq_exception=zmq_strerror(err.num());
