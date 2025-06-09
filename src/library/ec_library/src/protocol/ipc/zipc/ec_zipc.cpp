@@ -127,5 +127,10 @@ void EcZipc::th_loop( void * )
     // send motors and others pdo
     send_pdo();
 }
-
 //******************************* Periodic Activity *****************************************************//
+
+void EcZipc::write()
+{
+    // send motors and others pdo
+    send_pdo();
+}
