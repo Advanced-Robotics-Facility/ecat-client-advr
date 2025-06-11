@@ -63,6 +63,10 @@ EcGuiSdo::~EcGuiSdo(){}
 void EcGuiSdo::restart_ec_gui_sdo(EcIface::Ptr client,SRD_SDO sdo_map)
 {
     _client=client;
+
+    _sdo_item = nullptr;
+    _sdo_column=-1;
+    _old_sdo_value="";
     
     _sdo_tree_wid->clear();
     _sdo_item_map.clear();
