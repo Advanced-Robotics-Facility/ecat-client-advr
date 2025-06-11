@@ -112,8 +112,11 @@ bool EcGuiStart::create_ec_iface()
     
     auto ec_net_info = _ec_gui_net->get_net_setup();
 
-    EcUtils::EC_CONFIG ec_cfg;    
+    EcUtils::EC_CONFIG ec_cfg;
     ec_cfg.protocol=ec_net_info.protocol;
+    if(ec_net_info.protocol=="ipc"){    
+        ec_cfg.protocol="iddp";
+    }
     ec_cfg.host_name=ec_net_info.host_name;
     ec_cfg.host_port=ec_net_info.host_port;
     ec_cfg.period_ms = 4; //4ms fix period 

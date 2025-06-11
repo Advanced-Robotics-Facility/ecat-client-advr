@@ -1232,6 +1232,11 @@
                <string>ros2</string>
               </property>
              </item>
+             <item>
+              <property name="text">
+               <string>ipc</string>
+              </property>
+             </item>
             </widget>
            </item>
            <item>

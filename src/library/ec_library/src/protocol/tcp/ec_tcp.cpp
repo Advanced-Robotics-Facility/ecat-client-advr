@@ -124,9 +124,12 @@ void EcTCP::th_loop( void * )
     
     // read motors, imu, ft, power board and others pdo information
     read_pdo();
+}
+//******************************* Periodic Activity *****************************************************//
 
+void EcTCP::write()
+{
     // send motors and others pdo
     send_pdo();
 }
 
-//******************************* Periodic Activity *****************************************************//
