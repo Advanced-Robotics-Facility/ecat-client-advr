@@ -123,9 +123,6 @@ void EcZipc::th_loop( void * )
     
     // read motors, imu, ft, power board and others pdo information
     read_pdo();
-
-    // send motors and others pdo
-    send_pdo();
 }
 //******************************* Periodic Activity *****************************************************//
 
