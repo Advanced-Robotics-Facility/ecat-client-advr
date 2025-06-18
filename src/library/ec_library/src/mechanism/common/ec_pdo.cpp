@@ -54,14 +54,14 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                     auto advrf_pdo = std::make_shared<AdvrfPdo<T>>(_ec_pdo_start, id, esc_type);
                     _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(advrf_pdo);
                     _internal_motor_status_map[id]=_motor_status_map[id]=  advrf_pdo->rx_pdo;
-                    _internal_motor_reference_map[id]=_motor_reference_map[id]= advrf_pdo->tx_pdo;
+                    _motor_reference_map[id]= advrf_pdo->tx_pdo;
                 }break;
                 case iit::ecat::SYNAPTICON_v5_0:
                 case iit::ecat::SYNAPTICON_v5_1:{
                     auto synapticon_pdo = std::make_shared<SynapticonPdo<T>>(_ec_pdo_start, id, esc_type);
                     _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(synapticon_pdo);
                     _internal_motor_status_map[id]=_motor_status_map[id]=  synapticon_pdo->rx_pdo;
-                    _internal_motor_reference_map[id]=_motor_reference_map[id]= synapticon_pdo->tx_pdo;
+                    _motor_reference_map[id]= synapticon_pdo->tx_pdo;
                 }break;
                 case iit::ecat::FT6_MSP432:{
                     auto ft_pdo = std::make_shared<FtPdo<T>>(_ec_pdo_start, id);
@@ -82,13 +82,13 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                     auto valve_pdo = std::make_shared<ValvePdo<T>>(_ec_pdo_start, id);
                     _valve_pdo_map[id]=valve_pdo;
                     _internal_valve_status_map[id]=_valve_status_map[id]=  valve_pdo->rx_pdo;
-                    _internal_valve_reference_map[id]=_valve_reference_map[id]= valve_pdo->tx_pdo;
+                    _valve_reference_map[id]= valve_pdo->tx_pdo;
                 }break;
                 case iit::ecat::HYQ_HPU:{
                     auto pump_pdo = std::make_shared<PumpPdo<T>>(_ec_pdo_start, id);
                     _pump_pdo_map[id]=pump_pdo;
                     _internal_pump_status_map[id]=_pump_status_map[id]= pump_pdo->rx_pdo;
-                    _internal_pump_reference_map[id]=_pump_reference_map[id]= pump_pdo->tx_pdo;
+                    _pump_reference_map[id]= pump_pdo->tx_pdo;
                 }break;
                 
                 default:
@@ -157,11 +157,20 @@ void EcPdo<T>::read_pdo()
 template < class T >
 void EcPdo<T>::write_pdo()
 {
-    write_motor_pdo();
+    if(_write_device[DeviceCtrlType::MOTOR]){
+        write_motor_pdo();
+        _write_device[DeviceCtrlType::MOTOR]=false;
+    }
     
-    write_valve_pdo();
-    
-    write_pump_pdo();
+    if(_write_device[DeviceCtrlType::VALVE]){
+        write_valve_pdo();
+        _write_device[DeviceCtrlType::VALVE]=false;
+    }
+
+    if(_write_device[DeviceCtrlType::PUMP]){
+        write_pump_pdo();
+        _write_device[DeviceCtrlType::PUMP]=false;
+    }
 }
 
 template <class T > 
@@ -210,22 +219,17 @@ void EcPdo<T>::read_motor_pdo()
 template < class T >
 void EcPdo<T>::write_motor_pdo()
 {
-    if(_motor_reference_queue.read_available()>0){
-        while(_motor_reference_queue.pop(_internal_motor_reference_map))
-        {} 
+    for (auto &[id,motor_pdo] : _moto_pdo_map ) {
+        motor_pdo->tx_pdo=_motor_reference_map[id];
 
-        for (auto &[id,motor_pdo] : _moto_pdo_map ) {
-            motor_pdo->tx_pdo=_internal_motor_reference_map[id];
-
-            auto ctrl_type=std::get<0>(motor_pdo->tx_pdo);
-            if(ctrl_type!=0x00){
-                if (iit::advr::Gains_Type_IsValid(ctrl_type) ) {
-                    //write 
-                    motor_pdo->write();
-                }
-                else{
-                    DPRINTF("Control mode not recognized for id 0x%04X \n", id);
-                }
+        auto ctrl_type=std::get<0>(motor_pdo->tx_pdo);
+        if(ctrl_type!=0x00){
+            if (iit::advr::Gains_Type_IsValid(ctrl_type) ) {
+                //write 
+                motor_pdo->write();
+            }
+            else{
+                DPRINTF("Control mode not recognized for id 0x%04X \n", id);
             }
         }
     }
@@ -336,16 +340,11 @@ void EcPdo<T>::read_valve_pdo()
 template < class T >
 void EcPdo<T>::write_valve_pdo()
 {
-    if(_valve_reference_queue.read_available()>0){
-        while(_valve_reference_queue.pop(_internal_valve_reference_map))
-        {}
-
-        for (auto &[id,valve_pdo] : _valve_pdo_map ) {
-            valve_pdo->tx_pdo=_internal_valve_reference_map[id];
-            //write 
-            valve_pdo->write();
-        }
-    } 
+    for (auto &[id,valve_pdo] : _valve_pdo_map ) {
+        valve_pdo->tx_pdo=_valve_reference_map[id];
+        //write 
+        valve_pdo->write();
+    }
 }
 
 template < class T >
@@ -376,15 +375,10 @@ void EcPdo<T>::read_pump_pdo()
 template < class T >
 void EcPdo<T>::write_pump_pdo()
 {
-    if(_pump_reference_queue.read_available()>0){
-        while(_pump_reference_queue.pop(_internal_pump_reference_map))
-        {}
-
-        for (auto &[id,pump_pdo] : _pump_pdo_map)  {
-            pump_pdo->tx_pdo=_internal_pump_reference_map[id];
-            //write 
-            pump_pdo->write();
-        }
+    for (auto &[id,pump_pdo] : _pump_pdo_map)  {
+        pump_pdo->tx_pdo=_pump_reference_map[id];
+        //write 
+        pump_pdo->write();
     }
 }
 

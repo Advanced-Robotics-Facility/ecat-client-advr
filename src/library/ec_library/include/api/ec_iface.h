@@ -107,16 +107,10 @@ protected:
     PumpStatusMap _pump_status_map,_internal_pump_status_map;
     spsc_queue<PumpStatusMap,fixed_sized<true>> _pump_status_queue{MAX_QUEUE_PDO};
     
-    MotorReferenceMap _motor_reference_map,_internal_motor_reference_map;
-    spsc_queue<MotorReferenceMap,fixed_sized<true>> _motor_reference_queue{MAX_QUEUE_PDO};
-    
-    ValveReferenceMap _valve_reference_map,_internal_valve_reference_map;
-    spsc_queue<ValveReferenceMap,fixed_sized<true>> _valve_reference_queue{MAX_QUEUE_PDO};
-    
-    PumpReferenceMap _pump_reference_map,_internal_pump_reference_map;
-    spsc_queue<PumpReferenceMap,fixed_sized<true>> _pump_reference_queue{MAX_QUEUE_PDO};
+    MotorReferenceMap _motor_reference_map;
+    ValveReferenceMap _valve_reference_map;
+    PumpReferenceMap _pump_reference_map;
     std::vector<bool> _write_device;
-    bool _sync_write;
     
     pthread_mutex_t _mutex_update,_mutex_client_thread;
     pthread_cond_t _update_cond,_client_thread_cond;

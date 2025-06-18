@@ -377,9 +377,20 @@ bool EcZmqCmd::pdo_aux_cmd(const PAC & pac)
 
 void EcZmqCmd::send_pdo()
 {
-    feed_motors(); 
-    feed_valves();
-    feed_pumps();
+    if(_write_device[DeviceCtrlType::MOTOR]){
+        feed_motors();
+        _write_device[DeviceCtrlType::MOTOR]=false;
+    }
+    
+    if(_write_device[DeviceCtrlType::VALVE]){
+        feed_valves();
+        _write_device[DeviceCtrlType::VALVE]=false;
+    }
+
+    if(_write_device[DeviceCtrlType::PUMP]){
+        feed_pumps();
+        _write_device[DeviceCtrlType::PUMP]=false;
+    }
 }
 
 void EcZmqCmd::feed_motors()

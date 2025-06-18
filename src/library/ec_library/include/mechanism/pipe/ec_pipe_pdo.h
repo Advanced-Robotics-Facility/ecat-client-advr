@@ -53,7 +53,8 @@ protected:
     std::string             rd_pp_name, wr_pp_name;
     IDDP_pipe               rd_iddp, wr_iddp;
     iit::advr::Ec_slave_pdo pb_rx_pdos,  pb_tx_pdos;    
-    uint8_t                 pb_buf[MAX_PB_SIZE];
+    uint8_t                 pb_buf_rd[MAX_PB_SIZE];
+    uint8_t                 pb_buf_wr[MAX_PB_SIZE];
 
     virtual void get_from_pb(void) = 0;
     virtual void set_to_pb(void) = 0;

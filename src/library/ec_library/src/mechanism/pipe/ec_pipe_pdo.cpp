@@ -38,7 +38,7 @@ void EcPipePdo::init(void)
 }
 
 int EcPipePdo::read(void)  {
-    int ret = read_pb_from(rd_iddp, pb_buf, sizeof(pb_buf), &pb_rx_pdos, name );
+    int ret = read_pb_from(rd_iddp, pb_buf_rd, sizeof(pb_buf_rd), &pb_rx_pdos, name );
     if ( ret > 0 ) {
         get_from_pb();
     }
@@ -47,14 +47,14 @@ int EcPipePdo::read(void)  {
 int EcPipePdo::write(void) {
     pb_tx_pdos.Clear();
     set_to_pb();
-    return write_pb_to (wr_iddp, pb_buf, sizeof(pb_buf), &pb_tx_pdos, name );
+    return write_pb_to (wr_iddp, pb_buf_wr, sizeof(pb_buf_wr), &pb_tx_pdos, name );
 }
 
 int EcPipePdo::write_dummy(void) {
     pb_tx_pdos.Clear();
     set_pbHeader(pb_tx_pdos.mutable_header(), name, 0);
     pb_tx_pdos.set_type(iit::advr::Ec_slave_pdo::DUMMY);
-    return write_pb_to (wr_iddp, pb_buf, sizeof(pb_buf), &pb_tx_pdos, name );
+    return write_pb_to (wr_iddp, pb_buf_wr, sizeof(pb_buf_wr), &pb_tx_pdos, name );
 }
 
 int EcPipePdo::write_connect(void) {
@@ -62,7 +62,7 @@ int EcPipePdo::write_connect(void) {
     set_pbHeader(pb_tx_pdos.mutable_header(), name, 0);
     pb_tx_pdos.set_type(iit::advr::Ec_slave_pdo::CLIENT_PIPE);
     pb_tx_pdos.mutable_client_pdo()->set_type(iit::advr::Client_pipe::CONNECT);
-    return write_pb_to (wr_iddp, pb_buf, sizeof(pb_buf), &pb_tx_pdos, name );
+    return write_pb_to (wr_iddp, pb_buf_wr, sizeof(pb_buf_wr), &pb_tx_pdos, name );
 }
 
 int EcPipePdo::write_quit(void) {
@@ -70,5 +70,5 @@ int EcPipePdo::write_quit(void) {
     set_pbHeader(pb_tx_pdos.mutable_header(), name, 0);
     pb_tx_pdos.set_type(iit::advr::Ec_slave_pdo::CLIENT_PIPE);
     pb_tx_pdos.mutable_client_pdo()->set_type(iit::advr::Client_pipe::QUIT);
-    return write_pb_to (wr_iddp, pb_buf, sizeof(pb_buf), &pb_tx_pdos, name );
+    return write_pb_to (wr_iddp, pb_buf_wr, sizeof(pb_buf_wr), &pb_tx_pdos, name );
 }

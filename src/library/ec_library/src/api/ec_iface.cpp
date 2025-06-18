@@ -106,29 +106,7 @@ void EcIface::read()
 }
 void EcIface::write()
 {
-    ///note: only one thread is allowed to push data
-    _sync_write=false;
-    if(_write_device[DeviceCtrlType::MOTOR]){
-        _motor_reference_queue.push(_motor_reference_map);
-        _write_device[DeviceCtrlType::MOTOR]=false;
-        _sync_write=true;
-    }
-
-    if(_write_device[DeviceCtrlType::VALVE]){
-        _valve_reference_queue.push(_valve_reference_map);
-        _write_device[DeviceCtrlType::VALVE]=false;
-        _sync_write=true;
-    }
-
-    if(_write_device[DeviceCtrlType::PUMP]){
-        _pump_reference_queue.push(_pump_reference_map);
-        _write_device[DeviceCtrlType::PUMP]=false;
-        _sync_write=true;
-    }
-
-    if(_sync_write){
-        wake_client_thread();
-    }
+    
 }
 
 void EcIface::get_motor_status(MotorStatusMap &motor_status_map)

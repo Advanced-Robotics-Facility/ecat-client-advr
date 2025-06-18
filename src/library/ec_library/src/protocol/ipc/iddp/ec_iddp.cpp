@@ -127,8 +127,10 @@ void EcIDDP::th_loop( void * )
     
     // read motors, imu, ft, power board and others pdo information
     read_pdo();
-
+}
+//******************************* Periodic Activity *****************************************************//
+void EcIDDP::write()
+{
     // write motors and others pdo
     write_pdo();
 }
-//******************************* Periodic Activity *****************************************************//
