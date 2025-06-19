@@ -13,8 +13,6 @@ EcIDDP::EcIDDP(std::string host_address,uint32_t host_port):
     schedpolicy = SCHED_FIFO;
 #endif
     priority = sched_get_priority_max ( schedpolicy ) / 2;
-    // non-periodic
-    period.period = {0,1}; 
     stacksize = 0; // not set stak size !!!! YOU COULD BECAME CRAZY !!!!!!!!!!!!
 
     _client_thread_info.priority=priority;
@@ -58,7 +56,8 @@ void EcIDDP::set_loop_time(uint32_t period_ms)
 
 void EcIDDP::start_client(uint32_t period_ms)
 {
-    _period_ns = 1000000*period_ms;
+    // periodic
+    period.period = {0,1000*period_ms}; 
 
     SSI slave_info;
     if(retrieve_slaves_info(slave_info)){
@@ -104,26 +103,6 @@ void EcIDDP::th_loop( void * )
         _client_status.run_loop=_run_loop;
         return;
     }
-
-    struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    iit::ecat::add_timespec(&ts,_period_ns);
-
-    pthread_mutex_lock(&_mutex_update);
-    if(_update_count==0){
-       int ret = pthread_cond_timedwait(&_update_cond, &_mutex_update, &ts);
-       if(ret!=0){
-            if(ret!=ETIMEDOUT){
-                DPRINTF("Error on pthread_cond_timedwait reason: %d\n",ret);
-                _run_loop = false;
-                _client_status.run_loop=_run_loop;
-                return;
-            }
-       }
-    }
-    _update_count--;
-    _update_count=std::max(_update_count,0);
-    pthread_mutex_unlock(&_mutex_update);
     
     // read motors, imu, ft, power board and others pdo information
     read_pdo();

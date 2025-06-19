@@ -15,7 +15,7 @@ public:
     void start_client(uint32_t period_ms) final;
     void stop_client() final ;
     void set_loop_time(uint32_t period_ms) final;
-    void write() override;
+    void write() final;
     
 public:
     

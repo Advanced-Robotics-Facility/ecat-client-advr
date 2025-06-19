@@ -16,14 +16,7 @@ EcIface::EcIface()
     pthread_mutexattr_setpshared(&mutex_update_attr, PTHREAD_PROCESS_PRIVATE);
     pthread_mutexattr_setprotocol(&mutex_update_attr, PTHREAD_PRIO_NONE);
     
-    int ret=0;
-    bool error=false;
-    ret=pthread_mutex_init(&_mutex_update, &mutex_update_attr);
-    if (ret != 0){
-        pthread_mutexattr_destroy(&mutex_update_attr);
-        throw std::runtime_error("fatal error: cannot initialize mutex_update, reason: "+std::to_string(ret));
-    }
-    ret=pthread_mutex_init(&_mutex_client_thread, &mutex_update_attr);
+    int ret=pthread_mutex_init(&_mutex_client_thread, &mutex_update_attr);
     pthread_mutexattr_destroy(&mutex_update_attr);
     if (ret != 0){
         throw std::runtime_error("fatal error: cannot initialize mutex_client_thread, reason: "+std::to_string(ret));
@@ -34,11 +27,6 @@ EcIface::EcIface()
     pthread_condattr_setpshared(&update_attr, PTHREAD_PROCESS_PRIVATE);
     pthread_condattr_setclock(&update_attr, CLOCK_MONOTONIC);
 
-    ret=pthread_cond_init(&_update_cond, &update_attr);
-    if (ret != 0){
-        pthread_condattr_destroy(&update_attr);
-        throw std::runtime_error("fatal error: cannot initialize update_cond, reason: "+std::to_string(ret));
-    }
     ret=pthread_cond_init(&_client_thread_cond,&update_attr);
     pthread_condattr_destroy(&update_attr);
     if (ret != 0){
@@ -57,8 +45,6 @@ EcIface::EcIface()
 
 EcIface::~EcIface()
 {
-    pthread_mutex_destroy(&_mutex_update);
-    pthread_cond_destroy(&_update_cond);
     pthread_mutex_destroy(&_mutex_client_thread);
     pthread_cond_destroy(&_client_thread_cond);
     
@@ -83,8 +69,6 @@ void EcIface::set_slaves_info(SSI slave_info)
 
 void EcIface::read()
 {
-    wake_client_thread();
-
     //note: only one thread is allowed to pop data
     while(_motor_status_queue.pop(_motor_status_map))
     {}
@@ -103,10 +87,6 @@ void EcIface::read()
 
     while(_pump_status_queue.pop(_pump_status_map))
     {}
-}
-void EcIface::write()
-{
-    
 }
 
 void EcIface::get_motor_status(MotorStatusMap &motor_status_map)
@@ -240,15 +220,6 @@ void EcIface::sync_client_thread(void) {
     }
 
     pthread_mutex_unlock(&_mutex_client_thread);
-}
-
-void EcIface::wake_client_thread()
-{
-    pthread_mutex_lock(&_mutex_update);
-    _update_count++;
-    _update_count=std::min(_update_count,MAX_QUEUE_PDO);
-    pthread_cond_signal(&_update_cond);
-    pthread_mutex_unlock(&_mutex_update);
 }
 
 template <typename T>

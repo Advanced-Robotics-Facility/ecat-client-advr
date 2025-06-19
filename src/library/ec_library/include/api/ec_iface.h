@@ -40,7 +40,7 @@ public:
     
     // EtherCAT Client ADVR Facilty update getters/setters
     virtual void read(void);
-    virtual void write(void);
+    virtual void write(void) = 0;
     
     // EtherCAT Client ADVR Facilty getters
     void get_motor_status(MotorStatusMap &motor_status_map);
@@ -79,9 +79,6 @@ public:
                             const WR_SDO &wr_sdo) = 0;
 protected:
     std::shared_ptr<spdlog::logger> _consoleLog;
-    struct timespec _client_ts;
-
-    uint64_t _period_ns;
 
     CLIENT_STATUS _client_status;
     CLIENT_THREAD_INFO _client_thread_info;
@@ -112,15 +109,12 @@ protected:
     PumpReferenceMap _pump_reference_map;
     std::vector<bool> _write_device;
     
-    pthread_mutex_t _mutex_update,_mutex_client_thread;
-    pthread_cond_t _update_cond,_client_thread_cond;
-    pthread_condattr_t _update_attr;
-    int _update_count=0;
+    pthread_mutex_t _mutex_client_thread;
+    pthread_cond_t _client_thread_cond;
     unsigned int _waiting_client_counter=0;
     uint32_t _reference_flag=1; // default multi-ref value.
     
     void sync_client_thread();
-    void wake_client_thread();
     
 private:
     template <typename T>
