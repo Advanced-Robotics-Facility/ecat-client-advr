@@ -16,8 +16,8 @@ valve:
   set_point:  {current: 2.5, position: 10.0, force: 10.0} #A,um micro-meter,N
 
 pump:
-  id: [210]
   config_path: ${PWD}/pump/robot_pressured4.yaml
+  id: [210]
   set_point:  {pressure: 128.0, velocity: 10.0, pwm: 30.0} #bar,RPM,Duty Cycle %
 simulation:
   imu_id: [102]

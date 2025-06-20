@@ -64,7 +64,7 @@ private:
     
     void compute_absolute_path(std::string dir_path,std::string &file_path);
     void generate_fake_slave_info();
-    void device_config_map(const YAML::Node & device_config_node);
+    void device_config_map(const YAML::Node & device_config_node,std::string device_type);
     void config_trajectory();      
     void config_device();
     void trajectory_generator();
