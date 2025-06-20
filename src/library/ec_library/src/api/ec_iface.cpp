@@ -285,7 +285,7 @@ bool EcIface::check_maps(const std::map<int32_t,T>& map1,const std::map<int32_t,
         return false;
     }
     else if(map1.size()!=map2.size()){
-        DPRINTF("Got an different %s references size\n",map_type.c_str());
+        DPRINTF("Got a different %s references size\n",map_type.c_str());
         return false;
     }
     else{
