@@ -70,23 +70,41 @@ void EcIface::set_slaves_info(SSI slave_info)
 void EcIface::read()
 {
     //note: only one thread is allowed to pop data
-    while(_motor_status_queue.pop(_motor_status_map))
-    {}
+    _motor_status_queue.consume_all([this](auto *ptr) { 
+        for(const auto&[esc_id,pdo]:*ptr){
+            _motor_status_map[esc_id]=pdo;
+        }
+    });
 
-    while(_pow_status_queue.pop(_pow_status_map))
-    {}
+    _pow_status_queue.consume_all([this](auto *ptr) { 
+        for(const auto&[esc_id,pdo]:*ptr){
+            _pow_status_map[esc_id]=pdo;
+        }
+    });
 
-    while(_ft_status_queue.pop(_ft_status_map))
-    {}
+    _ft_status_queue.consume_all([this](auto *ptr) { 
+        for(const auto&[esc_id,pdo]:*ptr){
+            _ft_status_map[esc_id]=pdo;
+        }
+    });
 
-    while(_imu_status_queue.pop(_imu_status_map))
-    {}
+    _imu_status_queue.consume_all([this](auto *ptr) { 
+        for(const auto&[esc_id,pdo]:*ptr){
+            _imu_status_map[esc_id]=pdo;
+        }
+    });
 
-    while(_valve_status_queue.pop(_valve_status_map))
-    {}
+    _valve_status_queue.consume_all([this](auto *ptr) { 
+        for(const auto&[esc_id,pdo]:*ptr){
+            _valve_status_map[esc_id]=pdo;
+        }
+    });
 
-    while(_pump_status_queue.pop(_pump_status_map))
-    {}
+    _pump_status_queue.consume_all([this](auto *ptr) { 
+        for(const auto&[esc_id,pdo]:*ptr){
+            _pump_status_map[esc_id]=pdo;
+        }
+    });
 }
 
 void EcIface::get_motor_status(MotorStatusMap &motor_status_map)

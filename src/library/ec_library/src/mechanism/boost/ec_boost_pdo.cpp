@@ -100,7 +100,7 @@ void EcBoostPdo::motor_status_handler(char *buf, size_t size)
     }
 
     if(!_internal_motor_status_map.empty()){
-        _motor_status_queue.push(_internal_motor_status_map);
+        _motor_status_queue.push(&_internal_motor_status_map);
     }
 }
 
@@ -120,7 +120,7 @@ void EcBoostPdo::ft6_status_handler(char *buf, size_t size)
     }
 
     if(!_internal_ft_status_map.empty()){
-        _ft_status_queue.push(_internal_ft_status_map);
+        _ft_status_queue.push(&_internal_ft_status_map);
     }
 }
 
@@ -141,7 +141,7 @@ void EcBoostPdo::pwr_status_handler(char *buf, size_t size)
     }
 
     if(!_internal_pow_status_map.empty()){
-        _pow_status_queue.push(_internal_pow_status_map);
+        _pow_status_queue.push(&_internal_pow_status_map);
     }
 }
 //******************************* EVENT HANDLERS *****************************************************//

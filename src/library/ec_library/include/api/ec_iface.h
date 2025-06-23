@@ -86,23 +86,23 @@ protected:
     SSI _fake_slave_info;
     // last received motor data
     MotorStatusMap _motor_status_map,_internal_motor_status_map;
-    spsc_queue<MotorStatusMap,fixed_sized<true>> _motor_status_queue{MAX_QUEUE_PDO};
+    spsc_queue<MotorStatusMap*,fixed_sized<true>> _motor_status_queue{MAX_QUEUE_PDO};
 
     // last received ft data
     FtStatusMap _ft_status_map,_internal_ft_status_map;
-    spsc_queue<FtStatusMap,fixed_sized<true>> _ft_status_queue{MAX_QUEUE_PDO};
+    spsc_queue<FtStatusMap*,fixed_sized<true>> _ft_status_queue{MAX_QUEUE_PDO};
     // last received pow data
     PwrStatusMap _pow_status_map,_internal_pow_status_map;
-    spsc_queue<PwrStatusMap,fixed_sized<true>> _pow_status_queue{MAX_QUEUE_PDO};
+    spsc_queue<PwrStatusMap*,fixed_sized<true>> _pow_status_queue{MAX_QUEUE_PDO};
     // last received imu data
     ImuStatusMap _imu_status_map,_internal_imu_status_map;
-    spsc_queue<ImuStatusMap,fixed_sized<true>> _imu_status_queue{MAX_QUEUE_PDO};
+    spsc_queue<ImuStatusMap*,fixed_sized<true>> _imu_status_queue{MAX_QUEUE_PDO};
     // last received valve data
     ValveStatusMap _valve_status_map,_internal_valve_status_map;
-    spsc_queue<ValveStatusMap,fixed_sized<true>> _valve_status_queue{MAX_QUEUE_PDO};
+    spsc_queue<ValveStatusMap*,fixed_sized<true>> _valve_status_queue{MAX_QUEUE_PDO};
     // last received pump data
     PumpStatusMap _pump_status_map,_internal_pump_status_map;
-    spsc_queue<PumpStatusMap,fixed_sized<true>> _pump_status_queue{MAX_QUEUE_PDO};
+    spsc_queue<PumpStatusMap*,fixed_sized<true>> _pump_status_queue{MAX_QUEUE_PDO};
     
     MotorReferenceMap _motor_reference_map;
     ValveReferenceMap _valve_reference_map;

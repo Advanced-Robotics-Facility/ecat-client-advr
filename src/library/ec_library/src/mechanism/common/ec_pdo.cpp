@@ -212,7 +212,7 @@ void EcPdo<T>::read_motor_pdo()
 
     get_init_rx_pdo(_moto_pdo_map);
     if(!_internal_motor_status_map.empty()){
-        _motor_status_queue.push(_internal_motor_status_map);
+        _motor_status_queue.push(&_internal_motor_status_map);
     }
 }
 
@@ -256,7 +256,7 @@ void EcPdo<T>::read_ft_pdo()
 
     get_init_rx_pdo(_ft_pdo_map);
     if(!_internal_ft_status_map.empty()){
-        _ft_status_queue.push(_internal_ft_status_map);
+        _ft_status_queue.push(&_internal_ft_status_map);
     }
 }
 template < class T >
@@ -280,7 +280,7 @@ void EcPdo<T>::read_imu_pdo()
 
     get_init_rx_pdo(_imu_pdo_map);
     if(!_internal_imu_status_map.empty()){
-        _imu_status_queue.push(_internal_imu_status_map);
+        _imu_status_queue.push(&_internal_imu_status_map);
     }
 }
 
@@ -305,7 +305,7 @@ void EcPdo<T>::read_pow_pdo()
 
     get_init_rx_pdo(_pow_pdo_map);
     if(!_internal_pow_status_map.empty()){
-        _pow_status_queue.push(_internal_pow_status_map);
+        _pow_status_queue.push(&_internal_pow_status_map);
     }
 }
 
@@ -333,7 +333,7 @@ void EcPdo<T>::read_valve_pdo()
 
     get_init_rx_pdo(_valve_pdo_map);
     if(!_internal_valve_status_map.empty()){
-        _valve_status_queue.push(_internal_valve_status_map);
+        _valve_status_queue.push(&_internal_valve_status_map);
     }
 }
 
@@ -368,7 +368,7 @@ void EcPdo<T>::read_pump_pdo()
 
     get_init_rx_pdo(_pump_pdo_map);
     if(!_internal_pump_status_map.empty()){
-        _pump_status_queue.push(_internal_pump_status_map);
+        _pump_status_queue.push(&_internal_pump_status_map);
     }
 }
 
