@@ -13,6 +13,8 @@ EcIDDP::EcIDDP(std::string host_address,uint32_t host_port):
     schedpolicy = SCHED_FIFO;
 #endif
     priority = sched_get_priority_max ( schedpolicy ) / 2;
+    // non-periodic
+    period.period = {0,1}; 
     stacksize = 0; // not set stak size !!!! YOU COULD BECAME CRAZY !!!!!!!!!!!!
 
     _client_thread_info.priority=priority;
@@ -56,8 +58,7 @@ void EcIDDP::set_loop_time(uint32_t period_ms)
 
 void EcIDDP::start_client(uint32_t period_ms)
 {
-    // periodic
-    period.period = {0,1000*period_ms}; 
+    _period_ns = 1000000*period_ms;
 
     SSI slave_info;
     if(retrieve_slaves_info(slave_info)){
@@ -98,16 +99,17 @@ void EcIDDP::th_loop( void * )
     
     loop_cnt++;
 
-    if(_client_status.status==ClientStatusEnum::NOT_ALIVE){
+    if(updt_client_thread()){
+        // read motors, imu, ft, power board and others pdo information
+        read_pdo();
+    }
+    else{
         _run_loop = false;
         _client_status.run_loop=_run_loop;
-        return;
     }
-    
-    // read motors, imu, ft, power board and others pdo information
-    read_pdo();
 }
 //******************************* Periodic Activity *****************************************************//
+
 void EcIDDP::write()
 {
     // write motors and others pdo

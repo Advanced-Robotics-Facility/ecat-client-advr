@@ -109,16 +109,21 @@ protected:
     PumpReferenceMap _pump_reference_map;
     std::vector<bool> _write_device;
     
-    pthread_mutex_t _mutex_client_thread;
-    pthread_cond_t _client_thread_cond;
-    unsigned int _waiting_client_counter=0;
+    uint64_t _period_ns;
     uint32_t _reference_flag=1; // default multi-ref value.
     
     void sync_client_thread();
+    void wake_client_thread();
+    bool updt_client_thread();
     
 private:
     template <typename T>
     bool check_maps(const std::map<int32_t,T>& map1,const std::map<int32_t,T>& map2,std::string map_type);
+    pthread_mutex_t _mutex_update,_mutex_client_thread;
+    pthread_cond_t _update_cond,_client_thread_cond;
+    pthread_condattr_t _update_attr;
+    int _update_count=0;
+    unsigned int _waiting_client_counter=0;
 };
 
 #endif // EC_IFACE_H

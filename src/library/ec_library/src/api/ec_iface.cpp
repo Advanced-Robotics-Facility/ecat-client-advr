@@ -2,7 +2,7 @@
 
 EcIface::EcIface()
 {
-    _client_status.status=ClientStatusEnum::IDLE;
+     _client_status.status=ClientStatusEnum::IDLE;
     _client_status.run_loop=false;
 
     _client_thread_info.cpu=-1;
@@ -16,7 +16,14 @@ EcIface::EcIface()
     pthread_mutexattr_setpshared(&mutex_update_attr, PTHREAD_PROCESS_PRIVATE);
     pthread_mutexattr_setprotocol(&mutex_update_attr, PTHREAD_PRIO_NONE);
     
-    int ret=pthread_mutex_init(&_mutex_client_thread, &mutex_update_attr);
+    int ret=0;
+    bool error=false;
+    ret=pthread_mutex_init(&_mutex_update, &mutex_update_attr);
+    if (ret != 0){
+        pthread_mutexattr_destroy(&mutex_update_attr);
+        throw std::runtime_error("fatal error: cannot initialize mutex_update, reason: "+std::to_string(ret));
+    }
+    ret=pthread_mutex_init(&_mutex_client_thread, &mutex_update_attr);
     pthread_mutexattr_destroy(&mutex_update_attr);
     if (ret != 0){
         throw std::runtime_error("fatal error: cannot initialize mutex_client_thread, reason: "+std::to_string(ret));
@@ -27,6 +34,11 @@ EcIface::EcIface()
     pthread_condattr_setpshared(&update_attr, PTHREAD_PROCESS_PRIVATE);
     pthread_condattr_setclock(&update_attr, CLOCK_MONOTONIC);
 
+    ret=pthread_cond_init(&_update_cond, &update_attr);
+    if (ret != 0){
+        pthread_condattr_destroy(&update_attr);
+        throw std::runtime_error("fatal error: cannot initialize update_cond, reason: "+std::to_string(ret));
+    }
     ret=pthread_cond_init(&_client_thread_cond,&update_attr);
     pthread_condattr_destroy(&update_attr);
     if (ret != 0){
@@ -45,6 +57,8 @@ EcIface::EcIface()
 
 EcIface::~EcIface()
 {
+    pthread_mutex_destroy(&_mutex_update);
+    pthread_cond_destroy(&_update_cond);
     pthread_mutex_destroy(&_mutex_client_thread);
     pthread_cond_destroy(&_client_thread_cond);
     
@@ -69,6 +83,8 @@ void EcIface::set_slaves_info(SSI slave_info)
 
 void EcIface::read()
 {
+    wake_client_thread();
+
     //note: only one thread is allowed to pop data
     _motor_status_queue.consume_all([this](auto *ptr) { 
         for(const auto&[esc_id,pdo]:*ptr){
@@ -238,6 +254,42 @@ void EcIface::sync_client_thread(void) {
     }
 
     pthread_mutex_unlock(&_mutex_client_thread);
+}
+
+void EcIface::wake_client_thread()
+{
+    pthread_mutex_lock(&_mutex_update);
+    _update_count++;
+    _update_count=std::min(_update_count,MAX_QUEUE_PDO);
+    pthread_cond_signal(&_update_cond);
+    pthread_mutex_unlock(&_mutex_update);
+}
+
+bool EcIface::updt_client_thread()
+{
+    if(_client_status.status==ClientStatusEnum::NOT_ALIVE){
+        return false;
+    }
+
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    iit::ecat::add_timespec(&ts,_period_ns);
+
+    pthread_mutex_lock(&_mutex_update);
+    if(_update_count==0){
+       int ret = pthread_cond_timedwait(&_update_cond, &_mutex_update, &ts);
+       if(ret!=0){
+            if(ret!=ETIMEDOUT){
+                DPRINTF("Error on pthread_cond_timedwait reason: %d\n",ret);
+                return false;
+            }
+       }
+    }
+    _update_count--;
+    _update_count=std::max(_update_count,0);
+    pthread_mutex_unlock(&_mutex_update);
+
+    return true;
 }
 
 template <typename T>
