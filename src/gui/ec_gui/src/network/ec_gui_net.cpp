@@ -9,6 +9,9 @@
 #define HOSTPORT_COL 3
 #define TERMINAL_COL 4
 
+static QString udp_std_port="54321";
+static QString std_port="5000"; 
+
 EcGuiNet::EcGuiNet(QWidget *parent) :
     QWidget(parent)
 {
@@ -96,6 +99,12 @@ void EcGuiNet::set_protocol_enabled(bool enable)
 void EcGuiNet::OnProtocolChanged()
 {
     _server_protocol = _protocol_combobox->currentText();
+    _server_port=std_port;
+    if(_server_protocol=="udp"){
+        _server_port=udp_std_port;
+    }
+    _net_tree_wid->topLevelItem(0)->child(1)->setText(HOSTPORT_COL,_server_port);
+
     set_ec_network();
 }
 
@@ -144,10 +153,30 @@ void EcGuiNet::set_ec_network()
     _net_tree_wid->topLevelItem(0)->child(2)->setText(USERNAME_COL,_server_username);
     _net_tree_wid->topLevelItem(0)->child(2)->setText(HOSTNAME_COL,_net_tree_wid->topLevelItem(0)->child(1)->text(2));
     
-    _server_port=_net_tree_wid->topLevelItem(0)->child(1)->text(3);
+    if(_server_port!=_net_tree_wid->topLevelItem(0)->child(1)->text(HOSTPORT_COL)){
+        QString new_port=_net_tree_wid->topLevelItem(0)->child(1)->text(HOSTPORT_COL);
+        bool is_uint=false;
+        auto dec = new_port.toUShort(&is_uint, 10);
+        if(is_uint){
+            _server_port=new_port;
+            if(_server_protocol=="udp"){
+                udp_std_port=_server_port;
+            }
+            else{
+                std_port=_server_port;
+            }
+        }
+        else{
+            _net_tree_wid->topLevelItem(0)->child(1)->setText(HOSTPORT_COL,_server_port);
+        }
+    }
+
     QString client_port=_server_port;
     if(_server_protocol=="udp"){
-        client_port=QString::number(_server_port.toInt()-1);
+        auto port = _server_port.toUShort();
+        if(port>0){
+            client_port=QString::number(port-1);
+        }
     }
     _net_tree_wid->topLevelItem(0)->child(0)->setText(HOSTPORT_COL,client_port);
     
@@ -197,9 +226,9 @@ void EcGuiNet::OnMouseClicked(QTreeWidgetItem* item, int column)
     
     if(_net_enabled){
         if((item->text(0)=="Server") &&
-           ((column == USERNAME_COL) || 
-            (column == HOSTNAME_COL)   ||
-            (column == HOSTPORT_COL))){
+           (column == USERNAME_COL || 
+            column == HOSTNAME_COL ||
+            column == HOSTPORT_COL)){
             _net_tree_wid->openPersistentEditor(item,column);
         }
         else{
