@@ -57,13 +57,17 @@ EcGuiNet::EcGuiNet(QWidget *parent) :
     connect(_server_process , SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(server_processFinished(int, QProcess::ExitStatus)));
     connect(_server_process, &QProcess::readyReadStandardOutput,this, &EcGuiNet::server_readyStdO);
     
-    /*protocl */
+    /*protocol */
     _protocol_combobox = parent->findChild<QComboBox *>("Protocol");
     _protocol_combobox->setCurrentIndex(0);
     _server_protocol = _protocol_combobox->currentText();
     
     /* connection of frequency function */
     connect(_protocol_combobox, SIGNAL(currentIndexChanged(int)),this,SLOT(OnProtocolChanged()));
+
+    _connect_action = parent->findChild<QAction *>("actionConnnect_to");
+    connect(_connect_action, SIGNAL(triggered()), this, SLOT(connect_to_network()));
+
     _repl_config="";
     set_ec_network();
 }
@@ -168,7 +172,9 @@ bool EcGuiNet::eventFilter( QObject* o, QEvent* e )
 void EcGuiNet::set_net_enabled(bool enable)
 {
     _net_enabled=enable;
+    _connect_action->setEnabled(true);
     if(!_net_enabled){
+        _connect_action->setEnabled(false);
         close_net_setup();
     }
 }
@@ -326,16 +332,18 @@ QString EcGuiNet::find_running_process(QProcess * process,QString bin_name,QStri
     QStringList cmd;
     QString bin_pid="";
     
-    cmd = _ssh_command;
-    cmd.append("'pgrep'"); // remember comment out: .bashrc all line of # If not running interactively, don't do anything
-    cmd.append(bin_name);
-    
-    stdout.clear();
-    process->start("sshpass", cmd);
-    if(process->waitForFinished()){
-       bin_pid = stdout;
+    if(!_ssh_command.empty()){
+        cmd = _ssh_command;
+        cmd.append("'pgrep'"); // remember comment out: .bashrc all line of # If not running interactively, don't do anything
+        cmd.append(bin_name);
+        
+        stdout.clear();
+        process->start("sshpass", cmd);
+        if(process->waitForFinished()){
+        bin_pid = stdout;
+        }
+        bin_pid = bin_pid.remove(QChar('\n'));
     }
-    bin_pid = bin_pid.remove(QChar('\n'));
 
     return bin_pid;
 }
@@ -346,17 +354,19 @@ QString EcGuiNet::find_process(QProcess * process,QString bin_name,QString& stdo
     QStringList cmd;
     QString bin_file_path="";
     
-    cmd = _ssh_command;
-    cmd.append("'which'"); // remember comment out: .bashrc all line of # If not running interactively, don't do anything
-    cmd.append(bin_name);
-    
-    stdout.clear();
-    process->start("sshpass", cmd);
-    if(process->waitForFinished()){
-       bin_file_path = stdout;
+    if(!_ssh_command.empty()){
+        cmd = _ssh_command;
+        cmd.append("'which'"); // remember comment out: .bashrc all line of # If not running interactively, don't do anything
+        cmd.append(bin_name);
+        
+        stdout.clear();
+        process->start("sshpass", cmd);
+        if(process->waitForFinished()){
+        bin_file_path = stdout;
+        }
+        
+        bin_file_path = bin_file_path.remove(QChar('\n'));
     }
-    
-    bin_file_path = bin_file_path.remove(QChar('\n'));
 
     return bin_file_path;
 }
@@ -366,7 +376,6 @@ void EcGuiNet::kill_process(QProcess *process,QString bin_name,QString& stdout)
     QString pid=find_running_process(process,bin_name,stdout);
     if(pid!=""){
         QStringList cmd;
-        
         cmd=_ssh_command;
         cmd.append("'killall'");
         cmd.append("-9");
@@ -379,19 +388,21 @@ void EcGuiNet::kill_process(QProcess *process,QString bin_name,QString& stdout)
 
 void EcGuiNet::start_process(QProcess *process,QString bin_file_path,QString option)
 {
-    QStringList cmd;
-    cmd.append(_ssh_command); 
-    /*Force pseudo-terminal allocation.  This can be used to
-    execute arbitrary screen-based programs on a remote
-    machine, which can be very useful, e.g. when implementing
-    menu services.  Multiple -t options force tty allocation,
-    even if ssh has no local tty.*/
-    cmd.insert(3,"-tt"); 
-    cmd.append(bin_file_path);
-    if(option!=""){
-        cmd.append(option);
+    if(!_ssh_command.empty()){
+        QStringList cmd;
+        cmd.append(_ssh_command); 
+        /*Force pseudo-terminal allocation.  This can be used to
+        execute arbitrary screen-based programs on a remote
+        machine, which can be very useful, e.g. when implementing
+        menu services.  Multiple -t options force tty allocation,
+        even if ssh has no local tty.*/
+        cmd.insert(3,"-tt"); 
+        cmd.append(bin_file_path);
+        if(option!=""){
+            cmd.append(option);
+        }
+        process->start("sshpass", cmd);
     }
-    process->start("sshpass", cmd);
 }
 
 bool EcGuiNet::create_ssh_cmd(QProcess *process,QString& stdout)
@@ -404,6 +415,7 @@ bool EcGuiNet::create_ssh_cmd(QProcess *process,QString& stdout)
     _ssh_command.append(_server_pwd);
     _ssh_command.append("ssh");
     _ssh_command.append("-o StrictHostKeyChecking=no");
+    _ssh_command.append("-o ConnectTimeout=3");
     _ssh_command.append(_server_username+"@"+_server_hostname);
 
     QStringList cmd = _ssh_command;
@@ -414,6 +426,7 @@ bool EcGuiNet::create_ssh_cmd(QProcess *process,QString& stdout)
     auto user_name = stdout.remove(QChar('\n'));
     
     if(user_name != _server_username){
+        _ssh_command.clear();
         QMessageBox msgBox;
         msgBox.setText("Problem on the ssh command, please verify the EtherCAT system setup");
         msgBox.exec();
@@ -549,6 +562,28 @@ void EcGuiNet::stopping_network(bool force_stop)
         kill_process(_ec_master_process,"'fw_update'",_ec_master_stdout);
     }
     kill_view_process(_master_terminal_pid);
+}
+
+void EcGuiNet::connect_to_network()
+{
+    QStringList ping_cmd={"-c","1","-W","3",_server_hostname};
+    QProcess ping_proc;
+    ping_proc.start("ping",ping_cmd);
+    if(ping_proc.waitForFinished()){
+        QMessageBox msgBox;
+        QByteArray ping_output = ping_proc.readAllStandardOutput();
+        if (!ping_output.isEmpty()){
+            if (-1 != QString(ping_output).indexOf("ttl", 0, Qt::CaseInsensitive)){
+                msgBox.setIcon(QMessageBox::Information);
+                msgBox.setText("Server reachable");
+            }
+            else{
+                msgBox.setIcon(QMessageBox::Critical);
+                msgBox.setText("Server unreachable");
+            }
+        }
+        msgBox.exec();
+    }
 }
 
 EcGuiNet::ec_net_info_t EcGuiNet::get_net_setup()

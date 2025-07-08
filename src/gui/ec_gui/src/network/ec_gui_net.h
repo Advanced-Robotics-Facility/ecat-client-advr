@@ -42,6 +42,7 @@ private slots:
     void OnPasswordChanged();
     void OnProtocolChanged();
     void stopping_network(bool force_stop=false);
+    void connect_to_network();
 
 protected:
     bool eventFilter( QObject* o, QEvent* e );
@@ -64,6 +65,7 @@ private:
   QString _real_server_username;
   QString _master_terminal_pid="",_server_terminal_pid="",_gui_terminal_pid="";
   QString _repl_config;
+  QAction *_connect_action;
   
   QComboBox * _protocol_combobox;
   bool _open_config_file=false;
