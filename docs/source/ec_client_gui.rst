@@ -52,6 +52,7 @@ Once the user has setup the EtherCAT system adding the **EtherCAT System passwor
 .. image:: _static/EtherCAT_Client_GUI_Img/EtherCAT_Client_GUI_Img_3.png
 
 **Note:** At the bottom right the user can check the status of the system.
+
 **Important:** In case of ssh protocol error, the user can verify the server hostname using the **Connect to** button for pinging the server machine. Be aware also of the network setup and server password.
 
 It's also possible to verify EtherCAT system status using the terminals opened during the starting phase, or clicking the terminal buttons in the Terminal column:
