@@ -332,16 +332,18 @@ QString EcGuiNet::find_running_process(QProcess * process,QString bin_name,QStri
     QStringList cmd;
     QString bin_pid="";
     
-    cmd = _ssh_command;
-    cmd.append("'pgrep'"); // remember comment out: .bashrc all line of # If not running interactively, don't do anything
-    cmd.append(bin_name);
-    
-    stdout.clear();
-    process->start("sshpass", cmd);
-    if(process->waitForFinished()){
-       bin_pid = stdout;
+    if(!_ssh_command.empty()){
+        cmd = _ssh_command;
+        cmd.append("'pgrep'"); // remember comment out: .bashrc all line of # If not running interactively, don't do anything
+        cmd.append(bin_name);
+        
+        stdout.clear();
+        process->start("sshpass", cmd);
+        if(process->waitForFinished()){
+        bin_pid = stdout;
+        }
+        bin_pid = bin_pid.remove(QChar('\n'));
     }
-    bin_pid = bin_pid.remove(QChar('\n'));
 
     return bin_pid;
 }
@@ -352,17 +354,19 @@ QString EcGuiNet::find_process(QProcess * process,QString bin_name,QString& stdo
     QStringList cmd;
     QString bin_file_path="";
     
-    cmd = _ssh_command;
-    cmd.append("'which'"); // remember comment out: .bashrc all line of # If not running interactively, don't do anything
-    cmd.append(bin_name);
-    
-    stdout.clear();
-    process->start("sshpass", cmd);
-    if(process->waitForFinished()){
-       bin_file_path = stdout;
+    if(!_ssh_command.empty()){
+        cmd = _ssh_command;
+        cmd.append("'which'"); // remember comment out: .bashrc all line of # If not running interactively, don't do anything
+        cmd.append(bin_name);
+        
+        stdout.clear();
+        process->start("sshpass", cmd);
+        if(process->waitForFinished()){
+        bin_file_path = stdout;
+        }
+        
+        bin_file_path = bin_file_path.remove(QChar('\n'));
     }
-    
-    bin_file_path = bin_file_path.remove(QChar('\n'));
 
     return bin_file_path;
 }
@@ -372,7 +376,6 @@ void EcGuiNet::kill_process(QProcess *process,QString bin_name,QString& stdout)
     QString pid=find_running_process(process,bin_name,stdout);
     if(pid!=""){
         QStringList cmd;
-        
         cmd=_ssh_command;
         cmd.append("'killall'");
         cmd.append("-9");
@@ -385,19 +388,21 @@ void EcGuiNet::kill_process(QProcess *process,QString bin_name,QString& stdout)
 
 void EcGuiNet::start_process(QProcess *process,QString bin_file_path,QString option)
 {
-    QStringList cmd;
-    cmd.append(_ssh_command); 
-    /*Force pseudo-terminal allocation.  This can be used to
-    execute arbitrary screen-based programs on a remote
-    machine, which can be very useful, e.g. when implementing
-    menu services.  Multiple -t options force tty allocation,
-    even if ssh has no local tty.*/
-    cmd.insert(3,"-tt"); 
-    cmd.append(bin_file_path);
-    if(option!=""){
-        cmd.append(option);
+    if(!_ssh_command.empty()){
+        QStringList cmd;
+        cmd.append(_ssh_command); 
+        /*Force pseudo-terminal allocation.  This can be used to
+        execute arbitrary screen-based programs on a remote
+        machine, which can be very useful, e.g. when implementing
+        menu services.  Multiple -t options force tty allocation,
+        even if ssh has no local tty.*/
+        cmd.insert(3,"-tt"); 
+        cmd.append(bin_file_path);
+        if(option!=""){
+            cmd.append(option);
+        }
+        process->start("sshpass", cmd);
     }
-    process->start("sshpass", cmd);
 }
 
 bool EcGuiNet::create_ssh_cmd(QProcess *process,QString& stdout)
@@ -421,6 +426,7 @@ bool EcGuiNet::create_ssh_cmd(QProcess *process,QString& stdout)
     auto user_name = stdout.remove(QChar('\n'));
     
     if(user_name != _server_username){
+        _ssh_command.clear();
         QMessageBox msgBox;
         msgBox.setText("Problem on the ssh command, please verify the EtherCAT system setup");
         msgBox.exec();
