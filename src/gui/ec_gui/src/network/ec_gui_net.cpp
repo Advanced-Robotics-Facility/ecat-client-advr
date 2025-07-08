@@ -57,13 +57,17 @@ EcGuiNet::EcGuiNet(QWidget *parent) :
     connect(_server_process , SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(server_processFinished(int, QProcess::ExitStatus)));
     connect(_server_process, &QProcess::readyReadStandardOutput,this, &EcGuiNet::server_readyStdO);
     
-    /*protocl */
+    /*protocol */
     _protocol_combobox = parent->findChild<QComboBox *>("Protocol");
     _protocol_combobox->setCurrentIndex(0);
     _server_protocol = _protocol_combobox->currentText();
     
     /* connection of frequency function */
     connect(_protocol_combobox, SIGNAL(currentIndexChanged(int)),this,SLOT(OnProtocolChanged()));
+
+    _connect_action = parent->findChild<QAction *>("actionConnnect_to");
+    connect(_connect_action, SIGNAL(triggered()), this, SLOT(connect_to_network()));
+
     _repl_config="";
     set_ec_network();
 }
@@ -168,7 +172,9 @@ bool EcGuiNet::eventFilter( QObject* o, QEvent* e )
 void EcGuiNet::set_net_enabled(bool enable)
 {
     _net_enabled=enable;
+    _connect_action->setEnabled(true);
     if(!_net_enabled){
+        _connect_action->setEnabled(false);
         close_net_setup();
     }
 }
@@ -404,6 +410,7 @@ bool EcGuiNet::create_ssh_cmd(QProcess *process,QString& stdout)
     _ssh_command.append(_server_pwd);
     _ssh_command.append("ssh");
     _ssh_command.append("-o StrictHostKeyChecking=no");
+    _ssh_command.append("-o ConnectTimeout=3");
     _ssh_command.append(_server_username+"@"+_server_hostname);
 
     QStringList cmd = _ssh_command;
@@ -549,6 +556,28 @@ void EcGuiNet::stopping_network(bool force_stop)
         kill_process(_ec_master_process,"'fw_update'",_ec_master_stdout);
     }
     kill_view_process(_master_terminal_pid);
+}
+
+void EcGuiNet::connect_to_network()
+{
+    QStringList ping_cmd={"-c","1","-W","3",_server_hostname};
+    QProcess ping_proc;
+    ping_proc.start("ping",ping_cmd);
+    if(ping_proc.waitForFinished()){
+        QMessageBox msgBox;
+        QByteArray ping_output = ping_proc.readAllStandardOutput();
+        if (!ping_output.isEmpty()){
+            if (-1 != QString(ping_output).indexOf("ttl", 0, Qt::CaseInsensitive)){
+                msgBox.setIcon(QMessageBox::Information);
+                msgBox.setText("Server reachable");
+            }
+            else{
+                msgBox.setIcon(QMessageBox::Critical);
+                msgBox.setText("Server unreachable");
+            }
+        }
+        msgBox.exec();
+    }
 }
 
 EcGuiNet::ec_net_info_t EcGuiNet::get_net_setup()
