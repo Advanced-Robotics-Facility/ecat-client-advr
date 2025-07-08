@@ -201,8 +201,11 @@ void EcGuiStart::onStartEtherCATSystem()
 {
     QMessageBox msgBox;
     if(!_ec_sys_started){
+
+        if(!_ec_gui_net->start_network()){
+            return;
+        }
         /******************************STAR EtherCAT Master and Server ************************************************/
-        _ec_gui_net->set_net_enabled(false);
         // clear client 
         // problem on udp bind netstat -antup | grep 54320 = client port
         // sshpass
@@ -212,9 +215,6 @@ void EcGuiStart::onStartEtherCATSystem()
             clear_gui();
         }
 
-        if(!_ec_gui_net->start_network()){
-            return;
-        }
         _ec_gui_net->setObjectName("ec_gui_net");
     
         _ec_gui_net->set_protocol_enabled(false);
