@@ -87,39 +87,27 @@ void EcIface::read()
 
     //note: only one thread is allowed to pop data
     _motor_status_queue.consume_all([this](auto *ptr) { 
-        for(const auto&[esc_id,pdo]:*ptr){
-            _motor_status_map[esc_id]=pdo;
-        }
+        _motor_status_map = *ptr;
     });
 
     _pow_status_queue.consume_all([this](auto *ptr) { 
-        for(const auto&[esc_id,pdo]:*ptr){
-            _pow_status_map[esc_id]=pdo;
-        }
+        _pow_status_map = *ptr;
     });
 
     _ft_status_queue.consume_all([this](auto *ptr) { 
-        for(const auto&[esc_id,pdo]:*ptr){
-            _ft_status_map[esc_id]=pdo;
-        }
+        _ft_status_map = *ptr;
     });
 
-    _imu_status_queue.consume_all([this](auto *ptr) { 
-        for(const auto&[esc_id,pdo]:*ptr){
-            _imu_status_map[esc_id]=pdo;
-        }
+    _imu_status_queue.consume_all([this](auto *ptr) {
+        _imu_status_map = *ptr;
     });
 
     _valve_status_queue.consume_all([this](auto *ptr) { 
-        for(const auto&[esc_id,pdo]:*ptr){
-            _valve_status_map[esc_id]=pdo;
-        }
+        _valve_status_map = *ptr;
     });
 
     _pump_status_queue.consume_all([this](auto *ptr) { 
-        for(const auto&[esc_id,pdo]:*ptr){
-            _pump_status_map[esc_id]=pdo;
-        }
+        _pump_status_map = *ptr;
     });
 }
 
