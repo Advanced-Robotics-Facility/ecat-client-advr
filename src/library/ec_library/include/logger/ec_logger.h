@@ -50,6 +50,7 @@ private:
     XBot::MatAppender::Ptr _appender;
 
     SSI _slave_descr;
+    bool _appender_opt;
 };
 
 #endif // EC_LOGGER_H

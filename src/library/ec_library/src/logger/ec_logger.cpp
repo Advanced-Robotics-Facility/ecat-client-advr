@@ -9,6 +9,8 @@ EcLogger::EcLogger(bool compression_enabled)
         _logger_opt.default_buffer_size  = 86400000; // set default buffer size of 24h
     }
     _logger_opt.enable_compression = compression_enabled; // enable ZLIB compression
+
+    _appender_opt = false;
 }
 
 void EcLogger::init_mat_logger(SSI slave_descr)
@@ -26,13 +28,19 @@ void EcLogger::create_logger(std::string logger_name,
         _logger_map[logger_name] = std::make_shared<EcLogger::LOGGER_INFO>();
         std::string logger_file=_logger_dir+logger_name;
         _logger_map[logger_name]->logger = XBot::MatLogger2::MakeLogger(logger_file,_logger_opt);
-        _appender->add_logger(_logger_map[logger_name]->logger);
+        if(_appender_opt){
+            _appender->add_logger(_logger_map[logger_name]->logger);
+        }
     }
 
     if(_logger_map[logger_name]->logger_entry.count(esc_id)==0){  
         std::string logger_entry=logger_entry_type+"_"+std::to_string(esc_id);
         _logger_map[logger_name]->logger_entry[esc_id]=logger_entry;
         _logger_map[logger_name]->logger_row[esc_id].resize(logger_row);
+        if(!_appender_opt){
+            _logger_map[logger_name]->logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
+            _logger_map[logger_name]->logger->create(logger_entry,logger_row);
+        }
     }
 }
 
@@ -41,7 +49,7 @@ void EcLogger::start_mat_logger()
 
     stop_mat_logger();
 
-    if(!_slave_descr.empty()){
+    if(!_slave_descr.empty() && _appender_opt){
         _appender = XBot::MatAppender::MakeInstance();
     }
     
