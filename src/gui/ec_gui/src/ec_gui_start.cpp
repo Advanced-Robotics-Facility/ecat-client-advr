@@ -488,7 +488,7 @@ void EcGuiStart::setup_motor_device(int32_t device_id,int32_t device_type)
     }else{
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0x3B]={200,0,10,0,0};
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0x71]={20,0,0,0,0};
-        _ec_wrapper_info.device_ctrl.device_gains[device_id][0xD4]={500.0,10.0,1.0,0.7,0.007};
+        _ec_wrapper_info.device_ctrl.device_gains[device_id][0xD4]={500.0,10.0,1.0,0.007,0.7};
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0xCC]={0.18,0.01,0.0,0.0,0.0};
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0xDD]={0.18,0.01,0.0,0.0,0.0};
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0x00]={0.0,0.0,0.0,0.0,0.0};
