@@ -86,29 +86,41 @@ void EcIface::read()
     wake_client_thread();
 
     //note: only one thread is allowed to pop data
-    _motor_status_queue.consume_all([this](auto *ptr) { 
-        _motor_status_map = *ptr;
-    });
+    if(_motor_status_queue.read_available()>0){
+        _motor_status_queue.consume_all([this](auto *ptr) { 
+            _motor_status_map = *ptr;
+        });
+    }
 
-    _pow_status_queue.consume_all([this](auto *ptr) { 
-        _pow_status_map = *ptr;
-    });
+    if(_pow_status_queue.read_available()>0){
+        _pow_status_queue.consume_all([this](auto *ptr) { 
+            _pow_status_map = *ptr;
+        });
+    }
 
-    _ft_status_queue.consume_all([this](auto *ptr) { 
-        _ft_status_map = *ptr;
-    });
+    if(_ft_status_queue.read_available()>0){
+        _ft_status_queue.consume_all([this](auto *ptr) { 
+            _ft_status_map = *ptr;
+        });
+    }
 
-    _imu_status_queue.consume_all([this](auto *ptr) {
-        _imu_status_map = *ptr;
-    });
+    if(_imu_status_queue.read_available()>0){
+        _imu_status_queue.consume_all([this](auto *ptr) {
+            _imu_status_map = *ptr;
+        });
+    }
 
-    _valve_status_queue.consume_all([this](auto *ptr) { 
-        _valve_status_map = *ptr;
-    });
+    if(_valve_status_queue.read_available()>0){
+        _valve_status_queue.consume_all([this](auto *ptr) { 
+            _valve_status_map = *ptr;
+        });
+    }
 
-    _pump_status_queue.consume_all([this](auto *ptr) { 
-        _pump_status_map = *ptr;
-    });
+    if(_pump_status_queue.read_available()>0){
+        _pump_status_queue.consume_all([this](auto *ptr) { 
+            _pump_status_map = *ptr;
+        });
+    }
 }
 
 void EcIface::get_motor_status(MotorStatusMap &motor_status_map)
