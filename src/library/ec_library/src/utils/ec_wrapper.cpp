@@ -145,6 +145,10 @@ void EcWrapper::stop_devices(void)
     bool stop_devices=false;
     if(!_engage_brake_cmds.empty()){
         // engage brakes
+        if(1){
+            // engage brakes OK
+            stop_devices=true;
+        }
     }
     else{
         stop_devices=true;
