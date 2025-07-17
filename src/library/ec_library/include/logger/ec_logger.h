@@ -22,7 +22,7 @@ public:
     
     typedef std::shared_ptr<EcLogger> Ptr;
     
-    EcLogger(bool compression_enabled=true);
+    EcLogger(bool compression_enabled=true,bool appender_opt=true);
     
     void init_mat_logger(SSI slave_descr);
     void start_mat_logger();

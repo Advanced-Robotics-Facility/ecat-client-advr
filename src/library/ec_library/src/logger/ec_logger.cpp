@@ -1,16 +1,14 @@
 #include "logger/ec_logger.h"
 
-EcLogger::EcLogger(bool compression_enabled)
+EcLogger::EcLogger(bool compression_enabled,bool appender_opt)
 {
     // Logger setup
     _logger_dir="/tmp/";
-    _logger_opt.default_buffer_size = 1e4;
-    if(compression_enabled){
-        _logger_opt.default_buffer_size  = 86400000; // set default buffer size of 24h
-    }
+    _logger_opt.default_buffer_size  = 86400000; // set default buffer size of 24h
+    
     _logger_opt.enable_compression = compression_enabled; // enable ZLIB compression
 
-    _appender_opt = false;
+    _appender_opt = appender_opt;
 }
 
 void EcLogger::init_mat_logger(SSI slave_descr)
