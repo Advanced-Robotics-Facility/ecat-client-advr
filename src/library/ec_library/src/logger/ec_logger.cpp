@@ -1,14 +1,12 @@
 #include "logger/ec_logger.h"
 
-EcLogger::EcLogger(bool compression_enabled,bool appender_opt)
+EcLogger::EcLogger(LOGGER_OPT log_opt):
+_log_opt(log_opt)
 {
     // Logger setup
     _logger_dir="/tmp/";
-    _logger_opt.default_buffer_size  = 86400000; // set default buffer size of 24h
-    
-    _logger_opt.enable_compression = compression_enabled; // enable ZLIB compression
-
-    _appender_opt = appender_opt;
+    _logger_opt.default_buffer_size  = 3*1e5; // set default buffer size --> (5min) if sample time = 1ms
+    _logger_opt.enable_compression = _log_opt.enable_compression; // enable ZLIB compression
 }
 
 void EcLogger::init_mat_logger(SSI slave_descr)
@@ -26,8 +24,11 @@ void EcLogger::create_logger(std::string logger_name,
         _logger_map[logger_name] = std::make_shared<EcLogger::LOGGER_INFO>();
         std::string logger_file=_logger_dir+logger_name;
         _logger_map[logger_name]->logger = XBot::MatLogger2::MakeLogger(logger_file,_logger_opt);
-        if(_appender_opt){
+        if(_log_opt.enable_appender){
             _appender->add_logger(_logger_map[logger_name]->logger);
+        }
+        else{
+            _logger_map[logger_name]->logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
         }
     }
 
@@ -35,10 +36,7 @@ void EcLogger::create_logger(std::string logger_name,
         std::string logger_entry=logger_entry_type+"_"+std::to_string(esc_id);
         _logger_map[logger_name]->logger_entry[esc_id]=logger_entry;
         _logger_map[logger_name]->logger_row[esc_id].resize(logger_row);
-        if(!_appender_opt){
-            _logger_map[logger_name]->logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
-            _logger_map[logger_name]->logger->create(logger_entry,logger_row);
-        }
+        _logger_map[logger_name]->logger->create(logger_entry,logger_row,1,_logger_opt.default_buffer_size);
     }
 }
 
@@ -47,7 +45,7 @@ void EcLogger::start_mat_logger()
 
     stop_mat_logger();
 
-    if(!_slave_descr.empty() && _appender_opt){
+    if(!_slave_descr.empty() && _log_opt.enable_appender){
         _appender = XBot::MatAppender::MakeInstance();
     }
     

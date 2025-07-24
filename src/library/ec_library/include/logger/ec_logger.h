@@ -19,10 +19,17 @@ public:
         std::map<int,std::string> logger_entry;
         std::map<int,std::vector<float>> logger_row;
     }LOGGER_INFO;
+
     
+    typedef struct LOGGER_OPT{
+        bool enable_compression=false;
+        bool enable_appender=false;
+        LOGGER_OPT(){};
+    }LOGGER_OPT;
+
     typedef std::shared_ptr<EcLogger> Ptr;
-    
-    EcLogger(bool compression_enabled=true,bool appender_opt=true);
+
+    EcLogger(LOGGER_OPT log_opt=LOGGER_OPT());
     
     void init_mat_logger(SSI slave_descr);
     void start_mat_logger();
@@ -50,7 +57,7 @@ private:
     XBot::MatAppender::Ptr _appender;
 
     SSI _slave_descr;
-    bool _appender_opt;
+    LOGGER_OPT _log_opt;
 };
 
 #endif // EC_LOGGER_H

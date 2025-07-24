@@ -63,7 +63,9 @@ EcGuiWrapper::EcGuiWrapper(QWidget *parent) :
 
     _ec_gui_cmd = std::make_shared<EcGuiCmd>(_ec_gui_slider,parent);
 
-    _ec_logger=std::make_shared<EcLogger>(false);
+    EcLogger::LOGGER_OPT log_opt;
+    log_opt.enable_appender=true;
+    _ec_logger=std::make_shared<EcLogger>(log_opt);
 
     _send_pdo=false;
         
