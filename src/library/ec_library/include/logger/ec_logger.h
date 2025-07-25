@@ -5,6 +5,7 @@
 #include <array>
 #include <vector>
 #include <map>
+#include <filesystem>
 
 #include <matlogger2/matlogger2.h>
 #include <matlogger2/utils/mat_appender.h>
@@ -46,6 +47,8 @@ public:
     void log_pump_reference(const PumpReferenceMap& pump_reference_map);
     
 private: 
+    void get_old_logger();
+    void delete_old_logger(const std::string &logger_name);
     void create_logger(std::string logger_name,
                        int esc_id,
                        std::string logger_entry_type,
@@ -58,6 +61,7 @@ private:
 
     SSI _slave_descr;
     LOGGER_OPT _log_opt;
+    std::vector<std::filesystem::path> _old_logger;
 };
 
 #endif // EC_LOGGER_H

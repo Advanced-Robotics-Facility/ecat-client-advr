@@ -15,12 +15,41 @@ void EcLogger::init_mat_logger(SSI slave_descr)
     _slave_descr=slave_descr;
 }
 
+void EcLogger::get_old_logger()
+{
+    for(auto& dir: std::filesystem::directory_iterator(_logger_dir)){
+        if(dir.path().extension()==".mat"){
+            std::string file_name= dir.path().filename();
+            if (file_name.find("status_logger",0) > 0 || 
+                file_name.find("reference_logger",0) > 0){
+                _old_logger.push_back(dir.path());
+            }
+        }
+    }
+}
+
+void EcLogger::delete_old_logger(const std::string &logger_name)
+{
+    _old_logger.erase(std::remove_if(_old_logger.begin(), _old_logger.end(), 
+    [&](auto file_path) { 
+        std::string file_name= file_path.filename();
+        if (file_name.find(logger_name) == 0){
+            std::filesystem::remove(file_path);
+            return true;
+        }
+        return false;
+    }), _old_logger.end());
+}
+
 void EcLogger::create_logger(std::string logger_name,
                              int esc_id,
                              std::string logger_entry_type,
                              int logger_row)
 {
     if(_logger_map.count(logger_name)==0){
+
+        delete_old_logger(logger_name);
+
         _logger_map[logger_name] = std::make_shared<EcLogger::LOGGER_INFO>();
         std::string logger_file=_logger_dir+logger_name;
         _logger_map[logger_name]->logger = XBot::MatLogger2::MakeLogger(logger_file,_logger_opt);
@@ -45,8 +74,11 @@ void EcLogger::start_mat_logger()
 
     stop_mat_logger();
 
-    if(!_slave_descr.empty() && _log_opt.enable_appender){
-        _appender = XBot::MatAppender::MakeInstance();
+    if(!_slave_descr.empty()){
+        get_old_logger();
+        if(_log_opt.enable_appender){
+            _appender = XBot::MatAppender::MakeInstance();
+        }
     }
     
     for ( auto &[esc_id, esc_type, pos] : _slave_descr ) {
@@ -89,6 +121,8 @@ void EcLogger::start_mat_logger()
 
 void EcLogger::stop_mat_logger()
 {
+    _old_logger.clear();
+
     for(auto &[logger_name,logger_info]:_logger_map){
         logger_info->logger.reset();
         logger_info->logger_entry.clear();
