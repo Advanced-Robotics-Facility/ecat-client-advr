@@ -241,6 +241,7 @@ int main(int argc, char *const argv[])
                             std::get<1>(valve_reference_map[esc_id]) = valves_set_ref[esc_id];
                         }else if(ctrl_mode == iit::advr::Gains_Type_IMPEDANCE){
                             std::get<2>(valve_reference_map[esc_id]) = valves_set_ref[esc_id];
+                            std::get<0>(valve_reference_map[esc_id]) = -1.0; //current fdw ref
                         }else{
                             std::get<0>(valve_reference_map[esc_id]) = valves_set_ref[esc_id];
                         }
