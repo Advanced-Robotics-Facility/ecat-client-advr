@@ -84,42 +84,59 @@ void EcIface::set_slaves_info(SSI slave_info)
 void EcIface::read()
 {
     wake_client_thread();
-
     //note: only one thread is allowed to pop data
+
+    bool read_ok= _motor_status_map.empty() | 
+                 (_motor_status_queue.read_available()>0);
     if(_motor_status_queue.read_available()>0){
         _motor_status_queue.consume_all([this](auto *ptr) { 
             _motor_status_map = *ptr;
         });
     }
 
+    read_ok &= _pow_status_map.empty() | 
+              (_pow_status_queue.read_available()>0);
     if(_pow_status_queue.read_available()>0){
         _pow_status_queue.consume_all([this](auto *ptr) { 
             _pow_status_map = *ptr;
         });
     }
 
+    read_ok&= _ft_status_map.empty() | 
+             (_ft_status_queue.read_available()>0);
     if(_ft_status_queue.read_available()>0){
         _ft_status_queue.consume_all([this](auto *ptr) { 
             _ft_status_map = *ptr;
         });
     }
 
+    read_ok &= _imu_status_map.empty() | 
+              (_imu_status_queue.read_available()>0);
     if(_imu_status_queue.read_available()>0){
         _imu_status_queue.consume_all([this](auto *ptr) {
             _imu_status_map = *ptr;
         });
     }
 
+    read_ok &= _valve_status_map.empty() | 
+              (_valve_status_queue.read_available()>0);
     if(_valve_status_queue.read_available()>0){
         _valve_status_queue.consume_all([this](auto *ptr) { 
             _valve_status_map = *ptr;
         });
     }
 
+    read_ok &= _pump_status_map.empty() | 
+              (_pump_status_queue.read_available()>0);
     if(_pump_status_queue.read_available()>0){
         _pump_status_queue.consume_all([this](auto *ptr) { 
             _pump_status_map = *ptr;
         });
+    }
+
+    // add verbose read option
+    if(!read_ok){
+        //DPRINTF("No new data to read for some slave...\n");
     }
 }
 
