@@ -102,8 +102,8 @@ void EcIface::read()
         });
     }
 
-    read_ok&= _ft_status_map.empty() | 
-             (_ft_status_queue.read_available()>0);
+    read_ok &= _ft_status_map.empty() | 
+              (_ft_status_queue.read_available()>0);
     if(_ft_status_queue.read_available()>0){
         _ft_status_queue.consume_all([this](auto *ptr) { 
             _ft_status_map = *ptr;
