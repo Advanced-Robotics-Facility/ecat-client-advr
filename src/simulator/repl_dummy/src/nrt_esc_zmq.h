@@ -152,25 +152,25 @@ public:
             
             switch ( esc_type  )
             {
-                case iit::ecat::CENT_AC :
-                case iit::ecat::LO_PWR_DC_MC:{
+                case iit::ecat::CENTAC_v15 :
+                case iit::ecat::LP:{
                     auto advrf_motor_pb= std::make_shared<AdvrfMotor>();
                     esc_pb[id]=std::static_pointer_cast<EscPb>(advrf_motor_pb);
                 }break;
-                case iit::ecat::SYNAPTICON_v5_0:
-                case iit::ecat::SYNAPTICON_v5_1:{
+                case iit::ecat::SYNAPTICON_v201:
+                case iit::ecat::SYNAPTICON_v301:{
                     auto synapticon_motor_pb= std::make_shared<SynapticonMotor>();
                     esc_pb[id]=std::static_pointer_cast<EscPb>(synapticon_motor_pb);
                 }break;
-                case iit::ecat::FT6_MSP432:{
+                case iit::ecat::FT6MSP432_v24:{
                     auto ft_pb= std::make_shared<FtPb>();
                     esc_pb[id]=std::static_pointer_cast<EscPb>(ft_pb);
                 }break;   
-                case iit::ecat::IMU_ANY :{
+                case iit::ecat::IMUVN :{
                     auto imu_pb= std::make_shared<ImuPb>();
                     esc_pb[id]=std::static_pointer_cast<EscPb>(imu_pb);
                 }break;
-                case iit::ecat::POW_F28M36_BOARD :{
+                case iit::ecat::POWF28M36 :{
                     auto pow_pb= std::make_shared<PowPb>();
                     esc_pb[id]=std::static_pointer_cast<EscPb>(pow_pb);
                 }break;

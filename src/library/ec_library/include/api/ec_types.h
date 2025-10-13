@@ -14,19 +14,39 @@
 #include "mechanism/protobuf/valve/valve_pdo.h"
 #include "mechanism/protobuf/pump/pump_pdo.h"
 
-static std::map<uint32_t,std::string>ec_motors={
-    {iit::ecat::CENT_AC,"ADVRF_Motor"},
-    {iit::ecat::LO_PWR_DC_MC,"ADVRF_Motor"},
-    {iit::ecat::SYNAPTICON_v5_0,"Synapticon_Motor"},
-    {iit::ecat::SYNAPTICON_v5_1,"Synapticon_Motor"}
-};
-static std::map<uint32_t,std::string>ec_valves={
-    {iit::ecat::HYQ_KNEE,"ADVRF_Valve"}
-};   
+static std::map<uint32_t,std::string>ec_motors = [] {
+    std::map<uint32_t, std::string> result;
+    for (const auto& [key, value] : iit::ecat::esc_type_map) {
+        if ((value == "Motor" || value.size() > 6) && (value.substr(value.size() - 6) == "_Motor")) {
+            std::string motor=value;
+            if(motor=="Motor"){
+                motor="ADVRF_Motor";
+            }
+            result[key] = value;
+        }
+    }
+    return result;
+}();
 
-static std::map<uint32_t,std::string>ec_pumps={
-    {iit::ecat::HYQ_HPU,"ADVRF_Pump"}
-};   
+static std::map<uint32_t,std::string>ec_valves= [] {
+    std::map<uint32_t, std::string> result;
+    for (const auto& [key, value] : iit::ecat::esc_type_map) {
+        if ((value == "Valve" || value.size() > 6) && (value.substr(value.size() - 6) == "_Valve")) {
+            result[key] = value;
+        }
+    }
+    return result;
+}();   
+
+static std::map<uint32_t,std::string>ec_pumps= [] {
+    std::map<uint32_t, std::string> result;
+    for (const auto& [key, value] : iit::ecat::esc_type_map) {
+        if ((value == "Hpu" || value.size() > 6) && (value.substr(value.size() - 6) == "_Hpu")) {
+            result[key] = value;
+        }
+    }
+    return result;
+}();   
 
 using MotorStatusMap =   std::map<int32_t, MotorPdoRx::pdo_t>;
 using MotorReferenceMap= std::map<int32_t, MotorPdoTx::pdo_t>; 

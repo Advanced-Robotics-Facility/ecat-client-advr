@@ -84,20 +84,20 @@ void EcLogger::start_mat_logger()
     for ( auto &[esc_id, esc_type, pos] : _slave_descr ) {
         switch ( esc_type  )
         {
-            case iit::ecat::CENT_AC :
-            case iit::ecat::LO_PWR_DC_MC :
-            case iit::ecat::SYNAPTICON_v5_0:
-            case iit::ecat::SYNAPTICON_v5_1:{
+            case iit::ecat::CENTAC_v15 :
+            case iit::ecat::LP :
+            case iit::ecat::SYNAPTICON_v201:
+            case iit::ecat::SYNAPTICON_v301:{
                 create_logger("motor_status_logger",esc_id,"motor_sts_id",MotorPdoRx::pdo_size);
                 create_logger("motor_reference_logger",esc_id,"motor_ref_id",MotorPdoTx::pdo_size);
             }break;
-            case iit::ecat::FT6_MSP432:{
+            case iit::ecat::FT6MSP432_v24:{
                 create_logger("ft_status_logger",esc_id,"ft_id",FtPdoRx::pdo_size);
             }break; 
-            case iit::ecat::IMU_ANY :{
+            case iit::ecat::IMUVN :{
                 create_logger("imu_status_logger",esc_id,"imu_id",ImuPdoRx::pdo_size);
             }break;
-            case iit::ecat::POW_F28M36_BOARD :{
+            case iit::ecat::POWF28M36 :{
                 create_logger("pow_status_logger",esc_id,"pow_id",PowPdoRx::pdo_size);
             }break;
             case iit::ecat::HYQ_KNEE:{

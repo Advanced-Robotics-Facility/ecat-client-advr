@@ -174,11 +174,11 @@ void EcUtils::device_config_map(const YAML::Node & device_config_node,std::strin
                         std::string type_str=device_config_node[esc_name]["motor_type"].as<std::string>();
                         
                         if(type_str=="ADVRF"){
-                            _ec_cfg.device_config_map[esc_id].type=iit::ecat::CENT_AC;
+                            _ec_cfg.device_config_map[esc_id].type=iit::ecat::CENTAC_v15;
                         }else if(type_str=="Synapticon"){
-                            _ec_cfg.device_config_map[esc_id].type=iit::ecat::SYNAPTICON_v5_1;
+                            _ec_cfg.device_config_map[esc_id].type=iit::ecat::SYNAPTICON_v301;
                         }else{
-                            _ec_cfg.device_config_map[esc_id].type=iit::ecat::CENT_AC;
+                            _ec_cfg.device_config_map[esc_id].type=iit::ecat::CENTAC_v15;
                         }
                     }
                 }
@@ -384,7 +384,7 @@ void EcUtils::generate_fake_slave_info()
             // IMU
             auto imu_id_v=_robot_control_node["simulation"]["imu_id"].as<std::vector<int>>();
             for(const auto &imu_id:imu_id_v){
-                _ec_cfg.fake_slave_info.push_back(std::make_tuple(imu_id,iit::ecat::IMU_ANY,slave_pos));
+                _ec_cfg.fake_slave_info.push_back(std::make_tuple(imu_id,iit::ecat::IMUVN,slave_pos));
                 slave_pos++;
             }
         }
@@ -393,7 +393,7 @@ void EcUtils::generate_fake_slave_info()
             // FT
             auto ft_id_v=_robot_control_node["simulation"]["ft_id"].as<std::vector<int>>();
             for(const auto &ft_id:ft_id_v){
-                _ec_cfg.fake_slave_info.push_back(std::make_tuple(ft_id,iit::ecat::FT6_MSP432,slave_pos));
+                _ec_cfg.fake_slave_info.push_back(std::make_tuple(ft_id,iit::ecat::FT6MSP432_v24,slave_pos));
                 slave_pos++;
             }
         }
@@ -402,7 +402,7 @@ void EcUtils::generate_fake_slave_info()
             // POW
             auto pow_id_v=_robot_control_node["simulation"]["pow_id"].as<std::vector<int>>();
             for(const auto &pow_id:pow_id_v){
-                _ec_cfg.fake_slave_info.push_back(std::make_tuple(pow_id,iit::ecat::POW_F28M36_BOARD,slave_pos));
+                _ec_cfg.fake_slave_info.push_back(std::make_tuple(pow_id,iit::ecat::POWF28M36,slave_pos));
                 slave_pos++;
             }
         }

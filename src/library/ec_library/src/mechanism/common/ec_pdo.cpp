@@ -49,31 +49,31 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
         
         switch ( esc_type  )
         {
-                case iit::ecat::CENT_AC :
-                case iit::ecat::LO_PWR_DC_MC:{
+                case iit::ecat::CENTAC_v15 :
+                case iit::ecat::LP:{
                     auto advrf_pdo = std::make_shared<AdvrfPdo<T>>(_ec_pdo_start, id, esc_type);
                     _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(advrf_pdo);
                     _internal_motor_status_map[id]=_motor_status_map[id]=  advrf_pdo->rx_pdo;
                     _motor_reference_map[id]= advrf_pdo->tx_pdo;
                 }break;
-                case iit::ecat::SYNAPTICON_v5_0:
-                case iit::ecat::SYNAPTICON_v5_1:{
+                case iit::ecat::SYNAPTICON_v201:
+                case iit::ecat::SYNAPTICON_v301:{
                     auto synapticon_pdo = std::make_shared<SynapticonPdo<T>>(_ec_pdo_start, id, esc_type);
                     _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(synapticon_pdo);
                     _internal_motor_status_map[id]=_motor_status_map[id]=  synapticon_pdo->rx_pdo;
                     _motor_reference_map[id]= synapticon_pdo->tx_pdo;
                 }break;
-                case iit::ecat::FT6_MSP432:{
+                case iit::ecat::FT6MSP432_v24:{
                     auto ft_pdo = std::make_shared<FtPdo<T>>(_ec_pdo_start, id);
                     _ft_pdo_map[id]=ft_pdo;
                     _internal_ft_status_map[id]=_ft_status_map[id]= ft_pdo->rx_pdo;
                 }break;   
-                case iit::ecat::IMU_ANY :{
+                case iit::ecat::IMUVN :{
                     auto imu_pdo = std::make_shared<ImuPdo<T>>(_ec_pdo_start, id);
                     _imu_pdo_map[id]=imu_pdo;
                     _internal_imu_status_map[id]=_imu_status_map[id]= imu_pdo->rx_pdo;
                 }break;
-                case iit::ecat::POW_F28M36_BOARD :{
+                case iit::ecat::POWF28M36 :{
                     auto pow_pdo = std::make_shared<PowPdo<T>>(_ec_pdo_start, id);
                     _pow_pdo_map[id]=pow_pdo;
                     _internal_pow_status_map[id]=_pow_status_map[id]= pow_pdo->rx_pdo;

@@ -5,10 +5,10 @@ void EcBoostPdo::esc_factory(SSI slave_descr)
     for ( auto &[id, esc_type, pos] : slave_descr ) {
         switch ( esc_type  )
         {
-                case iit::ecat::CENT_AC :
-                case iit::ecat::LO_PWR_DC_MC:
-                case iit::ecat::SYNAPTICON_v5_0:
-                case iit::ecat::SYNAPTICON_v5_1:{
+                case iit::ecat::CENTAC_v15 :
+                case iit::ecat::LP:
+                case iit::ecat::SYNAPTICON_v201:
+                case iit::ecat::SYNAPTICON_v301:{
                     _internal_motor_status_map[id]=_motor_status_map[id]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
                     _motor_reference_map[id]={0,0,0,0,0,0,0,0,0,0,0,0};
                     if(ec_motors.count(esc_type)>0){
@@ -17,13 +17,13 @@ void EcBoostPdo::esc_factory(SSI slave_descr)
                         }
                     } 
                 }break;
-                case iit::ecat::FT6_MSP432:{
+                case iit::ecat::FT6MSP432_v24:{
                     _internal_ft_status_map[id]=_ft_status_map[id]={0,0,0,0,0,0,0,0};
                 }break;   
-                case iit::ecat::IMU_ANY :{
+                case iit::ecat::IMUVN :{
                     _internal_imu_status_map[id]=_imu_status_map[id]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
                 }break;
-                case iit::ecat::POW_F28M36_BOARD :{
+                case iit::ecat::POWF28M36 :{
                     _internal_pow_status_map[id]=_pow_status_map[id]={0,0,0,0,0,0,0,0,0,0};
                 }break;
                 case iit::ecat::HYQ_KNEE:{
