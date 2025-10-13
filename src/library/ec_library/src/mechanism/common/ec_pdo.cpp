@@ -57,7 +57,8 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                     _motor_reference_map[id]= advrf_pdo->tx_pdo;
                 }break;
                 case iit::ecat::SYNAPTICON_v201:
-                case iit::ecat::SYNAPTICON_v301:{
+                case iit::ecat::SYNAPTICON_v301:
+                case  iit::ecat::NOVANTA:{
                     auto synapticon_pdo = std::make_shared<SynapticonPdo<T>>(_ec_pdo_start, id, esc_type);
                     _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(synapticon_pdo);
                     _internal_motor_status_map[id]=_motor_status_map[id]=  synapticon_pdo->rx_pdo;

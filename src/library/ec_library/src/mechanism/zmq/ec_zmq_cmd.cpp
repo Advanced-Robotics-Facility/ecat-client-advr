@@ -93,6 +93,9 @@ bool EcZmqCmd::retrieve_slaves_info(SSI &slave_info)
                 else if(esc_info["esc_type"]== iit::ecat::SYNAPTICON_v201 || esc_info["esc_type"]== iit::ecat::SYNAPTICON_v301){
                     motor_type_map[esc_id]="SYNAPTICON_MOTOR";
                 }
+                else if(esc_info["esc_type"]== iit::ecat::NOVANTA){
+                    motor_type_map[esc_id]="NOVANTA_MOTOR";
+                }
             }
             
             slave_info.clear();

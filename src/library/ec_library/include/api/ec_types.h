@@ -17,7 +17,7 @@
 static std::map<uint32_t,std::string>ec_motors = [] {
     std::map<uint32_t, std::string> result;
     for (const auto& [key, value] : iit::ecat::esc_type_map) {
-        if ((value == "Motor" || value.size() > 6) && (value.substr(value.size() - 6) == "_Motor")) {
+        if (value.find("Motor")) {
             std::string motor=value;
             if(motor=="Motor"){
                 motor="ADVRF_Motor";
@@ -31,7 +31,7 @@ static std::map<uint32_t,std::string>ec_motors = [] {
 static std::map<uint32_t,std::string>ec_valves= [] {
     std::map<uint32_t, std::string> result;
     for (const auto& [key, value] : iit::ecat::esc_type_map) {
-        if ((value == "Valve" || value.size() > 6) && (value.substr(value.size() - 6) == "_Valve")) {
+        if (value.find("Valve")) {
             result[key] = value;
         }
     }
@@ -41,7 +41,7 @@ static std::map<uint32_t,std::string>ec_valves= [] {
 static std::map<uint32_t,std::string>ec_pumps= [] {
     std::map<uint32_t, std::string> result;
     for (const auto& [key, value] : iit::ecat::esc_type_map) {
-        if ((value == "Hpu" || value.size() > 6) && (value.substr(value.size() - 6) == "_Hpu")) {
+        if (value.find("Hpu")) {
             result[key] = value;
         }
     }

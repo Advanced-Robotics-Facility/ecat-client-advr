@@ -8,7 +8,8 @@ void EcBoostPdo::esc_factory(SSI slave_descr)
                 case iit::ecat::CENTAC_v15 :
                 case iit::ecat::LP:
                 case iit::ecat::SYNAPTICON_v201:
-                case iit::ecat::SYNAPTICON_v301:{
+                case iit::ecat::SYNAPTICON_v301:
+                case  iit::ecat::NOVANTA:{
                     _internal_motor_status_map[id]=_motor_status_map[id]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
                     _motor_reference_map[id]={0,0,0,0,0,0,0,0,0,0,0,0};
                     if(ec_motors.count(esc_type)>0){
