@@ -87,7 +87,8 @@ void EcLogger::start_mat_logger()
             case iit::ecat::CENTAC_v15 :
             case iit::ecat::LP :
             case iit::ecat::SYNAPTICON_v201:
-            case iit::ecat::SYNAPTICON_v301:{
+            case iit::ecat::SYNAPTICON_v301:
+            case  iit::ecat::NOVANTA:{
                 create_logger("motor_status_logger",esc_id,"motor_sts_id",MotorPdoRx::pdo_size);
                 create_logger("motor_reference_logger",esc_id,"motor_ref_id",MotorPdoTx::pdo_size);
             }break;

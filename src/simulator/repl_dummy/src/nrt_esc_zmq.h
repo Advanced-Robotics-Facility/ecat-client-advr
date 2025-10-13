@@ -158,7 +158,8 @@ public:
                     esc_pb[id]=std::static_pointer_cast<EscPb>(advrf_motor_pb);
                 }break;
                 case iit::ecat::SYNAPTICON_v201:
-                case iit::ecat::SYNAPTICON_v301:{
+                case iit::ecat::SYNAPTICON_v301:
+                case iit::ecat::NOVANTA:{
                     auto synapticon_motor_pb= std::make_shared<SynapticonMotor>();
                     esc_pb[id]=std::static_pointer_cast<EscPb>(synapticon_motor_pb);
                 }break;
