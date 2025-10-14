@@ -160,8 +160,8 @@ public:
                 case iit::ecat::SYNAPTICON_v201:
                 case iit::ecat::SYNAPTICON_v301:
                 case iit::ecat::NOVANTA:{
-                    auto synapticon_motor_pb= std::make_shared<SynapticonMotor>();
-                    esc_pb[id]=std::static_pointer_cast<EscPb>(synapticon_motor_pb);
+                    auto cia402_motor_pb= std::make_shared<Cia402Motor>();
+                    esc_pb[id]=std::static_pointer_cast<EscPb>(cia402_motor_pb);
                 }break;
                 case iit::ecat::FT6MSP432_v24:{
                     auto ft_pb= std::make_shared<FtPb>();

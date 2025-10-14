@@ -59,10 +59,10 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                 case iit::ecat::SYNAPTICON_v201:
                 case iit::ecat::SYNAPTICON_v301:
                 case  iit::ecat::NOVANTA:{
-                    auto synapticon_pdo = std::make_shared<SynapticonPdo<T>>(_ec_pdo_start, id, esc_type);
-                    _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(synapticon_pdo);
-                    _internal_motor_status_map[id]=_motor_status_map[id]=  synapticon_pdo->rx_pdo;
-                    _motor_reference_map[id]= synapticon_pdo->tx_pdo;
+                    auto cia402_pdo = std::make_shared<Cia402Pdo<T>>(_ec_pdo_start, id, esc_type);
+                    _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(cia402_pdo);
+                    _internal_motor_status_map[id]=_motor_status_map[id]=  cia402_pdo->rx_pdo;
+                    _motor_reference_map[id]= cia402_pdo->tx_pdo;
                 }break;
                 case iit::ecat::FT6MSP432_v24:{
                     auto ft_pdo = std::make_shared<FtPdo<T>>(_ec_pdo_start, id);

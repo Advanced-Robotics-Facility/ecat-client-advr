@@ -7,7 +7,7 @@
 
 #include <esc_info.h>
 #include "mechanism/protobuf/motor/advrf/advrf_pdo.h"
-#include "mechanism/protobuf/motor/synapticon/synapticon_pdo.h"
+#include "mechanism/protobuf/motor/cia402/cia402_pdo.h"
 #include "mechanism/protobuf/imu/imu_pdo.h"
 #include "mechanism/protobuf/ft/ft_pdo.h"
 #include "mechanism/protobuf/pow/pow_pdo.h"

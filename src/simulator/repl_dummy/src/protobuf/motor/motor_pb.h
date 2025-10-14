@@ -55,7 +55,7 @@ public:
 };
 
 
-class SynapticonMotor : public EscPb{
+class Cia402Motor : public EscPb{
 
 private:
     std::default_random_engine gen;
