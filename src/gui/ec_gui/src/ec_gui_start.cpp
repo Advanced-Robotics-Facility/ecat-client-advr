@@ -426,12 +426,11 @@ void EcGuiStart::setup_motor_device(int32_t device_id,int32_t device_type)
         }
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0x00]={0.0,0.0,0.0,0.0,0.0};
 
+        std::vector<float> limits={FLT_MIN,FLT_MAX,0.0,0.0};
+        std::vector<float> final_limits={FLT_MIN,FLT_MAX,0.0,0.0,0.0};
 
         if(ec_motors[device_type]=="Synapticon_Motor"){
-            sdo_limits.clear();
             sdo_limits={"min_position_limit","max_position_limit","Singleturn_bits","Motor_revolutions"};
-            std::vector<float> limits={FLT_MIN,FLT_MAX,0.0,0.0};
-            std::vector<float> final_limits={FLT_MIN,FLT_MAX,0.0,0.0,0.0};
             read_sdo_info(device_id,sdo_limits,limits);
             if(limits[0]!=FLT_MIN && limits[1]!=FLT_MAX){
                 if(limits[2]>0.0 && limits[3]>0.0){
@@ -443,9 +442,8 @@ void EcGuiStart::setup_motor_device(int32_t device_id,int32_t device_type)
                     }
                 }
             }
-            sdo_limits.clear();
+
             sdo_limits={"Max_motor_speed","SI_unit_velocity","Motor_revolutions"};
-            limits.clear();
             limits={0.0,0.0,0.0};
             read_sdo_info(device_id,sdo_limits,limits);
             float SI_velocity=1.0;
@@ -472,25 +470,27 @@ void EcGuiStart::setup_motor_device(int32_t device_id,int32_t device_type)
                 final_limits[2]=((2*M_PI)/60*limits[0]*SI_velocity)/limits[2]; // 2pi/60*Max_motor_speed*SI_unit_velocity/gear_ratio
             }
 
-            sdo_limits.clear();
             sdo_limits={"Motor_max_torque","Motor_rated_torque","Motor_revolutions"};
-            limits.clear();
             limits={0.0,0.0,0.0};
             read_sdo_info(device_id,sdo_limits,limits);
             if(limits[0]>0.0 && limits[1]>0.0 && limits[2]>0.0){
                 final_limits[3]=limits[0]/1000*limits[1]/1000*limits[2]; //Motor_max_torque/1000*Motor_rated_torque/1000 * gear_ratio;
             }
+        }
 
-            sdo_limits.clear();
-            sdo_limits={"Max_current","Motor_rated_current"};
-            limits.clear();
-            limits={0.0,0.0};
-            read_sdo_info(device_id,sdo_limits,limits);
-            if(limits[0]>0.0 && limits[1]>0.0){
+        sdo_limits={"Max_current","Motor_rated_current"};
+        if(ec_motors[device_type]=="Novanta_Motor"){
+            sdo_limits={"Max_current_21e0","Motor_rated_current_6075"};
+        }
+        limits={0.0,0.0};
+        read_sdo_info(device_id,sdo_limits,limits);
+        if(limits[0]>0.0 && limits[1]>0.0){
+            final_limits[4]=limits[0];
+            if(ec_motors[device_type]=="Synapticon_Motor"){
                 final_limits[4]=limits[0]/1000*limits[1]/1000; //Max_current/1000*Motor_rated_current/1000;
             }
-            _ec_wrapper_info.device_ctrl.device_limits[device_id]=final_limits;
         }
+        _ec_wrapper_info.device_ctrl.device_limits[device_id]=final_limits;
 
     }else{
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0x3B]={200,0,10,0,0};
