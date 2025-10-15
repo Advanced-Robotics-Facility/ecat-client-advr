@@ -58,14 +58,19 @@ if __name__ == "__main__":
             break
         else:
             print(f"Invalid control mode. Please choose from {allowed_control_modes}.")
-
-    # Validate valve type
-    while True:
-        valve_type = input(f"Enter valve type {allowed_valve_types}: ")
-        if valve_type in allowed_valve_types:
-            break
-        else:
-            print(f"Invalid valve type. Please choose from {allowed_valve_types}.")
+            
+    # Automatically select valve type if only one is available
+    if len(allowed_valve_types) == 1:
+        valve_type = allowed_valve_types[0]
+        print(f"✅ Only one valve type available. Using: {valve_type}") 
+    else:
+        # Validate valve type from user input
+        while True:
+           valve_type = input(f"Enter valve type {allowed_valve_types}: ")
+           if valve_type in allowed_valve_types:
+               break
+           else:
+               print(f"Invalid valve type. Please choose from {allowed_valve_types}.")
 
     valves = generate_valve_config(valve_count, control_mode, valve_type)
 

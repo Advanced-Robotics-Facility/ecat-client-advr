@@ -61,13 +61,18 @@ if __name__ == "__main__":
         else:
             print(f"Invalid control mode. Please choose from {allowed_control_modes}.")
 
-    # Validate pump type
-    while True:
-        pump_type = input(f"Enter pump type {allowed_pump_types}: ")
-        if pump_type in allowed_pump_types:
-            break
-        else:
-            print(f"Invalid pump type. Please choose from {allowed_pump_types}.")
+    # Automatically select pump type if only one is available
+    if len(allowed_pump_types) == 1:
+        pump_type = allowed_pump_types[0]
+        print(f"✅ Only one pump type available. Using: {pump_type}") 
+    else:
+        # Validate pump type from user input
+        while True:
+           pump_type = input(f"Enter pump type {allowed_pump_types}: ")
+           if pump_type in allowed_pump_types:
+               break
+           else:
+               print(f"Invalid pump type. Please choose from {allowed_pump_types}.")
 
     pumps = generate_pump_config(pump_count, control_mode, pump_type)
 
