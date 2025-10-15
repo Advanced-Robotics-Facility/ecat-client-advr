@@ -42,7 +42,7 @@ def get_valid_valve_count():
 
 if __name__ == "__main__":
     allowed_valve_types = ["ADVRF"]  # Add more if needed
-    allowed_control_modes = ["3B", "D4", "DD", "0x00"]  # Customize as needed
+    allowed_control_modes = ["3B", "D4", "DD", "0x00"]
 
     valve_count = get_valid_valve_count()
 

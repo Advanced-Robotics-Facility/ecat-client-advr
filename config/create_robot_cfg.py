@@ -17,7 +17,7 @@ def get_positive_int(prompt):
 # Prompt the user
 num_motors = get_positive_int("Enter number of motors (>=0): ")
 num_valves = get_positive_int("Enter number of valves (>=0): ")
-num_pumps = get_positive_int("Enter number of pumps (>=0): ")
+num_pumps = get_positive_int("Enter number of  pumps (>=0): ")
 
 joint_map = {}
 
@@ -64,4 +64,10 @@ if num_pumps > 0:
         "robot_control/pump/make_pump_config.py",
         str(num_pumps)  # Convert the integer to string
     ])
+    
+subprocess.run([
+    "python3", 
+    "robot_control/make_robot_control_cfg.py",
+    str(num_motors),str(num_valves),str(num_pumps)
+])
 
