@@ -41,25 +41,42 @@ def get_valid_pump_count():
         except ValueError:
             print("Invalid input. Please enter a positive integer.")
 
+def get_control_mode_from_arg_or_input(arg_mode, allowed_modes,device):
+    # Normalize allowed modes without 0x for easier comparison
+    allowed_norm = [m.replace("0X", "") for m in allowed_modes]
+
+    # Validate arg_mode if provided
+    if arg_mode:
+        mode = arg_mode.upper()
+        norm_mode = mode.replace("0X", "")
+        if mode in allowed_modes or norm_mode in allowed_norm:
+            if norm_mode == "00":
+                return "0x00"
+            else:
+                return f"0x{norm_mode}"
+        else:
+            print(f"❌ Invalid control mode argument: {arg_mode}")
+            # Fall through to interactive input
+
+    # Interactive input loop
+    while True:
+        control_mode = input(f"Enter control mode {allowed_modes} for {device}: ").upper()
+        norm_mode = control_mode.replace("0X", "")
+        if control_mode in allowed_modes or norm_mode in allowed_norm:
+            if norm_mode == "00":
+                return "0x00"
+            else:
+                return f"0x{norm_mode}"
+        else:
+            print(f"Invalid control mode. Please choose from {allowed_modes}.")
 
 if __name__ == "__main__":
     allowed_pump_types = ["ADVRF"]
     allowed_control_modes = ["71", "D4", "39", "0x00"]
 
     pump_count = get_valid_pump_count()
-
-    # Validate control mode
-    while True:
-        control_mode = input(f"Enter control mode {allowed_control_modes}: ").upper()
-        norm_mode = control_mode.replace("0X", "")
-        if control_mode in allowed_control_modes or norm_mode in [m.replace("0X","") for m in allowed_control_modes]:
-            if norm_mode == "00":
-                control_mode = "0x00"
-            else:
-                control_mode = f"0x{norm_mode}"
-            break
-        else:
-            print(f"Invalid control mode. Please choose from {allowed_control_modes}.")
+    arg_mode = sys.argv[2] if len(sys.argv) > 2 else None
+    control_mode = get_control_mode_from_arg_or_input(arg_mode, allowed_control_modes,"Pump")
 
     # Automatically select pump type if only one is available
     if len(allowed_pump_types) == 1:

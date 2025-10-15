@@ -3,6 +3,22 @@
 import yaml
 import subprocess
 
+def get_control_mode_from_input(allowed_modes,device):
+    # Normalize allowed modes without 0x for easier comparison
+    allowed_norm = [m.replace("0X", "") for m in allowed_modes]
+
+    # Interactive input loop
+    while True:
+        control_mode = input(f"Enter control mode {allowed_modes} for {device}: ").upper()
+        norm_mode = control_mode.replace("0X", "")
+        if control_mode in allowed_modes or norm_mode in allowed_norm:
+            if norm_mode == "00":
+                return "0x00"
+            else:
+                return f"0x{norm_mode}"
+        else:
+            print(f"Invalid control mode. Please choose from {allowed_modes}.")
+
 def get_positive_int(prompt):
     while True:
         try:
@@ -42,32 +58,44 @@ with open("robot_id_map/robot_id_map_gen.yaml", "w") as file:
 print(f"✅ Created robot_id_map_gen.yaml with {num_motors} motors, {num_valves} valves, and {num_pumps} pumps.")
 
 # Run motor cfg script
+motor_ctrl_mode=[0x00]
 if num_motors > 0:
+    allowed_control_modes = ["3B", "71", "D4", "CC", "DD", "0x00"]
+    motor_ctrl_mode=get_control_mode_from_input(allowed_control_modes,"Motor")
     subprocess.run([
         "python3",
         "robot_control/motor/make_motor_config.py",
-        str(num_motors)  # Convert the integer to string
+        str(num_motors),
+        str(motor_ctrl_mode)
     ])
 
 # Run valve cfg script
+valve_ctrl_mode=[0x00]
 if num_valves > 0:
+    allowed_control_modes = ["3B", "D4", "DD", "0x00"]
+    valve_ctrl_mode=get_control_mode_from_input(allowed_control_modes,"Valve")
     subprocess.run([
         "python3",
         "robot_control/valve/make_valve_config.py",
-        str(num_valves)  # Convert the integer to string
+        str(num_valves),
+        str(valve_ctrl_mode)
     ])
 
 # Run valve cfg script
+pump_ctrl_mode=[0x00]
 if num_pumps > 0:
+    allowed_control_modes = ["71", "D4", "39", "0x00"]
+    pump_ctrl_mode=get_control_mode_from_input(allowed_control_modes,"Pump")
     subprocess.run([
         "python3",
         "robot_control/pump/make_pump_config.py",
-        str(num_pumps)  # Convert the integer to string
+        str(num_pumps),
+        str(pump_ctrl_mode)
     ])
     
 subprocess.run([
     "python3", 
     "robot_control/make_robot_control_cfg.py",
-    str(num_motors),str(num_valves),str(num_pumps)
+    str(num_motors),str(num_valves),str(num_pumps),str(motor_ctrl_mode),str(valve_ctrl_mode),str(pump_ctrl_mode)
 ])
 
