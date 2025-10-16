@@ -30,7 +30,7 @@ class FtPdo: public T{
 
 public:
 
-    FtPdo(const std::string,int id);
+    FtPdo(const std::string ,int32_t id, uint32_t type);
     ~FtPdo();
     
     void get_from_pb();
@@ -42,8 +42,8 @@ public:
 };
 
 template < class T >
-inline FtPdo<T>::FtPdo(std::string value,int id):
-                     T(id,"Ft",value)
+inline FtPdo<T>::FtPdo(const std::string value,int32_t id, uint32_t type):
+                     T(id, type, value)
 {
     T::init();
     T::write_connect();

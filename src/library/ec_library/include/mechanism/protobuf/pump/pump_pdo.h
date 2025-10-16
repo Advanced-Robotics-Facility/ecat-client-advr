@@ -66,7 +66,7 @@ class PumpPdo: public T{
 
 public:
 
-    PumpPdo(const std::string,int id);
+    PumpPdo(const std::string value,int32_t id, uint32_t type);
     ~PumpPdo();
 
     void get_from_pb();
@@ -92,8 +92,8 @@ inline void PumpPdo<T>::init_pb()
 }
 
 template < class T >
-inline PumpPdo<T>::PumpPdo(std::string value,int id):
-                       T(id,"HyQ_HpuESC",value)
+inline PumpPdo<T>::PumpPdo(const std::string value,int32_t id, uint32_t type):
+                         T(id, type, value)
 {
     init_pb();
     T::init();

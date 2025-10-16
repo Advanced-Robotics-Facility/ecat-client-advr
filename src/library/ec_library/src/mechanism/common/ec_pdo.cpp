@@ -65,28 +65,28 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                     _motor_reference_map[id]= cia402_pdo->tx_pdo;
                 }break;
                 case iit::ecat::FT6MSP432_v24:{
-                    auto ft_pdo = std::make_shared<FtPdo<T>>(_ec_pdo_start, id);
+                    auto ft_pdo = std::make_shared<FtPdo<T>>(_ec_pdo_start, id, esc_type);
                     _ft_pdo_map[id]=ft_pdo;
                     _internal_ft_status_map[id]=_ft_status_map[id]= ft_pdo->rx_pdo;
                 }break;   
                 case iit::ecat::IMUVN :{
-                    auto imu_pdo = std::make_shared<ImuPdo<T>>(_ec_pdo_start, id);
+                    auto imu_pdo = std::make_shared<ImuPdo<T>>(_ec_pdo_start, id, esc_type);
                     _imu_pdo_map[id]=imu_pdo;
                     _internal_imu_status_map[id]=_imu_status_map[id]= imu_pdo->rx_pdo;
                 }break;
                 case iit::ecat::POWF28M36 :{
-                    auto pow_pdo = std::make_shared<PowPdo<T>>(_ec_pdo_start, id);
+                    auto pow_pdo = std::make_shared<PowPdo<T>>(_ec_pdo_start, id, esc_type);
                     _pow_pdo_map[id]=pow_pdo;
                     _internal_pow_status_map[id]=_pow_status_map[id]= pow_pdo->rx_pdo;
                 }break;
                 case iit::ecat::HYQ_KNEE:{
-                    auto valve_pdo = std::make_shared<ValvePdo<T>>(_ec_pdo_start, id);
+                    auto valve_pdo = std::make_shared<ValvePdo<T>>(_ec_pdo_start, id, esc_type);
                     _valve_pdo_map[id]=valve_pdo;
                     _internal_valve_status_map[id]=_valve_status_map[id]=  valve_pdo->rx_pdo;
                     _valve_reference_map[id]= valve_pdo->tx_pdo;
                 }break;
                 case iit::ecat::HYQ_HPU:{
-                    auto pump_pdo = std::make_shared<PumpPdo<T>>(_ec_pdo_start, id);
+                    auto pump_pdo = std::make_shared<PumpPdo<T>>(_ec_pdo_start, id, esc_type);
                     _pump_pdo_map[id]=pump_pdo;
                     _internal_pump_status_map[id]=_pump_status_map[id]= pump_pdo->rx_pdo;
                     _pump_reference_map[id]= pump_pdo->tx_pdo;
