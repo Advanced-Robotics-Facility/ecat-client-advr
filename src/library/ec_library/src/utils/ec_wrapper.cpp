@@ -251,9 +251,10 @@ bool EcWrapper::start_ec_sys(void)
 {
     _ec_sys_started=true;
     try{
-        _client->start_client(_ec_cfg.period_ms); // IMPORTANT: moved here for UDP protocol
         
-        safe_init(); // safe initializaion of the references.
+        if(_ec_cfg.protocol == "udp"){
+            _client->start_client(_ec_cfg.period_ms); // IMPORTANT: moved here for UDP protocol
+        }
 
         autodetection();
 
@@ -265,7 +266,12 @@ bool EcWrapper::start_ec_sys(void)
         if(!_start_devices_vector.empty()){
             _ec_sys_started &= start_devices();
         }
+  
+        if(!_client->get_client_status().run_loop){
+            _client->start_client(_ec_cfg.period_ms);
+        }
 
+        safe_init(); // safe initializaion of the references.
 
 #ifdef TEST_LIBRARY
         _ec_sys_started = true;
