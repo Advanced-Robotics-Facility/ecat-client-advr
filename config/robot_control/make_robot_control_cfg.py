@@ -94,8 +94,8 @@ def generate_robot_yaml(num_motors, num_valves, num_pumps,
                 "torque": 10.0,
                 "current": 2,
             }),
-            "homing": [InlineList([0.0] * num_motors)],
-            "trajectory": [InlineList([0.0] * num_motors)],
+            "homing": InlineList([0.0] * num_motors),
+            "trajectory": InlineList([0.0] * num_motors),
         }
 
     if num_valves > 0:
