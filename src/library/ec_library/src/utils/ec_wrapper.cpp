@@ -258,20 +258,9 @@ bool EcWrapper::start_ec_sys(void)
 
         autodetection();
 
-        if(_ec_cfg.logging){
-            _ec_logger->init_mat_logger(_slave_info);
-            _ec_logger->start_mat_logger();
-        }
-
         if(!_start_devices_vector.empty()){
             _ec_sys_started &= start_devices();
         }
-  
-        if(!_client->get_client_status().run_loop){
-            _client->start_client(_ec_cfg.period_ms);
-        }
-
-        safe_init(); // safe initializaion of the references.
 
 #ifdef TEST_LIBRARY
         _ec_sys_started = true;
@@ -279,6 +268,20 @@ bool EcWrapper::start_ec_sys(void)
         if(!_ec_sys_started){
             stop_ec_sys();
         }
+        else{
+
+            if(_ec_cfg.logging){
+                _ec_logger->init_mat_logger(_slave_info);
+                _ec_logger->start_mat_logger();
+            }
+  
+            if(_ec_cfg.protocol != "udp"){
+                _client->start_client(_ec_cfg.period_ms);
+            }
+
+            safe_init(); // safe initializaion of the references.
+        }
+
     }catch(std::exception &ex){
         _ec_sys_started=false;
         throw std::runtime_error(ex.what());
