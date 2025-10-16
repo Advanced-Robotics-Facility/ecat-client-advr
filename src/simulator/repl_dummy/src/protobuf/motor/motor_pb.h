@@ -86,6 +86,7 @@ public:
         pb.set_type(iit::advr::Ec_slave_pdo::RX_CIA402);
         
         pb.mutable_cia402_rx_pdo()->set_statusword(0);
+        pb.mutable_cia402_rx_pdo()->set_modes_of_op(0);
         pb.mutable_cia402_rx_pdo()->set_link_pos(pos_ref);
         pb.mutable_cia402_rx_pdo()->set_motor_pos(pos_ref);
         pb.mutable_cia402_rx_pdo()->set_link_vel(vel_ref);
