@@ -5,15 +5,15 @@ import subprocess
 
 def get_control_mode_from_input(allowed_modes,device):
     # Normalize allowed modes without 0x for easier comparison
-    allowed_norm = [m.replace("0X", "") for m in allowed_modes]
-
+    allowed_norm = [m.replace("0X", "").lstrip("0") or "0" for m in allowed_modes]
+    
     # Interactive input loop
     while True:
         control_mode = input(f"Enter control mode {allowed_modes} for {device}: ").upper()
-        norm_mode = control_mode.replace("0X", "")
+        norm_mode = control_mode.replace("0X", "").lstrip("0") or "0"
         if control_mode in allowed_modes or norm_mode in allowed_norm:
-            if norm_mode == "00":
-                return "0x00"
+            if norm_mode == "0":
+                return "0"
             else:
                 return f"0x{norm_mode}"
         else:
@@ -58,9 +58,9 @@ with open("robot_id_map/robot_id_map_gen.yaml", "w") as file:
 print(f"✅ Created robot_id_map_gen.yaml with {num_motors} motors, {num_valves} valves, and {num_pumps} pumps.")
 
 # Run motor cfg script
-motor_ctrl_mode=[0x00]
+motor_ctrl_mode=0x00
 if num_motors > 0:
-    allowed_control_modes = ["3B", "71", "D4", "CC", "DD", "0x00"]
+    allowed_control_modes = ["3B", "71", "D4", "CC", "DD", "0"]
     motor_ctrl_mode=get_control_mode_from_input(allowed_control_modes,"Motor")
     subprocess.run([
         "python3",
@@ -70,9 +70,9 @@ if num_motors > 0:
     ])
 
 # Run valve cfg script
-valve_ctrl_mode=[0x00]
+valve_ctrl_mode=0x00
 if num_valves > 0:
-    allowed_control_modes = ["3B", "D4", "DD", "0x00"]
+    allowed_control_modes = ["3B", "D4", "DD", "0"]
     valve_ctrl_mode=get_control_mode_from_input(allowed_control_modes,"Valve")
     subprocess.run([
         "python3",
@@ -82,9 +82,9 @@ if num_valves > 0:
     ])
 
 # Run valve cfg script
-pump_ctrl_mode=[0x00]
+pump_ctrl_mode=0x00
 if num_pumps > 0:
-    allowed_control_modes = ["71", "D4", "39", "0x00"]
+    allowed_control_modes = ["71", "D4", "39", "0"]
     pump_ctrl_mode=get_control_mode_from_input(allowed_control_modes,"Pump")
     subprocess.run([
         "python3",

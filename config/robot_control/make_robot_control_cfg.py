@@ -35,17 +35,36 @@ def get_positive_int(prompt, default=None):
             print("❌ Invalid input. Enter a valid integer.")
             default = None
 
+def get_yes_no(prompt, arg_value=None):
+    """Ask a yes/no question with optional default from command-line args."""
+    valid_yes = ['yes', 'y', 'true', '1']
+    valid_no = ['no', 'n', 'false', '0']
+
+    while True:
+        if arg_value is not None:
+            value = arg_value.strip().lower()
+        else:
+            value = input(prompt).strip().lower()
+
+        if value in valid_yes:
+            return True
+        elif value in valid_no:
+            return False
+        else:
+            print("❌ Please enter yes or no (y/n).")
+            arg_value = None  # fallback to user prompt
+
 def get_control_mode_from_arg_or_input(arg_mode, allowed_modes,device):
     # Normalize allowed modes without 0x for easier comparison
-    allowed_norm = [m.replace("0X", "") for m in allowed_modes]
+    allowed_norm = [m.replace("0X", "").lstrip("0") or "0" for m in allowed_modes]
 
     # Validate arg_mode if provided
     if arg_mode:
         mode = arg_mode.upper()
-        norm_mode = mode.replace("0X", "")
+        norm_mode = mode.replace("0X", "").lstrip("0") or "0"
         if mode in allowed_modes or norm_mode in allowed_norm:
-            if norm_mode == "00":
-                return "0x00"
+            if norm_mode == "0":
+                return "idle"
             else:
                 return f"0x{norm_mode}"
         else:
@@ -55,10 +74,10 @@ def get_control_mode_from_arg_or_input(arg_mode, allowed_modes,device):
     # Interactive input loop
     while True:
         control_mode = input(f"Enter control mode {allowed_modes} for {device}: ").upper()
-        norm_mode = control_mode.replace("0X", "")
+        norm_mode = control_mode.replace("0X", "").lstrip("0") or "0"
         if control_mode in allowed_modes or norm_mode in allowed_norm:
-            if norm_mode == "00":
-                return "0x00"
+            if norm_mode == "0":
+                return "idle"
             else:
                 return f"0x{norm_mode}"
         else:
@@ -66,8 +85,11 @@ def get_control_mode_from_arg_or_input(arg_mode, allowed_modes,device):
 
 
 
-def generate_robot_yaml(num_motors, num_valves, num_pumps,
-                        motor_control_mode, valve_control_mode, pump_control_mode):
+def generate_robot_yaml(device_counts, control_modes, simulated_devices):
+
+    num_motors, num_valves, num_pumps = device_counts
+    motor_mode, valve_mode, pump_mode = control_modes
+    num_imus, num_fts, num_pows = simulated_devices
 
     motor_ids = list(range(1, num_motors + 1))
     valve_start = num_motors + 1
@@ -75,6 +97,15 @@ def generate_robot_yaml(num_motors, num_valves, num_pumps,
 
     pump_start = valve_start + num_valves
     pump_ids = list(range(pump_start, pump_start + num_pumps))
+    
+    imu_start = pump_start + num_pumps
+    imu_ids = list(range(imu_start, imu_start + num_imus))
+    
+    ft_start = imu_start + num_imus
+    ft_ids = list(range(ft_start, ft_start + num_fts))
+    
+    pow_start = ft_start + num_fts
+    pow_ids = list(range(pow_start, pow_start + num_pows))
 
     data = {
         "trajectory": {
@@ -86,7 +117,7 @@ def generate_robot_yaml(num_motors, num_valves, num_pumps,
 
     if num_motors > 0:
         data["motor"] = {
-            "config_path": f"${{PWD}}/motor/robot_cfg_motor_{sanitize_mode(motor_control_mode)}.yaml",
+            "config_path": f"${{PWD}}/motor/robot_cfg_motor_{sanitize_mode(motor_mode)}.yaml",
             "id": InlineList(motor_ids),
             "set_point": InlineDict({
                 "position": 1.0,
@@ -100,7 +131,7 @@ def generate_robot_yaml(num_motors, num_valves, num_pumps,
 
     if num_valves > 0:
         data["valve"] = {
-            "config_path": f"${{PWD}}/valve/robot_cfg_valve_{sanitize_mode(valve_control_mode)}.yaml",
+            "config_path": f"${{PWD}}/valve/robot_cfg_valve_{sanitize_mode(valve_mode)}.yaml",
             "id": InlineList(valve_ids),
             "set_point": InlineDict({
                 "current": 2.5,
@@ -111,7 +142,7 @@ def generate_robot_yaml(num_motors, num_valves, num_pumps,
 
     if num_pumps > 0:
         data["pump"] = {
-            "config_path": f"${{PWD}}/pump/robot_cfg_pump_{sanitize_mode(pump_control_mode)}.yaml",
+            "config_path": f"${{PWD}}/pump/robot_cfg_pump_{sanitize_mode(pump_mode)}.yaml",
             "id": InlineList(pump_ids),
             "set_point": InlineDict({
                 "pressure": 128.0,
@@ -119,7 +150,16 @@ def generate_robot_yaml(num_motors, num_valves, num_pumps,
                 "pwm": 30.0,
             }),
         }
-
+        
+    if any([num_imus, num_fts, num_pows]):
+        data["simulation"] = {}
+        if num_imus > 0:
+            data["simulation"]["imu_id"] = InlineList(imu_ids)
+        if num_fts > 0:
+            data["simulation"]["ft_id"] = InlineList(ft_ids)
+        if num_pows > 0:
+            data["simulation"]["pow_id"] = InlineList(pow_ids)
+            
     # Dump YAML to string first
     yaml_str = yaml.dump(data, sort_keys=False)
 
@@ -135,7 +175,7 @@ def generate_robot_yaml(num_motors, num_valves, num_pumps,
     
     # Get the directory where the current script is located
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    filename = "robot_contro_gen.yaml"
+    filename = "robot_control_gen.yaml"
     filepath = os.path.join(script_dir, filename)
 
     # Write to file
@@ -163,16 +203,27 @@ if __name__ == "__main__":
     arg_valve_mode = args[4] if len(args) > 4 else None
     arg_pump_mode = args[5] if len(args) > 5 else None
     
-    allowed_control_modes = ["3B", "71", "D4", "CC", "DD", "0x00"]
+    allowed_control_modes = ["3B", "71", "D4", "CC", "DD", "0"]
     motor_mode = get_control_mode_from_arg_or_input(arg_motor_mode, allowed_control_modes,"Motor")
     
-    allowed_control_modes = ["3B", "D4", "DD", "0x00"]
+    allowed_control_modes = ["3B", "D4", "DD", "0"]
     valve_mode = get_control_mode_from_arg_or_input(arg_valve_mode, allowed_control_modes,"Valve")
     
-    allowed_control_modes = ["71", "D4", "39", "0x00"]
+    allowed_control_modes = ["71", "D4", "39", "0"]
     pump_mode = get_control_mode_from_arg_or_input(arg_pump_mode, allowed_control_modes,"Pump")
 
+    simulate_extra_devices = get_yes_no("Do you have to simulate other devices? (y/n): ", None)
+    
+    if simulate_extra_devices:
+        num_imus = get_positive_int("Enter number of IMUs: ", None)
+        num_fts = get_positive_int("Enter number of FTs: ", None)
+        num_pows = get_positive_int("Enter number of Power boards: ",None)
+    else:
+        num_imus = num_fts = num_pows = 0
 
-    generate_robot_yaml(num_motors, num_valves, num_pumps,
-                        motor_mode, valve_mode, pump_mode)
+    device_counts = [num_motors, num_valves, num_pumps]
+    control_modes = [motor_mode, valve_mode, pump_mode]
+    simulated_devices = [num_imus, num_fts, num_pows]
+
+    generate_robot_yaml(device_counts,control_modes,simulated_devices)
 
