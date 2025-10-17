@@ -64,7 +64,7 @@ void EcIDDP::start_client(uint32_t period_ms)
     if(retrieve_slaves_info(slave_info)){
         try{
             esc_factory(slave_info);
-            create(true); // real time thread
+            create(true,0); // real time thread
             sync_client_thread();
         } catch ( std::exception &e ) {
             DPRINTF ( "Fatal Error: %s\n", e.what() );

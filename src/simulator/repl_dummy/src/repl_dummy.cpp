@@ -75,7 +75,7 @@ int main ( int argc, char * argv[] ) try {
     if(ec_cfg.protocol=="iddp"){
         thread_name="RtEscPipe";
         threads[thread_name] = new RtEscPipe("NoNe", esc_map,rt_th_period_us);
-        threads[thread_name]->create(true);
+        threads[thread_name]->create(true,nprocs-1 );
     }
     else{
         thread_name="NrtEscZmq";
