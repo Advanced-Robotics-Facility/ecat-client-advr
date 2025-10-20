@@ -392,35 +392,35 @@ void EcGuiStart::setup_motor_device(int32_t device_id,int32_t device_type)
 {
     std::vector<std::string> sdo_gains;
     std::vector<std::string> sdo_limits;
-    if(ec_motors[device_type]=="Synapticon_Motor"||
-       ec_motors[device_type]=="Novanta_Motor"){
+    if(ec_motors[device_type]=="Synap_Motor"||
+       ec_motors[device_type]=="Nov_Motor"){
 
         sdo_gains={"Position_loop_Kp","Position_loop_Ki","Position_loop_Kd"};
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0x3B]={0.0,0.0,0.0,0.0,0.0};
         read_sdo_info(device_id,sdo_gains,_ec_wrapper_info.device_ctrl.device_gains[device_id][0x3B]);
 
         sdo_gains={"Velocity_loop_Kp","Velocity_loop_Ki","Velocity_loop_Kd"};
-        if(ec_motors[device_type]=="Synapticon_Motor"){
+        if(ec_motors[device_type]=="Synap_Motor"){
             sdo_gains={"Controller_Kp","Controller_Ki","Controller_Kd"};
         }
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0x71]={0.0,0.0,0.0,0.0,0.0};
         read_sdo_info(device_id,sdo_gains,_ec_wrapper_info.device_ctrl.device_gains[device_id][0x71]);
         
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0xD4]={0.0,0.0,0.0,0.0,0.0};
-        if(ec_motors[device_type]=="Synapticon_Motor"){
+        if(ec_motors[device_type]=="Synap_Motor"){
             sdo_gains={"Torque_Controller_Kp","Torque_Controller_Ki","Torque_Controller_Kd"};
             read_sdo_info(device_id,sdo_gains,_ec_wrapper_info.device_ctrl.device_gains[device_id][0xD4]);
         }
 
         sdo_gains={"Torque_loop_Kp","Torque_loop_Ki"};
-        if(ec_motors[device_type]=="Synapticon_Motor"){
+        if(ec_motors[device_type]=="Synap_Motor"){
             sdo_gains={"Damping_ratio","Settling_time"};
         }
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0xCC]={0.0,0.0,0.0,0.0,0.0};
         read_sdo_info(device_id,sdo_gains,_ec_wrapper_info.device_ctrl.device_gains[device_id][0xCC]);
 
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0xDD]={0.0,0.0,0.0,0.0,0.0};
-        if(ec_motors[device_type]=="Novanta_Motor"){
+        if(ec_motors[device_type]=="Nov_Motor"){
             sdo_gains={"Current_quadrature_loop_Kp","Current_quadrature_loop_Ki"};
             read_sdo_info(device_id,sdo_gains,_ec_wrapper_info.device_ctrl.device_gains[device_id][0xDD]);
         }
@@ -429,7 +429,7 @@ void EcGuiStart::setup_motor_device(int32_t device_id,int32_t device_type)
         std::vector<float> limits={FLT_MIN,FLT_MAX,0.0,0.0};
         std::vector<float> final_limits={FLT_MIN,FLT_MAX,0.0,0.0,0.0};
 
-        if(ec_motors[device_type]=="Synapticon_Motor"){
+        if(ec_motors[device_type]=="Synap_Motor"){
             sdo_limits={"min_position_limit","max_position_limit","Singleturn_bits","Motor_revolutions"};
             read_sdo_info(device_id,sdo_limits,limits);
             if(limits[0]!=FLT_MIN && limits[1]!=FLT_MAX){
@@ -479,14 +479,14 @@ void EcGuiStart::setup_motor_device(int32_t device_id,int32_t device_type)
         }
 
         sdo_limits={"Max_current","Motor_rated_current"};
-        if(ec_motors[device_type]=="Novanta_Motor"){
+        if(ec_motors[device_type]=="Nov_Motor"){
             sdo_limits={"Max_current_21e0","Motor_rated_current_6075"};
         }
         limits={0.0,0.0};
         read_sdo_info(device_id,sdo_limits,limits);
         if(limits[0]>0.0 && limits[1]>0.0){
             final_limits[4]=limits[0];
-            if(ec_motors[device_type]=="Synapticon_Motor"){
+            if(ec_motors[device_type]=="Synap_Motor"){
                 final_limits[4]=limits[0]/1000*limits[1]/1000; //Max_current/1000*Motor_rated_current/1000;
             }
         }
