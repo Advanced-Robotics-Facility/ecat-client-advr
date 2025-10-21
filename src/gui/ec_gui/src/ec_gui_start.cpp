@@ -392,35 +392,31 @@ void EcGuiStart::setup_motor_device(int32_t device_id,int32_t device_type)
 {
     if(ec_motors[device_type]=="Synap_Motor"||
        ec_motors[device_type]=="Nov_Motor"){
-        std::vector<std::string> sdo_gains={"Position_loop_Kp","Position_loop_Ki","Position_loop_Kd"};
+        std::vector<std::string> sdo_gains={"Pos_Kp","Pos_Ki","Pos_Kd"};
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0x3B]={0.0,0.0,0.0,0.0,0.0};
         read_sdo_info(device_id,sdo_gains,_ec_wrapper_info.device_ctrl.device_gains[device_id][0x3B]);
 
-        sdo_gains={"Velocity_loop_Kp","Velocity_loop_Ki","Velocity_loop_Kd"};
-        if(ec_motors[device_type]=="Synap_Motor"){
-            sdo_gains={"Controller_Kp","Controller_Ki","Controller_Kd"};
-        }
+        sdo_gains={"Vel_Kp","Vel_Ki","Vel_Kd"};
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0x71]={0.0,0.0,0.0,0.0,0.0};
         read_sdo_info(device_id,sdo_gains,_ec_wrapper_info.device_ctrl.device_gains[device_id][0x71]);
         
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0xD4]={0.0,0.0,0.0,0.0,0.0};
         if(ec_motors[device_type]=="Synap_Motor"){
-            sdo_gains={"Torque_Controller_Kp","Torque_Controller_Ki","Torque_Controller_Kd"};
+            sdo_gains={"Tor_Kp","Tor_Ki","Tor_Kd"};
             read_sdo_info(device_id,sdo_gains,_ec_wrapper_info.device_ctrl.device_gains[device_id][0xD4]);
         }
 
-        sdo_gains={"Torque_loop_Kp","Torque_loop_Ki"};
+        sdo_gains={"Tor_Kp","Tor_Ki","Tor_Kd"};
         if(ec_motors[device_type]=="Synap_Motor"){
-            sdo_gains={"Damping_ratio","Settling_time"};
+            sdo_gains={"Cur_Kp","Cur_Ki"};
         }
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0xCC]={0.0,0.0,0.0,0.0,0.0};
         read_sdo_info(device_id,sdo_gains,_ec_wrapper_info.device_ctrl.device_gains[device_id][0xCC]);
 
+        sdo_gains={"Cur_Kp","Cur_Ki"};
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0xDD]={0.0,0.0,0.0,0.0,0.0};
-        if(ec_motors[device_type]=="Nov_Motor"){
-            sdo_gains={"Current_quadrature_loop_Kp","Current_quadrature_loop_Ki"};
-            read_sdo_info(device_id,sdo_gains,_ec_wrapper_info.device_ctrl.device_gains[device_id][0xDD]);
-        }
+        read_sdo_info(device_id,sdo_gains,_ec_wrapper_info.device_ctrl.device_gains[device_id][0xDD]);
+        
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0x00]={0.0,0.0,0.0,0.0,0.0};
     }else{
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0x3B]={200,0,10,0,0};
