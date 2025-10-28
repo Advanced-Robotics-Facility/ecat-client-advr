@@ -375,16 +375,25 @@ void EcGuiStart::read_sdo_info(const int32_t device_id,
                                const std::vector<std::string> sdo_name,
                                std::vector<float> &sdo_info)
 {
-    int i=0;
-    for(auto &sdo:sdo_name){
-        if(_ec_wrapper_info.sdo_map.count(device_id)>0){
-            if(_ec_wrapper_info.sdo_map[device_id].count(sdo)){
+    if(sdo_info.size()<sdo_name.size()){
+        return;
+    }
+    
+    WR_SDO wr_sdo;
+    RR_SDOS rr_sdo;
+    bool ret=_ec_wrapper_info.client->retrieve_rr_sdo(device_id,sdo_name,wr_sdo,rr_sdo);
+
+    for(auto &[sdo_reply,sdo_value]:rr_sdo){
+        int i=0;
+        for(auto &sdo_req:sdo_name){
+            if(sdo_req==sdo_reply){
                 std::stringstream out;
-                out << std::fixed << std::setprecision(5) << _ec_wrapper_info.sdo_map[device_id][sdo];
+                out << std::fixed << std::setprecision(5) << sdo_value;
                 out >> sdo_info[i];
+                break;
             }
+            i++;
         }
-        i++;
     }
 }
 
