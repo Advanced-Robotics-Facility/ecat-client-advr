@@ -149,46 +149,45 @@ public:
             esc_zmq_pub[id]=std::make_shared<EcPub>(zmq_uri,esc_name,_pub_context);
 
             pb_rx_pdos[id] = iit::advr::Ec_slave_pdo();
-            
-            switch ( esc_type  )
-            {
-                case iit::ecat::CENTAC_v15 :
-                case iit::ecat::LP:{
-                    auto advrf_motor_pb= std::make_shared<AdvrfMotor>();
-                    esc_pb[id]=std::static_pointer_cast<EscPb>(advrf_motor_pb);
-                }break;
-                case iit::ecat::SYNAPTICON_v201:
-                case iit::ecat::SYNAPTICON_v301:
-                case iit::ecat::NOVANTA:{
-                    auto cia402_motor_pb= std::make_shared<Cia402Motor>();
-                    esc_pb[id]=std::static_pointer_cast<EscPb>(cia402_motor_pb);
-                }break;
-                case iit::ecat::FT6MSP432_v24:{
-                    auto ft_pb= std::make_shared<FtPb>();
-                    esc_pb[id]=std::static_pointer_cast<EscPb>(ft_pb);
-                }break;   
-                case iit::ecat::IMUVN :{
-                    auto imu_pb= std::make_shared<ImuPb>();
-                    esc_pb[id]=std::static_pointer_cast<EscPb>(imu_pb);
-                }break;
-                case iit::ecat::POWF28M36 :{
-                    auto pow_pb= std::make_shared<PowPb>();
-                    esc_pb[id]=std::static_pointer_cast<EscPb>(pow_pb);
-                }break;
-                case iit::ecat::HYQ_KNEE:{
-                    auto valve_pb= std::make_shared<ValvePb>();
-                    esc_pb[id]=std::static_pointer_cast<EscPb>(valve_pb);
-                }break;
-                case iit::ecat::HYQ_HPU:{
-                    auto pump_pb= std::make_shared<PumpPb>();
-                    esc_pb[id]=std::static_pointer_cast<EscPb>(pump_pb);
-                }break;
-                
-                default:
-                    break;
-            }           
-        }
 
+            if(ec_motors.count(esc_type)>0){
+                switch ( esc_type ){
+                    case iit::ecat::CENTAC_v15 :
+                    case iit::ecat::CENTAC_v17 :
+                    case iit::ecat::LP:{
+                        auto advrf_motor_pb= std::make_shared<AdvrfMotor>();
+                        esc_pb[id]=std::static_pointer_cast<EscPb>(advrf_motor_pb);
+                    }break;
+                    default:{ //default cia402
+                        auto cia402_motor_pb= std::make_shared<Cia402Motor>();
+                        esc_pb[id]=std::static_pointer_cast<EscPb>(cia402_motor_pb);
+                    }break;
+                }
+            } else if(ec_valves.count(esc_type)>0){
+                auto valve_pb= std::make_shared<ValvePb>();
+                esc_pb[id]=std::static_pointer_cast<EscPb>(valve_pb);
+            } else if(ec_pumps.count(esc_type)>0){
+                auto pump_pb= std::make_shared<PumpPb>();
+                esc_pb[id]=std::static_pointer_cast<EscPb>(pump_pb);
+            } else{
+                switch ( esc_type ){
+                    case iit::ecat::FT6MSP432_v24:{
+                        auto ft_pb= std::make_shared<FtPb>();
+                        esc_pb[id]=std::static_pointer_cast<EscPb>(ft_pb);
+                    }break;   
+                    case iit::ecat::IMUVN :{
+                        auto imu_pb= std::make_shared<ImuPb>();
+                        esc_pb[id]=std::static_pointer_cast<EscPb>(imu_pb);
+                    }break;
+                    case iit::ecat::POWF28M36 :{
+                        auto pow_pb= std::make_shared<PowPb>();
+                        esc_pb[id]=std::static_pointer_cast<EscPb>(pow_pb);
+                    }break;
+                    default:
+                        break;
+                }
+            }               
+        }
         start_time = iit::ecat::get_time_ns();
         tNow = tPre = start_time;
         loop_cnt = 0;

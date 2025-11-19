@@ -179,6 +179,8 @@ void EcUtils::device_config_map(const YAML::Node & device_config_node,std::strin
                             _ec_cfg.device_config_map[esc_id].type=iit::ecat::SYNAPTICON_v301;
                         } else if(type_str=="Novanta"){
                             _ec_cfg.device_config_map[esc_id].type=iit::ecat::NOVANTA;
+                        } else if(type_str=="Amc"){
+                            _ec_cfg.device_config_map[esc_id].type=iit::ecat::AMC;
                         }else{
                             _ec_cfg.device_config_map[esc_id].type=iit::ecat::CENTAC_v15;
                         }

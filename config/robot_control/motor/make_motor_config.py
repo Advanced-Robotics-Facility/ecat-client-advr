@@ -91,7 +91,7 @@ def get_control_mode_from_arg_or_input(arg_mode, allowed_modes,device):
 
 
 if __name__ == "__main__":
-    allowed_motor_types = ["ADVRF", "Synapticon", "Novanta"]
+    allowed_motor_types = ["ADVRF", "Synapticon", "Novanta","Amc"]
     allowed_control_modes = ["3B", "71", "D4", "CC", "DD", "0"]
 
     

@@ -87,14 +87,11 @@ bool EcZmqCmd::retrieve_slaves_info(SSI &slave_info)
                 auto esc_id = item.first;
                 auto esc_info = item.second;
                 _slave_info.push_back(std::make_tuple(esc_id,esc_info["esc_type"],esc_info["position"]));
-                if(esc_info["esc_type"]== iit::ecat::CENTAC_v15 || esc_info["esc_type"]==iit::ecat::LP){
+                motor_type_map[esc_id]="Cia402_MOTOR";
+                if(esc_info["esc_type"]== iit::ecat::CENTAC_v15 ||
+                   esc_info["esc_type"]== iit::ecat::CENTAC_v17 ||  
+                   esc_info["esc_type"]==iit::ecat::LP){
                     motor_type_map[esc_id]="ADVRF_MOTOR";
-                }
-                else if(esc_info["esc_type"]== iit::ecat::SYNAPTICON_v201 || esc_info["esc_type"]== iit::ecat::SYNAPTICON_v301){
-                    motor_type_map[esc_id]="SYNAPTICON_MOTOR";
-                }
-                else if(esc_info["esc_type"]== iit::ecat::NOVANTA){
-                    motor_type_map[esc_id]="NOVANTA_MOTOR";
                 }
             }
             

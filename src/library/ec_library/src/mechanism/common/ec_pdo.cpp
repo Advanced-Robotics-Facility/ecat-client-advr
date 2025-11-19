@@ -47,23 +47,35 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
             _ec_pdo_start=zmq_uri;
         }
         
-        switch ( esc_type  )
-        {
+        if(ec_motors.count(esc_type)>0){
+            switch ( esc_type ){
                 case iit::ecat::CENTAC_v15 :
+                case iit::ecat::CENTAC_v17 :
                 case iit::ecat::LP:{
                     auto advrf_pdo = std::make_shared<AdvrfPdo<T>>(_ec_pdo_start, id, esc_type);
                     _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(advrf_pdo);
                     _internal_motor_status_map[id]=_motor_status_map[id]=  advrf_pdo->rx_pdo;
                     _motor_reference_map[id]= advrf_pdo->tx_pdo;
                 }break;
-                case iit::ecat::SYNAPTICON_v201:
-                case iit::ecat::SYNAPTICON_v301:
-                case  iit::ecat::NOVANTA:{
+                default:{ //default cia402
                     auto cia402_pdo = std::make_shared<Cia402Pdo<T>>(_ec_pdo_start, id, esc_type);
                     _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(cia402_pdo);
                     _internal_motor_status_map[id]=_motor_status_map[id]=  cia402_pdo->rx_pdo;
                     _motor_reference_map[id]= cia402_pdo->tx_pdo;
                 }break;
+            }
+        } else if(ec_valves.count(esc_type)>0){
+            auto valve_pdo = std::make_shared<ValvePdo<T>>(_ec_pdo_start, id, esc_type);
+            _valve_pdo_map[id]=valve_pdo;
+            _internal_valve_status_map[id]=_valve_status_map[id]=  valve_pdo->rx_pdo;
+            _valve_reference_map[id]= valve_pdo->tx_pdo;
+        } else if(ec_pumps.count(esc_type)>0){
+            auto pump_pdo = std::make_shared<PumpPdo<T>>(_ec_pdo_start, id, esc_type);
+            _pump_pdo_map[id]=pump_pdo;
+            _internal_pump_status_map[id]=_pump_status_map[id]= pump_pdo->rx_pdo;
+            _pump_reference_map[id]= pump_pdo->tx_pdo;
+        } else{
+            switch ( esc_type ){
                 case iit::ecat::FT6MSP432_v24:{
                     auto ft_pdo = std::make_shared<FtPdo<T>>(_ec_pdo_start, id, esc_type);
                     _ft_pdo_map[id]=ft_pdo;
@@ -79,21 +91,9 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                     _pow_pdo_map[id]=pow_pdo;
                     _internal_pow_status_map[id]=_pow_status_map[id]= pow_pdo->rx_pdo;
                 }break;
-                case iit::ecat::HYQ_KNEE:{
-                    auto valve_pdo = std::make_shared<ValvePdo<T>>(_ec_pdo_start, id, esc_type);
-                    _valve_pdo_map[id]=valve_pdo;
-                    _internal_valve_status_map[id]=_valve_status_map[id]=  valve_pdo->rx_pdo;
-                    _valve_reference_map[id]= valve_pdo->tx_pdo;
-                }break;
-                case iit::ecat::HYQ_HPU:{
-                    auto pump_pdo = std::make_shared<PumpPdo<T>>(_ec_pdo_start, id, esc_type);
-                    _pump_pdo_map[id]=pump_pdo;
-                    _internal_pump_status_map[id]=_pump_status_map[id]= pump_pdo->rx_pdo;
-                    _pump_reference_map[id]= pump_pdo->tx_pdo;
-                }break;
-                
                 default:
                     break;
+            }
         }               
     }
 } 

@@ -3,21 +3,20 @@
 void EcBoostPdo::esc_factory(SSI slave_descr)
 {
     for ( auto &[id, esc_type, pos] : slave_descr ) {
-        switch ( esc_type  )
-        {
-                case iit::ecat::CENTAC_v15 :
-                case iit::ecat::LP:
-                case iit::ecat::SYNAPTICON_v201:
-                case iit::ecat::SYNAPTICON_v301:
-                case  iit::ecat::NOVANTA:{
-                    _internal_motor_status_map[id]=_motor_status_map[id]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-                    _motor_reference_map[id]={0,0,0,0,0,0,0,0,0,0,0,0};
-                    if(ec_motors.count(esc_type)>0){
-                        if(ec_motors[esc_type] == "ADVRF_Motor"){
-                            _advrf_motor_map[id]=esc_type;
-                        }
-                    } 
-                }break;
+        if(ec_motors.count(esc_type)>0){
+            _internal_motor_status_map[id]=_motor_status_map[id]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+            _motor_reference_map[id]={0,0,0,0,0,0,0,0,0,0,0,0};
+            if(ec_motors[esc_type] == "ADVRF_Motor"){
+                _advrf_motor_map[id]=esc_type;
+            }
+        } else if(ec_valves.count(esc_type)>0){
+            _internal_valve_status_map[id]=_valve_status_map[id]={0,0,0,0,0,0,0,0,0,0,0,0,0};
+            _valve_reference_map[id]={0,0,0,0,0,0,0,0,0,0,0,0};
+        } else if(ec_pumps.count(esc_type)>0){
+            _internal_pump_status_map[id]=_pump_status_map[id]={0,0,0,0,0,0,0,0,0,0,0};
+            _pump_reference_map[id]={0,0,0,0,0,0,0,0,0,0};
+        } else{
+            switch ( esc_type ){
                 case iit::ecat::FT6MSP432_v24:{
                     _internal_ft_status_map[id]=_ft_status_map[id]={0,0,0,0,0,0,0,0};
                 }break;   
@@ -27,18 +26,10 @@ void EcBoostPdo::esc_factory(SSI slave_descr)
                 case iit::ecat::POWF28M36 :{
                     _internal_pow_status_map[id]=_pow_status_map[id]={0,0,0,0,0,0,0,0,0,0};
                 }break;
-                case iit::ecat::HYQ_KNEE:{
-                    _internal_valve_status_map[id]=_valve_status_map[id]={0,0,0,0,0,0,0,0,0,0,0,0,0};
-                    _valve_reference_map[id]={0,0,0,0,0,0,0,0,0,0,0,0};
-                }break;
-                case iit::ecat::HYQ_HPU:{
-                    _internal_pump_status_map[id]=_pump_status_map[id]={0,0,0,0,0,0,0,0,0,0,0};
-                    _pump_reference_map[id]={0,0,0,0,0,0,0,0,0,0};
-                }break;
-                
                 default:
                     break;
-        }               
+            } 
+        }             
     }
 } 
 
