@@ -73,7 +73,7 @@ int main(int argc, char * const argv[])
                     if(ec_cfg.device_config_map[esc_id].control_mode_type==iit::advr::Gains_Type_POSITION ||
                        ec_cfg.device_config_map[esc_id].control_mode_type==iit::advr::Gains_Type_IMPEDANCE){
                         set_point_type="position";
-                        motors_start[esc_id]=std::get<1>(motor_rx_pdo); // actual motor pos
+                        motors_start[esc_id]=std::get<2>(motor_rx_pdo); // actual motor pos
                     }else if(ec_cfg.device_config_map[esc_id].control_mode_type==iit::advr::Gains_Type_VELOCITY){
                         set_point_type="velocity";
                         motors_set_zero[esc_id]=motors_start[esc_id]=0.0;
