@@ -1,0 +1,246 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EtherCAT Client GUI &mdash; EtherCAT Client 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=2709fde1"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="EtherCAT Client Block (Matlab/Simulink)" href="ec_client_block.html" />
+    <link rel="prev" title="EtherCAT Client" href="ec_client.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            EtherCAT Client
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="background.html">Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wsl.html">WSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ec_client.html">EtherCAT Client</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">EtherCAT Client GUI</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#software-architecture">Software architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#code-documentation">Code documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#measurement-setup">Measurement setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#firmware-update">Firmware update</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#data-object-and-graphics">Data Object and Graphics</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#process-data-object-pdo">Process Data Object (PDO)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#service-data-object-sdo">Service Data Object (SDO)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#control">Control</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ec_client_block.html">EtherCAT Client Block (Matlab/Simulink)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">EtherCAT Client</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">EtherCAT Client GUI</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/ec_client_gui.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="ethercat-client-gui">
+<span id="id1"></span><h1>EtherCAT Client GUI<a class="headerlink" href="#ethercat-client-gui" title="Link to this heading"></a></h1>
+<img alt="_images/EtherCAT_Client_GUI_Img_0.png" src="_images/EtherCAT_Client_GUI_Img_0.png" />
+<section id="software-architecture">
+<span id="ethercat-gui-architecture"></span><h2>Software architecture<a class="headerlink" href="#software-architecture" title="Link to this heading"></a></h2>
+<img alt="_images/EtherCAT_Client_GUI_Img_1.png" src="_images/EtherCAT_Client_GUI_Img_1.png" />
+<p>The main class of the GUI is the EcGuiStart. This one is responsible to build up all GUI components shown in the picture.
+Two sub-classes are used for different scopes:</p>
+<ul class="simple">
+<li><p><strong>EcGuiFirmware:</strong> This class is responsible to flash the firmware of the EtherCAT slaves.</p></li>
+<li><p><strong>EcGuiNet:</strong> This class is responsible to create the connection with the EtherCAT Master.</p></li>
+<li><p><strong>EcGuiWrapper:</strong> This class has different components working with EtherCAT Client created inside the EcGuiStart class:</p>
+<ul>
+<li><p><strong>EcGuiCmd:</strong> This class is used to start/stop the controllers for the EtherCAT slaves that can be controlled such as motors,valve,pumps etc….</p></li>
+<li><p><strong>EcGuiPdo:</strong> This class is used to send PDOs and receiving/plotting them.</p></li>
+<li><p><strong>EcGuiSdo:</strong> This class is used to read and write SDOs, research them, save and open configuration files (<strong>EcGuiSdoWizard</strong> Class) and use the flash commands.</p></li>
+<li><p><strong>EcLogger:</strong> This class is used to log/record the PDOs created in the Ec Client library.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="code-documentation">
+<span id="ethercat-client-gui-code-documentation"></span><h2>Code documentation<a class="headerlink" href="#code-documentation" title="Link to this heading"></a></h2>
+<p>It’s possible to generate the doxygen documentation to read the code of the EtherCAT client GUI:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">doxygen</span> <span class="n">Doxyfile</span>
+</pre></div>
+</div>
+<p><a class="reference external" href="https://advanced-robotics-facility.github.io/ecat-client-advr/gui/">Link to the documentation</a></p>
+</section>
+<section id="measurement-setup">
+<h2>Measurement setup<a class="headerlink" href="#measurement-setup" title="Link to this heading"></a></h2>
+<img alt="_images/EtherCAT_Client_GUI_Img_2.png" src="_images/EtherCAT_Client_GUI_Img_2.png" />
+<p>The user can setup the EtherCAT system network using the <strong>Server row</strong>, specifying <strong>the user name, host name/ip and port (UDP: 54321, TCP/IPC: 5000)</strong>. Furthermore, it’s possible to choose which kind of EtherCAT Master application has to be run on Embedded PC:</p>
+<ul class="simple">
+<li><p><strong>Default Master:</strong> Standard EtherCAT master (repl).</p></li>
+<li><p><strong>Robot Master:</strong> EtherCAT master (repl) specifying the low level setup (used on robot).</p></li>
+<li><p><strong>Ecat Master:</strong> EtherCAT master (repl) specifying the low level setup (used on robot).</p></li>
+</ul>
+<p>Once the user has setup the EtherCAT system adding the <strong>EtherCAT System password</strong> and choosing <strong>the protocol (udp, tcp, IPC inter process communication)</strong>, it’s possible to start it:</p>
+<img alt="_images/EtherCAT_Client_GUI_Img_3.png" src="_images/EtherCAT_Client_GUI_Img_3.png" />
+<p><strong>Note:</strong> At the bottom right the user can check the status of the system.</p>
+<p><strong>Important:</strong> In case of ssh protocol error, the user can verify the server hostname using the <strong>Connect to</strong> button for pinging the server machine. Be aware also of the network setup and server password.</p>
+<p>It’s also possible to verify EtherCAT system status using the terminals opened during the starting phase, or clicking the terminal buttons in the Terminal column:</p>
+<img alt="_images/EtherCAT_Client_GUI_Img_4.png" src="_images/EtherCAT_Client_GUI_Img_4.png" />
+<p><strong>Note:</strong> It’s possible to open the client terminal launching <strong>ec_gui_log</strong> instead of using the <strong>ec_gui</strong> where it’s not possible to log the terminal.</p>
+<p>Now the user can start EtherCAT Client by clicking the <strong>Scan Device button</strong> initializing the GUI:</p>
+<img alt="_images/EtherCAT_Client_GUI_Img_5.png" src="_images/EtherCAT_Client_GUI_Img_5.png" />
+<p><strong>Important:  The user can use the Scan device button if the EtherCAT system was already started externally on the Embedded PC</strong>.</p>
+<p><strong>Note:</strong>  The user can decide to rescan the device whenever necessary:</p>
+<img alt="_images/EtherCAT_Client_GUI_Img_6.png" src="_images/EtherCAT_Client_GUI_Img_6.png" />
+<p>The EtherCAT Client is started and can check the EtherCAT system status, in case of communication problem a pop-up will appear, moving the status of not running:</p>
+<img alt="_images/EtherCAT_Client_GUI_Img_7.png" src="_images/EtherCAT_Client_GUI_Img_7.png" />
+<p>In this case the user can restart the EtherCAT system following the previous procedure.</p>
+<p>The user can <strong>stop EtherCAT system</strong> by clicking the stop button.</p>
+</section>
+<section id="firmware-update">
+<h2>Firmware update<a class="headerlink" href="#firmware-update" title="Link to this heading"></a></h2>
+<p>This feature is possible to use it only in <strong>expert mode</strong> inserting the <strong>Expert User Password</strong>:</p>
+<img alt="_images/EtherCAT_Client_GUI_Img_8.png" src="_images/EtherCAT_Client_GUI_Img_8.png" />
+<p><strong>Important: The password can be delivered to expert users</strong>.</p>
+<p>By clicking the firmware update button the Firmware wizard will appear:</p>
+<img alt="_images/EtherCAT_Client_GUI_Img_9.png" src="_images/EtherCAT_Client_GUI_Img_9.png" />
+<ul class="simple">
+<li><p><strong>Select all bin or config files:</strong> This button helps the user to select all binaries (.bin) or configuration (.csv) files for flashing.</p></li>
+</ul>
+<p><a class="reference external" href="https://doc.synapticon.com/circulo/tutorials/foe_drive_operations.html?tocpath=Resources%7CTutorials%7C_____2/">i.e  Firmware update on Synapticon driver.</a></p>
+<ul class="simple">
+<li><p><strong>Copy file to embedded PC:</strong> Copy all files to embedded PC inside <strong>.ecat_master/firmware/</strong> directory.</p></li>
+<li><p><strong>Open firmware configuration file:</strong> This button will open the <strong>.ecat_master/configs/microCTRL_config.yaml</strong> file of the embedded PC. This is used by the firmware update procedure for flashing the specific device.</p></li>
+<li><p><strong>Start firmware update:</strong> This button will start the firmware update procedure:</p></li>
+</ul>
+<img alt="_images/EtherCAT_Client_GUI_Img_10.png" src="_images/EtherCAT_Client_GUI_Img_10.png" />
+</section>
+<section id="data-object-and-graphics">
+<h2>Data Object and Graphics<a class="headerlink" href="#data-object-and-graphics" title="Link to this heading"></a></h2>
+<section id="process-data-object-pdo">
+<h3>Process Data Object (PDO)<a class="headerlink" href="#process-data-object-pdo" title="Link to this heading"></a></h3>
+<p>The user can check and plot the process data object:</p>
+<img alt="_images/EtherCAT_Client_GUI_Img_11.png" src="_images/EtherCAT_Client_GUI_Img_11.png" />
+<p>The user can select which field of the PDO and device to plot by <strong>checking the box</strong> inside the PDO table.
+It’s also possible to stop the <strong>auto-scroll</strong> and clear the plotting by clicking the <strong>stop plotting button</strong>.
+Furthermore, by clicking the record button on top the GUI the user can log the Rx-Tx PDOs.</p>
+</section>
+<section id="service-data-object-sdo">
+<h3>Service Data Object (SDO)<a class="headerlink" href="#service-data-object-sdo" title="Link to this heading"></a></h3>
+<img alt="_images/EtherCAT_Client_GUI_Img_12.png" src="_images/EtherCAT_Client_GUI_Img_12.png" />
+<p>The user can work with the SDOs for monitoring the devices behaviour. Selecting the device (<strong>Yes/No to All buttons</strong> help for this procedure), it’s also possible:</p>
+<ul class="simple">
+<li><p>Read again the SDOs by clicking the <strong>Rescan</strong> button</p></li>
+<li><p>Save all SDOs into <strong>.csv file</strong> for all EtherCAT slave selected using <strong>Save SDO file</strong> button.</p></li>
+<li><p><strong>Search the SDOs</strong>, typing a specific content of them:</p></li>
+</ul>
+<img alt="_images/EtherCAT_Client_GUI_Img_13.png" src="_images/EtherCAT_Client_GUI_Img_13.png" />
+<p>The expert user, inserting the <strong>Expert User Password</strong> (See Firmware Update session), can also <strong>Open SDO File</strong> calibrating the devices selected and use the <strong>flashing features</strong>:</p>
+<img alt="_images/EtherCAT_Client_GUI_Img_14.png" src="_images/EtherCAT_Client_GUI_Img_14.png" />
+<p>The <strong>Open SDO File</strong> button helps the expert user to select the specific .csv file launching the <strong>Calibration wizard</strong>:</p>
+<img alt="_images/EtherCAT_Client_GUI_Img_15.png" src="_images/EtherCAT_Client_GUI_Img_15.png" />
+<p>Selecting the SDO (<strong>Yes/No to All buttons</strong> help for this procedure) and by clicking the Finish button, the SDOs writing function is called, verifying the correct values by rescaning the SDOs automatically.</p>
+<p>The <strong>flashing features</strong> can be used for:</p>
+<ul class="simple">
+<li><p><strong>Restore the default</strong> constructor parameters from the flash to the RAM of the EtherCAT slaves.</p></li>
+<li><p><strong>Load</strong> the parameters from the flash to the RAM of the EtherCAT slaves.</p></li>
+<li><p><strong>Save</strong> the parameters from the RAM to the flash of the EtherCAT slaves.</p></li>
+</ul>
+</section>
+</section>
+<section id="control">
+<h2>Control<a class="headerlink" href="#control" title="Link to this heading"></a></h2>
+<img alt="_images/EtherCAT_Client_GUI_Img_16.png" src="_images/EtherCAT_Client_GUI_Img_16.png" />
+<p>The user can start or stop the controllers of the devices that can be controlled like motors, valves or pumps, by clicking <strong>Start devices</strong> or <strong>Stop devices</strong>.
+It’s necessary, for the starting phase, select the device in every tab (<strong>Yes/No to All buttons</strong> help for this procedure),its gains and the control mode.
+All devices selected will be shown into the <strong>Devices Selected</strong> list box.</p>
+<p>If the starting phase has a success result, it’s possible to Start the motion using the specific button:</p>
+<img alt="_images/EtherCAT_Client_GUI_Img_17.png" src="_images/EtherCAT_Client_GUI_Img_17.png" />
+<p>The user can decide to perform the trajectory using the <strong>simple slider</strong> or <strong>wave generator</strong> by selecting the specific tab:</p>
+<img alt="_images/EtherCAT_Client_GUI_Img_18.png" src="_images/EtherCAT_Client_GUI_Img_18.png" />
+<img alt="_images/EtherCAT_Client_GUI_Img_19.png" src="_images/EtherCAT_Client_GUI_Img_19.png" />
+<p>For the wave generator, the user can select the <strong>wave type (Sine, Square, Triangle, Trapezoidal and Chirp), amplitude, frequency and phase</strong>.
+It’s possible to change on fly all the parameters during the motion.</p>
+<p>The user can stop the motion by clicking the <strong>Stop Motion</strong> or <strong>Stop devices</strong> buttons. This allows also to change the trajectory type (slider/wave geneator) and restart the motion if the devices are still controlled.</p>
+<p><strong>Note:</strong> It’s also possible to use <strong>spin box</strong> together with the slider for sending new values of the PDOs. Some of them have only that box for sending new values (i.e gains etc…).
+If the user uses the wave generator for a specific PDO, its spin box is disabled.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="ec_client.html" class="btn btn-neutral float-left" title="EtherCAT Client" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ec_client_block.html" class="btn btn-neutral float-right" title="EtherCAT Client Block (Matlab/Simulink)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Davide Antonucci.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
