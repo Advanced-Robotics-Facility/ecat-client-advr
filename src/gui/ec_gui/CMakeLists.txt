@@ -12,6 +12,7 @@ find_package(Qt6Widgets 6.0 REQUIRED)
 find_package(Qt6Charts  6.0 REQUIRED)
 find_package(Qt6PrintSupport  6.0 REQUIRED)
 find_package(Qt6Network  6.0 REQUIRED)
+find_package(Qt6Concurrent 6.0 REQUIRED)
 
 OPTION(TEST_GUI "Testing GUI concepts" OFF)
 
@@ -52,6 +53,7 @@ target_link_libraries(ec_gui_lib
     Qt6::UiTools
     Qt6::PrintSupport 
     Qt6::Network
+    Qt6::Concurrent
     -lcurl
     ${YAML_CPP_LIBRARIES}
     ${Boost_SYSTEM_LIBRARY}

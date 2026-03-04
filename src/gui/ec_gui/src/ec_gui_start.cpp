@@ -8,6 +8,7 @@
 #include <QLabel>
 #include <QPixmap>
 #include <QFile>
+#include <QtConcurrent>
 
 #include <chrono>
 
@@ -66,8 +67,8 @@ EcGuiStart::EcGuiStart(QWidget *parent) :
     _ec_sys_stop = findChild<QPushButton *>("StopEthercatSystem");
     connect(_ec_sys_stop, &QPushButton::released,this, &EcGuiStart::onStopEtherCATSystem);
     
-    auto scan_device = findChild<QPushButton *>("ScanDevice");
-    connect(scan_device, &QPushButton::released,this, &EcGuiStart::onScanDeviceReleased);
+    _scan_device_btn = findChild<QPushButton *>("ScanDevice");
+    connect(_scan_device_btn, &QPushButton::released,this, &EcGuiStart::onScanDeviceReleased);
 
     _firmware_update_btn=findChild<QPushButton *>("FirmwareUpdate");
     _firmware_update_btn->setEnabled(false);
@@ -438,35 +439,40 @@ void EcGuiStart::setup_motor_device(int32_t device_id,int32_t device_type)
 
 void EcGuiStart::scan_device()
 {
-    if(_ec_wrapper_info.client->retrieve_slaves_info(_ec_wrapper_info.device_info)){
-        if(_ec_wrapper_info.device_info.empty()){
-            error_on_scannig();
+    // Prevent starting multiple scans simultaneously
+    if (_scan_device_fun.isRunning()) return;
+    
+    _scan_device_fun= QtConcurrent::run([this](){
+        
+        _scan_device_btn->setEnabled(false);
+
+        if(!_ec_wrapper_info.client->retrieve_slaves_info(_ec_wrapper_info.device_info)){
+            QMetaObject::invokeMethod(this, &EcGuiStart::error_on_scannig,Qt::QueuedConnection);
+            _scan_device_btn->setEnabled(true);
+            return;
         }
-        else{
-            for ( auto &[device_id, device_type, device_pos] : _ec_wrapper_info.device_info ) {
-                RR_SDOS rr_sdo;
-                if(_ec_wrapper_info.client->retrieve_all_sdo(device_id,rr_sdo)){
-                    _ec_wrapper_info.sdo_map[device_id]=rr_sdo;
-                }
-                if(ec_motors.count(device_type)>0){
-#ifdef TEST_GUI 
-                    if(_ec_wrapper_info.sdo_map.count(device_id)==0){
-                        RR_SDOS motor_sdo={{"Min_pos","-3.0"},
-                                           {"Max_pos","2.0"},
-                                           {"Max_vel","5.0"},
-                                           {"Max_tor","50.0"},
-                                           {"Max_ref","5.0"}};
-                        _ec_wrapper_info.sdo_map[device_id]=motor_sdo;
-                    }
-#endif
-                    setup_motor_device(device_id,device_type);
-                }
+
+        for (auto &[device_id, device_type, device_pos] : _ec_wrapper_info.device_info){
+            RR_SDOS rr_sdo;
+            if (_ec_wrapper_info.client->retrieve_all_sdo(device_id, rr_sdo)){
+                QMetaObject::invokeMethod(this, [=](){
+                    _ec_wrapper_info.sdo_map[device_id] = rr_sdo;
+
+                    if(ec_motors.count(device_type) > 0)
+                        setup_motor_device(device_id, device_type);
+
+                }, Qt::QueuedConnection);
             }
         }
-    }
-    else{
-        error_on_scannig();
-    }
+
+        QMetaObject::invokeMethod(this, [=](){
+            if(!_ec_wrapper_info.device_info.empty()){
+                restart_gui();
+            } 
+        }, Qt::QueuedConnection);
+
+        _scan_device_btn->setEnabled(true);
+    });
 }
 
 void EcGuiStart::onScanDeviceReleased()
@@ -500,10 +506,6 @@ void EcGuiStart::onScanDeviceReleased()
             scan_device();
         }
     }
-    
-    if(!_ec_wrapper_info.device_info.empty()){
-        restart_gui();
-    } 
 }
 
 EcGuiStart::~EcGuiStart()
