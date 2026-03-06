@@ -91,7 +91,7 @@ void EcGuiSlider::create_sliders(SSI device_info,device_ctrl_t device_ctrl)
     _device_ctrl=device_ctrl;
     int device_list_index=0;
     for ( auto &[device_id, device_type, device_pos] : device_info ) {
-        if(ec_motors.count(device_type)>0){
+        if(ec_motors().count(device_type)>0){
             std::string motor_name_s="motor_"+std::to_string(device_id);
             QString motor_name = QString::fromStdString(motor_name_s);
             if(_device_ctrl.device_limits.count(device_id)>0){

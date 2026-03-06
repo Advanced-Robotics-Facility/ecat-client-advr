@@ -400,8 +400,8 @@ void EcGuiStart::read_sdo_info(const int32_t device_id,
 
 void EcGuiStart::setup_motor_device(int32_t device_id,int32_t device_type)
 {
-    if(ec_motors[device_type]=="Synap_Motor"||
-       ec_motors[device_type]=="Nov_Motor"){
+    if(ec_motors().at(device_type)=="Synap_Motor"||
+       ec_motors().at(device_type)=="Nov_Motor"){
         std::vector<std::string> sdo_gains={"Pos_Kp","Pos_Ki","Pos_Kd"};
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0x3B]={0.0,0.0,0.0,0.0,0.0};
         read_sdo_info(device_id,sdo_gains,_ec_wrapper_info.device_ctrl.device_gains[device_id][0x3B]);
@@ -458,7 +458,7 @@ void EcGuiStart::scan_device()
                 QMetaObject::invokeMethod(this, [=](){
                     _ec_wrapper_info.sdo_map[device_id] = rr_sdo;
 
-                    if(ec_motors.count(device_type) > 0)
+                    if(ec_motors().count(device_type) > 0)
                         setup_motor_device(device_id, device_type);
 
                 }, Qt::QueuedConnection);

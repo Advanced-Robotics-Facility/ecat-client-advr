@@ -82,13 +82,13 @@ void EcLogger::start_mat_logger()
     }
     
     for ( auto &[esc_id, esc_type, pos] : _slave_descr ) {
-        if(ec_motors.count(esc_type)>0){
+        if(ec_motors().count(esc_type)>0){
             create_logger("motor_status_logger",esc_id,"motor_sts_id",MotorPdoRx::pdo_size);
             create_logger("motor_reference_logger",esc_id,"motor_ref_id",MotorPdoTx::pdo_size);
-        } else if(ec_valves.count(esc_type)>0){
+        } else if(ec_valves().count(esc_type)>0){
             create_logger("valve_status_logger",esc_id,"valve_sts_id",ValvePdoRx::pdo_size);
             create_logger("valve_reference_logger",esc_id,"valve_ref_id",ValvePdoTx::pdo_size);
-        } else if(ec_pumps.count(esc_type)>0){
+        } else if(ec_pumps().count(esc_type)>0){
             create_logger("pump_status_logger",esc_id,"pump_sts_id",PumpPdoRx::pdo_size);
             create_logger("pump_reference_logger",esc_id,"pump_ref_id",PumpPdoTx::pdo_size);
         } else{

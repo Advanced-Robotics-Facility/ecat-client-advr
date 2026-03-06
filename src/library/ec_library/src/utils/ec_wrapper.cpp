@@ -84,9 +84,9 @@ void EcWrapper::find_devices()
     for(const auto& device_id:_start_devices_vector){
         bool device_found=false;
         for ( auto &[id, type, pos] : _slave_info ) {
-            if(ec_motors.count(type)>0 || 
-               ec_valves.count(type)>0 ||
-               ec_pumps.count(type)>0){
+            if(ec_motors().count(type)>0 || 
+               ec_valves().count(type)>0 ||
+               ec_pumps().count(type)>0){
                 if(id == device_id){
                     device_found=true;
                     break;

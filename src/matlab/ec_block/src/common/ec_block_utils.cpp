@@ -178,7 +178,7 @@ void EcBlockUtils::retrieve_motor_info(std::vector<int> &joint_id,
     try{
         auto ec_client_utils=retrieve_cfg();
         for(const auto&[id,type,pos]:ec_client_utils->get_ec_cfg().fake_slave_info){
-            if(ec_motors.count(id)){
+            if(ec_motors().count(id)){
                 joint_id.push_back(id);
                 q_home.push_back(ec_client_utils->get_ec_cfg().trj_config_map["motor"].homing[id]);
                 q_trj.push_back (ec_client_utils->get_ec_cfg().trj_config_map["motor"].trajectory[id]);

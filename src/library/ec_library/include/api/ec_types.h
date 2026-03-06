@@ -14,39 +14,38 @@
 #include "mechanism/protobuf/valve/valve_pdo.h"
 #include "mechanism/protobuf/pump/pump_pdo.h"
 
-static std::map<uint32_t,std::string>ec_motors = [] {
-    std::map<uint32_t, std::string> result;
-    for (const auto& [key, value] : iit::ecat::esc_type_map) {
-        if (value.find("Motor")) {
-            std::string motor=value;
-            if(motor=="Motor"){
-                motor="ADVRF_Motor";
+namespace iit::ecat::detail {
+    inline std::map<uint32_t, std::string> build_ec_map(const std::string& device_type){
+        std::map<uint32_t, std::string> result;
+    
+        for (const auto& [key, value] : iit::ecat::esc_type_map) {
+            if (value.find(device_type) != std::string::npos) {
+                std::string device = value;
+    
+                if (device == "Motor")
+                    device = "ADVRF_Motor";
+    
+                result[key] = device;
             }
-            result[key] = value;
         }
-    }
-    return result;
-}();
+        return result;
+    }    
+} // namespace iit::ecat::detail
 
-static std::map<uint32_t,std::string>ec_valves= [] {
-    std::map<uint32_t, std::string> result;
-    for (const auto& [key, value] : iit::ecat::esc_type_map) {
-        if (value.find("Valve")) {
-            result[key] = value;
-        }
-    }
-    return result;
-}();   
+inline const std::map<uint32_t,std::string>& ec_motors(){
+    static const auto instance = iit::ecat::detail::build_ec_map("Motor");
+    return instance;
+}
 
-static std::map<uint32_t,std::string>ec_pumps= [] {
-    std::map<uint32_t, std::string> result;
-    for (const auto& [key, value] : iit::ecat::esc_type_map) {
-        if (value.find("Hpu")) {
-            result[key] = value;
-        }
-    }
-    return result;
-}();   
+inline const std::map<uint32_t,std::string>& ec_valves(){
+    static const auto instance = iit::ecat::detail::build_ec_map("Valve");
+    return instance;
+} 
+
+inline const std::map<uint32_t,std::string>& ec_pumps(){
+    static const auto instance = iit::ecat::detail::build_ec_map("Hpu");
+    return instance;
+}  
 
 using MotorStatusMap =   std::map<int32_t, MotorPdoRx::pdo_t>;
 using MotorReferenceMap= std::map<int32_t, MotorPdoTx::pdo_t>; 

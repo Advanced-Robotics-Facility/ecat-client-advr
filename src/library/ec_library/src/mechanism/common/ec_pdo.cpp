@@ -47,7 +47,7 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
             _ec_pdo_start=zmq_uri;
         }
         
-        if(ec_motors.count(esc_type)>0){
+        if(ec_motors().count(esc_type)>0){
             switch ( esc_type ){
                 case iit::ecat::CENTAC_v15 :
                 case iit::ecat::CENTAC_v17 :
@@ -64,12 +64,12 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                     _motor_reference_map[id]= cia402_pdo->tx_pdo;
                 }break;
             }
-        } else if(ec_valves.count(esc_type)>0){
+        } else if(ec_valves().count(esc_type)>0){
             auto valve_pdo = std::make_shared<ValvePdo<T>>(_ec_pdo_start, id, esc_type);
             _valve_pdo_map[id]=valve_pdo;
             _internal_valve_status_map[id]=_valve_status_map[id]=  valve_pdo->rx_pdo;
             _valve_reference_map[id]= valve_pdo->tx_pdo;
-        } else if(ec_pumps.count(esc_type)>0){
+        } else if(ec_pumps().count(esc_type)>0){
             auto pump_pdo = std::make_shared<PumpPdo<T>>(_ec_pdo_start, id, esc_type);
             _pump_pdo_map[id]=pump_pdo;
             _internal_pump_status_map[id]=_pump_status_map[id]= pump_pdo->rx_pdo;

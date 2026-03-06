@@ -60,7 +60,7 @@ public:
             rd_esc_pdo[id]=rd_pp_name;
             wr_esc_pdo[id]=wr_pp_name;
             
-            if(ec_motors.count(esc_type)>0){
+            if(ec_motors().count(esc_type)>0){
                 switch ( esc_type ){
                     case iit::ecat::CENTAC_v15 :
                     case iit::ecat::CENTAC_v17 :
@@ -73,10 +73,10 @@ public:
                         esc_pb[id]=std::static_pointer_cast<EscPb>(cia402_motor_pb);
                     }break;
                 }
-            } else if(ec_valves.count(esc_type)>0){
+            } else if(ec_valves().count(esc_type)>0){
                 auto valve_pb= std::make_shared<ValvePb>();
                 esc_pb[id]=std::static_pointer_cast<EscPb>(valve_pb);
-            } else if(ec_pumps.count(esc_type)>0){
+            } else if(ec_pumps().count(esc_type)>0){
                 auto pump_pb= std::make_shared<PumpPb>();
                 esc_pb[id]=std::static_pointer_cast<EscPb>(pump_pb);
             } else{

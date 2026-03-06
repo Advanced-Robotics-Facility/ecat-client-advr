@@ -3,16 +3,13 @@
 void EcBoostPdo::esc_factory(SSI slave_descr)
 {
     for ( auto &[id, esc_type, pos] : slave_descr ) {
-        if(ec_motors.count(esc_type)>0){
+        if(ec_motors().count(esc_type)>0){
             _internal_motor_status_map[id]=_motor_status_map[id]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
             _motor_reference_map[id]={0,0,0,0,0,0,0,0,0,0,0,0};
-            if(ec_motors[esc_type] == "ADVRF_Motor"){
-                _advrf_motor_map[id]=esc_type;
-            }
-        } else if(ec_valves.count(esc_type)>0){
+        } else if(ec_valves().count(esc_type)>0){
             _internal_valve_status_map[id]=_valve_status_map[id]={0,0,0,0,0,0,0,0,0,0,0,0,0};
             _valve_reference_map[id]={0,0,0,0,0,0,0,0,0,0,0,0};
-        } else if(ec_pumps.count(esc_type)>0){
+        } else if(ec_pumps().count(esc_type)>0){
             _internal_pump_status_map[id]=_pump_status_map[id]={0,0,0,0,0,0,0,0,0,0,0};
             _pump_reference_map[id]={0,0,0,0,0,0,0,0,0,0};
         } else{
@@ -73,13 +70,13 @@ void EcBoostPdo::motor_status_handler(char *buf, size_t size)
                  fault,rtt,
                  pos_ref_fb,vel_ref_fb,tor_ref_fb,curr_ref_fb] : motors_status) {
         if(_internal_motor_status_map.count(id)>0){
-            if(_advrf_motor_map.count(id)>0 && 
-               _motor_reference_map.count(id)>0){
+            if(_motor_reference_map.count(id)>0){
                 if(std::get<0>(_motor_reference_map[id])==0xDD){
                     curr_ref_fb=tor_ref_fb;
                     tor_ref_fb=0.0;
                 }
             }
+                
             _internal_motor_status_map[id] = std::make_tuple(status_word,
                                                              link_pos,motor_pos,link_vel,motor_vel,
                                                              torque,current,motor_temp,board_temp,
