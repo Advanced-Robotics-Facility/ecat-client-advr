@@ -182,11 +182,13 @@ void EcGuiWrapper::restart_gui_wrapper(ec_wrapper_info_t ec_wrapper_info)
     
     _ec_gui_sdo->restart_ec_gui_sdo(_ec_wrapper_info.client,_ec_wrapper_info.sdo_map);
 
-    _ec_wrapper_thread = std::make_shared<std::thread>(&EcGuiWrapper::wrapper_thread,this);
+    if(_ec_wrapper_info.client->get_client_status().run_loop){
+        _ec_wrapper_thread = std::make_shared<std::thread>(&EcGuiWrapper::wrapper_thread,this);
+        _start_loop_time = std::chrono::high_resolution_clock::now();
+        _loop_time = _start_loop_time;
+        _run_wrapper_thread=true;
+    }
     
-    _start_loop_time = std::chrono::high_resolution_clock::now();
-    _loop_time = _start_loop_time;
-    _run_wrapper_thread=true;
 
     start_stop_receive();
 }
