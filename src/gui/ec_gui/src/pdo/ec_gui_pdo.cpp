@@ -27,8 +27,12 @@ _ec_gui_slider(ec_gui_slider)
     _custom_plot->axisRect()->setupFullAxesBox();
     _custom_plot->yAxis->setRange(-100, 100);
     QFont legendFont = font();
-    legendFont.setPointSize(12);
+    legendFont.setPointSize(13);
+    legendFont.setBold(true);
     _custom_plot->legend->setFont(legendFont);
+    _custom_plot->legend->setRowSpacing(8);
+
+    _custom_plot->setPlottingHint(QCP::phFastPolylines);
     
     auto cplot  = parent->findChild<QVBoxLayout *>("cplot");
     cplot->addWidget(_custom_plot);
@@ -100,9 +104,10 @@ void EcGuiPdo::create_graph(const int &esc_id,const int &index,const std::string
     _currentHue = std::fmod(_currentHue, 1.0f);
 
     QCPGraph * graph_pdo= _custom_plot->addGraph();
-    graph_pdo->setPen(QPen(color));
+    graph_pdo->setPen(QPen(color,3));
     graph_pdo->setName(QString::fromStdString(esc_pdo_name));
     graph_pdo->addToLegend();
+    graph_pdo->setAdaptiveSampling(true);
     _graph_pdo_map[esc_id][index]=graph_pdo;
 }
 /************************************* GENERATE GRAPH ***************************************/
@@ -225,7 +230,8 @@ void EcGuiPdo::update_plot()
             if(_auto_scroll->isChecked()){
                 //make key axis range scroll with the data (at a constant range size of 8):
                 _custom_plot->xAxis->setRange(_s_receive_time, 8, Qt::AlignRight);
-                _custom_plot->replot();
+                _custom_plot->replot(QCustomPlot::rpQueuedReplot);
+                //_custom_plot->replot();
             }
             
             _update_plot=false;
