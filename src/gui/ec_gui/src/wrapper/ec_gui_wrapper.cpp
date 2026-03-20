@@ -189,7 +189,6 @@ void EcGuiWrapper::restart_gui_wrapper(ec_wrapper_info_t ec_wrapper_info)
         _run_wrapper_thread=true;
     }
     
-
     start_stop_receive();
 }
 
