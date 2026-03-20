@@ -165,11 +165,51 @@ void EcWrapper::stop_devices(void)
     }
 }
 
-void EcWrapper::safe_init()
+bool EcWrapper::safe_init()
 {
-    _client->read();
-    // init motor reference map 
-    _client->get_motor_status(motor_status_map);
+    uint8_t count_op_en = 0;
+    bool operation_enabled = true;
+    const uint8_t max_attempts = 10;
+
+    std::unordered_map<int32_t, bool> motor_is_advrf;
+    for (const auto& [esc_id, type, pos] : _slave_info) {
+        auto it = ec_motors.find(type);
+        if (it != ec_motors.end()) {
+            motor_is_advrf[esc_id] = (it->second == "ADVRF_Motor");
+        }
+    }
+
+    while (count_op_en < max_attempts) {
+        _client->read();
+
+        operation_enabled = true;
+        _client->get_motor_status(motor_status_map);
+
+        for (const auto& [motor_id, motor_rx_pdo] : motor_status_map){
+            if (_ec_cfg.device_config_map.count(motor_id) == 0) continue;
+
+            if (motor_is_advrf.count(motor_id) && 
+                motor_is_advrf[motor_id]) continue;
+
+            const auto status_word = std::get<0>(motor_rx_pdo);
+
+            if ((status_word & 0x4) == 0) {
+                DPRINTF("Esc id: %d not reached the operational state\n", motor_id);
+                operation_enabled = false;
+            }
+        }
+
+        if (operation_enabled) break;
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        ++count_op_en;
+    }
+
+    if(!operation_enabled) {
+        DPRINTF("Cannot reach operation for all motors requested!\n");
+        return false;
+    }
+
     for (const auto &[esc_id, motor_rx_pdo] : motor_status_map){
         auto motor_pos =    std::get<2>(motor_rx_pdo);
         motor_reference_map[esc_id] = {0,motor_pos,0,0,0,0,0,0,0,0,0,0};
@@ -234,6 +274,7 @@ void EcWrapper::safe_init()
     }
 
     _client->write();
+    return true;
 }
 
 void EcWrapper::read_devices_status()
@@ -251,21 +292,16 @@ bool EcWrapper::start_ec_sys(void)
 {
     _ec_sys_started=true;
     try{
-        _client->start_client(_ec_cfg.period_ms); // IMPORTANT: moved here for UDP protocol
         
-        safe_init(); // safe initializaion of the references.
+        if(_ec_cfg.protocol == "udp"){
+            _client->start_client(_ec_cfg.period_ms); // IMPORTANT: moved here for UDP protocol
+        }
 
         autodetection();
-
-        if(_ec_cfg.logging){
-            _ec_logger->init_mat_logger(_slave_info);
-            _ec_logger->start_mat_logger();
-        }
 
         if(!_start_devices_vector.empty()){
             _ec_sys_started &= start_devices();
         }
-
 
 #ifdef TEST_LIBRARY
         _ec_sys_started = true;
@@ -273,6 +309,22 @@ bool EcWrapper::start_ec_sys(void)
         if(!_ec_sys_started){
             stop_ec_sys();
         }
+        else{
+
+            if(_ec_cfg.logging){
+                _ec_logger->init_mat_logger(_slave_info);
+                _ec_logger->start_mat_logger();
+            }
+  
+            if(_ec_cfg.protocol != "udp"){
+                _client->start_client(_ec_cfg.period_ms);
+            }
+
+            if(!safe_init()){
+                stop_ec_sys();
+            } // safe initializaion of the references.
+        }
+
     }catch(std::exception &ex){
         _ec_sys_started=false;
         throw std::runtime_error(ex.what());

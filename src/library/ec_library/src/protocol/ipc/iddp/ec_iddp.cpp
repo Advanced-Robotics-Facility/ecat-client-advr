@@ -42,11 +42,11 @@ void EcIDDP::th_init ( void * )
         DPRINTF("Client thread initialized, ");
         DPRINTF("id: %ld cpu: %d, priority %d\n",pthread_self(),_client_thread_info.cpu,_client_thread_info.priority);
         _client_status.run_loop=true;
-        sync_client_thread();
         start_time = iit::ecat::get_time_ns(CLOCK_MONOTONIC);
 	    tNow = tPre = start_time;
 	    loop_cnt = 0;
     }
+    sync_client_thread();
 }
 
 void EcIDDP::set_loop_time(uint32_t period_ms)
@@ -64,7 +64,7 @@ void EcIDDP::start_client(uint32_t period_ms)
     if(retrieve_slaves_info(slave_info)){
         try{
             esc_factory(slave_info);
-            create(true); // real time thread
+            create(true,0); // real time thread
             sync_client_thread();
         } catch ( std::exception &e ) {
             DPRINTF ( "Fatal Error: %s\n", e.what() );
