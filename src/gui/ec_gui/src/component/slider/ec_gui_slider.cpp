@@ -334,29 +334,31 @@ void EcGuiSlider::control_mode_change()
 void EcGuiSlider::set_control_mode(const std::string &tab_name)
 {
     if(tab_name=="Motors"){
-        _ctrl_mode=_sliders_window_map[tab_name]->read_control_mode();
-        for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
-            slider_wid->align_spinbox(0,_ctrl_mode);
-            if(_device_ctrl.device_gains.count(slave_id)>0){
-                int gain_start_index=gain_start_pos; 
-                // save gains of the old ctrl mode.
-                if(_device_ctrl.device_gains[slave_id].count(_old_ctrl_mode)>0){
-                    for(auto & gain_value: _device_ctrl.device_gains[slave_id][_old_ctrl_mode]){
-                        gain_value=slider_wid->get_spinbox_value(gain_start_index);
-                        gain_start_index++;
-                    } 
-                }
-                gain_start_index=gain_start_pos;
-                // load gains of the actual ctrl mode.
-                if(_device_ctrl.device_gains[slave_id].count(_ctrl_mode)>0){
-                    for(const auto & gain_value: _device_ctrl.device_gains[slave_id][_ctrl_mode]){
-                        slider_wid->align_spinbox(gain_start_index,gain_value);
-                        gain_start_index++;
+        if(_sliders_window_map.count(tab_name)>0){
+            _ctrl_mode=_sliders_window_map[tab_name]->read_control_mode();
+                for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
+                    slider_wid->align_spinbox(0,_ctrl_mode);
+                    if(_device_ctrl.device_gains.count(slave_id)>0){
+                        int gain_start_index=gain_start_pos; 
+                        // save gains of the old ctrl mode.
+                        if(_device_ctrl.device_gains[slave_id].count(_old_ctrl_mode)>0){
+                            for(auto & gain_value: _device_ctrl.device_gains[slave_id][_old_ctrl_mode]){
+                                gain_value=slider_wid->get_spinbox_value(gain_start_index);
+                                gain_start_index++;
+                            } 
+                        }
+                        gain_start_index=gain_start_pos;
+                        // load gains of the actual ctrl mode.
+                        if(_device_ctrl.device_gains[slave_id].count(_ctrl_mode)>0){
+                            for(const auto & gain_value: _device_ctrl.device_gains[slave_id][_ctrl_mode]){
+                                slider_wid->align_spinbox(gain_start_index,gain_value);
+                                gain_start_index++;
+                            }
+                        }
                     }
                 }
-            }
+            _old_ctrl_mode=_ctrl_mode;     
         }
-        _old_ctrl_mode=_ctrl_mode;
     }
 }
 
