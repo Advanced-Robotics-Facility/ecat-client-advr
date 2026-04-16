@@ -410,7 +410,7 @@ void EcGuiStart::setup_motor_device(int32_t device_id,int32_t device_type)
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0x71]={0.0,0.0,0.0,0.0,0.0};
         read_sdo_info(device_id,sdo_gains,_ec_wrapper_info.device_ctrl.device_gains[device_id][0x71]);
         
-        sdo_gains={"Stiffness","Damping","Tor_Kp","Tor_Ki","Tor_Kd"};
+        sdo_gains={"Stiffness","Damping","Imp_Tor_Kp","Imp_Tor_Ki","Imp_Tor_Kd"};
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0xD4]={0.0,0.0,0.0,0.0,0.0};
         read_sdo_info(device_id,sdo_gains,_ec_wrapper_info.device_ctrl.device_gains[device_id][0xD4]);
 
