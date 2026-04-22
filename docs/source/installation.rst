@@ -5,122 +5,285 @@
 Installation
 ***************
 
-The next steps show how to install the EtherCAT Client under **Ubuntu operating system**. It's also possible to use the framework under **Windows OS** using the **WSL (Windows Subsystem for Linux)**.
+RealTime: Embedded
+====================
 
-**Important:** Some dependency packages are available by github cloning. The suggestion to follow these steps helping the user for finding the packages:
+This guide walks through setting up a real-time (RT) embedded environment on a fresh Ubuntu system using Xenomai and an EtherCAT stack.
 
-Download manually create_ws.sh from ecat-client-advr repository inside the scripts directory and then::
+1. Install Xenomai Kernel
+--------------------------
+
+Xenomai provides real-time capabilities by adding a co-kernel to Linux.
+
+Steps::
+
+   sudo apt install -y git
+   git clone https://github.com/Advanced-Robotics-Facility/ecat-client-advr.git
+   cd ecat-client-advr
+   ./scripts/xenomai/prepare.sh
+
+Configuration options:
+
+* Answer **YES** to "Enable Xenomai Real-Time?"
+* Select packages:
+
+   * *1:* Dependencies (required)
+   * *2:* Xenomai setup (required)
+   * *3/4:* Kernel patch (choose based on your CPU)
+
+Then reboot into the Xenomai-patched kernel::
+
+   sudo reboot
+
+After reboot, make sure you're running the Xenomai kernel::
+
+   uname -r
+
+2. Install EtherCAT Stack
+--------------------------
+
+Run the build script::
+
+   ./ecat-client-advr/scripts/build_ecat.sh
+
+Configuration options:
+
+   * Enter your workspace name (e.g., code_ws) and parent directory
+   * Answer **YES** to "Enable Xenomai Real-Time?"
+   * Answer **NO** to "Build GUI tools?" (recommended for embedded systems)
+   * Select all packages (and dependencies) for a full installation: 1 2 3 4 5 6
+
+This installs both the EtherCAT master and client libraries.
+
+3. Configure Network Interface
+---------------------------------
+
+EtherCAT requires direct control of a network card, bypassing the standard Linux network stack.
+
+Identify your network card::
+
+   lspci -nkv 
+
+Edit configuration script::
+
+   vim /usr/local/bin/ec_xeno3.sh
+   # ETH_DRV - set the correct driver for your network card (e.g., e1000e, igb, etc.)
+   # Verify REBIND_RT_NICS matches your network card
+
+4. Start Xenomai Service
+--------------------------
+Restart the Xenomai service to apply everything::
+
+   systemctl restart xeno.service
+
+You can check its status with::
+
+   systemctl status xeno.service
+
+5. Load Environment
+-----------------------
+Make sure your environment variables are loaded::
+
+   source ~/.bashrc
+
+----------------------------------------------------------------------
+
+Non-RealTime: Embedded/PC
+=========================
+
+Same as RealTime Embedded but:
+
+* Skip "Install Xenomai Kernel", "Network Interface Configuration", and "Start Xenomai Service" 
+* Answer **NO** to "Enable Xenomai Real-Time?" in *build_ecat.sh*
+
+----------------------------------------------------------------------
+
+Manual Installation
+====================
+
+This section describes how to manually install the EtherCAT Client on an **Ubuntu system**. The framework can also be used on Windows via **WSL (Windows Subsystem for Linux)**.
+
+This manual setup replicates the behavior of the provided automated installer script (*build_ecat.sh*).
+
+1. Create the Workspace
+-------------------------
+
+Download manually `create_ws.sh` from `ecat-client-advr` repository inside the `scripts` directory and then make it executable::
 
  chmod +x create_ws.sh
 
-Prepare the workspace::
+Run the script to generate the workspace structure::
 
   ./create_ws.sh [name_ws] [dir_ws, default=HOME]
   
-Source into .bashrc the new workspace::
+Add the generated workspace setup to your shell environment::
 
-  source ~/name_workspace/setup.bash 
+  source ~/<workspace_name>/setup.bash 
   
-Then use the **src** dir for downloading the packages and **build** dir, creating the relative package sub-directory (**mkdir package_name**) for compiling them.
+Then use the **src** dir to place all the cloned repositories, and **build** dir (creating the relative package sub-directory (**mkdir package_name**)) for compiling them.
 
-Git, CMake and Google test
-=============================
+2. Dependencies
+--------------------
 
-Install git packages::
+This section includes all system dependencies required for building and running the stack.
+
+---
+**Basic development tools**
+
+::
 
    sudo apt update
    sudo apt install -y git gitg git-gui
    sudo apt install -y build-essential curl cmake cmake-curses-gui
-   sudo apt install -y libgtest-dev 
-   
-Network and Terminator
-=============================
+   sudo apt install -y libgtest-dev
 
-Install network and terminator packages::
+---
+**Networking tools**
 
-   sudo apt install -y net-tools openssh-server sshpass curl gnome-terminal terminator
-   
-YAML and FMT
-================================
+::
 
-Install yaml utils and fmt::
+   sudo apt install -y net-tools openssh-server sshpass curl \
+                        gnome-terminal terminator
 
-   sudo apt install -y libyaml-cpp-dev libfmt-dev 
-   
-EtherCAT Master Server
-=============================
+---
+**YAML and formatting libraries**
 
-SOEM
--------------------------------
+::
 
-Install SOEM library::
+   sudo apt install -y libyaml-cpp-dev libfmt-dev
 
-   git clone https://github.com/alessiomargan/SOEM
-   
-actual branch **xeno3**.
+---
+**Mechanism Protocols: Zmq, Protobuf, Msgpack, Boost**
 
-Zmq, Protobuf, Msgpack, Boost
--------------------------------
-
-Install mechanism protocols::
+::
 
    sudo apt install -y libzmq3-dev protobuf-compiler libmsgpack-dev libboost-system-dev
-   git clone https://github.com/zeromq/cppzmq
-   
-Eigen3
--------------------------------
 
-Install Eigen3::
+---
+**Eigen3**
+
+::
 
    sudo apt install -y libeigen3-dev
-   
-ecat-master-advr
--------------------------------
 
-Install ecat-master-advr::
+---
+**MatLogger**
 
-   git clone https://github.com/Advanced-Robotics-Facility/ecat-master-advr
-   
-**Note:** This is a private repository. Ask to Advanced-Robotics-Facility for the access.
-  
-MatLogger
-=============================
-
-Install matlogger library::
+::
 
    sudo apt install -y libmatio-dev python3-pip
-   git clone https://github.com/ADVRHumanoids/MatLogger2
-      
-      
-QT and GUI Tools
-========================================
 
-Install GUI tools::
+---
+**GUI tools (Qt)**
 
-  sudo apt install -y qt6-tools-dev qt6-declarative-dev libqt6charts6-dev uuid-dev libtiff-dev qttools5-dev 
-  
+::
 
-Matlab and Simulink
-========================================
+   sudo apt install -y qt6-tools-dev qt6-declarative-dev \
+                        libqt6charts6-dev uuid-dev libtiff-dev qttools5-dev
 
-Install Matlab/Simulink tools::
+---
+**Matlab / Simulink block factory (OPTIONAL)**
 
-  sudo dpkg --install ecat-client-advr/src/matlab/ec_block/external/blockfactory/(OS)/blockfactory_package-0.8.3-r0.0.1-amd64.deb
- 
+::
 
-Build and install the EtherCAT Client Library from source
-==========================================================
+   sudo dpkg --install ecat-client-advr/src/matlab/ec_block/external/blockfactory/(OS)/blockfactory_package-0.8.3-r0.0.1-amd64.deb
 
-Download and compile EtherCAT Client::
+3. Clone, Build, and Install Packages
+--------------------------------------
 
-  git clone https://github.com/Advanced-Robotics-Facility/ecat-client-advr
-  
-Note: Select the variable to compile (EtherCAT Client Examples an Gravity compensation, the EtherCAT Client GUI and EtherCAT client block [Matlab/Simulink]):
+Create the build folders::
 
-.. image:: _static/EtherCAT_Installation_Img/EtherCAT_Installation_Img_0.png
+   cd build/
+   mkdir -p SOEM cppzmq MatLogger2 ecat-master-advr ecat-client-advr
 
-**Note: It's possible to compile the EtherCAT Client Library with Xenomai Real-Time OS or Preempt-RT Real Times OS.**
+Clone the required packages with the correct branches::
 
+   git clone -b xeno3 https://github.com/alessiomargan/SOEM
+   git clone -b v4.7.1 https://github.com/zeromq/cppzmq
+   git clone -b master https://github.com/ADVRHumanoids/MatLogger2
+   git clone -b feature/cia402_rev https://github.com/Advanced-Robotics-Facility/ecat-master-advr
+   git clone -b feature/novanta https://github.com/Advanced-Robotics-Facility/ecat-client-advr
+
+**Note:** *ecat-master-advr* is a private repository. Ask to Advanced-Robotics-Facility for the access.
+
+---
+**SOEM**
+
+::
+
+   cd build/SOEM
+   cmake ../../src/SOEM 
+         -DCMAKE_INSTALL_PREFIX=<path-to-install-folder> \
+         -DCMAKE_USE_XENOMAI=ON
+   make -j$(nproc) install
+
+**Note:** -DCMAKE_USE_XENOMAI=OFF if Non-RealTime
+
+---
+**cppzmq**
+
+::
+
+   cd build/cppzmq
+   cmake ../../src/cppzmq 
+         -DCMAKE_BUILD_TYPE="Release" \
+         -DCMAKE_INSTALL_PREFIX=<path-to-install-folder> \
+         -DCPPZMQ_BUILD_TESTS=OFF
+   make -j$(nproc) install
+
+---
+**MatLogger2**
+
+::
+
+   cd build/MatLogger2 
+   cmake ../../src/MatLogger2
+         -DCMAKE_BUILD_TYPE="Release" \
+         -DCMAKE_INSTALL_PREFIX=<path-to-install-folder> \
+         -DCOMPILE_PY_BINDINGS=OFF
+   make -j$(nproc) install
+
+---
+**ecat-master-advr** 
+
+::
+
+   cd build/ecat-master-advr
+   cmake ../../src/ecat-master-advr 
+         -DCMAKE_BUILD_TYPE="Release" \
+         -DCMAKE_INSTALL_PREFIX=<path-to-install-folder>  \
+         -DBUILD_UDP_SRV=ON \
+         -DENABLE_XENO=ON   
+   make -j$(nproc) install
+
+**Note:** -DENABLE_XENO=OFF if Non-RealTime
+
+---
+**ecat-client-advr**
+
+::
+
+   cd build/ecat-client-advr
+   cmake ../../src/ecat-client-advr 
+         -DCMAKE_BUILD_TYPE="Release" \
+         -DCMAKE_INSTALL_PREFIX=<path-to-install-folder>  \
+         -DCMAKE_USE_XENOMAI=ON \ 
+         -DENABLE_XENO=ON \ 
+         -DCOMPILE_GUI=OFF                              
+   make -j$(nproc) install
+
+**Note1:** -DENABLE_XENO=OFF, -DCMAKE_USE_XENOMAI=OFF if Non-RealTime
+
+**Note2:** -DCOMPILE_GUI=ON if you need the GUI
+
+4. Environmental Variable
+-----------------------------
+
+Export environment variable EC_CFG::
+
+ export EC_CFG=~/<workspace_name>/src/ecat-client-advr/config/ec_cfg.yaml
+
+----------------------------------------------------------------------
 
 Install the EtherCAT Client Library from debian package
 ==========================================================
@@ -132,11 +295,3 @@ Download from this site the latest version of EtherCAT Client Debian Package and
 Install EtherCAT Client Librarys::
 
   sudo dpkg --install ecat-client-advr_nrt_package-0.0.1-r0.0.1-amd64.deb
-  
-
-Create environment variable EC_CFG
-==========================================================
-
-Export environment variable EC_CFG::
-
- export EC_CFG=~/code_ws/src/ecat-client-advr/config/ec_cfg.yaml

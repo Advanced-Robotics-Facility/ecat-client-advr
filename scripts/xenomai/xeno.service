@@ -1,0 +1,11 @@
+[Unit]
+Description=Xenomai rtnet
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/ec_xeno3.sh start
+ExecStop=/usr/local/bin/ec_xeno3.sh stop
+
+[Install]
+WantedBy=multi-user.target
