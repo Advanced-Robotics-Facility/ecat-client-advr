@@ -637,9 +637,6 @@ void EcReplCmd::set_motor_type_map(std::map<int32_t,std::string> motor_type_map)
         if(motor_type=="ADVRF_MOTOR"){
             _advrf_motor_map[motor_id]=motor_type;
         }
-        else if(motor_type=="SYNAPTICON_MOTOR"){
-            _synapticon_motor_map[motor_id]=motor_type;
-        }
     }
 }
 

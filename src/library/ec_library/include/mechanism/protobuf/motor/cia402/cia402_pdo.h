@@ -1,16 +1,16 @@
-#ifndef __SYNAPTICON_PDO__
-#define __SYNAPTICON_PDO__
+#ifndef __CIA402_PDO__
+#define __CIA402_PDO__
 
 #include "mechanism/protobuf/motor/motor_pdo.h"
 
 template <class T>
-class SynapticonPdo: public MotorPdo<T>{
+class Cia402Pdo: public MotorPdo<T>{
 
 public:
 
-    SynapticonPdo(const std::string ,int32_t id);
-    SynapticonPdo(const std::string ,int32_t id, uint32_t type);
-    ~SynapticonPdo();
+    Cia402Pdo(const std::string ,int32_t id);
+    Cia402Pdo(const std::string ,int32_t id, uint32_t type);
+    ~Cia402Pdo();
 
     void get_from_pb(void) override;
 
@@ -18,28 +18,28 @@ public:
 };
 
 template < class T >
-inline SynapticonPdo<T>::SynapticonPdo(std::string value,int id):
+inline Cia402Pdo<T>::Cia402Pdo(std::string value,int id):
                                    MotorPdo<T>(value,id)
 {
     MotorPdo<T>::init_pb();
 };
 
 template < class T >
-inline SynapticonPdo<T>::SynapticonPdo(std::string value,int32_t id, uint32_t type):
-                                   MotorPdo<T>(value,id,type)
+inline Cia402Pdo<T>::Cia402Pdo(std::string value,int32_t id, uint32_t type):
+                               MotorPdo<T>(value,id,type)
 {
     MotorPdo<T>::init_pb();
 };
 
 template < class T >
-inline SynapticonPdo<T>::~SynapticonPdo()
+inline Cia402Pdo<T>::~Cia402Pdo()
 {
 
 };
 
 
 template < class T >
-inline void SynapticonPdo<T>::get_from_pb() 
+inline void Cia402Pdo<T>::get_from_pb() 
 {
     std::get<0>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_cia402_rx_pdo()->statusword();
     std::get<1>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_cia402_rx_pdo()->link_pos();
@@ -63,7 +63,7 @@ inline void SynapticonPdo<T>::get_from_pb()
 }
 
 template < class T >
-inline void SynapticonPdo<T>::set_to_pb() 
+inline void Cia402Pdo<T>::set_to_pb() 
 {
     set_pbHeader(T::pb_tx_pdos.mutable_header(), T::name, 0);
     // Type

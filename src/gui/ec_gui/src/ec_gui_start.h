@@ -159,6 +159,8 @@ private:
   QLineEdit *_expert_user;
   EcGuiFirmware *_firmware_update_wizard;
   QComboBox *_master_process_type;
+  QFuture<void> _scan_device_fun;
+  QPushButton * _scan_device_btn;
   
   void error_on_scannig();
   void restart_gui();

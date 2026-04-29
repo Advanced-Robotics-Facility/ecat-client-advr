@@ -65,7 +65,7 @@ class ValvePdo: public T{
 
 public:
 
-    ValvePdo(const std::string,int id);
+    ValvePdo(const std::string value,int32_t id, uint32_t type);
     ~ValvePdo();
     
     void get_from_pb();
@@ -91,8 +91,8 @@ inline void ValvePdo<T>::init_pb()
 }
 
 template < class T >
-inline ValvePdo<T>::ValvePdo(std::string value,int id):
-                            T(id,"HyQ_KneeESC",value)
+inline ValvePdo<T>::ValvePdo(const std::string value,int32_t id, uint32_t type):
+                           T(id, type, value)
 {
     init_pb();
     T::init();

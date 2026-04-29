@@ -557,8 +557,10 @@ bool EcGuiNet::start_network()
 
 bool EcGuiNet::stop_network()
 {
-    if(!create_ssh_cmd(_ec_master_process,_ec_master_stdout)){
-        return false;
+    if(_ec_master_process->state()!=QProcess::NotRunning){
+        if(!create_ssh_cmd(_ec_master_process,_ec_master_stdout)){
+            return false;
+        }
     }
     stopping_network(true);
     return true;

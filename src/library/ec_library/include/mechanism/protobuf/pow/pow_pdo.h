@@ -34,7 +34,7 @@ class PowPdo: public T{
 
 public:
 
-    PowPdo(const std::string,int id);
+    PowPdo(const std::string value,int32_t id, uint32_t type);
     ~PowPdo();
     
     void get_from_pb();
@@ -46,8 +46,8 @@ public:
 };
 
 template < class T >
-inline PowPdo<T>::PowPdo(std::string value,int id):
-                       T(id,"PowBoard",value)
+inline PowPdo<T>::PowPdo(const std::string value,int32_t id, uint32_t type):
+                       T(id, type, value)
 {
     T::init();
     T::write_connect();

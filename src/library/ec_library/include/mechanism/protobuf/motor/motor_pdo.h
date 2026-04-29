@@ -69,7 +69,6 @@ class MotorPdo: public T{
 
 public:
 
-    MotorPdo(const std::string ,int32_t id);
     MotorPdo(const std::string ,int32_t id, uint32_t type);
     ~MotorPdo();
 
@@ -98,15 +97,7 @@ inline void MotorPdo<T>::init_pb()
 }
 
 template < class T >
-inline MotorPdo<T>::MotorPdo(std::string value,int id):
-                           T(id,"Motor",value)
-{
-    T::init();
-    T::write_connect();
-};
-
-template < class T >
-inline MotorPdo<T>::MotorPdo(std::string value,int32_t id, uint32_t type):
+inline MotorPdo<T>::MotorPdo(const std::string value,int32_t id, uint32_t type):
                            T(id, type, value)
 {
     T::init();

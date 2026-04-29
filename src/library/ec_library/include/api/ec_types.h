@@ -7,26 +7,45 @@
 
 #include <esc_info.h>
 #include "mechanism/protobuf/motor/advrf/advrf_pdo.h"
-#include "mechanism/protobuf/motor/synapticon/synapticon_pdo.h"
+#include "mechanism/protobuf/motor/cia402/cia402_pdo.h"
 #include "mechanism/protobuf/imu/imu_pdo.h"
 #include "mechanism/protobuf/ft/ft_pdo.h"
 #include "mechanism/protobuf/pow/pow_pdo.h"
 #include "mechanism/protobuf/valve/valve_pdo.h"
 #include "mechanism/protobuf/pump/pump_pdo.h"
 
-static std::map<uint32_t,std::string>ec_motors={
-    {iit::ecat::CENT_AC,"ADVRF_Motor"},
-    {iit::ecat::LO_PWR_DC_MC,"ADVRF_Motor"},
-    {iit::ecat::SYNAPTICON_v5_0,"Synapticon_Motor"},
-    {iit::ecat::SYNAPTICON_v5_1,"Synapticon_Motor"}
-};
-static std::map<uint32_t,std::string>ec_valves={
-    {iit::ecat::HYQ_KNEE,"ADVRF_Valve"}
-};   
+namespace iit::ecat::detail {
+    inline std::map<uint32_t, std::string> build_ec_map(const std::string& device_type){
+        std::map<uint32_t, std::string> result;
+    
+        for (const auto& [key, value] : iit::ecat::esc_type_map) {
+            if (value.find(device_type) != std::string::npos) {
+                std::string device = value;
+    
+                if (device == "Motor")
+                    device = "ADVRF_Motor";
+    
+                result[key] = device;
+            }
+        }
+        return result;
+    }    
+} // namespace iit::ecat::detail
 
-static std::map<uint32_t,std::string>ec_pumps={
-    {iit::ecat::HYQ_HPU,"ADVRF_Pump"}
-};   
+inline const std::map<uint32_t,std::string>& ec_motors(){
+    static const auto instance = iit::ecat::detail::build_ec_map("Motor");
+    return instance;
+}
+
+inline const std::map<uint32_t,std::string>& ec_valves(){
+    static const auto instance = iit::ecat::detail::build_ec_map("Valve");
+    return instance;
+} 
+
+inline const std::map<uint32_t,std::string>& ec_pumps(){
+    static const auto instance = iit::ecat::detail::build_ec_map("Hpu");
+    return instance;
+}  
 
 using MotorStatusMap =   std::map<int32_t, MotorPdoRx::pdo_t>;
 using MotorReferenceMap= std::map<int32_t, MotorPdoTx::pdo_t>; 

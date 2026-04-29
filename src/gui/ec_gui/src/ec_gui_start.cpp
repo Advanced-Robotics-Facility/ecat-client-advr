@@ -8,6 +8,7 @@
 #include <QLabel>
 #include <QPixmap>
 #include <QFile>
+#include <QtConcurrent>
 
 #include <chrono>
 
@@ -66,8 +67,8 @@ EcGuiStart::EcGuiStart(QWidget *parent) :
     _ec_sys_stop = findChild<QPushButton *>("StopEthercatSystem");
     connect(_ec_sys_stop, &QPushButton::released,this, &EcGuiStart::onStopEtherCATSystem);
     
-    auto scan_device = findChild<QPushButton *>("ScanDevice");
-    connect(scan_device, &QPushButton::released,this, &EcGuiStart::onScanDeviceReleased);
+    _scan_device_btn = findChild<QPushButton *>("ScanDevice");
+    connect(_scan_device_btn, &QPushButton::released,this, &EcGuiStart::onScanDeviceReleased);
 
     _firmware_update_btn=findChild<QPushButton *>("FirmwareUpdate");
     _firmware_update_btn->setEnabled(false);
@@ -375,116 +376,53 @@ void EcGuiStart::read_sdo_info(const int32_t device_id,
                                const std::vector<std::string> sdo_name,
                                std::vector<float> &sdo_info)
 {
-    int i=0;
-    for(auto &sdo:sdo_name){
-        if(_ec_wrapper_info.sdo_map.count(device_id)>0){
-            if(_ec_wrapper_info.sdo_map[device_id].count(sdo)){
+    if(sdo_info.size()<sdo_name.size()){
+        return;
+    }
+    
+    WR_SDO wr_sdo;
+    RR_SDOS rr_sdo;
+    bool ret=_ec_wrapper_info.client->retrieve_rr_sdo(device_id,sdo_name,wr_sdo,rr_sdo);
+
+    for(auto &[sdo_reply,sdo_value]:rr_sdo){
+        int i=0;
+        for(auto &sdo_req:sdo_name){
+            if(sdo_req==sdo_reply){
                 std::stringstream out;
-                out << std::fixed << std::setprecision(5) << _ec_wrapper_info.sdo_map[device_id][sdo];
+                out << std::fixed << std::setprecision(5) << sdo_value;
                 out >> sdo_info[i];
+                break;
             }
+            i++;
         }
-        i++;
     }
 }
 
 void EcGuiStart::setup_motor_device(int32_t device_id,int32_t device_type)
 {
-    std::vector<std::string> sdo_gains;
-    std::vector<std::string> sdo_limits;
-    if(ec_motors[device_type]=="Synapticon_Motor"){
-
-        //sdo_gains={"Position_loop_Kp","Position_loop_Ki","Position_loop_Kd",
-        //            "Velocity_loop_Kp","Velocity_loop_Ki"};
-
-        
-        sdo_gains={"Position_loop_Kp","Position_loop_Ki","Position_loop_Kd"};
-        
+    if(ec_motors().at(device_type)=="Synap_Motor"||
+       ec_motors().at(device_type)=="Nov_Motor"){
+        std::vector<std::string> sdo_gains={"Pos_Kp","Pos_Ki","Pos_Kd"};
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0x3B]={0.0,0.0,0.0,0.0,0.0};
         read_sdo_info(device_id,sdo_gains,_ec_wrapper_info.device_ctrl.device_gains[device_id][0x3B]);
 
-        sdo_gains.clear();
-        sdo_gains={"Controller_Kp","Controller_Ki","Controller_Kd"};
+        sdo_gains={"Vel_Kp","Vel_Ki","Vel_Kd"};
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0x71]={0.0,0.0,0.0,0.0,0.0};
         read_sdo_info(device_id,sdo_gains,_ec_wrapper_info.device_ctrl.device_gains[device_id][0x71]);
-
-        sdo_gains.clear();
-        sdo_gains={"Torque_Controller_Kp","Torque_Controller_Ki","Torque_Controller_Kd"};
+        
+        sdo_gains={"Stiffness","Damping","Imp_Tor_Kp","Imp_Tor_Ki","Imp_Tor_Kd"};
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0xD4]={0.0,0.0,0.0,0.0,0.0};
         read_sdo_info(device_id,sdo_gains,_ec_wrapper_info.device_ctrl.device_gains[device_id][0xD4]);
 
-        sdo_gains.clear();
-        sdo_gains={"Damping_ratio","Settling_time"};
+        sdo_gains={"Tor_Kp","Tor_Ki","Tor_Kd"};
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0xCC]={0.0,0.0,0.0,0.0,0.0};
         read_sdo_info(device_id,sdo_gains,_ec_wrapper_info.device_ctrl.device_gains[device_id][0xCC]);
 
+        sdo_gains={"Cur_Kp","Cur_Ki"};
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0xDD]={0.0,0.0,0.0,0.0,0.0};
+        read_sdo_info(device_id,sdo_gains,_ec_wrapper_info.device_ctrl.device_gains[device_id][0xDD]);
+        
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0x00]={0.0,0.0,0.0,0.0,0.0};
-
-
-        sdo_limits.clear();
-        sdo_limits={"min_position_limit","max_position_limit","Singleturn_bits","Motor_revolutions"};
-        std::vector<float> limits={FLT_MIN,FLT_MAX,0.0,0.0};
-        std::vector<float> final_limits={FLT_MIN,FLT_MAX,0.0,0.0,0.0};
-        read_sdo_info(device_id,sdo_limits,limits);
-        if(limits[0]!=FLT_MIN && limits[1]!=FLT_MAX){
-            if(limits[2]>0.0 && limits[3]>0.0){
-                final_limits[0]=(limits[0]* (2*M_PI)/ pow(2,limits[2]))/limits[3]; // (INC * 2pi /2^resolution)/gear_ration
-                final_limits[1]=(limits[1]* (2*M_PI)/ pow(2,limits[2]))/limits[3]; // (INC * 2pi /2^resolution)/gear_ration
-                if(std::abs(final_limits[0])>2*M_PI || std::abs(final_limits[1])>2*M_PI ){
-                    final_limits[0]=-3.14;
-                    final_limits[1]=3.14; // to be verified!!!
-                }
-            }
-        }
-        sdo_limits.clear();
-        sdo_limits={"Max_motor_speed","SI_unit_velocity","Motor_revolutions"};
-        limits.clear();
-        limits={0.0,0.0,0.0};
-        read_sdo_info(device_id,sdo_limits,limits);
-        float SI_velocity=1.0;
-        if(limits[0]>0.0 && limits[1]!=0.0 && limits[2]!=0.0){
-            /**
-            0x60A9 SI unit velocity
-            1 RPM (value 0x00B44700 or 11814656) - default, but may not be precise enough for some applications.
-            0.1 RPM (value 0xFFB44700 or 4290004736)
-            0.01 RPM (value 0xFEB44700 or 4273227520)
-            0.001 RPM (value 0xFDB44700 or 4256450304)
-            */
-            if(limits[1]>0x00B44700 && limits[1]<=0xFFB44700){
-                SI_velocity=0.1;
-            }
-            else if(limits[1]>0xFFB44700 && limits[1]<=0xFEB44700){
-                SI_velocity=0.01;
-            }
-            else if(limits[1]>0xFEB44700 && limits[1]<=0xFDB44700){
-                SI_velocity=0.001;
-            }
-            else{
-                SI_velocity=1;  
-            }
-            final_limits[2]=((2*M_PI)/60*limits[0]*SI_velocity)/limits[2]; // 2pi/60*Max_motor_speed*SI_unit_velocity/gear_ratio
-        }
-
-        sdo_limits.clear();
-        sdo_limits={"Motor_max_torque","Motor_rated_torque","Motor_revolutions"};
-        limits.clear();
-        limits={0.0,0.0,0.0};
-        read_sdo_info(device_id,sdo_limits,limits);
-        if(limits[0]>0.0 && limits[1]>0.0 && limits[2]>0.0){
-            final_limits[3]=limits[0]/1000*limits[1]/1000*limits[2]; //Motor_max_torque/1000*Motor_rated_torque/1000 * gear_ratio;
-        }
-
-        sdo_limits.clear();
-        sdo_limits={"Max_current","Motor_rated_current"};
-        limits.clear();
-        limits={0.0,0.0};
-        read_sdo_info(device_id,sdo_limits,limits);
-        if(limits[0]>0.0 && limits[1]>0.0){
-            final_limits[4]=limits[0]/1000*limits[1]/1000; //Max_current/1000*Motor_rated_current/1000;
-        }
-        _ec_wrapper_info.device_ctrl.device_limits[device_id]=final_limits;
-
     }else{
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0x3B]={200,0,10,0,0};
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0x71]={20,0,0,0,0};
@@ -492,44 +430,49 @@ void EcGuiStart::setup_motor_device(int32_t device_id,int32_t device_type)
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0xCC]={0.18,0.01,0.0,0.0,0.0};
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0xDD]={0.18,0.01,0.0,0.0,0.0};
         _ec_wrapper_info.device_ctrl.device_gains[device_id][0x00]={0.0,0.0,0.0,0.0,0.0};
-
-        sdo_limits={"Min_pos","Max_pos","Max_vel","Max_tor","Max_ref"};
-        _ec_wrapper_info.device_ctrl.device_limits[device_id]={FLT_MIN,FLT_MAX,0.0,0.0,0.0};
-        read_sdo_info(device_id,sdo_limits,_ec_wrapper_info.device_ctrl.device_limits[device_id]);        
     }
+
+    std::vector<std::string> sdo_limits={"Min_pos","Max_pos","Max_vel","Max_tor","Max_ref"};
+    _ec_wrapper_info.device_ctrl.device_limits[device_id]={FLT_MIN,FLT_MAX,0.0,0.0,0.0};
+    read_sdo_info(device_id,sdo_limits,_ec_wrapper_info.device_ctrl.device_limits[device_id]);        
 }
 
 void EcGuiStart::scan_device()
 {
-    if(_ec_wrapper_info.client->retrieve_slaves_info(_ec_wrapper_info.device_info)){
-        if(_ec_wrapper_info.device_info.empty()){
-            error_on_scannig();
+    // Prevent starting multiple scans simultaneously
+    if (_scan_device_fun.isRunning()) return;
+    
+    _scan_device_fun= QtConcurrent::run([this](){
+        
+        _scan_device_btn->setEnabled(false);
+
+        if(!_ec_wrapper_info.client->retrieve_slaves_info(_ec_wrapper_info.device_info)){
+            QMetaObject::invokeMethod(this, &EcGuiStart::error_on_scannig,Qt::QueuedConnection);
+            _scan_device_btn->setEnabled(true);
+            return;
         }
-        else{
-            for ( auto &[device_id, device_type, device_pos] : _ec_wrapper_info.device_info ) {
-                RR_SDOS rr_sdo;
-                if(_ec_wrapper_info.client->retrieve_all_sdo(device_id,rr_sdo)){
-                    _ec_wrapper_info.sdo_map[device_id]=rr_sdo;
-                }
-                if(ec_motors.count(device_type)>0){
-#ifdef TEST_GUI 
-                    if(_ec_wrapper_info.sdo_map.count(device_id)==0){
-                        RR_SDOS motor_sdo={{"Min_pos","-3.0"},
-                                           {"Max_pos","2.0"},
-                                           {"Max_vel","5.0"},
-                                           {"Max_tor","50.0"},
-                                           {"Max_ref","5.0"}};
-                        _ec_wrapper_info.sdo_map[device_id]=motor_sdo;
-                    }
-#endif
-                    setup_motor_device(device_id,device_type);
-                }
+
+        for (auto &[device_id, device_type, device_pos] : _ec_wrapper_info.device_info){
+            RR_SDOS rr_sdo;
+            if (_ec_wrapper_info.client->retrieve_all_sdo(device_id, rr_sdo)){
+                QMetaObject::invokeMethod(this, [=](){
+                    _ec_wrapper_info.sdo_map[device_id] = rr_sdo;
+
+                    if(ec_motors().count(device_type) > 0)
+                        setup_motor_device(device_id, device_type);
+
+                }, Qt::QueuedConnection);
             }
         }
-    }
-    else{
-        error_on_scannig();
-    }
+
+        QMetaObject::invokeMethod(this, [=](){
+            if(!_ec_wrapper_info.device_info.empty()){
+                restart_gui();
+            } 
+        }, Qt::QueuedConnection);
+
+        _scan_device_btn->setEnabled(true);
+    });
 }
 
 void EcGuiStart::onScanDeviceReleased()
@@ -563,10 +506,6 @@ void EcGuiStart::onScanDeviceReleased()
             scan_device();
         }
     }
-    
-    if(!_ec_wrapper_info.device_info.empty()){
-        restart_gui();
-    } 
 }
 
 EcGuiStart::~EcGuiStart()

@@ -40,7 +40,7 @@ class ImuPdo: public T{
 
 public:
 
-    ImuPdo(const std::string,int id);
+    ImuPdo(const std::string ,int32_t id, uint32_t type);
     ~ImuPdo();
     
     void get_from_pb();
@@ -52,8 +52,8 @@ public:
 };
 
 template < class T >
-inline ImuPdo<T>::ImuPdo(std::string value,int id):
-                       T(id,"Imu",value)
+inline ImuPdo<T>::ImuPdo(const std::string value,int32_t id, uint32_t type):
+                       T(id, type, value)
 {
     T::init();
     T::write_connect();

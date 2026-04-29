@@ -84,9 +84,9 @@ void EcWrapper::find_devices()
     for(const auto& device_id:_start_devices_vector){
         bool device_found=false;
         for ( auto &[id, type, pos] : _slave_info ) {
-            if(ec_motors.count(type)>0 || 
-               ec_valves.count(type)>0 ||
-               ec_pumps.count(type)>0){
+            if(ec_motors().count(type)>0 || 
+               ec_valves().count(type)>0 ||
+               ec_pumps().count(type)>0){
                 if(id == device_id){
                     device_found=true;
                     break;
@@ -173,8 +173,8 @@ bool EcWrapper::safe_init()
 
     std::unordered_map<int32_t, bool> motor_is_advrf;
     for (const auto& [esc_id, type, pos] : _slave_info) {
-        auto it = ec_motors.find(type);
-        if (it != ec_motors.end()) {
+        auto it = ec_motors().find(type);
+        if (it != ec_motors().end()) {
             motor_is_advrf[esc_id] = (it->second == "ADVRF_Motor");
         }
     }

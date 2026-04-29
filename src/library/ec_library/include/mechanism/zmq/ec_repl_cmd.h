@@ -369,7 +369,6 @@ private:
     std::string _zmq_uri;
     int _timeout;
     std::map<int32_t,std::string> _advrf_motor_map;
-    std::map<int32_t,std::string> _synapticon_motor_map;
     void check_advrf_motor_gains(iit::advr::Gains_Type ctrl_type,std::vector<float> &gains);
 
 

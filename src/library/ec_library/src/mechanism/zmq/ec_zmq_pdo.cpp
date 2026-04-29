@@ -1,4 +1,5 @@
 #include "mechanism/zmq/ec_zmq_pdo.h"
+#include <esc_info.h>
 #include <iostream>
 
 using namespace zmq;
@@ -12,6 +13,7 @@ _id(id),
 _type(type),
 _zmq_uri(zmq_uri)
 {   
+    _esc_name = iit::ecat::esc_type_map.at(type);
 }
     
 EcZmqPdo::EcZmqPdo( int32_t id, const std::string esc_name, const std::string zmq_uri):
