@@ -171,12 +171,13 @@ bool EcGuiSdo::rescan_sdo_byId(uint32_t esc_id)
                     sdo_item->setText(1,QString::fromStdString(sdo_name));
                     sdo_item->setText(2,QString::fromStdString(sdo_value));
                     _sdo_map[esc_id][sdo_name]=sdo_value;
-                    return true;
                 }
             }
         }
+    }else{
+        return false;
     }
-    return false;
+    return true;
 }
 
 bool EcGuiSdo::esc_cmd_byId(uint32_t esc_id,const std::string &cmd_type,int value)
