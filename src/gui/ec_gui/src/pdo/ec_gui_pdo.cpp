@@ -160,7 +160,7 @@ void EcGuiPdo::fill_data(const int &esc_id,
 
             if(_counter_buffer==_buffer_size-1){
                 if(topLevel->isExpanded()){
-                    topLevel->child(k)->setText(1,QString::number(pdo[k], 'f', 2));
+                    topLevel->child(k)->setText(1,QString::number(pdo[k], 'f', 3));
                 }
                 
                 if(topLevel->child(k)->checkState(0)==Qt::Checked){

@@ -4,7 +4,7 @@ static std::vector<std::string> motor_std_limits={"-3.14","3.14","6.28","10.0","
 static SliderWidget::slider_info_s motor_info={
     MotorPdoTx::name,
     {"[uless]","[rad]","[rad/s]","[Nm]","[arbu]", "[arbu]","[arbu]","[arbu]","[arbu]","[uless]","[uless]","[arbu]"},
-    {0,2,2,2,4,4,4,4,4,0,0,2},
+    {0,4,4,4,5,5,5,5,5,0,0,4},
     {"0",motor_std_limits[0],std::string("-")+motor_std_limits[2],std::string("-")+motor_std_limits[3],"0","0","0","0","0","0","0","-10000"},
     {"500",motor_std_limits[1],motor_std_limits[2],motor_std_limits[3],"10000","10000","10000","10000","10000","2","65535","10000"},
     {0,1,1,1,2,2,2,2,2,3,3,1}
@@ -36,7 +36,7 @@ EcGuiSlider::EcGuiSlider(QWidget *parent) :
     _devicecontrol=parent->findChild<QTabWidget *>("deviceControl");
     _device_list_wid = parent->findChild<QListWidget *>("devicelistWidget");
     if(motor_info.slider_name.size()==static_cast<size_t>(MotorPdoTx::pdo_size)){
-        std::vector<std::string> new_fields={"curr_ref","[A]","2",std::string("-")+motor_std_limits[4],motor_std_limits[4],"1"};
+        std::vector<std::string> new_fields={"curr_ref","[A]","3",std::string("-")+motor_std_limits[4],motor_std_limits[4],"1"};
         adjust_slave_info(motor_info,4,new_fields);
         gain_start_pos=5;
     }
