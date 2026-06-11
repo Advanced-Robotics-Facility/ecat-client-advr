@@ -38,7 +38,8 @@ private:
     void feed_motors(); 
     void feed_valves();
     void feed_pumps();
-    
+    void feed_grippers();
+
     EcReplCmd::Ptr  _ec_repl_cmd;
     const int _max_cmd_attemps=3;
     SSI _slave_info;

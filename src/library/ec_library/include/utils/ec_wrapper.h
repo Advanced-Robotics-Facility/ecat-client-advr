@@ -16,6 +16,9 @@ extern PumpReferenceMap pump_reference_map;
 // Valve
 extern ValveStatusMap valve_status_map;
 extern ValveReferenceMap valve_reference_map;
+// Gripper
+extern GripperStatusMap gripper_status_map;
+extern GripperReferenceMap gripper_reference_map;
 // Motor
 extern MotorStatusMap motor_status_map;
 extern MotorReferenceMap motor_reference_map;

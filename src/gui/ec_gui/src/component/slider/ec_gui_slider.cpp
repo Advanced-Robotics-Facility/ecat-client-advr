@@ -29,6 +29,14 @@ static SliderWidget::slider_info_s pump_info= {
     {1,2,2,2,2,3,3,3,3,1}
 };
   
+static SliderWidget::slider_info_s gripper_info = {
+    GripperPdoTx::name,                                                   
+    {"[cm]",  "[cm/s]", "[N]",    "[arbu]", "[arbu]", "[arbu]", "[arbu]", "[arbu]"}, 
+    { 4,       4,        4,        5,        5,        5,        5,        5       }, 
+    {"0",     "-11.50", "-150.00", "0",      "0",      "0",      "0",      "0"    }, 
+    {"8.30",  "11.50",  "150.00", "10000",  "10000",  "10000",  "10000",  "10000" }, 
+    { 1,       1,        1,        2,        2,        2,        2,        2      }  
+};
 
 EcGuiSlider::EcGuiSlider(QWidget *parent) :
     QWidget(parent)
@@ -169,6 +177,25 @@ void EcGuiSlider::create_sliders(SSI device_info,device_ctrl_t device_ctrl)
                     std::bind(&EcGuiSlider::on_checkbox_clicked, this, slider_enabled,device_list_index));
             device_list_index++;
         }
+        else if(device_type==iit::ecat::SCHUNKGRIPPER_v28 ||
+                device_type == iit::ecat::SCHUNKGRIPPER_v29) {
+            std::string gripper_name_s="gripper_"+std::to_string(device_id);
+            QString gripper_name = QString::fromStdString(gripper_name_s);
+            auto wid_gripper=new SliderWidget(gripper_name,gripper_info,this);
+            _slider_map.gripper_sw_map[device_id]=wid_gripper;
+
+            QStringList control_mode= {"Position","Torque","Idle"};
+            std::vector<int> control_mode_hex= {0x3B, 0xCC, 0x00};
+
+            auto gripper_layout= retrieve_slider_layout("Grippers",control_mode,control_mode_hex);
+            gripper_layout->addWidget(wid_gripper,0, Qt::AlignTop);
+
+            _device_list_wid->addItem(gripper_name);
+            auto slider_enabled=wid_gripper->get_slider_enabled();
+            connect(slider_enabled, &QCheckBox::toggled,
+                    std::bind(&EcGuiSlider::on_checkbox_clicked, this, slider_enabled,device_list_index));
+            device_list_index++;
+        }
     }
     for(int i=0;i<_device_list_wid->count();i++){
         _device_list_wid->item(i)->setHidden(true);
@@ -177,6 +204,7 @@ void EcGuiSlider::create_sliders(SSI device_info,device_ctrl_t device_ctrl)
     set_control_mode("Motors");
     set_control_mode("Valves");
     set_control_mode("Pumps");
+    set_control_mode("Grippers");
 }
 
 void EcGuiSlider::on_checkbox_clicked(QCheckBox * slider_enabled,int i)
@@ -199,7 +227,8 @@ void EcGuiSlider::delete_sliders()
     _sliders_window_map.clear();
     _slider_map.motor_sw_map.clear();
     _slider_map.valve_sw_map.clear();
-    _slider_map.pump_sw_map.clear();    
+    _slider_map.pump_sw_map.clear();  
+    _slider_map.gripper_sw_map.clear();
     _device_list_wid->clear();
     _device_ctrl.device_gains.clear();
     _device_ctrl.device_limits.clear();
@@ -220,7 +249,13 @@ void EcGuiSlider::reset_sliders()
     for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
         slider_wid->align_spinbox(0); // pressure_ref=actual pressure
     }
+    for (auto& [slave_id, slider_wid]:_slider_map.gripper_sw_map){
+        slider_wid->align_spinbox(0); // pos_ref=actual_gripper_pose
+        slider_wid->align_spinbox(1,0.0);
+        slider_wid->align_spinbox(2,0.0);
+    }
 }
+
 void EcGuiSlider::enable_sliders()
 {
     for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
@@ -230,6 +265,9 @@ void EcGuiSlider::enable_sliders()
         slider_wid->enable_slider();
     }
     for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
+        slider_wid->enable_slider();
+    }
+    for (auto& [slave_id, slider_wid]:_slider_map.gripper_sw_map){
         slider_wid->enable_slider();
     }
 }
@@ -245,6 +283,9 @@ void EcGuiSlider::disable_sliders()
     for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
          slider_wid->disable_slider();
     }
+    for (auto& [slave_id, slider_wid]:_slider_map.gripper_sw_map){
+         slider_wid->disable_slider();
+    }
 }
 
 void EcGuiSlider::set_sliders_info(double st,bool stopping_wave)
@@ -257,6 +298,9 @@ void EcGuiSlider::set_sliders_info(double st,bool stopping_wave)
          slider_wid->set_wave_info(st,stopping_wave);
     }
     for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
+         slider_wid->set_wave_info(st,stopping_wave);
+    }
+    for (auto& [slave_id, slider_wid]:_slider_map.gripper_sw_map){
          slider_wid->set_wave_info(st,stopping_wave);
     }
 }
@@ -281,6 +325,11 @@ void EcGuiSlider::check_sliders()
             slider_wid->check_slider_enabled();
         }
     }
+    else if(curr_tab_name=="Grippers"){
+        for (auto& [slave_id, slider_wid]:_slider_map.gripper_sw_map){
+            slider_wid->check_slider_enabled();
+        }
+    }
 }
 
 void EcGuiSlider::uncheck_sliders()
@@ -300,6 +349,11 @@ void EcGuiSlider::uncheck_sliders()
     }
     else if(curr_tab_name=="Pumps"){
         for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
+            slider_wid->uncheck_slider_enabled();
+        }
+    }
+    else if(curr_tab_name=="Grippers"){
+        for (auto& [slave_id, slider_wid]:_slider_map.gripper_sw_map){
             slider_wid->uncheck_slider_enabled();
         }
     }
@@ -333,30 +387,44 @@ void EcGuiSlider::control_mode_change()
 
 void EcGuiSlider::set_control_mode(const std::string &tab_name)
 {
-    if(tab_name=="Motors"){
+    if(tab_name=="Motors" || tab_name=="Grippers"){
         if(_sliders_window_map.count(tab_name)>0){
             _ctrl_mode=_sliders_window_map[tab_name]->read_control_mode();
-                for (auto& [slave_id, slider_wid]:_slider_map.motor_sw_map){
+
+            int current_gain_start_pos = 0;
+            std::map<int32_t, SliderWidget*>* current_sw_map = nullptr;
+            if (tab_name == "Motors") {
+                current_gain_start_pos = 5;
+                current_sw_map = &_slider_map.motor_sw_map;
+            } else if (tab_name == "Grippers") {
+                current_gain_start_pos = 3;
+                current_sw_map = &_slider_map.gripper_sw_map;
+            }
+
+            for (auto& [slave_id, slider_wid]:*current_sw_map){
+
+                if (tab_name == "Motors")
                     slider_wid->align_spinbox(0,_ctrl_mode);
-                    if(_device_ctrl.device_gains.count(slave_id)>0){
-                        int gain_start_index=gain_start_pos; 
-                        // save gains of the old ctrl mode.
-                        if(_device_ctrl.device_gains[slave_id].count(_old_ctrl_mode)>0){
-                            for(auto & gain_value: _device_ctrl.device_gains[slave_id][_old_ctrl_mode]){
-                                gain_value=slider_wid->get_spinbox_value(gain_start_index);
-                                gain_start_index++;
-                            } 
-                        }
-                        gain_start_index=gain_start_pos;
-                        // load gains of the actual ctrl mode.
-                        if(_device_ctrl.device_gains[slave_id].count(_ctrl_mode)>0){
-                            for(const auto & gain_value: _device_ctrl.device_gains[slave_id][_ctrl_mode]){
-                                slider_wid->align_spinbox(gain_start_index,gain_value);
-                                gain_start_index++;
-                            }
+
+                if(_device_ctrl.device_gains.count(slave_id)>0){
+                    int gain_start_index=current_gain_start_pos; 
+                    // save gains of the old ctrl mode.
+                    if(_device_ctrl.device_gains[slave_id].count(_old_ctrl_mode)>0){
+                        for(auto & gain_value: _device_ctrl.device_gains[slave_id][_old_ctrl_mode]){
+                            gain_value=slider_wid->get_spinbox_value(gain_start_index);
+                            gain_start_index++;
+                        } 
+                    }
+                    gain_start_index=current_gain_start_pos;
+                    // load gains of the actual ctrl mode.
+                    if(_device_ctrl.device_gains[slave_id].count(_ctrl_mode)>0){
+                        for(const auto & gain_value: _device_ctrl.device_gains[slave_id][_ctrl_mode]){
+                            slider_wid->align_spinbox(gain_start_index,gain_value);
+                            gain_start_index++;
                         }
                     }
                 }
+            }
             _old_ctrl_mode=_ctrl_mode;     
         }
     }

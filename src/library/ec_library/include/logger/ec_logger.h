@@ -45,6 +45,8 @@ public:
     void log_valve_reference(const ValveReferenceMap& valve_reference_map);
     void log_pump_status(const PumpStatusMap& pump_status_map);
     void log_pump_reference(const PumpReferenceMap& pump_reference_map);
+    void log_gripper_status(const GripperStatusMap& gripper_status_map);
+    void log_gripper_reference(const GripperReferenceMap& gripper_reference_map);
     
 private: 
     void get_old_logger();

@@ -391,6 +391,11 @@ void EcZmqCmd::send_pdo()
         feed_pumps();
         _write_device[DeviceCtrlType::PUMP]=false;
     }
+
+    if(_write_device[DeviceCtrlType::GRIPPER]){
+        feed_grippers();
+        _write_device[DeviceCtrlType::GRIPPER]=false;
+    }
 }
 
 void EcZmqCmd::feed_motors()
@@ -418,6 +423,16 @@ void EcZmqCmd::feed_valves()
 }
 
 void EcZmqCmd::feed_pumps()
+{
+    if(_client_status.status==ClientStatusEnum::NOT_ALIVE){
+        _consoleLog->error("Client in not alive state, please stop the main process!");
+        return;
+    }
+    else{
+    }
+}
+
+void EcZmqCmd::feed_grippers()
 {
     if(_client_status.status==ClientStatusEnum::NOT_ALIVE){
         _consoleLog->error("Client in not alive state, please stop the main process!");

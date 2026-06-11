@@ -13,6 +13,7 @@
 #include "protobuf/ft/ft_pb.h"
 #include "protobuf/valve/valve_pb.h"
 #include "protobuf/pump/pump_pb.h"
+#include "protobuf/gripper/gripper_pb.h"
 
 #define POOL_SIZE   4096
 #define MAX_WRK     64
@@ -79,6 +80,9 @@ public:
             } else if(ec_pumps().count(esc_type)>0){
                 auto pump_pb= std::make_shared<PumpPb>();
                 esc_pb[id]=std::static_pointer_cast<EscPb>(pump_pb);
+            } else if(ec_grippers().count(esc_type)>0){
+                auto gripper_pb= std::make_shared<GripperPb>();
+                esc_pb[id]=std::static_pointer_cast<EscPb>(gripper_pb);
             } else{
                 switch ( esc_type ){
                     case iit::ecat::FT6MSP432_v24:{

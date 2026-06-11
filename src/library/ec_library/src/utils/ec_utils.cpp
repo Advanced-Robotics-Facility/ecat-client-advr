@@ -181,7 +181,7 @@ void EcUtils::device_config_map(const YAML::Node & device_config_node,std::strin
                             _ec_cfg.device_config_map[esc_id].type=iit::ecat::NOVANTA;
                         } else if(type_str=="Amc"){
                             _ec_cfg.device_config_map[esc_id].type=iit::ecat::AMC;
-                        }else{
+                        } else{
                             _ec_cfg.device_config_map[esc_id].type=iit::ecat::CENTAC_v15;
                         }
                     }
@@ -191,6 +191,9 @@ void EcUtils::device_config_map(const YAML::Node & device_config_node,std::strin
                 }
                 else if(device_type=="pump"){
                     _ec_cfg.device_config_map[esc_id].type=iit::ecat::HYQ_HPU;
+                }
+                else if(device_type=="gripper"){
+                    _ec_cfg.device_config_map[esc_id].type = iit::ecat::SCHUNKGRIPPER_v29;
                 }
                 else{
                     throw std::runtime_error("Error: cannot find a device type for id: "+std::to_string(esc_id));

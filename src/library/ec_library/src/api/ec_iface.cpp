@@ -50,7 +50,7 @@ EcIface::EcIface()
         createLogger("console","client");
         _consoleLog=spdlog::get("console");
     }
-    _write_device={false,false,false};
+    _write_device={false,false,false,false};
     
     _consoleLog->info("EtherCAT Client initialized");
 }
@@ -134,6 +134,14 @@ void EcIface::read()
         });
     }
 
+    read_ok &= _gripper_status_map.empty() |
+               (_gripper_status_queue.read_available() > 0);
+    if (_gripper_status_queue.read_available() > 0) {
+        _gripper_status_queue.consume_all([this](auto *ptr) {
+            _gripper_status_map = *ptr;
+        });
+    }
+
     // add verbose read option
     if(!read_ok){
         //DPRINTF("No new data to read for some slave...\n");
@@ -197,6 +205,19 @@ void EcIface::set_pump_reference(const PumpReferenceMap pump_reference_map)
     if(check_maps(_pump_reference_map,pump_reference_map,"pump")){
         _pump_reference_map=pump_reference_map;
         _write_device[DeviceCtrlType::PUMP]=true;
+    }
+}
+
+void EcIface::get_gripper_status(GripperStatusMap &gripper_status_map)
+{
+    gripper_status_map = _gripper_status_map;
+}
+
+void EcIface::set_gripper_reference(const GripperReferenceMap gripper_reference_map)
+{
+    if (check_maps(_gripper_reference_map, gripper_reference_map, "gripper")) {
+        _gripper_reference_map = gripper_reference_map;
+        _write_device[DeviceCtrlType::GRIPPER] = true;
     }
 }
  

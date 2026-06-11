@@ -49,6 +49,7 @@ public:
     void get_imu_status(ImuStatusMap &imu_status_map);
     void get_valve_status(ValveStatusMap &valve_status_map);
     void get_pump_status(PumpStatusMap &pump_status_map);
+    void get_gripper_status(GripperStatusMap &gripper_status_map);
     bool pdo_aux_cmd_sts(const PAC & pac);
     
     // EtherCAT Client ADVR Facilty setters
@@ -56,6 +57,7 @@ public:
     void set_motor_reference(const MotorReferenceMap motor_references);
     void set_valve_reference(const ValveReferenceMap valve_reference);
     void set_pump_reference(const PumpReferenceMap pump_reference);
+    void set_gripper_reference(const GripperReferenceMap gripper_reference);
     
     // EtherCAT Client ADVR Facilty manager
     virtual void start_client(uint32_t period_ms) = 0;
@@ -103,10 +105,14 @@ protected:
     // last received pump data
     PumpStatusMap _pump_status_map,_internal_pump_status_map;
     spsc_queue<PumpStatusMap*,fixed_sized<true>> _pump_status_queue{MAX_QUEUE_PDO};
-    
+    // last received gripper data
+    GripperStatusMap _gripper_status_map, _internal_gripper_status_map;
+    spsc_queue<GripperStatusMap*, fixed_sized<true>> _gripper_status_queue{MAX_QUEUE_PDO};
+
     MotorReferenceMap _motor_reference_map;
     ValveReferenceMap _valve_reference_map;
     PumpReferenceMap _pump_reference_map;
+    GripperReferenceMap _gripper_reference_map;
     std::vector<bool> _write_device;
     
     uint64_t _period_ns;

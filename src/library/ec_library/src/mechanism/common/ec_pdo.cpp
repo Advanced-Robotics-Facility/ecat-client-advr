@@ -57,6 +57,13 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                     _internal_motor_status_map[id]=_motor_status_map[id]=  advrf_pdo->rx_pdo;
                     _motor_reference_map[id]= advrf_pdo->tx_pdo;
                 }break;
+                case iit::ecat::SCHUNKGRIPPER_v28:
+                case iit::ecat::SCHUNKGRIPPER_v29: {
+                    auto gripper_pdo = std::make_shared<GripperPdo<T>>(_ec_pdo_start, id, esc_type);
+                    _gripper_pdo_map[id] = gripper_pdo;
+                    _internal_gripper_status_map[id] = _gripper_status_map[id] = gripper_pdo->rx_pdo;
+                    _gripper_reference_map[id] = gripper_pdo->tx_pdo;
+                } break;
                 default:{ //default cia402
                     auto cia402_pdo = std::make_shared<Cia402Pdo<T>>(_ec_pdo_start, id, esc_type);
                     _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(cia402_pdo);
@@ -74,6 +81,11 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
             _pump_pdo_map[id]=pump_pdo;
             _internal_pump_status_map[id]=_pump_status_map[id]= pump_pdo->rx_pdo;
             _pump_reference_map[id]= pump_pdo->tx_pdo;
+        } else if(ec_grippers().count(esc_type)>0){
+            auto gripper_pdo = std::make_shared<GripperPdo<T>>(_ec_pdo_start, id, esc_type);
+            _gripper_pdo_map[id]=gripper_pdo;
+            _internal_gripper_status_map[id]=_gripper_status_map[id]= gripper_pdo->rx_pdo;
+            _gripper_reference_map[id]= gripper_pdo->tx_pdo;
         } else{
             switch ( esc_type ){
                 case iit::ecat::FT6MSP432_v24:{
@@ -107,6 +119,7 @@ void EcPdo<T>::stop_pdo()
     _pow_pdo_map.clear();
     _valve_pdo_map.clear();
     _pump_pdo_map.clear();
+    _gripper_pdo_map.clear();
     
     if(_protocol!="pipe"){
         EcZmqPdoContext::stop_context();
@@ -152,6 +165,8 @@ void EcPdo<T>::read_pdo()
     read_valve_pdo();
     
     read_pump_pdo();
+
+    read_gripper_pdo();
 }
 
 template < class T >
@@ -170,6 +185,11 @@ void EcPdo<T>::write_pdo()
     if(_write_device[DeviceCtrlType::PUMP]){
         write_pump_pdo();
         _write_device[DeviceCtrlType::PUMP]=false;
+    }
+
+    if(_write_device[DeviceCtrlType::GRIPPER]){ 
+        write_gripper_pdo();
+        _write_device[DeviceCtrlType::GRIPPER]=false;
     }
 }
 
@@ -379,6 +399,34 @@ void EcPdo<T>::write_pump_pdo()
         pump_pdo->tx_pdo=_pump_reference_map[id];
         //write 
         pump_pdo->write();
+    }
+}
+
+template < class T >
+void EcPdo<T>::read_gripper_pdo()
+{
+    for (auto const &[id, gripper_pdo] : _gripper_pdo_map) {
+        try {
+            int nbytes = 0;
+            do {
+                nbytes = gripper_pdo->read();
+            } while (nbytes > 0);
+            _internal_gripper_status_map[id] = gripper_pdo->rx_pdo;
+        }
+        catch (const std::out_of_range &e) {};
+    }
+    get_init_rx_pdo(_gripper_pdo_map);
+    if (!_internal_gripper_status_map.empty()) {
+        _gripper_status_queue.push(&_internal_gripper_status_map);
+    }
+}
+
+template < class T >
+void EcPdo<T>::write_gripper_pdo()
+{
+    for (auto &[id, gripper_pdo] : _gripper_pdo_map) {
+        gripper_pdo->tx_pdo = _gripper_reference_map[id];
+        gripper_pdo->write();
     }
 }
 

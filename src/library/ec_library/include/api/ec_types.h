@@ -13,6 +13,7 @@
 #include "mechanism/protobuf/pow/pow_pdo.h"
 #include "mechanism/protobuf/valve/valve_pdo.h"
 #include "mechanism/protobuf/pump/pump_pdo.h"
+#include "mechanism/protobuf/gripper/gripper_pdo.h"
 
 namespace iit::ecat::detail {
     inline std::map<uint32_t, std::string> build_ec_map(const std::string& device_type){
@@ -47,15 +48,22 @@ inline const std::map<uint32_t,std::string>& ec_pumps(){
     return instance;
 }  
 
-using MotorStatusMap =   std::map<int32_t, MotorPdoRx::pdo_t>;
-using MotorReferenceMap= std::map<int32_t, MotorPdoTx::pdo_t>; 
-using PwrStatusMap=      std::map<int32_t, PowPdoRx::pdo_t>;
-using FtStatusMap=       std::map<int32_t, FtPdoRx::pdo_t>;
-using ImuStatusMap=      std::map<int32_t, ImuPdoRx::pdo_t>;
-using ValveStatusMap=    std::map<int32_t, ValvePdoRx::pdo_t>;
-using ValveReferenceMap= std::map<int32_t, ValvePdoTx::pdo_t>;    
-using PumpStatusMap =    std::map<int32_t, PumpPdoRx::pdo_t>;
-using PumpReferenceMap=  std::map<int32_t, PumpPdoTx::pdo_t >;     
+inline const std::map<uint32_t,std::string>& ec_grippers(){
+    static const auto instance = iit::ecat::detail::build_ec_map("Gripper");
+    return instance;
+}  
+
+using MotorStatusMap =    std::map<int32_t, MotorPdoRx::pdo_t>;
+using MotorReferenceMap=  std::map<int32_t, MotorPdoTx::pdo_t>; 
+using PwrStatusMap=       std::map<int32_t, PowPdoRx::pdo_t>;
+using FtStatusMap=        std::map<int32_t, FtPdoRx::pdo_t>;
+using ImuStatusMap=       std::map<int32_t, ImuPdoRx::pdo_t>;
+using ValveStatusMap=     std::map<int32_t, ValvePdoRx::pdo_t>;
+using ValveReferenceMap=  std::map<int32_t, ValvePdoTx::pdo_t>;    
+using PumpStatusMap =     std::map<int32_t, PumpPdoRx::pdo_t>;
+using PumpReferenceMap=   std::map<int32_t, PumpPdoTx::pdo_t >;     
+using GripperStatusMap=   std::map<int32_t, GripperPdoRx::pdo_t>;
+using GripperReferenceMap=std::map<int32_t, GripperPdoTx::pdo_t >;     
                       
 // DevicesStarT
 using DST = std::vector<std::tuple<int32_t, int32_t, std::vector<float>>>;
@@ -113,6 +121,7 @@ enum DeviceCtrlType{
     MOTOR   = 0,
     VALVE   = 1,
     PUMP    = 2,
+    GRIPPER = 3,
 };
 
 

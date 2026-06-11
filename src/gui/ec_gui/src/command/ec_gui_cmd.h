@@ -37,6 +37,7 @@ private:
   void fill_start_stop_motor();
   void fill_start_stop_valve();
   void fill_start_stop_pump();
+  void fill_start_stop_gripper();
   bool braking_cmd_req();
 
   ClientCmdType _ctrl_cmd_type;
@@ -46,7 +47,7 @@ private:
 
   QString _cmd_message;
   bool _device_start_req,_device_controlled;
-  bool _motors_selected,_valves_selected,_pumps_selected;
+  bool _motors_selected,_valves_selected,_pumps_selected, _grippers_selected;
 
   QComboBox * _fieldtype_combobox;
 

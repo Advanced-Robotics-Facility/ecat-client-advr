@@ -12,6 +12,9 @@ PumpReferenceMap pump_reference_map;
 // Valve
 ValveStatusMap valve_status_map;
 ValveReferenceMap valve_reference_map;
+// Gripper
+GripperStatusMap gripper_status_map;
+GripperReferenceMap gripper_reference_map;
 // Motor
 MotorStatusMap motor_status_map;
 MotorReferenceMap motor_reference_map;
@@ -86,6 +89,7 @@ void EcWrapper::find_devices()
         for ( auto &[id, type, pos] : _slave_info ) {
             if(ec_motors().count(type)>0 || 
                ec_valves().count(type)>0 ||
+               ec_grippers().count(type)>0 ||
                ec_pumps().count(type)>0){
                 if(id == device_id){
                     device_found=true;
@@ -251,7 +255,7 @@ bool EcWrapper::safe_init()
         }
     }
 
-    // init valve reference map
+    // init pump reference map
     _client->get_pump_status(pump_status_map);
     for (const auto &[esc_id, pump_rx_pdo] : pump_status_map){
         float pump_target=0.0;
@@ -273,6 +277,31 @@ bool EcWrapper::safe_init()
         }
     }
 
+    // init gripper reference map
+    _client->get_gripper_status(gripper_status_map);
+    for (const auto &[esc_id, gripper_rx_pdo] : gripper_status_map){
+        float gripper_target = 0.0;
+        
+        gripper_reference_map[esc_id] = std::make_tuple(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+        
+        if(_ec_cfg.device_config_map.count(esc_id) > 0){
+            if(_ec_cfg.device_config_map[esc_id].control_mode_type == 0xD4){
+                gripper_target = std::get<2>(gripper_rx_pdo); 
+            }
+            
+            gripper_reference_map[esc_id] = std::make_tuple(
+                gripper_target,
+                0.0f,
+                0.0f,                                       
+                _ec_cfg.device_config_map[esc_id].gains[0],          
+                _ec_cfg.device_config_map[esc_id].gains[1],
+                _ec_cfg.device_config_map[esc_id].gains[2],
+                _ec_cfg.device_config_map[esc_id].gains[3],
+                _ec_cfg.device_config_map[esc_id].gains[4]
+            );
+        }
+    }
+
     _client->write();
     return true;
 }
@@ -285,6 +314,7 @@ void EcWrapper::read_devices_status()
     _client->get_pow_status(pow_status_map);
     _client->get_valve_status(valve_status_map);
     _client->get_pump_status(pump_status_map);
+    _client->get_gripper_status(gripper_status_map);
 }
 
 
@@ -356,11 +386,13 @@ void EcWrapper::log_ec_sys()
     _ec_logger->log_imu_status(imu_status_map);
     _ec_logger->log_valve_status(valve_status_map);
     _ec_logger->log_pump_status(pump_status_map);
+    _ec_logger->log_gripper_status(gripper_status_map);
 
 
     _ec_logger->log_motor_reference(motor_reference_map); 
     _ec_logger->log_valve_reference(valve_reference_map);
     _ec_logger->log_pump_reference(pump_reference_map);
+    _ec_logger->log_gripper_reference(gripper_reference_map);
 }
 
 

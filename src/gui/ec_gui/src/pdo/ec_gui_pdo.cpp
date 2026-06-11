@@ -92,7 +92,7 @@ void EcGuiPdo::restart_ec_gui_pdo(EcIface::Ptr client,EcLogger::Ptr ec_logger)
     _esc_pdo_map.clear();
 
     _slider_map=_ec_gui_slider->get_sliders(); // read only actual slider widget map.
-    _motors_selected=_valves_selected=_pumps_selected=false;
+    _motors_selected=_valves_selected=_pumps_selected=_grippers_selected=false;
     init_write_pdo();
 
 }
@@ -210,6 +210,7 @@ void EcGuiPdo::read()
     read_imu_status();
     read_valve_status();
     read_pump_status();
+    read_gripper_status();
     /************************************* READ Rx PDOs  ********************************************/
 
     update_plot();
@@ -257,7 +258,7 @@ void EcGuiPdo::read_motor_status()
         }
         
         /************************************* ALIGN POSITION SLIDERS with the motor position ********************************************/
-        double motor_pos=std::get<2>(motor_rx_pdo);
+        double motor_pos=std::get<1>(motor_rx_pdo);
         if(_slider_map.motor_sw_map.count(esc_id)>0){
             _slider_map.motor_sw_map[esc_id]->set_spinbox_value(1,motor_pos);
         }
@@ -334,6 +335,24 @@ void EcGuiPdo::read_pump_status()
         /************************************* ALIGN PUMP SLIDERS with the actual pressure********************************************/
     }
 }
+
+void EcGuiPdo::read_gripper_status()
+{
+    _client->get_gripper_status(_gripper_status_map);
+    for (const auto &[esc_id, gripper_rx_pdo] : _gripper_status_map) {
+        QTreeWidgetItem *topLevel = retrieve_treewid_item(esc_id, "gripper", GripperPdoRx::name, "Rx");
+        if (GripperPdoRx::make_vector_from_tuple(gripper_rx_pdo, _pdo_v[esc_id])) {
+            fill_data(esc_id, topLevel, GripperPdoRx::name, _pdo_v[esc_id]);
+        }
+
+        /************************************* ALIGN GRIPPER SLIDERS with the actual pose********************************************/
+        double pos=std::get<1>(gripper_rx_pdo);
+        if(_slider_map.gripper_sw_map.count(esc_id)>0){
+            _slider_map.gripper_sw_map[esc_id]->set_spinbox_value(0,pos);
+        }
+        /************************************* ALIGN GRIPPER SLIDERS with the actual pose********************************************/
+    }
+}
 /********************************************************* READ PDO***********************************************************************************************/
 
 /********************************************************* LOG PDO***********************************************************************************************/
@@ -351,6 +370,9 @@ void EcGuiPdo::log()
 
     _ec_logger->log_pump_status(_pump_status_map);
     _ec_logger->log_pump_reference(_pump_ref_map);
+
+    _ec_logger->log_gripper_status(_gripper_status_map);
+    _ec_logger->log_gripper_reference(_gripper_ref_map);
 }
 /********************************************************* LOG PDO***********************************************************************************************/
 
@@ -360,6 +382,7 @@ void EcGuiPdo::sync_write()
     _motor_ref_map = _motor_reference_map;
     _valve_ref_map = _valve_reference_map;
     _pump_ref_map  = _pump_reference_map;
+    _gripper_ref_map = _gripper_reference_map;
 }
 
 void EcGuiPdo::init_write_pdo()
@@ -379,6 +402,11 @@ void EcGuiPdo::init_write_pdo()
         _pump_reference_map[slave_id]={0,0,0,0,0,0,0,0,0,0};
     }
 
+    _gripper_reference_map.clear();
+    for (auto& [slave_id, slider_wid]:_slider_map.gripper_sw_map){
+        _gripper_reference_map[slave_id]={0,0,0,0,0,0,0,0};
+    }
+
     sync_write();
 }
 
@@ -392,6 +420,7 @@ void EcGuiPdo::starting_write(int time_ms)
     _motors_selected=check_write_device(_slider_map.motor_sw_map);
     _valves_selected=check_write_device(_slider_map.valve_sw_map);
     _pumps_selected=check_write_device(_slider_map.pump_sw_map);
+    _grippers_selected = check_write_device(_slider_map.gripper_sw_map);
 }
 
 void EcGuiPdo::stopping_write()
@@ -409,6 +438,7 @@ void EcGuiPdo::write()
     write_motor_pdo();
     write_valve_pdo();
     write_pump_pdo();
+    write_gripper_pdo();
 }
 
 bool EcGuiPdo::check_write_device(std::map<int, SliderWidget*> slider_map)
@@ -505,5 +535,30 @@ void EcGuiPdo::write_pump_pdo()
     }
 
     _client->set_pump_reference(_pump_reference_map);
+}
+
+void EcGuiPdo::write_gripper_pdo()
+{
+    if (!_grippers_selected) return;
+
+    for (auto& [slave_id, slider_wid] : _slider_map.gripper_sw_map) {
+        if (slider_wid->is_slider_checked()) {
+            std::get<0>(_gripper_reference_map[slave_id]) = slider_wid->compute_wave(0, _s_send_time); // pos_ref
+            std::get<1>(_gripper_reference_map[slave_id]) = slider_wid->compute_wave(1, _s_send_time); // vel_ref
+            std::get<2>(_gripper_reference_map[slave_id]) = slider_wid->compute_wave(2, _s_send_time); // tor_ref
+            std::get<3>(_gripper_reference_map[slave_id]) = slider_wid->compute_wave(3, _s_send_time); // gain_0
+            std::get<4>(_gripper_reference_map[slave_id]) = slider_wid->compute_wave(4, _s_send_time); // gain_1
+            std::get<5>(_gripper_reference_map[slave_id]) = slider_wid->compute_wave(5, _s_send_time); // gain_2
+            std::get<6>(_gripper_reference_map[slave_id]) = slider_wid->compute_wave(6, _s_send_time); // gain_3
+            std::get<7>(_gripper_reference_map[slave_id]) = slider_wid->compute_wave(7, _s_send_time); // gain_4
+        } else {
+            float hold_pos = slider_wid->get_spinbox_value(1); 
+            std::get<0>(_gripper_reference_map[slave_id]) = hold_pos;
+            std::get<1>(_gripper_reference_map[slave_id]) = 0.0f;
+            std::get<2>(_gripper_reference_map[slave_id]) = 0.0f;
+        }
+    }
+
+    _client->set_gripper_reference(_gripper_reference_map);
 }
 /********************************************************* WRITE PDO***********************************************************************************************/

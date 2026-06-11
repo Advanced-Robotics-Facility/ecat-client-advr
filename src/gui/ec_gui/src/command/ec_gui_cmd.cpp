@@ -73,6 +73,10 @@ void EcGuiCmd::readCommand()
             for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
                 slider_wid->enable_slider_enabled();
             }
+
+            for (auto& [slave_id, slider_wid]:_slider_map.gripper_sw_map){
+                slider_wid->enable_slider_enabled();
+            }
         
         }
 
@@ -183,7 +187,28 @@ void EcGuiCmd::fill_start_stop_pump()
         }
     }
 }
-    
+ 
+void EcGuiCmd::fill_start_stop_gripper()
+{
+    _grippers_selected = false;
+    for (auto& [slave_id, slider_wid] : _slider_map.gripper_sw_map) {
+        if (slider_wid->is_slider_checked()) {
+            _grippers_selected = true;
+            if (_ctrl_cmd_type == ClientCmdType::START) {
+                int ctrl_mode = _ec_gui_slider->get_control_mode("Grippers"); 
+                if (ctrl_mode != 0x00) {
+                    std::vector<float> gains;
+                    gains.push_back(slider_wid->get_spinbox_value(3)); 
+                    gains.push_back(slider_wid->get_spinbox_value(4)); 
+                    gains.push_back(slider_wid->get_spinbox_value(5)); 
+                    gains.push_back(slider_wid->get_spinbox_value(6)); 
+                    gains.push_back(slider_wid->get_spinbox_value(7)); 
+                    _start_devices.push_back(std::make_tuple(slave_id, ctrl_mode, gains));
+                }
+            }
+        }
+    }
+}
 
 bool EcGuiCmd::braking_cmd_req()
 {
@@ -305,8 +330,9 @@ void EcGuiCmd::onApplyCmdReleased()
         fill_start_stop_motor();
         fill_start_stop_valve();
         fill_start_stop_pump();
+        fill_start_stop_gripper();
         
-        if(!_motors_selected && !_valves_selected &&!_pumps_selected){
+        if(!_motors_selected && !_valves_selected && !_pumps_selected && !_grippers_selected){
             _cmd_message="No device selected, please select at least one";
             launch_cmd_message(_cmd_message);
         }
@@ -330,6 +356,10 @@ void EcGuiCmd::onApplyCmdReleased()
                 }
 
                 for (auto& [slave_id, slider_wid]:_slider_map.pump_sw_map){
+                    slider_wid->disable_slider_enabled();
+                }
+
+                for (auto& [slave_id, slider_wid]:_slider_map.gripper_sw_map){
                     slider_wid->disable_slider_enabled();
                 }
             }
