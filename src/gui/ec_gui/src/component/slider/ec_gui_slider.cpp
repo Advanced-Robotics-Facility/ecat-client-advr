@@ -31,11 +31,11 @@ static SliderWidget::slider_info_s pump_info= {
   
 static SliderWidget::slider_info_s gripper_info = {
     GripperPdoTx::name,                                                   
-    {"[cm]",  "[cm/s]", "[N]",    "[arbu]", "[arbu]", "[arbu]", "[arbu]", "[arbu]"}, 
-    { 4,       4,        4,        5,        5,        5,        5,        5       }, 
-    {"0",     "-11.50", "-150.00", "0",      "0",      "0",      "0",      "0"    }, 
-    {"8.30",  "11.50",  "150.00", "10000",  "10000",  "10000",  "10000",  "10000" }, 
-    { 1,       1,        1,        2,        2,        2,        2,        2      }  
+    {"[uless]", "[cm]", "[cm/s]", "[N]", "[arbu]", "[arbu]", "[arbu]", "[arbu]", "[arbu]", "[uless]", "[uless]", "[arbu]"}, 
+    { 0, 4, 4, 4, 5, 5, 5, 5, 5, 0, 0, 4}, 
+    {"0", "0", "-11.50", "-150.00", "0", "0", "0", "0", "0", "0", "0", "-10000"}, 
+    {"500", "8.30", "11.50", "150.00", "10000", "10000", "10000", "10000", "10000", "2", "65535", "10000"}, 
+    { 0, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 1}  
 };
 
 EcGuiSlider::EcGuiSlider(QWidget *parent) :
@@ -250,9 +250,9 @@ void EcGuiSlider::reset_sliders()
         slider_wid->align_spinbox(0); // pressure_ref=actual pressure
     }
     for (auto& [slave_id, slider_wid]:_slider_map.gripper_sw_map){
-        slider_wid->align_spinbox(0); // pos_ref=actual_gripper_pose
-        slider_wid->align_spinbox(1,0.0);
-        slider_wid->align_spinbox(2,0.0);
+        slider_wid->align_spinbox(1);      // pos_ref = actual_gripper_pose
+        slider_wid->align_spinbox(2,0.0);  // vel_ref = 0.0
+        slider_wid->align_spinbox(3,0.0);  // tor_ref = 0.0
     }
 }
 
@@ -397,15 +397,12 @@ void EcGuiSlider::set_control_mode(const std::string &tab_name)
                 current_gain_start_pos = 5;
                 current_sw_map = &_slider_map.motor_sw_map;
             } else if (tab_name == "Grippers") {
-                current_gain_start_pos = 3;
+                current_gain_start_pos = 4;
                 current_sw_map = &_slider_map.gripper_sw_map;
             }
 
             for (auto& [slave_id, slider_wid]:*current_sw_map){
-
-                if (tab_name == "Motors")
-                    slider_wid->align_spinbox(0,_ctrl_mode);
-
+                slider_wid->align_spinbox(0,_ctrl_mode);
                 if(_device_ctrl.device_gains.count(slave_id)>0){
                     int gain_start_index=current_gain_start_pos; 
                     // save gains of the old ctrl mode.

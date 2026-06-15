@@ -348,7 +348,7 @@ void EcGuiPdo::read_gripper_status()
         /************************************* ALIGN GRIPPER SLIDERS with the actual pose********************************************/
         double pos=std::get<1>(gripper_rx_pdo);
         if(_slider_map.gripper_sw_map.count(esc_id)>0){
-            _slider_map.gripper_sw_map[esc_id]->set_spinbox_value(0,pos);
+            _slider_map.gripper_sw_map[esc_id]->set_spinbox_value(1,pos);
         }
         /************************************* ALIGN GRIPPER SLIDERS with the actual pose********************************************/
     }
@@ -404,7 +404,7 @@ void EcGuiPdo::init_write_pdo()
 
     _gripper_reference_map.clear();
     for (auto& [slave_id, slider_wid]:_slider_map.gripper_sw_map){
-        _gripper_reference_map[slave_id]={0,0,0,0,0,0,0,0};
+        _gripper_reference_map[slave_id]={0,0,0,0,0,0,0,0,0,0,0,0};
     }
 
     sync_write();
@@ -542,15 +542,22 @@ void EcGuiPdo::write_gripper_pdo()
     if (!_grippers_selected) return;
 
     for (auto& [slave_id, slider_wid] : _slider_map.gripper_sw_map) {
+        float motor_pos = slider_wid->get_spinbox_value(1);
+        std::get<0>(_gripper_reference_map[slave_id]) = 0x00;
+        std::get<1>(_gripper_reference_map[slave_id]) = motor_pos;
         if (slider_wid->is_slider_checked()) {
-            std::get<0>(_gripper_reference_map[slave_id]) = slider_wid->compute_wave(0, _s_send_time); // pos_ref
-            std::get<1>(_gripper_reference_map[slave_id]) = slider_wid->compute_wave(1, _s_send_time); // vel_ref
-            std::get<2>(_gripper_reference_map[slave_id]) = slider_wid->compute_wave(2, _s_send_time); // tor_ref
-            std::get<3>(_gripper_reference_map[slave_id]) = slider_wid->compute_wave(3, _s_send_time); // gain_0
-            std::get<4>(_gripper_reference_map[slave_id]) = slider_wid->compute_wave(4, _s_send_time); // gain_1
-            std::get<5>(_gripper_reference_map[slave_id]) = slider_wid->compute_wave(5, _s_send_time); // gain_2
-            std::get<6>(_gripper_reference_map[slave_id]) = slider_wid->compute_wave(6, _s_send_time); // gain_3
-            std::get<7>(_gripper_reference_map[slave_id]) = slider_wid->compute_wave(7, _s_send_time); // gain_4
+            std::get<0>(_gripper_reference_map[slave_id]) = slider_wid->get_spinbox_value(0);
+            std::get<1>(_gripper_reference_map[slave_id]) = slider_wid->compute_wave(1, _s_send_time); // pos_ref
+            std::get<2>(_gripper_reference_map[slave_id]) = slider_wid->compute_wave(2, _s_send_time); // vel_ref
+            std::get<3>(_gripper_reference_map[slave_id]) = slider_wid->compute_wave(3, _s_send_time); // tor_ref
+            std::get<4>(_gripper_reference_map[slave_id]) = slider_wid->compute_wave(4, _s_send_time); // gain_0
+            std::get<5>(_gripper_reference_map[slave_id]) = slider_wid->compute_wave(5, _s_send_time); // gain_1
+            std::get<6>(_gripper_reference_map[slave_id]) = slider_wid->compute_wave(6, _s_send_time); // gain_2
+            std::get<7>(_gripper_reference_map[slave_id]) = slider_wid->compute_wave(7, _s_send_time); // gain_3
+            std::get<8>(_gripper_reference_map[slave_id]) = slider_wid->compute_wave(8, _s_send_time); // gain_4
+            std::get<9>(_gripper_reference_map[slave_id]) = 1;
+            std::get<10>(_gripper_reference_map[slave_id]) = 0; 
+            std::get<11>(_gripper_reference_map[slave_id]) = 0.0f; 
         } else {
             float hold_pos = slider_wid->get_spinbox_value(1); 
             std::get<0>(_gripper_reference_map[slave_id]) = hold_pos;

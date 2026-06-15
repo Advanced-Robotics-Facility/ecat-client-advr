@@ -14,7 +14,7 @@ void EcBoostPdo::esc_factory(SSI slave_descr)
             _pump_reference_map[id]={0,0,0,0,0,0,0,0,0,0};
         } else if(ec_grippers().count(esc_type)>0){
             _internal_gripper_status_map[id]=_gripper_status_map[id]={0,0,0,0,0,0,0};
-            _gripper_reference_map[id]={0,0,0,0,0,0,0,0};
+            _gripper_reference_map[id]={0,0,0,0,0,0,0,0,0,0,0,0};
         } else{
             switch ( esc_type ){
                 case iit::ecat::FT6MSP432_v24:{

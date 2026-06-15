@@ -282,7 +282,7 @@ bool EcWrapper::safe_init()
     for (const auto &[esc_id, gripper_rx_pdo] : gripper_status_map){
         float gripper_target = 0.0;
         
-        gripper_reference_map[esc_id] = std::make_tuple(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+        gripper_reference_map[esc_id] = std::make_tuple(0, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0.0f);
         
         if(_ec_cfg.device_config_map.count(esc_id) > 0){
             if(_ec_cfg.device_config_map[esc_id].control_mode_type == 0xD4){
@@ -290,6 +290,7 @@ bool EcWrapper::safe_init()
             }
             
             gripper_reference_map[esc_id] = std::make_tuple(
+                0xf,
                 gripper_target,
                 0.0f,
                 0.0f,                                       
@@ -297,7 +298,10 @@ bool EcWrapper::safe_init()
                 _ec_cfg.device_config_map[esc_id].gains[1],
                 _ec_cfg.device_config_map[esc_id].gains[2],
                 _ec_cfg.device_config_map[esc_id].gains[3],
-                _ec_cfg.device_config_map[esc_id].gains[4]
+                _ec_cfg.device_config_map[esc_id].gains[4],
+                0,
+                0,
+                0.0f
             );
         }
     }

@@ -33,6 +33,7 @@ namespace GripperPdoRx {
 
 namespace GripperPdoTx {
     static const std::vector<std::string> name = {
+        "ctrl_type",
         "pos_ref",   
         "vel_ref",
         "tor_ref",
@@ -40,10 +41,13 @@ namespace GripperPdoTx {
         "gain_1",
         "gain_2",
         "gain_3",
-        "gain_4"
+        "gain_4",
+        "op",
+        "idx",
+        "aux"
     };
-    static const int pdo_size = 8;
-    using pdo_t = std::tuple<float, float, float, float, float, float, float, float>;
+    static const int pdo_size = 12;
+    using pdo_t = std::tuple<int32_t, float, float, float, float, float, float, float, float,uint32_t, uint32_t, float>;
     template <typename T>
     inline bool make_vector_from_tuple(const pdo_t &pdo_tuple, std::vector<T> &pdo_vector) {
         if (pdo_vector.size() != pdo_size) return false;
@@ -54,7 +58,11 @@ namespace GripperPdoTx {
         pdo_vector[4] = static_cast<T>(std::get<4>(pdo_tuple)); 
         pdo_vector[5] = static_cast<T>(std::get<5>(pdo_tuple)); 
         pdo_vector[6] = static_cast<T>(std::get<6>(pdo_tuple)); 
-        pdo_vector[7] = static_cast<T>(std::get<7>(pdo_tuple)); 
+        pdo_vector[7] = static_cast<T>(std::get<7>(pdo_tuple));
+        pdo_vector[8] = static_cast<T>(std::get<8>(pdo_tuple));
+        pdo_vector[9] = static_cast<T>(std::get<9>(pdo_tuple));
+        pdo_vector[10]= static_cast<T>(std::get<10>(pdo_tuple));
+        pdo_vector[11]= static_cast<T>(std::get<11>(pdo_tuple)); 
         return true;
     }
 };
@@ -70,7 +78,7 @@ public:
     void set_to_pb();
 
     GripperPdoRx::pdo_t rx_pdo = {0, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0};
-    GripperPdoTx::pdo_t tx_pdo = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+    GripperPdoTx::pdo_t tx_pdo = {0, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0.0f};
     bool init_rx_pdo = false;
 private:
     void init_pb();
@@ -91,8 +99,8 @@ template <class T>
 inline GripperPdo<T>::GripperPdo(const std::string value, int32_t id, uint32_t type) :
     T(id, type, value)
 {
-    init_pb();
     T::init();
+    init_pb();
     T::write_connect();
 }
 
@@ -124,14 +132,14 @@ inline void GripperPdo<T>::set_to_pb()
     set_pbHeader(T::pb_tx_pdos.mutable_header(), T::name, 0);
 
     T::pb_tx_pdos.set_type(iit::advr::Ec_slave_pdo::TX_GRIPPER_PDO);
-    T::pb_tx_pdos.mutable_gripper_tx_pdo()->set_target_pos(std::get<0>(tx_pdo));
-    T::pb_tx_pdos.mutable_gripper_tx_pdo()->set_target_vel(std::get<1>(tx_pdo));
-    T::pb_tx_pdos.mutable_gripper_tx_pdo()->set_target_torque(std::get<2>(tx_pdo));
-    T::pb_tx_pdos.mutable_gripper_tx_pdo()->set_gain_0(std::get<3>(tx_pdo));
-    T::pb_tx_pdos.mutable_gripper_tx_pdo()->set_gain_1(std::get<4>(tx_pdo));
-    T::pb_tx_pdos.mutable_gripper_tx_pdo()->set_gain_2(std::get<5>(tx_pdo));
-    T::pb_tx_pdos.mutable_gripper_tx_pdo()->set_gain_3(std::get<6>(tx_pdo));
-    T::pb_tx_pdos.mutable_gripper_tx_pdo()->set_gain_4(std::get<7>(tx_pdo));
+    T::pb_tx_pdos.mutable_gripper_tx_pdo()->set_target_pos(std::get<1>(tx_pdo));
+    T::pb_tx_pdos.mutable_gripper_tx_pdo()->set_target_vel(std::get<2>(tx_pdo));
+    T::pb_tx_pdos.mutable_gripper_tx_pdo()->set_target_torque(std::get<3>(tx_pdo));
+    T::pb_tx_pdos.mutable_gripper_tx_pdo()->set_gain_0(std::get<4>(tx_pdo));
+    T::pb_tx_pdos.mutable_gripper_tx_pdo()->set_gain_1(std::get<5>(tx_pdo));
+    T::pb_tx_pdos.mutable_gripper_tx_pdo()->set_gain_2(std::get<6>(tx_pdo));
+    T::pb_tx_pdos.mutable_gripper_tx_pdo()->set_gain_3(std::get<7>(tx_pdo));
+    T::pb_tx_pdos.mutable_gripper_tx_pdo()->set_gain_4(std::get<8>(tx_pdo));
 }
 
 template class GripperPdo<EcPipePdo>;

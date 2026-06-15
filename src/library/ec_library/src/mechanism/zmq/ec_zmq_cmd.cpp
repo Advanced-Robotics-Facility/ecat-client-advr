@@ -439,6 +439,10 @@ void EcZmqCmd::feed_grippers()
         return;
     }
     else{
+        auto fault = _ec_repl_cmd->Motors_PDO_cmd(_gripper_reference_map);
+        std::string msg="";
+        if(!cmd_error_status(fault, "feed_grippers", msg)){
+        }
     }
 }
 
