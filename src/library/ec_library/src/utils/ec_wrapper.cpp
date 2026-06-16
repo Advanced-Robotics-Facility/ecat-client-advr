@@ -173,7 +173,7 @@ bool EcWrapper::safe_init()
 {
     uint8_t count_op_en = 0;
     bool operation_enabled = true;
-    const uint8_t max_attempts = 10;
+    const uint8_t max_attempts = 40; //10
 
     std::unordered_map<int32_t, bool> motor_is_advrf;
     for (const auto& [esc_id, type, pos] : _slave_info) {
@@ -299,7 +299,7 @@ bool EcWrapper::safe_init()
                 _ec_cfg.device_config_map[esc_id].gains[2],
                 _ec_cfg.device_config_map[esc_id].gains[3],
                 _ec_cfg.device_config_map[esc_id].gains[4],
-                0,
+                1,
                 0,
                 0.0f
             );

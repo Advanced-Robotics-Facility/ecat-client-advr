@@ -194,6 +194,13 @@ void EcUtils::device_config_map(const YAML::Node & device_config_node,std::strin
                 }
                 else if(device_type=="gripper"){
                     _ec_cfg.device_config_map[esc_id].type = iit::ecat::SCHUNKGRIPPER_v29;
+    
+                    if(device_config_node[esc_name]["gripper_type"]){
+                        std::string type_str = device_config_node[esc_name]["gripper_type"].as<std::string>();
+                        if(type_str == "Schunk"){
+                            _ec_cfg.device_config_map[esc_id].type = iit::ecat::SCHUNKGRIPPER_v29;
+                        }
+                    }
                 }
                 else{
                     throw std::runtime_error("Error: cannot find a device type for id: "+std::to_string(esc_id));

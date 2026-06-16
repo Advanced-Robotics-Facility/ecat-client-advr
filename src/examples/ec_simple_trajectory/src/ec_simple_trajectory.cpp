@@ -30,14 +30,18 @@ int main(int argc, char * const argv[])
         return 1;
     }
 
-    std::map<int,double> homing,trajectory;
+    std::map<int,double> motor_homing, motor_trajectory;
+    std::map<int,double> gripper_homing, gripper_trajectory;
     if(ec_cfg.trj_config_map.count("motor")>0){
-        homing=ec_cfg.trj_config_map["motor"].homing;    
-        trajectory=ec_cfg.trj_config_map["motor"].trajectory;    
+        motor_homing=ec_cfg.trj_config_map["motor"].homing;    
+        motor_trajectory=ec_cfg.trj_config_map["motor"].trajectory;    
     }
-
-    if(homing.empty()){
-        DPRINTF("Got an homing position map\n");
+    if(ec_cfg.trj_config_map.count("gripper")>0){
+        gripper_homing=ec_cfg.trj_config_map["gripper"].homing;    
+        gripper_trajectory=ec_cfg.trj_config_map["gripper"].trajectory;    
+    }
+    if(motor_homing.empty() && gripper_homing.empty()){
+        DPRINTF("Got an empty homing position map for both motors or grippers\n");
         return 1;
     }
 
@@ -60,12 +64,13 @@ int main(int argc, char * const argv[])
         
         std::string STM_sts="Homing";
 
-        std::map<int, double> motors_trj_1,motors_trj_2, motors_set_zero, motors_set_trj;
-        std::map<int, double> motors_set_ref, motors_start;
+        std::map<int, double> motors_trj_1, motors_trj_2, motors_set_zero, motors_set_trj, motors_set_ref, motors_start;
+        std::map<int, double> grippers_trj_1, grippers_trj_2, grippers_set_zero, grippers_set_trj, grippers_set_ref, grippers_start;
 
         int trajectory_counter=0;
         float tau=0,alpha=0;
 
+        // Motors
         for (const auto &[esc_id, motor_rx_pdo] : motor_status_map){
             if(ec_cfg.trj_config_map.count("motor")>0){
                 if(ec_cfg.trj_config_map["motor"].set_point.count(esc_id)>0){
@@ -87,8 +92,8 @@ int main(int argc, char * const argv[])
 
                     if(ec_cfg.trj_config_map["motor"].set_point[esc_id].count(set_point_type)>0){
                         if(set_point_type=="position"){
-                            motors_trj_1[esc_id]=homing[esc_id];
-                            motors_trj_2[esc_id]=trajectory[esc_id];    
+                            motors_trj_1[esc_id]=motor_homing[esc_id];
+                            motors_trj_2[esc_id]=motor_trajectory[esc_id];    
                             motors_set_zero[esc_id]=motors_trj_1[esc_id];             
                         }else{
                             motors_trj_1[esc_id]=ec_cfg.trj_config_map["motor"].set_point[esc_id][set_point_type];
@@ -101,8 +106,37 @@ int main(int argc, char * const argv[])
             }
         }
 
-        if(motors_set_ref.empty()){
-            fatal_error="fatal error: motors references structure empty!";
+        // Grippers
+        for (const auto &[esc_id, gripper_rx_pdo] : gripper_status_map){
+            if(ec_cfg.trj_config_map.count("gripper")>0){
+                if(ec_cfg.trj_config_map["gripper"].set_point.count(esc_id)>0){
+                    std::string set_point_type="";
+                    if(ec_cfg.device_config_map[esc_id].control_mode_type==iit::advr::Gains_Type_POSITION){
+                        set_point_type="position";
+                        grippers_start[esc_id]=std::get<1>(gripper_rx_pdo); // actual motor pos
+                    }else if(ec_cfg.device_config_map[esc_id].control_mode_type==iit::advr::Gains_Type_TORQUE){
+                        set_point_type="torque";
+                        grippers_set_zero[esc_id]=grippers_start[esc_id]=0.0;
+                    }
+
+                    if(ec_cfg.trj_config_map["gripper"].set_point[esc_id].count(set_point_type)>0){
+                        if(set_point_type=="position"){
+                            grippers_trj_1[esc_id]=gripper_homing[esc_id];
+                            grippers_trj_2[esc_id]=gripper_trajectory[esc_id];    
+                            grippers_set_zero[esc_id]=grippers_trj_1[esc_id];             
+                        }else{
+                            grippers_trj_1[esc_id]=ec_cfg.trj_config_map["gripper"].set_point[esc_id][set_point_type];
+                            grippers_trj_2[esc_id]=-1*grippers_trj_1[esc_id];
+                        }
+                        grippers_set_trj[esc_id]= grippers_trj_1[esc_id];
+                        grippers_set_ref[esc_id]= grippers_start[esc_id];
+                    }
+                }
+            }
+        }
+
+        if(motors_set_ref.empty() && grippers_set_ref.empty()){
+            fatal_error="fatal error: motors or grippers references structure empty!";
             run_loop=false;
         }else{           
             if (ec_cfg.protocol == "iddp"){
@@ -142,7 +176,7 @@ int main(int argc, char * const argv[])
             tau= time_elapsed_ms / set_trj_time_ms;
             // quintic poly 6t^5 - 15t^4 + 10t^3
             alpha = ((6*tau - 15)*tau + 10)*tau*tau*tau;
-           // interpolate
+           // interpolate motors
             for (const auto &[esc_id, target] : motors_set_trj){
                 int ctrl_mode= ec_cfg.device_config_map[esc_id].control_mode_type;
                 motors_set_ref[esc_id] = motors_start[esc_id] + alpha * (target - motors_start[esc_id]);
@@ -158,9 +192,23 @@ int main(int argc, char * const argv[])
                 }else{
                     std::get<2>(motor_reference_map[esc_id]) = motors_set_ref[esc_id];
                 }
-            }            
+            } 
+            // interpolate grippers
+            for (const auto &[esc_id, target] : grippers_set_trj){
+                int ctrl_mode= ec_cfg.device_config_map[esc_id].control_mode_type;
+                grippers_set_ref[esc_id] = grippers_start[esc_id] + alpha * (target - grippers_start[esc_id]);
+                if(ctrl_mode == iit::advr::Gains_Type_POSITION){
+                    std::get<1>(gripper_reference_map[esc_id]) = grippers_set_ref[esc_id];
+                }
+            }           
             // ************************* SEND ALWAYS REFERENCES***********************************//
-            client->set_motor_reference(motor_reference_map);
+            if (!motor_reference_map.empty()) {
+                client->set_motor_reference(motor_reference_map);
+            }
+            
+            if (!gripper_reference_map.empty()) {
+                client->set_gripper_reference(gripper_reference_map);
+            }
             // ************************* SEND ALWAYS REFERENCES***********************************//
 
             time = time + period;
@@ -170,12 +218,20 @@ int main(int argc, char * const argv[])
                 start_time = time;
                 set_trj_time_ms = trj_time_ms;
 
+                // Update motors
                 motors_start =   motors_set_ref;
                 motors_set_trj = motors_trj_2;
+
+                // Update grippers
+                grippers_start =   grippers_set_ref;
+                grippers_set_trj = grippers_trj_2;
 
                 if (trajectory_counter == ec_cfg.repeat_trj - 1){
                     if(!motors_set_zero.empty()){
                         motors_set_trj = motors_set_zero;
+                    }
+                    if(!grippers_set_zero.empty()){
+                        grippers_set_trj = grippers_set_zero;
                     }
                 }
 
@@ -193,8 +249,13 @@ int main(int argc, char * const argv[])
                     start_time = time;
                     set_trj_time_ms = hm_time_ms;
                     
+                    // Back to homing - motors
                     motors_set_trj = motors_trj_1;
                     motors_start =   motors_set_ref;
+
+                    // Back to homing - grippers
+                    grippers_set_trj = grippers_trj_1;
+                    grippers_start =   grippers_set_ref;
 
                     tau = alpha = 0;
                 }

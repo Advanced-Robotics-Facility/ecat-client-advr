@@ -10,6 +10,13 @@ motor:
   homing:     [-0.75,-1.0,-1.0,-0.75, 1.0,-0.75,-1.0,-1.0]
   trajectory: [ 0.00,-1.9,-2.3, 0.00,-0.4, 0.00,-1.9,-2.3]
 
+gripper:
+  config_path: ${PWD}/motor/robot_gripper.yaml
+  id: [10]
+  set_point: {position: 1.0} 
+  homing: [1.0]
+  trajectory: [2.0] 
+
 valve:
   config_path: ${PWD}/valve/robot_forced4.yaml 
   id: [120,121,122,123]

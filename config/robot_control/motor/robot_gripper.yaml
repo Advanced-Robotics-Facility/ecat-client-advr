@@ -1,0 +1,5 @@
+gripper:
+  gripper_type: Schunk
+  brake_present: false
+  control_mode: 0x3B
+  gains: [0.0,0.0,0.0,0.0,0.0]
