@@ -196,7 +196,16 @@ int main(int argc, char * const argv[])
             // interpolate grippers
             for (const auto &[esc_id, target] : grippers_set_trj){
                 int ctrl_mode= ec_cfg.device_config_map[esc_id].control_mode_type;
-                grippers_set_ref[esc_id] = grippers_start[esc_id] + alpha * (target - grippers_start[esc_id]);
+                float gripper_ref = grippers_start[esc_id] + alpha * (target - grippers_start[esc_id]);
+                // Clamp motor ref
+                if(ctrl_mode == iit::advr::Gains_Type_POSITION){
+                    if (gripper_ref < 0.0f) {
+                        gripper_ref = 0.0f;
+                    } else if (gripper_ref > 8.3f) {
+                        gripper_ref = 8.3f;
+                    }
+                }
+                grippers_set_ref[esc_id] = gripper_ref;
                 if(ctrl_mode == iit::advr::Gains_Type_POSITION){
                     std::get<1>(gripper_reference_map[esc_id]) = grippers_set_ref[esc_id];
                 }
