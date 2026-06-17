@@ -310,6 +310,10 @@ void EcGuiStart::restart_gui()
 {
     add_device();
     enable_ec_system();
+    for (auto &[device_id, device_type, device_pos] : _ec_wrapper_info.device_info){
+        if(ec_motors().count(device_type) > 0)
+            setup_motor_device(device_id, device_type);
+    }
     _ec_gui_wrapper->restart_gui_wrapper(_ec_wrapper_info);
 }
 
@@ -383,6 +387,10 @@ void EcGuiStart::read_sdo_info(const int32_t device_id,
     WR_SDO wr_sdo;
     RR_SDOS rr_sdo;
     bool ret=_ec_wrapper_info.client->retrieve_rr_sdo(device_id,sdo_name,wr_sdo,rr_sdo);
+    
+    if(!ret || rr_sdo.size() > sdo_info.size()){
+        return;
+    }
 
     for(auto &[sdo_reply,sdo_value]:rr_sdo){
         int i=0;
@@ -396,6 +404,7 @@ void EcGuiStart::read_sdo_info(const int32_t device_id,
             i++;
         }
     }
+ 
 }
 
 void EcGuiStart::setup_motor_device(int32_t device_id,int32_t device_type)
@@ -434,7 +443,22 @@ void EcGuiStart::setup_motor_device(int32_t device_id,int32_t device_type)
 
     std::vector<std::string> sdo_limits={"Min_pos","Max_pos","Max_vel","Max_tor","Max_ref"};
     _ec_wrapper_info.device_ctrl.device_limits[device_id]={FLT_MIN,FLT_MAX,0.0,0.0,0.0};
-    read_sdo_info(device_id,sdo_limits,_ec_wrapper_info.device_ctrl.device_limits[device_id]);        
+    read_sdo_info(device_id,sdo_limits,_ec_wrapper_info.device_ctrl.device_limits[device_id]);
+    
+    if (_ec_wrapper_info.device_ctrl.device_limits[device_id].size() >= 2){
+        float min = _ec_wrapper_info.device_ctrl.device_limits[device_id][0];
+        float max = _ec_wrapper_info.device_ctrl.device_limits[device_id][1];
+
+        constexpr float position_margin_rad = 0.5f * M_PI / 180.0f;
+        if ((max - min) > 2.0f * position_margin_rad){
+            _ec_wrapper_info.device_ctrl.device_limits[device_id][0] += position_margin_rad;
+            _ec_wrapper_info.device_ctrl.device_limits[device_id][1] -= position_margin_rad;
+        } 
+    }
+    
+    for(size_t i=2;i<_ec_wrapper_info.device_ctrl.device_limits[device_id].size();i++){
+        _ec_wrapper_info.device_ctrl.device_limits[device_id][i] *= 0.95;
+    }
 }
 
 void EcGuiStart::scan_device()
@@ -457,10 +481,6 @@ void EcGuiStart::scan_device()
             if (_ec_wrapper_info.client->retrieve_all_sdo(device_id, rr_sdo)){
                 QMetaObject::invokeMethod(this, [=](){
                     _ec_wrapper_info.sdo_map[device_id] = rr_sdo;
-
-                    if(ec_motors().count(device_type) > 0)
-                        setup_motor_device(device_id, device_type);
-
                 }, Qt::QueuedConnection);
             }
         }
