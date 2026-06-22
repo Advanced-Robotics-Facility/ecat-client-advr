@@ -116,7 +116,7 @@ int main(int argc, char * const argv[])
                         grippers_start[esc_id]=std::get<1>(gripper_rx_pdo); // actual motor pos
                     }else if(ec_cfg.device_config_map[esc_id].control_mode_type==iit::advr::Gains_Type_TORQUE){
                         set_point_type="torque";
-                        grippers_set_zero[esc_id]=grippers_start[esc_id]=0.0;
+                        //grippers_set_zero[esc_id]=grippers_start[esc_id]=0.0;
                     }
 
                     if(ec_cfg.trj_config_map["gripper"].set_point[esc_id].count(set_point_type)>0){
@@ -193,6 +193,8 @@ int main(int argc, char * const argv[])
                     std::get<2>(motor_reference_map[esc_id]) = motors_set_ref[esc_id];
                 }
             } 
+
+            gripper_reference_map.clear();
             // interpolate grippers
             for (const auto &[esc_id, target] : grippers_set_trj){
                 int ctrl_mode= ec_cfg.device_config_map[esc_id].control_mode_type;
@@ -208,6 +210,8 @@ int main(int argc, char * const argv[])
                 grippers_set_ref[esc_id] = gripper_ref;
                 if(ctrl_mode == iit::advr::Gains_Type_POSITION){
                     std::get<1>(gripper_reference_map[esc_id]) = grippers_set_ref[esc_id];
+                } else if (ctrl_mode == iit::advr::Gains_Type_TORQUE) {
+                    continue; 
                 }
             }           
             // ************************* SEND ALWAYS REFERENCES***********************************//
