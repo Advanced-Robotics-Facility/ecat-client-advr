@@ -66,6 +66,7 @@ int main(int argc, char * const argv[])
 
         std::map<int, double> motors_trj_1, motors_trj_2, motors_set_zero, motors_set_trj, motors_set_ref, motors_start;
         std::map<int, double> grippers_trj_1, grippers_trj_2, grippers_set_zero, grippers_set_trj, grippers_set_ref, grippers_start;
+        std::map<int, float> gripper_min_limits, gripper_max_limits;
 
         int trajectory_counter=0;
         float tau=0,alpha=0;
@@ -162,6 +163,30 @@ int main(int argc, char * const argv[])
             }
         }
 
+        for (const auto &[esc_id, target] : grippers_set_trj) {
+            RD_SDO rd_min_sdo = {"min_pos"};
+            RD_SDO rd_max_sdo = {"max_pos"};
+            RR_SDOS rr_min_sdo, rr_max_sdo;
+
+            // NOTE: Schunk Gripper specifically has min/max pos in mm, we need to convert it in cm for GUI
+            float scale_factor = 10.0f;
+
+            if (client->retrieve_rr_sdo(esc_id, rd_min_sdo, {}, rr_min_sdo)) {
+                if (rr_min_sdo.count("min_pos") > 0) {
+                    gripper_min_limits[esc_id] = std::stof(rr_min_sdo["min_pos"]) / scale_factor; 
+                }
+            }
+
+            if (client->retrieve_rr_sdo(esc_id, rd_max_sdo, {}, rr_max_sdo)) {
+                if (rr_max_sdo.count("max_pos") > 0) {
+                    gripper_max_limits[esc_id] = std::stof(rr_max_sdo["max_pos"]) / scale_factor;
+                }
+            }
+            
+            DPRINTF("[%d] Dynamic gripper limits loaded: Min=%.2f, Max=%.2f\n", 
+                    esc_id, gripper_min_limits[esc_id], gripper_max_limits[esc_id]);
+        }
+
         auto start_time = std::chrono::high_resolution_clock::now();
         auto time = start_time;
         const auto period = std::chrono::nanoseconds(ec_cfg.period_ms * 1000000);
@@ -198,6 +223,10 @@ int main(int argc, char * const argv[])
             // interpolate grippers
             for (const auto &[esc_id, target] : grippers_set_trj){
                 int ctrl_mode= ec_cfg.device_config_map[esc_id].control_mode_type;
+                if (ctrl_mode == iit::advr::Gains_Type_TORQUE) {
+                    continue; 
+                }
+
                 float gripper_ref = grippers_start[esc_id] + alpha * (target - grippers_start[esc_id]);
                 // Clamp motor ref
                 if(ctrl_mode == iit::advr::Gains_Type_POSITION){
@@ -206,12 +235,8 @@ int main(int argc, char * const argv[])
                     } else if (gripper_ref > 8.3f) {
                         gripper_ref = 8.3f;
                     }
-                }
-                grippers_set_ref[esc_id] = gripper_ref;
-                if(ctrl_mode == iit::advr::Gains_Type_POSITION){
+                    grippers_set_ref[esc_id] = gripper_ref;
                     std::get<1>(gripper_reference_map[esc_id]) = grippers_set_ref[esc_id];
-                } else if (ctrl_mode == iit::advr::Gains_Type_TORQUE) {
-                    continue; 
                 }
             }           
             // ************************* SEND ALWAYS REFERENCES***********************************//
