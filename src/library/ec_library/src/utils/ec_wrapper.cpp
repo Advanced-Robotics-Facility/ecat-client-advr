@@ -165,6 +165,72 @@ void EcWrapper::stop_devices(void)
     }
 }
 
+
+template<typename T>
+void EcWrapper::read_sdo(const int32_t device_id,
+                         const std::vector<std::string> &sdo_name,
+                         std::vector<T> &sdo_read)
+{
+    if (sdo_read.size() < sdo_name.size()){
+        DPRINTF("Problem on %s sdo_read size is less then sdo_name size!\n", __FUNCTION__);
+        return;
+    }
+
+
+    WR_SDO wr_sdo;
+    RR_SDOS rr_sdo;
+
+    if (!_client->retrieve_rr_sdo(device_id, sdo_name, wr_sdo, rr_sdo) ||
+        rr_sdo.size() != sdo_name.size()){
+        DPRINTF("Problem on %s error on retrieve_rr_sdo function!\n", __FUNCTION__);
+        return;
+    }
+
+    std::unordered_map<std::string, std::size_t> index;
+    index.reserve(sdo_name.size());
+
+    for (std::size_t i = 0; i < sdo_name.size(); ++i){
+        index.emplace(sdo_name[i], i);
+    }
+
+    for (const auto& [reply, value] : rr_sdo){
+        auto it = index.find(reply);
+        if (it != index.end()){
+            T tmp{};
+            std::istringstream iss(value);
+            if (iss >> tmp){
+                sdo_read[it->second] = tmp;
+            }
+        }
+    }
+}
+
+template<typename T>
+void EcWrapper::write_sdo(const int32_t device_id,
+                          const std::vector<std::string> &sdo_name,
+                          const std::vector<T> &sdo_write)
+{
+    if (sdo_write.size() != sdo_name.size()){
+        DPRINTF("Problem on %s sdo_write and sdo_name sizes are different!\n", __FUNCTION__);
+        return;
+    }
+
+    WR_SDO wr_sdo;
+    wr_sdo.reserve(sdo_name.size());
+
+    for (std::size_t i = 0; i < sdo_name.size(); ++i){
+        std::ostringstream oss;
+        oss << sdo_write[i];
+        wr_sdo.emplace_back(sdo_name[i], oss.str());
+    }
+
+    if(!_client->set_wr_sdo(device_id,{},wr_sdo)){
+        DPRINTF("Problem on %s error on set_wr_sdo function!\n", __FUNCTION__);
+        return;
+    }
+
+}
+
 bool EcWrapper::safe_init()
 {
     uint8_t count_op_en = 0;
@@ -210,9 +276,22 @@ bool EcWrapper::safe_init()
         return false;
     }
 
+    std::vector<std::string> sdo_limits={"Min_pos","Max_pos","Max_vel","Max_tor","Max_ref"};
     for (const auto &[esc_id, motor_rx_pdo] : motor_status_map){
         auto motor_pos =    std::get<2>(motor_rx_pdo);
         motor_reference_map[esc_id] = {0,motor_pos,0,0,0,0,0,0,0,0,0,0};
+        
+        std::vector<float> limits_value(5,0);
+        read_sdo(esc_id,sdo_limits,limits_value);
+        
+        /*
+        DPRINTF("Mechanical limits for motor id: %d\n",esc_id);
+        for (size_t i = 0; i < limits_value.size(); ++i) {
+            DPRINTF("%s: %.4f%s",sdo_limits[i].c_str(), limits_value[i],
+                              (i + 1 == limits_value.size()) ? "\n" : "   ");
+        }
+        */
+
         if(_ec_cfg.device_config_map.count(esc_id)>0){
             motor_reference_map[esc_id] = std::make_tuple(  _ec_cfg.device_config_map[esc_id].control_mode_type,  // ctrl_type
                                                             motor_pos,                                            // pos_ref
