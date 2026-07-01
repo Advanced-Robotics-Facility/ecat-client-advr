@@ -16,6 +16,7 @@ ValveReferenceMap valve_reference_map;
 MotorStatusMap motor_status_map;
 MotorReferenceMap motor_reference_map;
 
+std::map<int32_t,DEVICE_TRJ> device_trj_map;
 
 using namespace std::chrono;
 
@@ -51,6 +52,33 @@ void EcWrapper::create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg)
         for(const auto&[device_type,trj_cfg]:_ec_cfg.trj_config_map){
             for(const auto&[id,set_point]:trj_cfg.set_point){
                 _start_devices_vector.push_back(id);
+                /*
+                auto device_type_it = trj_type_map.find(device_type);
+                if (device_type_it != trj_type_map.end()) {
+                
+                    auto ctrl_mode_type = _ec_cfg.device_config_map[id].control_mode_type;
+                
+                    auto trj_type_it = device_type_it->second.find(ctrl_mode_type);
+                    if (trj_type_it != device_type_it->second.end()) {
+                
+                        const std::string& set_point_type = trj_type_it->second;
+                
+                        auto& set_points = ec_cfg.trj_config_map[device_type].set_point[id];
+                        auto sp_it = set_points.find(set_point_type);
+                
+                        if (sp_it != set_points.end()) {
+                
+                            double set_point = static_cast<double>(sp_it->second);
+                
+                            device_trj_map[id][device_type] = {set_point, -set_point};
+                            std::cout << id << "  " << device_type << " " 
+                                      << device_trj_map[id][device_type][0] << " "
+                                      << device_trj_map[id][device_type][1] << " "
+                                      << std::endl;
+                        }
+                    }
+                }
+                */
             }
         }
     }catch(std::exception &ex){

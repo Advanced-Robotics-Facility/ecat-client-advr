@@ -19,6 +19,8 @@ extern ValveReferenceMap valve_reference_map;
 // Motor
 extern MotorStatusMap motor_status_map;
 extern MotorReferenceMap motor_reference_map;
+// Trj Device Map
+extern std::map<int32_t,DEVICE_TRJ> device_trj_map;
 
 class EcWrapper
 {
