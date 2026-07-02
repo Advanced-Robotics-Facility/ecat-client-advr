@@ -18,7 +18,7 @@ enum class TrjDeviceType
 
 typedef struct DEVICE_TRJ_t{
     TrjDeviceType type;
-    std::vector<double> set_point_v;
+    std::vector<double> set_point;
 }DEVICE_TRJ;
 
 using ctrl_map = std::map<int, std::string>;
@@ -43,7 +43,7 @@ static const std::map<TrjDeviceType, ctrl_map> trj_type_map = {
     }}
 };
 
-static const std::unordered_map<std::string, TrjDeviceType> str_device_type = {
+static const std::unordered_map<std::string, TrjDeviceType> device_type_map = {
     {"motor", TrjDeviceType::Motor},
     {"valve", TrjDeviceType::Valve},
     {"pump",  TrjDeviceType::Pump}

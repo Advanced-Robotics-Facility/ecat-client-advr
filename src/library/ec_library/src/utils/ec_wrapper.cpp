@@ -49,36 +49,32 @@ void EcWrapper::create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg)
         _client=_ec_utils->make_ec_iface();
         client=_client;
         _start_devices_vector.clear();
-        for(const auto&[device_type,trj_cfg]:_ec_cfg.trj_config_map){
-            for(const auto&[id,set_point]:trj_cfg.set_point){
+        for (const auto& [device_type, trj_cfg] : _ec_cfg.trj_config_map) {
+            for (const auto& [id, set_point] : trj_cfg.set_point) {
                 _start_devices_vector.push_back(id);
-                /*
-                auto device_type_it = trj_type_map.find(device_type);
-                if (device_type_it != trj_type_map.end()) {
-                
-                    auto ctrl_mode_type = _ec_cfg.device_config_map[id].control_mode_type;
-                
-                    auto trj_type_it = device_type_it->second.find(ctrl_mode_type);
-                    if (trj_type_it != device_type_it->second.end()) {
-                
-                        const std::string& set_point_type = trj_type_it->second;
-                
-                        auto& set_points = ec_cfg.trj_config_map[device_type].set_point[id];
-                        auto sp_it = set_points.find(set_point_type);
-                
-                        if (sp_it != set_points.end()) {
-                
-                            double set_point = static_cast<double>(sp_it->second);
-                
-                            device_trj_map[id][device_type] = {set_point, -set_point};
-                            std::cout << id << "  " << device_type << " " 
-                                      << device_trj_map[id][device_type][0] << " "
-                                      << device_trj_map[id][device_type][1] << " "
-                                      << std::endl;
-                        }
-                    }
-                }
-                */
+        
+                const auto cfg_it = _ec_cfg.device_config_map.find(id);
+                if (cfg_it == _ec_cfg.device_config_map.end()) continue;            //  unknown configuration for the device (control mode)
+                auto ctrl_mode = cfg_it->second.control_mode_type;
+
+                const auto device_type_it = device_type_map.find(device_type);
+                if (device_type_it == device_type_map.end()) continue;              //  unknown device type (motor, valve, pump etc...)
+                TrjDeviceType tr_device_type = device_type_it->second;
+        
+                const auto trj_device_type_it = trj_type_map.find(tr_device_type);     
+                if (trj_device_type_it == trj_type_map.end()) continue;             //  unknown device type (TrjDeviceType::Motor, ::valve, ::pump etc...)
+     
+                const auto trj_type_it = trj_device_type_it->second.find(ctrl_mode);
+                if (trj_type_it == trj_device_type_it->second.end()) continue;      //  unsupported control mode
+        
+                const auto sp_it = set_point.find(trj_type_it->second);
+                if (sp_it == set_point.end()) continue;                             //  missing set point
+
+                DEVICE_TRJ device_tr{};
+                device_tr.type = tr_device_type;                                    // TrjDeviceType::Motor, ::valve, ::pump etc...
+                device_tr.set_point = {sp_it->second, -sp_it->second};              // set point
+        
+                device_trj_map[id] = device_tr;
             }
         }
     }catch(std::exception &ex){
