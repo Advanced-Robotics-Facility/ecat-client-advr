@@ -9,45 +9,42 @@
 #include "protocol/ipc/zipc/ec_zipc.h"
 #include <ecat_core/trajectory.h>
 
-enum class TrjDeviceType
-{
-    Motor,
-    Valve,
-    Pump
-};
 
 typedef struct DEVICE_TRJ_t{
-    TrjDeviceType type;
-    std::vector<double> set_point;
+
+    double trj1;
+    double trj2;
+
+    double start;
+    double set_ref;
+    double set_trj;
+    double set_zero;
+
+    Trj_ptr general_trj;
+
 }DEVICE_TRJ;
 
 using ctrl_map = std::map<int, std::string>;
-
-static const std::map<TrjDeviceType, ctrl_map> trj_type_map = {
-    { TrjDeviceType::Motor, {
+static const std::map<std::string, ctrl_map> trj_type_map = {
+    { "motor", {
         { iit::advr::Gains_Type_POSITION ,  "position" },
         { iit::advr::Gains_Type_VELOCITY,   "velocity" },
         { iit::advr::Gains_Type_IMPEDANCE,  "position" },
         { iit::advr::Gains_Type_TORQUE,     "torque" },
         { iit::advr::Gains_Type_CURRENT,    "current" }
     }},
-    { TrjDeviceType::Valve, {
+    { "valve", {
         { iit::advr::Gains_Type_POSITION,   "position" },
         { iit::advr::Gains_Type_IMPEDANCE,  "force" },
         { iit::advr::Gains_Type_CURRENT,    "current" }
     }},
-    { TrjDeviceType::Pump, {
+    { "pump", {
         { 0x39,                             "pwm" },
         { iit::advr::Gains_Type_VELOCITY,   "velocity" },
         { iit::advr::Gains_Type_IMPEDANCE,  "pressure" }
     }}
 };
 
-static const std::unordered_map<std::string, TrjDeviceType> device_type_map = {
-    {"motor", TrjDeviceType::Motor},
-    {"valve", TrjDeviceType::Valve},
-    {"pump",  TrjDeviceType::Pump}
-};
 
 class EcUtils
 {

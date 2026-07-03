@@ -9,14 +9,15 @@ FtStatusMap ft_status_map;
 // Pump
 PumpStatusMap pump_status_map;
 PumpReferenceMap pump_reference_map;
+std::map<int32_t,DEVICE_TRJ> pump_trj_map;
 // Valve
 ValveStatusMap valve_status_map;
 ValveReferenceMap valve_reference_map;
+std::map<int32_t,DEVICE_TRJ> valve_trj_map;
 // Motor
 MotorStatusMap motor_status_map;
 MotorReferenceMap motor_reference_map;
-
-std::map<int32_t,DEVICE_TRJ> device_trj_map;
+std::map<int32_t,DEVICE_TRJ> motor_trj_map;
 
 using namespace std::chrono;
 
@@ -56,13 +57,9 @@ void EcWrapper::create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg)
                 const auto cfg_it = _ec_cfg.device_config_map.find(id);
                 if (cfg_it == _ec_cfg.device_config_map.end()) continue;            //  unknown configuration for the device (control mode)
                 auto ctrl_mode = cfg_it->second.control_mode_type;
-
-                const auto device_type_it = device_type_map.find(device_type);
-                if (device_type_it == device_type_map.end()) continue;              //  unknown device type (motor, valve, pump etc...)
-                TrjDeviceType tr_device_type = device_type_it->second;
         
-                const auto trj_device_type_it = trj_type_map.find(tr_device_type);     
-                if (trj_device_type_it == trj_type_map.end()) continue;             //  unknown device type (TrjDeviceType::Motor, ::valve, ::pump etc...)
+                const auto trj_device_type_it = trj_type_map.find(device_type);     
+                if (trj_device_type_it == trj_type_map.end()) continue;             //  unknown device type (motor,valve,pump...)
      
                 const auto trj_type_it = trj_device_type_it->second.find(ctrl_mode);
                 if (trj_type_it == trj_device_type_it->second.end()) continue;      //  unsupported control mode
@@ -70,11 +67,34 @@ void EcWrapper::create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg)
                 const auto sp_it = set_point.find(trj_type_it->second);
                 if (sp_it == set_point.end()) continue;                             //  missing set point
 
-                DEVICE_TRJ device_tr{};
-                device_tr.type = tr_device_type;                                    // TrjDeviceType::Motor, ::valve, ::pump etc...
-                device_tr.set_point = {sp_it->second, -sp_it->second};              // set point
-        
-                device_trj_map[id] = device_tr;
+                DEVICE_TRJ device_trj{};
+                device_trj.trj1 =  static_cast<double>(sp_it->second);
+                device_trj.trj2 = -static_cast<double>(sp_it->second);
+
+                const auto homing_it = trj_cfg.homing.find(id);
+                if (homing_it != trj_cfg.homing.end()){
+                    device_trj.trj1 = homing_it->second;
+                    device_trj.trj2 = trj_cfg.trajectory.at(id);
+                }
+
+                device_trj.set_trj = device_trj.trj1;
+                device_trj.set_zero = 0.0;
+                device_trj.set_ref = device_trj.start = device_trj.set_zero;
+
+                const auto trj_gen_it = trj_cfg.trj_generator.find(id);
+                if (trj_gen_it != trj_cfg.trj_generator.end()){
+                    std::cout << id << "   " << trj_type_it->second << std::endl;
+                    device_trj.general_trj = trj_gen_it->second.at(trj_type_it->second);
+                }
+
+                if(device_type=="motor"){
+                    motor_trj_map[id] = device_trj;
+                    
+                }else if(device_type=="valve"){
+                    valve_trj_map[id] = device_trj;
+                }else if(device_type=="pump"){
+                    pump_trj_map[id] = device_trj;
+                }
             }
         }
     }catch(std::exception &ex){

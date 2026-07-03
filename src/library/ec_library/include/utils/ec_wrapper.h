@@ -13,14 +13,15 @@ extern FtStatusMap ft_status_map;
 // Pump
 extern PumpStatusMap pump_status_map;
 extern PumpReferenceMap pump_reference_map;
+extern std::map<int32_t,DEVICE_TRJ> pump_trj_map;
 // Valve
 extern ValveStatusMap valve_status_map;
 extern ValveReferenceMap valve_reference_map;
+extern std::map<int32_t,DEVICE_TRJ> valve_trj_map;
 // Motor
 extern MotorStatusMap motor_status_map;
 extern MotorReferenceMap motor_reference_map;
-// Trj Device Map
-extern std::map<int32_t,DEVICE_TRJ> device_trj_map;
+extern std::map<int32_t,DEVICE_TRJ> motor_trj_map;
 
 class EcWrapper
 {
