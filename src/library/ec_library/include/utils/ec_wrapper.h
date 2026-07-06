@@ -23,7 +23,6 @@ extern MotorStatusMap motor_status_map;
 extern MotorReferenceMap motor_reference_map;
 extern std::map<int32_t,ESC_TRJ> motor_trj_map;
 
-
 inline void set_esc_trj(std::map<int32_t,ESC_TRJ>& esc_trj_map,TrjType type){
     for(auto &[_,esc_trj] : esc_trj_map){
         esc_trj.setup_trj(type);
