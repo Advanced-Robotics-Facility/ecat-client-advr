@@ -10,19 +10,43 @@
 #include <ecat_core/trajectory.h>
 
 
-typedef struct DEVICE_TRJ_t{
+enum class TrjType : uint8_t
+{
+    zero,
+    start,
+    trj1,
+    trj2
+};
+
+typedef struct ESC_TRJ_t{
+
+    int32_t esc_id;
 
     double trj1;
     double trj2;
+    double set_zero;
 
     double start;
     double set_ref;
     double set_trj;
-    double set_zero;
 
     Trj_ptr general_trj;
 
-}DEVICE_TRJ;
+    void setup_trj(TrjType type){
+        switch (type){
+        case TrjType::zero: set_trj = set_zero; break;
+        case TrjType::start: set_trj = start; break;
+        case TrjType::trj1: set_trj = trj1; break;
+        case TrjType::trj2: set_trj = trj2; break;
+
+        default:
+            throw std::runtime_error("Error in setup_trj function, trajectory type not recognized!");
+        }
+
+        start = set_ref;
+    }
+
+}ESC_TRJ;
 
 using ctrl_map = std::map<int, std::string>;
 static const std::map<std::string, ctrl_map> trj_type_map = {

@@ -9,15 +9,15 @@ FtStatusMap ft_status_map;
 // Pump
 PumpStatusMap pump_status_map;
 PumpReferenceMap pump_reference_map;
-std::map<int32_t,DEVICE_TRJ> pump_trj_map;
+std::map<int32_t,ESC_TRJ> pump_trj_map;
 // Valve
 ValveStatusMap valve_status_map;
 ValveReferenceMap valve_reference_map;
-std::map<int32_t,DEVICE_TRJ> valve_trj_map;
+std::map<int32_t,ESC_TRJ> valve_trj_map;
 // Motor
 MotorStatusMap motor_status_map;
 MotorReferenceMap motor_reference_map;
-std::map<int32_t,DEVICE_TRJ> motor_trj_map;
+std::map<int32_t,ESC_TRJ> motor_trj_map;
 
 using namespace std::chrono;
 
@@ -67,33 +67,38 @@ void EcWrapper::create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg)
                 const auto sp_it = set_point.find(trj_type_it->second);
                 if (sp_it == set_point.end()) continue;                             //  missing set point
 
-                DEVICE_TRJ device_trj{};
-                device_trj.trj1 =  static_cast<double>(sp_it->second);
-                device_trj.trj2 = -static_cast<double>(sp_it->second);
+                ESC_TRJ esc_trj{};
+                esc_trj.esc_id = id;
+                esc_trj.trj1 =  static_cast<double>(sp_it->second);
+                esc_trj.trj2 = -static_cast<double>(sp_it->second);
 
                 const auto homing_it = trj_cfg.homing.find(id);
                 if (homing_it != trj_cfg.homing.end()){
-                    device_trj.trj1 = homing_it->second;
-                    device_trj.trj2 = trj_cfg.trajectory.at(id);
+                    esc_trj.trj1 = homing_it->second;
+                    esc_trj.trj2 = trj_cfg.trajectory.at(id);
                 }
 
-                device_trj.set_trj = device_trj.trj1;
-                device_trj.set_zero = 0.0;
-                device_trj.set_ref = device_trj.start = device_trj.set_zero;
+                esc_trj.set_zero = 0.0;
+                esc_trj.set_ref = esc_trj.start = 0.0;
+                esc_trj.set_trj = esc_trj.trj1;
 
                 const auto trj_gen_it = trj_cfg.trj_generator.find(id);
                 if (trj_gen_it != trj_cfg.trj_generator.end()){
-                    std::cout << id << "   " << trj_type_it->second << std::endl;
-                    device_trj.general_trj = trj_gen_it->second.at(trj_type_it->second);
+                    esc_trj.general_trj = trj_gen_it->second.at(trj_type_it->second);
                 }
 
                 if(device_type=="motor"){
-                    motor_trj_map[id] = device_trj;
-                    
+                    motor_trj_map[id] = esc_trj;
+                    if(trj_type_it->second == "position"){
+                        esc_trj.set_zero = esc_trj.trj1;
+                    }
                 }else if(device_type=="valve"){
-                    valve_trj_map[id] = device_trj;
+                    valve_trj_map[id] = esc_trj;
+                    if(trj_type_it->second == "position"){
+                        esc_trj.set_zero = esc_trj.trj1;
+                    }
                 }else if(device_type=="pump"){
-                    pump_trj_map[id] = device_trj;
+                    pump_trj_map[id] = esc_trj;
                 }
             }
         }
