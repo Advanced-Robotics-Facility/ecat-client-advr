@@ -88,15 +88,15 @@ void EcWrapper::create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg)
                 }
 
                 if(device_type=="motor"){
+                    if(trj_type_it->second == "position"){
+                        esc_trj.set_zero = esc_trj.trj1;
+                    }
                     motor_trj_map[id] = esc_trj;
-                    if(trj_type_it->second == "position"){
-                        esc_trj.set_zero = esc_trj.trj1;
-                    }
                 }else if(device_type=="valve"){
-                    valve_trj_map[id] = esc_trj;
                     if(trj_type_it->second == "position"){
                         esc_trj.set_zero = esc_trj.trj1;
                     }
+                    valve_trj_map[id] = esc_trj;
                 }else if(device_type=="pump"){
                     pump_trj_map[id] = esc_trj;
                 }
