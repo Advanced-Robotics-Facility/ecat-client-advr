@@ -21,16 +21,61 @@ enum class TrjType : uint8_t
 typedef struct ESC_TRJ_t{
 
     int32_t esc_id;
-
+    
     double trj1;
     double trj2;
     double set_zero;
+    std::vector<double> trj_limit;
 
     double start;
     double set_ref;
     double set_trj;
 
     Trj_ptr general_trj;
+
+    bool check_limit(double v){
+
+        if (trj_limit.size() == 1){
+            if (std::abs(v) > trj_limit[0]){
+                DPRINTF("Trajectory value %.3f on device id %d exceeds limit ±%.3f\n", v, esc_id, trj_limit[0]);
+                return false;
+            }
+        }
+        else if (trj_limit.size() == 2){
+            if (v < trj_limit[0] || v > trj_limit[1]){
+                DPRINTF("Trajectory value %.3f on device id %d is outside allowed range [%.3f, %.3f]\n",
+                         v, esc_id, trj_limit[0], trj_limit[1]);
+                return false;
+            }
+        }
+        else{
+            DPRINTF("Invalid trj_limit size\n");
+            return false;
+        }
+        return true;
+    }
+
+    void check_trj_limit(){
+       
+        if (trj_limit.empty()) return;
+
+        for (double v : {trj1, trj2}){
+            if(!check_limit(v)){
+                throw std::runtime_error("Trajectory limit error!");
+            }
+        }
+    }
+
+    void set_target(double ref){
+        
+        if (!trj_limit.empty()){
+            if(!check_limit(ref)){
+                return;
+            }
+        }
+
+        set_ref = ref;
+    }
 
     void setup_trj(TrjType type){
         switch (type){
@@ -48,27 +93,43 @@ typedef struct ESC_TRJ_t{
 
 }ESC_TRJ;
 
-using ctrl_map = std::map<int, std::string>;
-static const std::map<std::string, ctrl_map> trj_type_map = {
-    { "motor", {
-        { iit::advr::Gains_Type_POSITION ,  "position" },
-        { iit::advr::Gains_Type_VELOCITY,   "velocity" },
-        { iit::advr::Gains_Type_IMPEDANCE,  "position" },
-        { iit::advr::Gains_Type_TORQUE,     "torque" },
-        { iit::advr::Gains_Type_CURRENT,    "current" }
-    }},
-    { "valve", {
-        { iit::advr::Gains_Type_POSITION,   "position" },
-        { iit::advr::Gains_Type_IMPEDANCE,  "force" },
-        { iit::advr::Gains_Type_CURRENT,    "current" }
-    }},
-    { "pump", {
-        { 0x39,                             "pwm" },
-        { iit::advr::Gains_Type_VELOCITY,   "velocity" },
-        { iit::advr::Gains_Type_IMPEDANCE,  "pressure" }
-    }}
+
+enum class LimitPolicy
+{
+    NONE,
+    MARGIN,
+    SCALE
 };
 
+typedef struct TRJ_INFO_t{
+    std::string type;
+    std::vector<std::string> limits;
+    double adjustment;
+    LimitPolicy adjustment_type = LimitPolicy::NONE;
+}TRJ_INFO;
+
+using trj_info_map = std::map<int, TRJ_INFO>;
+static const std::map<std::string, trj_info_map> trj_type_map = {
+    { "motor", {
+        { iit::advr::Gains_Type_POSITION,  { "position", {"Min_pos", "Max_pos"},0.5f * M_PI / 180.0f, LimitPolicy::MARGIN} },
+        { iit::advr::Gains_Type_VELOCITY,  { "velocity", {"Max_vel"},           0.95,LimitPolicy::SCALE } },
+        { iit::advr::Gains_Type_IMPEDANCE, { "position", {"Min_pos", "Max_pos"},0.95,LimitPolicy::SCALE } },
+        { iit::advr::Gains_Type_TORQUE,    { "torque",   {"Max_tor"},           0.95,LimitPolicy::SCALE } },
+        { iit::advr::Gains_Type_CURRENT,   { "current",  {"Max_ref"},           0.95,LimitPolicy::SCALE } }
+    }},
+
+    { "valve", {
+        { iit::advr::Gains_Type_POSITION,  { "position", {}, 1.0,LimitPolicy::NONE } },
+        { iit::advr::Gains_Type_IMPEDANCE, { "force", {},    1.0,LimitPolicy::NONE} },
+        { iit::advr::Gains_Type_CURRENT,   { "current", {},  1.0,LimitPolicy::NONE } }
+    }},
+
+    { "pump", {
+        { 0x39,                            { "pwm", {},     1.0,LimitPolicy::NONE } },
+        { iit::advr::Gains_Type_VELOCITY,  { "velocity", {},1.0,LimitPolicy::NONE } },
+        { iit::advr::Gains_Type_IMPEDANCE, { "pressure", {},1.0,LimitPolicy::NONE } }
+    }}
+};
 
 class EcUtils
 {

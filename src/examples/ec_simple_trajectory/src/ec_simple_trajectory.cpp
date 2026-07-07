@@ -108,7 +108,7 @@ int main(int argc, char * const argv[])
             // interpolate
             for (auto &[esc_id, motor_trj] : motor_trj_map){
                 int ctrl_mode= ec_cfg.device_config_map[esc_id].control_mode_type;
-                motor_trj.set_ref = motor_trj.start + alpha * (motor_trj.set_trj - motor_trj.start);
+                motor_trj.set_target(motor_trj.start + alpha * (motor_trj.set_trj - motor_trj.start));
                 if(ctrl_mode != iit::advr::Gains_Type_VELOCITY){
                     if(ctrl_mode == iit::advr::Gains_Type_POSITION ||
                     ctrl_mode == iit::advr::Gains_Type_IMPEDANCE){

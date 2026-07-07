@@ -64,15 +64,15 @@ void EcWrapper::create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg)
                 const auto trj_type_it = trj_device_type_it->second.find(ctrl_mode);
                 if (trj_type_it == trj_device_type_it->second.end()) continue;      //  unsupported control mode
         
-                const auto sp_it = set_point.find(trj_type_it->second);
+                const auto sp_it = set_point.find(trj_type_it->second.type);
                 if (sp_it == set_point.end()) continue;                             //  missing set point
 
-                ESC_TRJ esc_trj{};
+                ESC_TRJ esc_trj{};                                                  
                 esc_trj.esc_id = id;
                 esc_trj.trj1 =  static_cast<double>(sp_it->second);
                 esc_trj.trj2 = -static_cast<double>(sp_it->second);
-
-                if(trj_type_it->second == "position"){
+                
+                if(trj_type_it->second.type == "position"){
                     const auto homing_it = trj_cfg.homing.find(id);
                     if (homing_it != trj_cfg.homing.end()){
                         esc_trj.trj1 = homing_it->second;
@@ -80,22 +80,46 @@ void EcWrapper::create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg)
                     }
                 }
 
-                esc_trj.set_zero = 0.0;
-                esc_trj.set_ref = esc_trj.start = 0.0;
+                if(!trj_type_it->second.limits.empty()){
+                    std::vector<double> limits_value(trj_type_it->second.limits.size(),0);
+                    read_sdo(id,trj_type_it->second.limits,limits_value);
+
+                    switch (trj_type_it->second.adjustment_type){
+                        case LimitPolicy::MARGIN:{
+                            if ((limits_value[1] - limits_value[0]) > 2.0f * trj_type_it->second.adjustment){
+                                limits_value[0] += trj_type_it->second.adjustment;
+                                limits_value[1] -= trj_type_it->second.adjustment;
+                            }
+                            break;
+                        }
+
+                        case LimitPolicy::SCALE:{
+                            limits_value[0] *= trj_type_it->second.adjustment;
+                            break;
+                        }
+
+                        case LimitPolicy::NONE:{
+                            break;
+                        }
+                    }
+                    esc_trj.trj_limit = limits_value;
+                    esc_trj.check_trj_limit();
+                }
+
                 esc_trj.set_trj = esc_trj.trj1;
 
                 const auto trj_gen_it = trj_cfg.trj_generator.find(id);
                 if (trj_gen_it != trj_cfg.trj_generator.end()){
-                    esc_trj.general_trj = trj_gen_it->second.at(trj_type_it->second);
+                    esc_trj.general_trj = trj_gen_it->second.at(trj_type_it->second.type);
                 }
 
                 if(device_type=="motor"){
-                    if(trj_type_it->second == "position"){
+                    if(trj_type_it->second.type == "position"){
                         esc_trj.set_zero = esc_trj.trj1;
                     }
                     motor_trj_map[id] = esc_trj;
                 }else if(device_type=="valve"){
-                    if(trj_type_it->second == "position"){
+                    if(trj_type_it->second.type == "position"){
                         esc_trj.set_zero = esc_trj.trj1;
                     }
                     valve_trj_map[id] = esc_trj;
@@ -128,7 +152,6 @@ void EcWrapper::autodetection()
         }
     }
 }
-
 
 void EcWrapper::find_devices()   
 {
