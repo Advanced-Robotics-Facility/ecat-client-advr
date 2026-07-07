@@ -41,6 +41,14 @@ public:
     bool start_ec_sys(void);
     void stop_ec_sys(void);
     void log_ec_sys(void);
+    template<typename T>
+    void read_sdo(const int32_t device_id,
+                  const std::vector<std::string> &sdo_name,
+                  std::vector<T> &sdo_read);
+    template<typename T>              
+    void write_sdo(const int32_t device_id,
+                   const std::vector<std::string> &sdo_name,
+                   const std::vector<T> &sdo_write);
 
     std::shared_ptr<EcUtils> get_ec_utils();
     void ec_self_sched(std::string thread_name="Thread"); // Scheduling an external thread/process with same policy, cpu and less priority of the ec client.
@@ -52,14 +60,6 @@ private:
     bool start_devices(void);
     void stop_devices(void);
     void read_devices_status();
-    template<typename T>
-    void read_sdo(const int32_t device_id,
-                  const std::vector<std::string> &sdo_name,
-                  std::vector<T> &sdo_read);
-    template<typename T>              
-    void write_sdo(const int32_t device_id,
-                   const std::vector<std::string> &sdo_name,
-                   const std::vector<T> &sdo_write);
     bool safe_init();
 
 
