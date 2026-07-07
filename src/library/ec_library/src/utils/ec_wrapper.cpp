@@ -72,10 +72,12 @@ void EcWrapper::create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg)
                 esc_trj.trj1 =  static_cast<double>(sp_it->second);
                 esc_trj.trj2 = -static_cast<double>(sp_it->second);
 
-                const auto homing_it = trj_cfg.homing.find(id);
-                if (homing_it != trj_cfg.homing.end()){
-                    esc_trj.trj1 = homing_it->second;
-                    esc_trj.trj2 = trj_cfg.trajectory.at(id);
+                if(trj_type_it->second == "position"){
+                    const auto homing_it = trj_cfg.homing.find(id);
+                    if (homing_it != trj_cfg.homing.end()){
+                        esc_trj.trj1 = homing_it->second;
+                        esc_trj.trj2 = trj_cfg.trajectory.at(id);
+                    }
                 }
 
                 esc_trj.set_zero = 0.0;
