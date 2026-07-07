@@ -41,9 +41,7 @@ int main(int argc, char * const argv[])
 
     if(ec_sys_started){                       
         int overruns = 0;
-        int trajectory_counter=0;
-        float tau=0,alpha=0;
-
+   
         std::map<int,Trj_ptr> general_trj;
         for (auto &[esc_id, motor_trj] : motor_trj_map){
             general_trj[esc_id] = motor_trj.general_trj;

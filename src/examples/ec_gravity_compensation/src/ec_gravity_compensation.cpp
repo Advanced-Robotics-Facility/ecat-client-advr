@@ -173,6 +173,7 @@ int main(int argc, char * const argv[])
 
                 // quintic poly 6t^5 - 15t^4 + 10t^3
                 alpha = ((6*tau - 15)*tau + 10)*tau*tau*tau;
+                alpha = std::clamp(alpha, 0.0f, 1.0f);
                 
                 // interpolate
                 for ( auto &[esc_id, gain_ref] : gain_ref_map){
