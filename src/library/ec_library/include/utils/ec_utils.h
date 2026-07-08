@@ -9,7 +9,6 @@
 #include "protocol/ipc/zipc/ec_zipc.h"
 #include <ecat_core/trajectory.h>
 
-
 enum class TrjType : uint8_t
 {
     zero,
@@ -17,82 +16,6 @@ enum class TrjType : uint8_t
     trj1,
     trj2
 };
-
-typedef struct ESC_TRJ_t{
-
-    int32_t esc_id;
-    
-    double trj1;
-    double trj2;
-    double set_zero;
-    std::vector<double> trj_limit;
-
-    double start;
-    double set_ref;
-    double set_trj;
-
-    Trj_ptr general_trj;
-
-    bool check_limit(double v){
-
-        if (trj_limit.size() == 1){
-            if (std::abs(v) > trj_limit[0]){
-                DPRINTF("Trajectory value %.3f on device id %d exceeds limit ±%.3f\n", v, esc_id, trj_limit[0]);
-                return false;
-            }
-        }
-        else if (trj_limit.size() == 2){
-            if (v < trj_limit[0] || v > trj_limit[1]){
-                DPRINTF("Trajectory value %.3f on device id %d is outside allowed range [%.3f, %.3f]\n",
-                         v, esc_id, trj_limit[0], trj_limit[1]);
-                return false;
-            }
-        }
-        else{
-            DPRINTF("Invalid trj_limit size\n");
-            return false;
-        }
-        return true;
-    }
-
-    void check_trj_limit(){
-       
-        if (trj_limit.empty()) return;
-
-        for (double v : {trj1, trj2}){
-            if(!check_limit(v)){
-                throw std::runtime_error("Trajectory limit error!");
-            }
-        }
-    }
-
-    void set_target(double ref){
-        
-        if (!trj_limit.empty()){
-            if(!check_limit(ref)){
-                return;
-            }
-        }
-
-        set_ref = ref;
-    }
-
-    void setup_trj(TrjType type){
-        switch (type){
-        case TrjType::zero: set_trj = set_zero; break;
-        case TrjType::start: set_trj = start; break;
-        case TrjType::trj1: set_trj = trj1; break;
-        case TrjType::trj2: set_trj = trj2; break;
-
-        default:
-            throw std::runtime_error("Error in setup_trj function, trajectory type not recognized!");
-        }
-
-        start = set_ref;
-    }
-
-}ESC_TRJ;
-
 
 enum class LimitPolicy
 {
@@ -130,6 +53,29 @@ static const std::map<std::string, trj_info_map> trj_type_map = {
         { iit::advr::Gains_Type_IMPEDANCE, { "pressure", {},1.0,LimitPolicy::NONE } }
     }}
 };
+
+typedef struct ESC_TRJ_t{
+
+    int32_t esc_id;
+    
+    double trj1;
+    double trj2;
+    double set_zero;
+    std::vector<double> trj_limit;
+
+    double start;
+    double set_ref;
+    double set_trj;
+
+    Trj_ptr general_trj;
+
+    bool check_limit(double v);
+    void set_trj_limit(const std::vector<double>& limits,
+                       LimitPolicy limit_policy,
+                       double adjustment);
+    void setup_trj(TrjType type);
+    void set_target(double ref);
+}ESC_TRJ;
 
 class EcUtils
 {

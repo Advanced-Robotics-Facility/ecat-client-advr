@@ -7,6 +7,95 @@
 using namespace std;
 using namespace std::chrono;
 
+bool ESC_TRJ_t::check_limit(double v)
+{
+    if (trj_limit.size() == 1){
+        if (std::abs(v) > trj_limit[0]){
+            DPRINTF("Trajectory value %.3f on device id %d exceeds limit ±%.3f\n", v, esc_id, trj_limit[0]);
+            return false;
+        }
+    }
+    else if (trj_limit.size() == 2){
+        if (v < trj_limit[0] || v > trj_limit[1]){
+            DPRINTF("Trajectory value %.3f on device id %d is outside allowed range [%.3f, %.3f]\n",
+                     v, esc_id, trj_limit[0], trj_limit[1]);
+            return false;
+        }
+    }
+    else{
+        DPRINTF("Invalid trj_limit size\n");
+        return false;
+    }
+    return true;
+}
+
+void ESC_TRJ_t::set_trj_limit(const std::vector<double>& limits,
+                              LimitPolicy limit_policy = LimitPolicy::NONE,
+                              double adjustment = 0.0)
+{
+    if(limits.size()==0){
+        DPRINTF("Warning cannot set the limits, limits vector empty!");
+        return;
+    }
+
+    trj_limit = limits;
+
+    switch (limit_policy){
+        case LimitPolicy::MARGIN:{
+            if(trj_limit.size()!=2){
+                DPRINTF("Cannot set the limis with the margin policy size must be 2, actual size %ld",trj_limit.size());
+                throw std::runtime_error("Error on set limit");
+            }
+            if ((trj_limit[1] - trj_limit[0]) > 2.0f * adjustment){
+                trj_limit[0] += adjustment;
+                trj_limit[1] -= adjustment;
+            }
+            break;
+        }
+
+        case LimitPolicy::SCALE:{
+            trj_limit[0] *= adjustment;
+            break;
+        }
+
+        case LimitPolicy::NONE:{
+            break;
+        }
+    }
+
+    for (double v : {trj1, trj2}){
+        if(!check_limit(v)){
+            throw std::runtime_error("Trajectory limit error!");
+        }
+    }
+}
+
+void ESC_TRJ_t::setup_trj(TrjType type){
+    
+    switch (type){
+    case TrjType::zero: set_trj = set_zero; break;
+    case TrjType::start: set_trj = start; break;
+    case TrjType::trj1: set_trj = trj1; break;
+    case TrjType::trj2: set_trj = trj2; break;
+
+    default:
+        throw std::runtime_error("Error in setup_trj function, trajectory type not recognized!");
+    }
+
+    start = set_ref;
+}
+
+void ESC_TRJ_t::set_target(double ref){
+    
+    if (!trj_limit.empty()){
+        if(!check_limit(ref)){
+            return;
+        }
+    }
+    
+    set_ref = ref;
+}
+
 EcUtils::EcUtils(EC_CONFIG ec_cfg):
 _ec_cfg(ec_cfg)
 {

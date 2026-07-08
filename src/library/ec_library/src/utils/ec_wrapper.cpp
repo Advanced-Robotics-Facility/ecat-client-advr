@@ -69,6 +69,8 @@ void EcWrapper::create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg)
 
                 ESC_TRJ esc_trj{};                                                  
                 esc_trj.esc_id = id;
+
+                // set trajectory
                 esc_trj.trj1 =  static_cast<double>(sp_it->second);
                 esc_trj.trj2 = -static_cast<double>(sp_it->second);
                 
@@ -80,34 +82,17 @@ void EcWrapper::create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg)
                     }
                 }
 
+                // check and set trajectory limit
                 if(!trj_type_it->second.limits.empty()){
                     std::vector<double> limits_value(trj_type_it->second.limits.size(),0);
                     read_sdo(id,trj_type_it->second.limits,limits_value);
-
-                    switch (trj_type_it->second.adjustment_type){
-                        case LimitPolicy::MARGIN:{
-                            if ((limits_value[1] - limits_value[0]) > 2.0f * trj_type_it->second.adjustment){
-                                limits_value[0] += trj_type_it->second.adjustment;
-                                limits_value[1] -= trj_type_it->second.adjustment;
-                            }
-                            break;
-                        }
-
-                        case LimitPolicy::SCALE:{
-                            limits_value[0] *= trj_type_it->second.adjustment;
-                            break;
-                        }
-
-                        case LimitPolicy::NONE:{
-                            break;
-                        }
-                    }
-                    esc_trj.trj_limit = limits_value;
-                    esc_trj.check_trj_limit();
+                    esc_trj.set_trj_limit(limits_value,
+                                          trj_type_it->second.adjustment_type,
+                                          trj_type_it->second.adjustment);
                 }
 
+                // set actual trajectory
                 esc_trj.set_trj = esc_trj.trj1;
-
                 const auto trj_gen_it = trj_cfg.trj_generator.find(id);
                 if (trj_gen_it != trj_cfg.trj_generator.end()){
                     esc_trj.general_trj = trj_gen_it->second.at(trj_type_it->second.type);
