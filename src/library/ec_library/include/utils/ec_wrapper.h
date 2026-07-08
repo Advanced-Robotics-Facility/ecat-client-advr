@@ -42,11 +42,11 @@ public:
     void stop_ec_sys(void);
     void log_ec_sys(void);
     template<typename T>
-    void read_sdo(const int32_t device_id,
+    void read_sdo(const int32_t esc_id,
                   const std::vector<std::string> &sdo_name,
                   std::vector<T> &sdo_read);
     template<typename T>              
-    void write_sdo(const int32_t device_id,
+    void write_sdo(const int32_t esc_id,
                    const std::vector<std::string> &sdo_name,
                    const std::vector<T> &sdo_write);
 
@@ -61,7 +61,10 @@ private:
     void stop_devices(void);
     void read_devices_status();
     bool safe_init();
-
+    void get_limits(const int32_t esc_id,
+                    const trj_info_map& trj_map,
+                    int   ctrl_mode,
+                    std::vector<double> &actual_limit);
 
     EcUtils::EC_CONFIG _ec_cfg;
     EcUtils::Ptr _ec_utils;

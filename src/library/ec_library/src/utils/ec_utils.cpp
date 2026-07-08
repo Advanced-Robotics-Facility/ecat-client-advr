@@ -7,6 +7,50 @@
 using namespace std;
 using namespace std::chrono;
 
+TRJ_INFO make_trj_info(std::string trj_type,
+                       std::vector<std::string> limits = {},
+                       std::vector<double> factors = {},
+                       LimitPolicy policy = LimitPolicy::NONE)
+{
+    return {std::move(trj_type), std::move(limits), factors, policy};
+}
+
+TRJ_INFO motor_trj_info(std::string trj_type, std::vector<std::string> limits)
+{
+    std::vector<double> factors = {0.95};
+    LimitPolicy policy = LimitPolicy::SCALE;
+
+    if(trj_type == "position"){
+        double factor = 0.5f * M_PI / 180.0f;
+        factors = {factor,-factor};
+        policy = LimitPolicy::MARGIN;
+    }
+    
+    return make_trj_info(trj_type,limits,factors,policy);
+}
+
+const std::map<std::string, trj_info_map> trj_type_map = {
+    { "motor", {
+        { iit::advr::Gains_Type_POSITION,  motor_trj_info("position",   {"Min_pos", "Max_pos"}) },
+        { iit::advr::Gains_Type_VELOCITY,  motor_trj_info("velocity",   {"Max_vel"})            },
+        { iit::advr::Gains_Type_IMPEDANCE, motor_trj_info("position",   {"Min_pos", "Max_pos"}) },
+        { iit::advr::Gains_Type_TORQUE,    motor_trj_info("torque",     {"Max_tor"})            },
+        { iit::advr::Gains_Type_CURRENT,   motor_trj_info("current",    {"Max_ref"})            }
+    }},
+
+    { "valve", {
+        { iit::advr::Gains_Type_POSITION,  make_trj_info("position") },
+        { iit::advr::Gains_Type_IMPEDANCE, make_trj_info("force") },
+        { iit::advr::Gains_Type_CURRENT,   make_trj_info("current") }
+    }},
+
+    { "pump", {
+        { 0x39,                            make_trj_info("pwm") },
+        { iit::advr::Gains_Type_VELOCITY,  make_trj_info("velocity")  },
+        { iit::advr::Gains_Type_IMPEDANCE, make_trj_info("pressure") }
+    }}
+};
+
 bool ESC_TRJ_t::check_limit(double v)
 {
     if (trj_limit.size() == 1){
@@ -29,9 +73,7 @@ bool ESC_TRJ_t::check_limit(double v)
     return true;
 }
 
-void ESC_TRJ_t::set_trj_limit(const std::vector<double>& limits,
-                              LimitPolicy limit_policy = LimitPolicy::NONE,
-                              double adjustment = 0.0)
+void ESC_TRJ_t::set_trj_limit(const std::vector<double>& limits)
 {
     if(limits.size()==0){
         DPRINTF("Warning cannot set the limits, limits vector empty!");
@@ -39,29 +81,6 @@ void ESC_TRJ_t::set_trj_limit(const std::vector<double>& limits,
     }
 
     trj_limit = limits;
-
-    switch (limit_policy){
-        case LimitPolicy::MARGIN:{
-            if(trj_limit.size()!=2){
-                DPRINTF("Cannot set the limis with the margin policy size must be 2, actual size %ld",trj_limit.size());
-                throw std::runtime_error("Error on set limit");
-            }
-            if ((trj_limit[1] - trj_limit[0]) > 2.0f * adjustment){
-                trj_limit[0] += adjustment;
-                trj_limit[1] -= adjustment;
-            }
-            break;
-        }
-
-        case LimitPolicy::SCALE:{
-            trj_limit[0] *= adjustment;
-            break;
-        }
-
-        case LimitPolicy::NONE:{
-            break;
-        }
-    }
 
     for (double v : {trj1, trj2}){
         if(!check_limit(v)){

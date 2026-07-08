@@ -43,6 +43,63 @@ EcUtils::EC_CONFIG EcWrapper::retrieve_ec_cfg()
     return _ec_cfg;
 }
 
+void EcWrapper::get_limits(const int32_t esc_id,
+                           const trj_info_map& trj_map,
+                           int   ctrl_mode,
+                           std::vector<double> &actual_limit)
+{
+    std::vector<std::string> sdo_limits;
+    std::vector<double> adjustments;
+    std::vector<LimitPolicy> adjustments_type;
+    std::vector<std::string> ctrl_limits;
+    
+    for (const auto& [control_mode, trj_info] : trj_map){
+        int i = 0;
+        for (const auto& limit : trj_info.limits){
+            if (std::find(sdo_limits.begin(), sdo_limits.end(), limit) == sdo_limits.end()){
+                sdo_limits.push_back(limit);
+                adjustments.push_back(trj_info.adjustment[i]);
+                adjustments_type.push_back(trj_info.adjustment_type);
+            }
+
+            if(control_mode == ctrl_mode){
+                ctrl_limits.push_back(limit);
+            }
+
+            i++;  
+        }
+    }
+
+    if (!sdo_limits.empty()){
+        std::vector<double> limits_value(sdo_limits.size());
+
+        read_sdo(esc_id, sdo_limits, limits_value);
+
+        DPRINTF("Mechanical limits for id: %d\n", esc_id);
+
+        actual_limit.clear();
+        for (size_t i = 0; i < sdo_limits.size(); ++i){
+
+            if (adjustments_type[i] == LimitPolicy::SCALE){
+                limits_value[i] *= adjustments[i];
+            } else if (adjustments_type[i]== LimitPolicy::MARGIN){
+                limits_value[i] += adjustments[i];
+            }
+
+            DPRINTF("%s: %.4f%s",sdo_limits[i].c_str(),
+                                 limits_value[i],
+                                (i + 1 == sdo_limits.size()) ? "\n" : "   ");
+
+            for (const auto& limit : ctrl_limits){
+                if(limit == sdo_limits[i]){
+                    actual_limit.push_back(limits_value[i]);
+                    break;
+                }
+            }
+        }
+    }
+}
+
 void EcWrapper::create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg)
 {
     try{
@@ -83,12 +140,10 @@ void EcWrapper::create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg)
                 }
 
                 // check and set trajectory limit
-                if(!trj_type_it->second.limits.empty()){
-                    std::vector<double> limits_value(trj_type_it->second.limits.size(),0);
-                    read_sdo(id,trj_type_it->second.limits,limits_value);
-                    esc_trj.set_trj_limit(limits_value,
-                                          trj_type_it->second.adjustment_type,
-                                          trj_type_it->second.adjustment);
+                std::vector<double> limits_value;
+                get_limits(id,trj_device_type_it->second,ctrl_mode,limits_value);
+                if(!limits_value.empty()){
+                    esc_trj.set_trj_limit(limits_value);
                 }
 
                 // set actual trajectory
@@ -226,7 +281,7 @@ void EcWrapper::stop_devices(void)
 
 
 template<typename T>
-void EcWrapper::read_sdo(const int32_t device_id,
+void EcWrapper::read_sdo(const int32_t esc_id,
                          const std::vector<std::string> &sdo_name,
                          std::vector<T> &sdo_read)
 {
@@ -239,7 +294,7 @@ void EcWrapper::read_sdo(const int32_t device_id,
     WR_SDO wr_sdo;
     RR_SDOS rr_sdo;
 
-    if (!_client->retrieve_rr_sdo(device_id, sdo_name, wr_sdo, rr_sdo) ||
+    if (!_client->retrieve_rr_sdo(esc_id, sdo_name, wr_sdo, rr_sdo) ||
         rr_sdo.size() != sdo_name.size()){
         DPRINTF("Problem on %s error on retrieve_rr_sdo function!\n", __FUNCTION__);
         return;
@@ -265,7 +320,7 @@ void EcWrapper::read_sdo(const int32_t device_id,
 }
 
 template<typename T>
-void EcWrapper::write_sdo(const int32_t device_id,
+void EcWrapper::write_sdo(const int32_t esc_id,
                           const std::vector<std::string> &sdo_name,
                           const std::vector<T> &sdo_write)
 {
@@ -283,7 +338,7 @@ void EcWrapper::write_sdo(const int32_t device_id,
         wr_sdo.emplace_back(sdo_name[i], oss.str());
     }
 
-    if(!_client->set_wr_sdo(device_id,{},wr_sdo)){
+    if(!_client->set_wr_sdo(esc_id,{},wr_sdo)){
         DPRINTF("Problem on %s error on set_wr_sdo function!\n", __FUNCTION__);
         return;
     }
@@ -342,15 +397,7 @@ bool EcWrapper::safe_init()
         
         std::vector<float> limits_value(5,0);
         read_sdo(esc_id,sdo_limits,limits_value);
-        
-        /*
-        DPRINTF("Mechanical limits for motor id: %d\n",esc_id);
-        for (size_t i = 0; i < limits_value.size(); ++i) {
-            DPRINTF("%s: %.4f%s",sdo_limits[i].c_str(), limits_value[i],
-                              (i + 1 == limits_value.size()) ? "\n" : "   ");
-        }
-        */
-
+    
         if(_ec_cfg.device_config_map.count(esc_id)>0){
             motor_reference_map[esc_id] = std::make_tuple(  _ec_cfg.device_config_map[esc_id].control_mode_type,  // ctrl_type
                                                             motor_pos,                                            // pos_ref

@@ -27,32 +27,13 @@ enum class LimitPolicy
 typedef struct TRJ_INFO_t{
     std::string type;
     std::vector<std::string> limits;
-    double adjustment;
+    std::vector<double> adjustment;
     LimitPolicy adjustment_type = LimitPolicy::NONE;
 }TRJ_INFO;
 
+
 using trj_info_map = std::map<int, TRJ_INFO>;
-static const std::map<std::string, trj_info_map> trj_type_map = {
-    { "motor", {
-        { iit::advr::Gains_Type_POSITION,  { "position", {"Min_pos", "Max_pos"},0.5f * M_PI / 180.0f, LimitPolicy::MARGIN} },
-        { iit::advr::Gains_Type_VELOCITY,  { "velocity", {"Max_vel"},           0.95,LimitPolicy::SCALE } },
-        { iit::advr::Gains_Type_IMPEDANCE, { "position", {"Min_pos", "Max_pos"},0.5f * M_PI / 180.0f, LimitPolicy::MARGIN} },
-        { iit::advr::Gains_Type_TORQUE,    { "torque",   {"Max_tor"},           0.95,LimitPolicy::SCALE } },
-        { iit::advr::Gains_Type_CURRENT,   { "current",  {"Max_ref"},           0.95,LimitPolicy::SCALE } }
-    }},
-
-    { "valve", {
-        { iit::advr::Gains_Type_POSITION,  { "position", {}, 1.0,LimitPolicy::NONE } },
-        { iit::advr::Gains_Type_IMPEDANCE, { "force", {},    1.0,LimitPolicy::NONE} },
-        { iit::advr::Gains_Type_CURRENT,   { "current", {},  1.0,LimitPolicy::NONE } }
-    }},
-
-    { "pump", {
-        { 0x39,                            { "pwm", {},     1.0,LimitPolicy::NONE } },
-        { iit::advr::Gains_Type_VELOCITY,  { "velocity", {},1.0,LimitPolicy::NONE } },
-        { iit::advr::Gains_Type_IMPEDANCE, { "pressure", {},1.0,LimitPolicy::NONE } }
-    }}
-};
+extern const std::map<std::string, trj_info_map> trj_type_map;
 
 typedef struct ESC_TRJ_t{
 
@@ -70,9 +51,7 @@ typedef struct ESC_TRJ_t{
     Trj_ptr general_trj;
 
     bool check_limit(double v);
-    void set_trj_limit(const std::vector<double>& limits,
-                       LimitPolicy limit_policy,
-                       double adjustment);
+    void set_trj_limit(const std::vector<double>& limits);
     void setup_trj(TrjType type);
     void set_target(double ref);
 }ESC_TRJ;
