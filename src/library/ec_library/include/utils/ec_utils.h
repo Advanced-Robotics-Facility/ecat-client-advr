@@ -113,7 +113,7 @@ static const std::map<std::string, trj_info_map> trj_type_map = {
     { "motor", {
         { iit::advr::Gains_Type_POSITION,  { "position", {"Min_pos", "Max_pos"},0.5f * M_PI / 180.0f, LimitPolicy::MARGIN} },
         { iit::advr::Gains_Type_VELOCITY,  { "velocity", {"Max_vel"},           0.95,LimitPolicy::SCALE } },
-        { iit::advr::Gains_Type_IMPEDANCE, { "position", {"Min_pos", "Max_pos"},0.95,LimitPolicy::SCALE } },
+        { iit::advr::Gains_Type_IMPEDANCE, { "position", {"Min_pos", "Max_pos"},0.5f * M_PI / 180.0f, LimitPolicy::MARGIN} },
         { iit::advr::Gains_Type_TORQUE,    { "torque",   {"Max_tor"},           0.95,LimitPolicy::SCALE } },
         { iit::advr::Gains_Type_CURRENT,   { "current",  {"Max_ref"},           0.95,LimitPolicy::SCALE } }
     }},
