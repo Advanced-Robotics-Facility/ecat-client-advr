@@ -33,6 +33,11 @@ int main(int argc, char *const argv[])
         return 1;
     }
 
+    if (motor_trj_map.empty() && valve_trj_map.empty() && pump_trj_map.empty()){
+        DPRINTF("fatal error: motor references, pump reference and valves references are both empty\n");
+        return 1;
+    }
+
     bool ec_sys_started = true;
     try{
         ec_sys_started = ec_wrapper.start_ec_sys();
@@ -58,39 +63,35 @@ int main(int argc, char *const argv[])
         int trajectory_counter = 0;
         float tau = 0, alpha = 0;
 
-        if (motor_trj_map.empty() && valve_trj_map.empty() && pump_trj_map.empty()){
-            fatal_error="fatal error: motor references, pump reference and valves references are both empty";
+  
+        if (!pump_reference_map.empty()){
+            STM_sts = "Pressure";
+            set_trj_time_ms = pressure_time_ms;
+        }
+        else{
+            STM_sts = "Homing";
+            set_trj_time_ms = hm_time_ms;
+        }
+        
+        if (ec_cfg.protocol == "iddp"){
+            // add SIGALRM
+            signal ( SIGALRM, sig_handler );
+            //avoid map swap
+            main_common (&argc, (char*const**)&argv, sig_handler);
+        }
+        else{
+            struct sigaction sa;
+            sa.sa_handler = sig_handler;
+            sa.sa_flags = 0;  // receive will return EINTR on CTRL+C!
+            sigaction(SIGINT,&sa, nullptr);
+        }
+        // process scheduling
+        try{
+            ec_wrapper.ec_self_sched(argv[0]);
+        }catch(std::exception& e){
+            std::string error=e.what();
+            fatal_error="fatal error: "+ error;
             run_loop=false;
-        }else{
-            if (!pump_reference_map.empty()){
-                STM_sts = "Pressure";
-                set_trj_time_ms = pressure_time_ms;
-            }
-            else{
-                STM_sts = "Homing";
-                set_trj_time_ms = hm_time_ms;
-            }
-            
-            if (ec_cfg.protocol == "iddp"){
-                // add SIGALRM
-                signal ( SIGALRM, sig_handler );
-                //avoid map swap
-                main_common (&argc, (char*const**)&argv, sig_handler);
-            }
-            else{
-                struct sigaction sa;
-                sa.sa_handler = sig_handler;
-                sa.sa_flags = 0;  // receive will return EINTR on CTRL+C!
-                sigaction(SIGINT,&sa, nullptr);
-            }
-            // process scheduling
-            try{
-                ec_wrapper.ec_self_sched(argv[0]);
-            }catch(std::exception& e){
-                std::string error=e.what();
-                fatal_error="fatal error: "+ error;
-                run_loop=false;
-            }
         }
 
         auto start_time = std::chrono::high_resolution_clock::now();

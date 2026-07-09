@@ -47,7 +47,7 @@ int main(int argc, char * const argv[])
     }
 
     if(homing.empty()){
-        DPRINTF("Got an homing position map\n");
+        DPRINTF("Got an empty homing position map\n");
         return 1;
     }
 

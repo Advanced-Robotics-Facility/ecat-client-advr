@@ -30,6 +30,19 @@ int main(int argc, char * const argv[])
         return 1;
     }
 
+    std::map<int,Trj_ptr> general_trj;
+    for (auto &[esc_id, motor_trj] : motor_trj_map){
+        general_trj[esc_id] = motor_trj.general_trj;
+    }
+    for (auto &[esc_id, valve_trj] : valve_trj_map){
+        general_trj[esc_id] = valve_trj.general_trj;
+    }
+
+    if(general_trj.empty()){
+        DPRINTF("fatal error: general trajectory map empty\n");
+        return 1;
+    }
+
     bool ec_sys_started = true;
     try{
         ec_sys_started = ec_wrapper.start_ec_sys();
@@ -41,42 +54,29 @@ int main(int argc, char * const argv[])
 
     if(ec_sys_started){                       
         int overruns = 0;
-   
-        std::map<int,Trj_ptr> general_trj;
-        for (auto &[esc_id, motor_trj] : motor_trj_map){
-            general_trj[esc_id] = motor_trj.general_trj;
-        }
-        for (auto &[esc_id, valve_trj] : valve_trj_map){
-            general_trj[esc_id] = valve_trj.general_trj;
-        }
 
-        if(general_trj.empty()){
-            fatal_error="fatal error: general trajectory map empty";
+        if (ec_cfg.protocol == "iddp"){
+            // add SIGALRM
+            signal ( SIGALRM, sig_handler );
+            //avoid map swap
+            main_common (&argc, (char*const**)&argv, sig_handler);
+        }
+        else{
+            struct sigaction sa;
+            sa.sa_handler = sig_handler;
+            sa.sa_flags = 0;  // receive will return EINTR on CTRL+C!
+            sigaction(SIGINT,&sa, nullptr);
+        }
+        
+        // process scheduling
+        try{
+            ec_wrapper.ec_self_sched(argv[0]);
+        }catch(std::exception& e){
+            std::string error=e.what();
+            fatal_error="fatal error: "+ error;
             run_loop=false;
-        }else{
-            if (ec_cfg.protocol == "iddp"){
-                // add SIGALRM
-                signal ( SIGALRM, sig_handler );
-                //avoid map swap
-                main_common (&argc, (char*const**)&argv, sig_handler);
-            }
-            else{
-                struct sigaction sa;
-                sa.sa_handler = sig_handler;
-                sa.sa_flags = 0;  // receive will return EINTR on CTRL+C!
-                sigaction(SIGINT,&sa, nullptr);
-            }
-            
-            // process scheduling
-            try{
-                ec_wrapper.ec_self_sched(argv[0]);
-            }catch(std::exception& e){
-                std::string error=e.what();
-                fatal_error="fatal error: "+ error;
-                run_loop=false;
-            }
         }
-
+    
         auto start_time = std::chrono::high_resolution_clock::now();
         auto time = start_time;
         const auto period = std::chrono::nanoseconds(ec_cfg.period_ms * 1000000);

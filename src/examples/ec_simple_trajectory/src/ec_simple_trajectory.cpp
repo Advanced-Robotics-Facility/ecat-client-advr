@@ -37,11 +37,10 @@ int main(int argc, char * const argv[])
     }
 
     if(homing.empty()){
-        DPRINTF("Got an homing position map\n");
+        DPRINTF("Got an empty homing position map\n");
         return 1;
     }
 
-    
     bool ec_sys_started = true;
     try{
         ec_sys_started = ec_wrapper.start_ec_sys();
