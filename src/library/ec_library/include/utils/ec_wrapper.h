@@ -62,7 +62,7 @@ private:
     void read_devices_status();
     bool safe_init();
     void get_limits(const int32_t esc_id,
-                    const trj_info_map& trj_map,
+                    const std::string device_type,
                     int   ctrl_mode,
                     std::vector<double> &actual_limit);
 

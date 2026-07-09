@@ -21,6 +21,35 @@ std::map<int32_t,ESC_TRJ> motor_trj_map;
 
 using namespace std::chrono;
 
+void adjust_limits(const std::string device_type,
+                   const std::vector<std::string>& sdo_limits,
+                   std::vector<double>& values)
+{
+    if(device_type == "motor"){
+        auto min_it = std::find(sdo_limits.begin(), sdo_limits.end(), "Min_pos");
+        auto max_it = std::find(sdo_limits.begin(), sdo_limits.end(), "Max_pos");
+
+        if (min_it == sdo_limits.end() || max_it == sdo_limits.end())
+            return;
+
+        const size_t min_idx = std::distance(sdo_limits.begin(), min_it);
+        const size_t max_idx = std::distance(sdo_limits.begin(), max_it);
+
+        constexpr double margin = 0.5 * M_PI / 180.0;
+
+        if (values[max_idx] - values[min_idx] > 2.0 * margin) {
+            values[min_idx] += margin;
+            values[max_idx] -= margin;
+        }
+
+        for (size_t i = 0; i < values.size(); ++i) {
+            if (i != min_idx && i != max_idx) {
+                values[i] *= 0.95;
+            }
+        }  
+    } 
+}
+
 EcWrapper::EcWrapper()
 {
     _ec_logger=std::make_shared<EcLogger>();
@@ -44,57 +73,48 @@ EcUtils::EC_CONFIG EcWrapper::retrieve_ec_cfg()
 }
 
 void EcWrapper::get_limits(const int32_t esc_id,
-                           const trj_info_map& trj_map,
+                           const std::string device_type,
                            int   ctrl_mode,
                            std::vector<double> &actual_limit)
 {
+    actual_limit.clear();
+
+    const auto trj_esc_type_it = esc_trj_map.find(device_type);     
+    if (trj_esc_type_it == esc_trj_map.end()) return;           
+
     std::vector<std::string> sdo_limits;
-    std::vector<double> adjustments;
-    std::vector<LimitPolicy> adjustments_type;
     std::vector<std::string> ctrl_limits;
     
-    for (const auto& [control_mode, trj_info] : trj_map){
-        int i = 0;
-        for (const auto& limit : trj_info.limits){
+    for (const auto& [control_mode, trj_info] : trj_esc_type_it->second){
+        for (size_t i = 0; i < trj_info.limits.size(); ++i) {
+            const auto& limit = trj_info.limits[i];
+
             if (std::find(sdo_limits.begin(), sdo_limits.end(), limit) == sdo_limits.end()){
                 sdo_limits.push_back(limit);
-                adjustments.push_back(trj_info.adjustment[i]);
-                adjustments_type.push_back(trj_info.adjustment_type);
             }
 
             if(control_mode == ctrl_mode){
                 ctrl_limits.push_back(limit);
             }
-
-            i++;  
         }
     }
 
     if (!sdo_limits.empty()){
-        std::vector<double> limits_value(sdo_limits.size());
 
+        std::vector<double> limits_value(sdo_limits.size());
         read_sdo(esc_id, sdo_limits, limits_value);
+        adjust_limits(device_type,sdo_limits,limits_value);
 
         DPRINTF("Mechanical limits for id: %d\n", esc_id);
 
-        actual_limit.clear();
         for (size_t i = 0; i < sdo_limits.size(); ++i){
-
-            if (adjustments_type[i] == LimitPolicy::SCALE){
-                limits_value[i] *= adjustments[i];
-            } else if (adjustments_type[i]== LimitPolicy::MARGIN){
-                limits_value[i] += adjustments[i];
-            }
 
             DPRINTF("%s: %.4f%s",sdo_limits[i].c_str(),
                                  limits_value[i],
                                 (i + 1 == sdo_limits.size()) ? "\n" : "   ");
 
-            for (const auto& limit : ctrl_limits){
-                if(limit == sdo_limits[i]){
-                    actual_limit.push_back(limits_value[i]);
-                    break;
-                }
+            if (std::find(ctrl_limits.begin(), ctrl_limits.end(), sdo_limits[i]) != ctrl_limits.end()) {
+                actual_limit.push_back(limits_value[i]);
             }
         }
     }
@@ -106,23 +126,26 @@ void EcWrapper::create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg)
         ec_cfg=retrieve_ec_cfg();
         _client=_ec_utils->make_ec_iface();
         client=_client;
+
         _start_devices_vector.clear();
+        for (const auto& [id, device_cfg] : _ec_cfg.device_config_map) {
+            _start_devices_vector.push_back(id);
+        }
+
         for (const auto& [device_type, trj_cfg] : _ec_cfg.trj_config_map) {
             for (const auto& [id, set_point] : trj_cfg.set_point) {
-                _start_devices_vector.push_back(id);
-        
                 const auto cfg_it = _ec_cfg.device_config_map.find(id);
-                if (cfg_it == _ec_cfg.device_config_map.end()) continue;            //  unknown configuration for the device (control mode)
+                if (cfg_it == _ec_cfg.device_config_map.end()) continue;             //  unknown configuration for the device (control mode)
                 auto ctrl_mode = cfg_it->second.control_mode_type;
         
-                const auto trj_device_type_it = trj_type_map.find(device_type);     
-                if (trj_device_type_it == trj_type_map.end()) continue;             //  unknown device type (motor,valve,pump...)
+                const auto trj_esc_type_it = esc_trj_map.find(device_type);     
+                if (trj_esc_type_it == esc_trj_map.end()) continue;                   //  unknown device type (motor,valve,pump...)
      
-                const auto trj_type_it = trj_device_type_it->second.find(ctrl_mode);
-                if (trj_type_it == trj_device_type_it->second.end()) continue;      //  unsupported control mode
+                const auto trj_info_it = trj_esc_type_it->second.find(ctrl_mode);
+                if (trj_info_it == trj_esc_type_it->second.end()) continue;           //  unsupported control mode
         
-                const auto sp_it = set_point.find(trj_type_it->second.type);
-                if (sp_it == set_point.end()) continue;                             //  missing set point
+                const auto sp_it = set_point.find(trj_info_it->second.type);
+                if (sp_it == set_point.end()) continue;                               //  missing set point
 
                 ESC_TRJ esc_trj{};                                                  
                 esc_trj.esc_id = id;
@@ -131,7 +154,7 @@ void EcWrapper::create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg)
                 esc_trj.trj1 =  static_cast<double>(sp_it->second);
                 esc_trj.trj2 = -static_cast<double>(sp_it->second);
                 
-                if(trj_type_it->second.type == "position"){
+                if(trj_info_it->second.type == "position"){
                     const auto homing_it = trj_cfg.homing.find(id);
                     if (homing_it != trj_cfg.homing.end()){
                         esc_trj.trj1 = homing_it->second;
@@ -141,7 +164,7 @@ void EcWrapper::create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg)
 
                 // check and set trajectory limit
                 std::vector<double> limits_value;
-                get_limits(id,trj_device_type_it->second,ctrl_mode,limits_value);
+                get_limits(id,device_type,ctrl_mode,limits_value);
                 if(!limits_value.empty()){
                     esc_trj.set_trj_limit(limits_value);
                 }
@@ -150,16 +173,16 @@ void EcWrapper::create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg)
                 esc_trj.set_trj = esc_trj.trj1;
                 const auto trj_gen_it = trj_cfg.trj_generator.find(id);
                 if (trj_gen_it != trj_cfg.trj_generator.end()){
-                    esc_trj.general_trj = trj_gen_it->second.at(trj_type_it->second.type);
+                    esc_trj.general_trj = trj_gen_it->second.at(trj_info_it->second.type);
                 }
 
                 if(device_type=="motor"){
-                    if(trj_type_it->second.type == "position"){
+                    if(trj_info_it->second.type == "position"){
                         esc_trj.set_zero = esc_trj.trj1;
                     }
                     motor_trj_map[id] = esc_trj;
                 }else if(device_type=="valve"){
-                    if(trj_type_it->second.type == "position"){
+                    if(trj_info_it->second.type == "position"){
                         esc_trj.set_zero = esc_trj.trj1;
                     }
                     valve_trj_map[id] = esc_trj;
@@ -390,14 +413,9 @@ bool EcWrapper::safe_init()
         return false;
     }
 
-    std::vector<std::string> sdo_limits={"Min_pos","Max_pos","Max_vel","Max_tor","Max_ref"};
     for (const auto &[esc_id, motor_rx_pdo] : motor_status_map){
         auto motor_pos =    std::get<2>(motor_rx_pdo);
         motor_reference_map[esc_id] = {0,motor_pos,0,0,0,0,0,0,0,0,0,0};
-        
-        std::vector<float> limits_value(5,0);
-        read_sdo(esc_id,sdo_limits,limits_value);
-    
         if(_ec_cfg.device_config_map.count(esc_id)>0){
             motor_reference_map[esc_id] = std::make_tuple(  _ec_cfg.device_config_map[esc_id].control_mode_type,  // ctrl_type
                                                             motor_pos,                                            // pos_ref
@@ -414,8 +432,10 @@ bool EcWrapper::safe_init()
                                                         );
             if(_ec_cfg.device_config_map[esc_id].control_mode_type==iit::advr::Gains_Type_POSITION ||
                _ec_cfg.device_config_map[esc_id].control_mode_type==iit::advr::Gains_Type_IMPEDANCE){
-                    motor_trj_map[esc_id].start = motor_pos;
-                    motor_trj_map[esc_id].set_ref = motor_pos;
+                    if(motor_trj_map.count(esc_id)>0){
+                        motor_trj_map[esc_id].start = motor_pos;
+                        motor_trj_map[esc_id].set_ref = motor_pos;
+                    }
             }
         }
     }
@@ -439,8 +459,10 @@ bool EcWrapper::safe_init()
                                                             0,                                                    // op_idx_aux
                                                             0);                                                   // aux
             if(_ec_cfg.device_config_map[esc_id].control_mode_type==iit::advr::Gains_Type_POSITION){
-                valve_trj_map[esc_id].start = enc_pos;
-                valve_trj_map[esc_id].set_ref = enc_pos;
+                if(valve_trj_map.count(esc_id)>0){
+                    valve_trj_map[esc_id].start = enc_pos;
+                    valve_trj_map[esc_id].set_ref = enc_pos;
+                }
             }
         }
     }
@@ -465,8 +487,10 @@ bool EcWrapper::safe_init()
                                                             0,                                                    // op_idx_aux
                                                             0);                                                   // aux
             if(_ec_cfg.device_config_map[esc_id].control_mode_type==iit::advr::Gains_Type_IMPEDANCE){
-                pump_trj_map[esc_id].start = pump_target;
-                pump_trj_map[esc_id].set_ref = pump_target;
+                if(pump_trj_map.count(esc_id)>0){
+                    pump_trj_map[esc_id].start = pump_target;
+                    pump_trj_map[esc_id].set_ref = pump_target;
+                }
             }
         }
     }

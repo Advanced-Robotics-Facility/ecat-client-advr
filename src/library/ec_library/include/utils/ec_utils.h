@@ -17,26 +17,15 @@ enum class TrjType : uint8_t
     trj2
 };
 
-enum class LimitPolicy
-{
-    NONE,
-    MARGIN,
-    SCALE
-};
-
-typedef struct TRJ_INFO_t{
+struct TRJ_INFO{
     std::string type;
     std::vector<std::string> limits;
-    std::vector<double> adjustment;
-    LimitPolicy adjustment_type = LimitPolicy::NONE;
-}TRJ_INFO;
+};
 
-
-using trj_info_map = std::map<int, TRJ_INFO>;
-extern const std::map<std::string, trj_info_map> trj_type_map;
+using TrjInfoMap = std::map<int, TRJ_INFO>;
+extern const std::map<std::string, TrjInfoMap> esc_trj_map;
 
 typedef struct ESC_TRJ_t{
-
     int32_t esc_id;
     
     double trj1;

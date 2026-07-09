@@ -7,47 +7,31 @@
 using namespace std;
 using namespace std::chrono;
 
-TRJ_INFO make_trj_info(std::string trj_type,
-                       std::vector<std::string> limits = {},
-                       std::vector<double> factors = {},
-                       LimitPolicy policy = LimitPolicy::NONE)
-{
-    return {std::move(trj_type), std::move(limits), factors, policy};
-}
-
-TRJ_INFO motor_trj_info(std::string trj_type, std::vector<std::string> limits)
-{
-    std::vector<double> factors = {0.95};
-    LimitPolicy policy = LimitPolicy::SCALE;
-
-    if(trj_type == "position"){
-        double factor = 0.5f * M_PI / 180.0f;
-        factors = {factor,-factor};
-        policy = LimitPolicy::MARGIN;
-    }
-    
-    return make_trj_info(trj_type,limits,factors,policy);
-}
-
-const std::map<std::string, trj_info_map> trj_type_map = {
+const std::map<std::string, TrjInfoMap> esc_trj_map = {
     { "motor", {
-        { iit::advr::Gains_Type_POSITION,  motor_trj_info("position",   {"Min_pos", "Max_pos"}) },
-        { iit::advr::Gains_Type_VELOCITY,  motor_trj_info("velocity",   {"Max_vel"})            },
-        { iit::advr::Gains_Type_IMPEDANCE, motor_trj_info("position",   {"Min_pos", "Max_pos"}) },
-        { iit::advr::Gains_Type_TORQUE,    motor_trj_info("torque",     {"Max_tor"})            },
-        { iit::advr::Gains_Type_CURRENT,   motor_trj_info("current",    {"Max_ref"})            }
+        {
+            { iit::advr::Gains_Type_POSITION,  {"position", {"Min_pos", "Max_pos"}} },
+            { iit::advr::Gains_Type_VELOCITY,  {"velocity", {"Max_vel"}} },
+            { iit::advr::Gains_Type_IMPEDANCE, {"position", {"Min_pos", "Max_pos"}} },
+            { iit::advr::Gains_Type_TORQUE,    {"torque",   {"Max_tor"}} },
+            { iit::advr::Gains_Type_CURRENT,   {"current",  {"Max_ref"}} }
+        }
     }},
 
     { "valve", {
-        { iit::advr::Gains_Type_POSITION,  make_trj_info("position") },
-        { iit::advr::Gains_Type_IMPEDANCE, make_trj_info("force") },
-        { iit::advr::Gains_Type_CURRENT,   make_trj_info("current") }
+        {
+            { iit::advr::Gains_Type_POSITION,  { "position", {} } },
+            { iit::advr::Gains_Type_IMPEDANCE, { "force",    {} } },
+            { iit::advr::Gains_Type_CURRENT,   { "current",  {} } }
+        }
     }},
 
-    { "pump", {
-        { 0x39,                            make_trj_info("pwm") },
-        { iit::advr::Gains_Type_VELOCITY,  make_trj_info("velocity")  },
-        { iit::advr::Gains_Type_IMPEDANCE, make_trj_info("pressure") }
+    {"pump",{
+        {
+            { 0x39,                            { "pwm",      {} } },
+            { iit::advr::Gains_Type_VELOCITY,  { "velocity", {} } },
+            { iit::advr::Gains_Type_IMPEDANCE, { "pressure", {} } }
+        }
     }}
 };
 
