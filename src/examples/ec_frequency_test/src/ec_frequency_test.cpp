@@ -41,16 +41,6 @@ int main(int argc, char * const argv[])
         return 1;
     }
 
-    std::map<int,double> homing;
-    if(ec_cfg.trj_config_map.count("motor")>0){
-        homing=ec_cfg.trj_config_map["motor"].homing;    
-    }
-
-    if(homing.empty()){
-        DPRINTF("Got an empty homing position map\n");
-        return 1;
-    }
-
     unsigned long int increment_us = 0;
     if(argv[1] != NULL){
         char* p;
@@ -82,39 +72,27 @@ int main(int argc, char * const argv[])
         float time_elapsed_ms;
         
         bool run=true;        
-        std::map<int, double> motors_set_ref;
 
-        for (const auto &[esc_id, motor_rx_pdo] : motor_status_map){
-            if(homing.count(esc_id)){
-                motors_set_ref[esc_id] = std::get<2>(motor_rx_pdo); // [motor pos];
-            }
+        if (ec_cfg.protocol == "iddp"){
+            // add SIGALRM
+            signal ( SIGALRM, sig_handler );
+            //avoid map swap
+            main_common (&argc, (char*const**)&argv, sig_handler);
+        }
+        else{
+            struct sigaction sa;
+            sa.sa_handler = sig_handler;
+            sa.sa_flags = 0;  // receive will return EINTR on CTRL+C!
+            sigaction(SIGINT,&sa, nullptr);
         }
 
-        if(motors_set_ref.empty()){
-            fatal_error="fatal error: motors references structure empty!";
+        // process scheduling
+        try{
+            ec_wrapper.ec_self_sched(argv[0]);
+        }catch(std::exception& e){
+            std::string error=e.what();
+            fatal_error="fatal error: "+ error;
             run_loop=false;
-        }else{
-            if (ec_cfg.protocol == "iddp"){
-                // add SIGALRM
-                signal ( SIGALRM, sig_handler );
-                //avoid map swap
-                main_common (&argc, (char*const**)&argv, sig_handler);
-            }
-            else{
-                struct sigaction sa;
-                sa.sa_handler = sig_handler;
-                sa.sa_flags = 0;  // receive will return EINTR on CTRL+C!
-                sigaction(SIGINT,&sa, nullptr);
-            }
-
-            // process scheduling
-            try{
-                ec_wrapper.ec_self_sched(argv[0]);
-            }catch(std::exception& e){
-                std::string error=e.what();
-                fatal_error="fatal error: "+ error;
-                run_loop=false;
-            }
         }
        
         auto start_time = std::chrono::high_resolution_clock::now();
@@ -128,12 +106,7 @@ int main(int argc, char * const argv[])
 
             time_elapsed_ms = std::chrono::duration<float, std::milli>(time - start_time).count();
             //DPRINTF("Time elapsed ms: [%f]\n",time_elapsed_ms);
-            
 
-            // ************************* SEND ALWAYS REFERENCES***********************************//
-            for ( const auto &[esc_id, pos_ref] : motors_set_ref){
-                std::get<1>(motor_reference_map[esc_id]) = pos_ref;
-            }
             // ************************* SEND ALWAYS REFERENCES***********************************//
             client->set_motor_reference(motor_reference_map);
             // ************************* SEND ALWAYS REFERENCES***********************************//
