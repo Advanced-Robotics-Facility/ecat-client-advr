@@ -45,6 +45,8 @@ typedef struct ESC_TRJ_t{
     void set_target(double ref);
 }ESC_TRJ;
 
+using EscTrjMap=  std::map<int32_t, ESC_TRJ >;  
+
 class EcUtils
 {
 public:

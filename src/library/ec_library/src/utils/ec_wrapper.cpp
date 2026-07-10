@@ -9,15 +9,15 @@ FtStatusMap ft_status_map;
 // Pump
 PumpStatusMap pump_status_map;
 PumpReferenceMap pump_reference_map;
-std::map<int32_t,ESC_TRJ> pump_trj_map;
+EscTrjMap pump_trj_map;
 // Valve
 ValveStatusMap valve_status_map;
 ValveReferenceMap valve_reference_map;
-std::map<int32_t,ESC_TRJ> valve_trj_map;
+EscTrjMap valve_trj_map;
 // Motor
 MotorStatusMap motor_status_map;
 MotorReferenceMap motor_reference_map;
-std::map<int32_t,ESC_TRJ> motor_trj_map;
+EscTrjMap motor_trj_map;
 
 using namespace std::chrono;
 
