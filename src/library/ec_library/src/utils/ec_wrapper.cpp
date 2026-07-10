@@ -432,10 +432,10 @@ bool EcWrapper::safe_init()
                                                         );
             if(_ec_cfg.device_config_map[esc_id].control_mode_type==iit::advr::Gains_Type_POSITION ||
                _ec_cfg.device_config_map[esc_id].control_mode_type==iit::advr::Gains_Type_IMPEDANCE){
-                    if(motor_trj_map.count(esc_id)>0){
-                        motor_trj_map[esc_id].start = motor_pos;
-                        motor_trj_map[esc_id].set_ref = motor_pos;
-                    }
+                if(motor_trj_map.count(esc_id)>0){
+                    motor_trj_map[esc_id].start = motor_pos;
+                    motor_trj_map[esc_id].set_ref = motor_pos;
+                }
             }
         }
     }
