@@ -223,7 +223,6 @@ int main(int argc, char *const argv[])
                 if (trajectory_counter == ec_cfg.repeat_trj - 1){
                     set_esc_trj(motor_trj_map,TrjType::zero);
                     set_esc_trj(valve_trj_map,TrjType::zero);
-
                 }else{
                     set_esc_trj(motor_trj_map,TrjType::trj2);
                     set_esc_trj(valve_trj_map,TrjType::trj2);

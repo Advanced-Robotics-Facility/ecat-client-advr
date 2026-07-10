@@ -153,7 +153,6 @@ int main(int argc, char * const argv[])
 
             time = time + period;
 
-
             client->write();
             ec_wrapper.log_ec_sys();
             
