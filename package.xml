@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>ecat_client</name>
+  <version>0.0.1</version>
+  <description>ADVR EtherCAT client</description>
+
+  <maintainer email="...">...</maintainer>
+  <license>BSD-3-Clause</license>
+
+  <build_depend>ecat_third_party</build_depend>
+  <build_depend>ecat_master</build_depend>
+
+  <buildtool_depend>cmake</buildtool_depend>
+
+  <export>
+    <build_type>cmake</build_type>
+  </export>
+</package>
