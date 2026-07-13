@@ -76,9 +76,7 @@ if(NOT ${magic_enum_FOUND})
 endif()
 
 find_package(matlogger2 REQUIRED)
-
 find_package(ecat_master REQUIRED COMPONENTS ecat_udp ecat_core)
-# find_package(ecat_master REQUIRED COMPONENTS ecat_udp ecat_core)
 
 # set includes
 include_directories(

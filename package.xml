@@ -7,7 +7,10 @@
   <maintainer email="...">...</maintainer>
   <license>BSD-3-Clause</license>
 
+  <exec_depend>ecat_third_party</exec_depend>
   <build_depend>ecat_third_party</build_depend>
+
+  <exec_depend>ecat_master</exec_depend>
   <build_depend>ecat_master</build_depend>
 
   <buildtool_depend>cmake</buildtool_depend>
