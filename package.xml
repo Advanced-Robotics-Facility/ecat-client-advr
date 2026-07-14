@@ -4,8 +4,8 @@
   <version>0.0.1</version>
   <description>ADVR EtherCAT client</description>
 
-  <maintainer email="...">...</maintainer>
-  <license>BSD-3-Clause</license>
+  <maintainer email="todo@iit.it">Todo</maintainer>
+  <license>Todo</license>
 
   <exec_depend>ecat_third_party</exec_depend>
   <build_depend>ecat_third_party</build_depend>
