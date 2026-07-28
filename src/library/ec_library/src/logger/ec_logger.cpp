@@ -91,6 +91,9 @@ void EcLogger::start_mat_logger()
         } else if(ec_pumps().count(esc_type)>0){
             create_logger("pump_status_logger",esc_id,"pump_sts_id",PumpPdoRx::pdo_size);
             create_logger("pump_reference_logger",esc_id,"pump_ref_id",PumpPdoTx::pdo_size);
+        } else if(ec_grippers().count(esc_type)>0){
+            create_logger("gripper_status_logger",esc_id,"gripper_sts_id",GripperPdoRx::pdo_size);
+            create_logger("gripper_reference_logger",esc_id,"gripper_ref_id",GripperPdoTx::pdo_size);
         } else{
             switch ( esc_type ){
                 case iit::ecat::FT6MSP432_v24:{
@@ -248,6 +251,34 @@ void EcLogger::log_pump_reference(const PumpReferenceMap& pump_reference_map)
         for ( const auto &[esc_id,pump_tx_pdo] : pump_reference_map) {
             if(logger_info->logger_entry.count(esc_id)>0){
                 if(PumpPdoTx::make_vector_from_tuple(pump_tx_pdo,logger_info->logger_row[esc_id])){
+                    logger_info->logger->add(logger_info->logger_entry[esc_id],logger_info->logger_row[esc_id]);
+                }
+            }
+        }
+    }
+}
+
+void EcLogger::log_gripper_status(const GripperStatusMap& gripper_status_map)
+{
+    if(_logger_map.count("gripper_status_logger")>0){
+        auto logger_info = _logger_map["gripper_status_logger"];
+        for ( const auto &[esc_id,gripper_rx_pdo] : gripper_status_map) {
+            if(logger_info->logger_entry.count(esc_id)>0){
+                if(GripperPdoRx::make_vector_from_tuple(gripper_rx_pdo,logger_info->logger_row[esc_id])){
+                    logger_info->logger->add(logger_info->logger_entry[esc_id],logger_info->logger_row[esc_id]);
+                }
+            }
+        }
+    }
+}
+
+void EcLogger::log_gripper_reference(const GripperReferenceMap& gripper_reference_map)
+{
+    if(_logger_map.count("gripper_reference_logger")>0){
+        auto logger_info = _logger_map["gripper_reference_logger"];
+        for ( const auto &[esc_id,gripper_tx_pdo] : gripper_reference_map) {
+            if(logger_info->logger_entry.count(esc_id)>0){
+                if(GripperPdoTx::make_vector_from_tuple(gripper_tx_pdo,logger_info->logger_row[esc_id])){
                     logger_info->logger->add(logger_info->logger_entry[esc_id],logger_info->logger_row[esc_id]);
                 }
             }

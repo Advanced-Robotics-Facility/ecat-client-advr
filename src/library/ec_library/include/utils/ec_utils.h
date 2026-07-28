@@ -69,7 +69,7 @@ private:
     void config_device();
     void trajectory_generator();
     
-    std::vector<std::string> _device_type_vector={"motor","valve","pump"};  
+    std::vector<std::string> _device_type_vector={"motor","valve","pump","gripper"};  
     std::vector<std::string> _robot_path_v={"robot_id_map_path","robot_control_path"};
     std::vector<std::string> _robot_abs_path={"",""};
     YAML::Node _robot_id_map_node;

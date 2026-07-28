@@ -72,6 +72,9 @@ private:
       // last received pump data
       PumpStatusMap _pump_status_map;
       PumpReferenceMap _pump_reference_map,_pump_ref_map;
+      // last received gripper data
+      GripperStatusMap _gripper_status_map;
+      GripperReferenceMap _gripper_reference_map, _gripper_ref_map;
 
       QLCDNumber *_battery_level;
     
@@ -94,6 +97,7 @@ private:
       void read_imu_status();
       void read_valve_status();
       void read_pump_status();
+      void read_gripper_status();
     //************************ READ PDO ******************************
     
     //************************ WRITE PDO ******************************
@@ -103,11 +107,12 @@ private:
       void write_motor_pdo();
       void write_valve_pdo();
       void write_pump_pdo();
+      void write_gripper_pdo();
 
     //************************ WRITE PDO ******************************
 
     //************************ LOG PDO ******************************
-    bool _motors_selected,_valves_selected,_pumps_selected;
+    bool _motors_selected,_valves_selected,_pumps_selected, _grippers_selected;
 
 };
 
