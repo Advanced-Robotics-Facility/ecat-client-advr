@@ -435,6 +435,7 @@ bool EcWrapper::safe_init()
                 if(motor_trj_map.count(esc_id)>0){
                     motor_trj_map[esc_id].start = motor_pos;
                     motor_trj_map[esc_id].set_ref = motor_pos;
+                    motor_trj_map[esc_id].general_trj->set_start_point(motor_pos);
                 }
             }
         }
@@ -462,6 +463,7 @@ bool EcWrapper::safe_init()
                 if(valve_trj_map.count(esc_id)>0){
                     valve_trj_map[esc_id].start = enc_pos;
                     valve_trj_map[esc_id].set_ref = enc_pos;
+                    valve_trj_map[esc_id].general_trj->set_start_point(enc_pos);
                 }
             }
         }
@@ -490,6 +492,7 @@ bool EcWrapper::safe_init()
                 if(pump_trj_map.count(esc_id)>0){
                     pump_trj_map[esc_id].start = pump_target;
                     pump_trj_map[esc_id].set_ref = pump_target;
+                    pump_trj_map[esc_id].general_trj->set_start_point(pump_target);
                 }
             }
         }
