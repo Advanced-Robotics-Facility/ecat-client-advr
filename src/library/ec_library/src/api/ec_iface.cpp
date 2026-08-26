@@ -87,22 +87,20 @@ void EcIface::read()
 
     // Only one thread is allowed to consume queue data.
     const auto consume_status =
-        [](auto& queue, auto& destination) -> bool
+        [this](auto& queue, auto& destination) -> bool
     {
-        // No devices of this type are configured.
         if (destination.empty()) {
             return true;
         }
 
-        const auto available = queue.read_available();
-
-        if (available == 0) {
+        if (queue.read_available() == 0) {
             return false;
         }
 
-        queue.consume_all([&destination](auto* ptr) {
-            destination = std::move(*ptr);
-        });
+        queue.consume_all(
+            [this, &destination](const auto* ptr){
+                this->copy_map_values(destination,*ptr);
+            });
 
         return true;
     };
