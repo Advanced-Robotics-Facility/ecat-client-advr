@@ -89,20 +89,26 @@ void EcIface::read()
     const auto consume_status =
         [this](auto& queue, auto& destination) -> bool
     {
+
         if (destination.empty()) {
             return true;
         }
-
-        if (queue.read_available() == 0) {
+    
+        const auto pending = queue.read_available();
+    
+        if (pending == 0) {
             return false;
         }
-
-        queue.consume_all(
+    
+        for (std::size_t i = 1; i < pending; ++i) {
+            queue.pop();
+        }
+    
+        return queue.consume_one(
             [this, &destination](const auto* ptr){
                 this->copy_map_values(destination,*ptr);
             });
 
-        return true;
     };
 
     bool read_ok = consume_status(_motor_status_queue, _motor_status_map);
