@@ -53,9 +53,9 @@ public:
     
     // EtherCAT Client ADVR Facilty setters
     void set_reference_flag(uint32_t reference_flag);
-    void set_motor_reference(const MotorReferenceMap motor_references);
-    void set_valve_reference(const ValveReferenceMap valve_reference);
-    void set_pump_reference(const PumpReferenceMap pump_reference);
+    void set_motor_reference(const MotorReferenceMap &motor_references);
+    void set_valve_reference(const ValveReferenceMap &valve_reference);
+    void set_pump_reference(const PumpReferenceMap &pump_reference);
     
     // EtherCAT Client ADVR Facilty manager
     virtual void start_client(uint32_t period_ms) = 0;
@@ -118,7 +118,9 @@ protected:
     
 private:
     template <typename T>
-    bool check_maps(const std::map<int32_t,T>& map1,const std::map<int32_t,T>& map2,std::string map_type);
+    bool check_maps(const std::map<int32_t, T>& map1,const std::map<int32_t, T>& map2,const char* map_type);
+    template <typename DestinationMap, typename SourceMap>
+    void copy_map_values(DestinationMap& destination,const SourceMap& source);
     pthread_mutex_t _mutex_update,_mutex_client_thread;
     pthread_cond_t _update_cond,_client_thread_cond;
     pthread_condattr_t _update_attr;

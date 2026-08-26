@@ -84,55 +84,40 @@ void EcIface::set_slaves_info(SSI slave_info)
 void EcIface::read()
 {
     wake_client_thread();
-    //note: only one thread is allowed to pop data
 
-    bool read_ok= _motor_status_map.empty() | 
-                 (_motor_status_queue.read_available()>0);
-    if(_motor_status_queue.read_available()>0){
-        _motor_status_queue.consume_all([this](auto *ptr) { 
-            _motor_status_map = *ptr;
-        });
-    }
+    // Only one thread is allowed to consume queue data.
+    const auto consume_status =
+        [](auto& queue, auto& destination) -> bool
+    {
+        // No devices of this type are configured.
+        if (destination.empty()) {
+            return true;
+        }
 
-    read_ok &= _pow_status_map.empty() | 
-              (_pow_status_queue.read_available()>0);
-    if(_pow_status_queue.read_available()>0){
-        _pow_status_queue.consume_all([this](auto *ptr) { 
-            _pow_status_map = *ptr;
-        });
-    }
+        const auto available = queue.read_available();
 
-    read_ok &= _ft_status_map.empty() | 
-              (_ft_status_queue.read_available()>0);
-    if(_ft_status_queue.read_available()>0){
-        _ft_status_queue.consume_all([this](auto *ptr) { 
-            _ft_status_map = *ptr;
-        });
-    }
+        if (available == 0) {
+            return false;
+        }
 
-    read_ok &= _imu_status_map.empty() | 
-              (_imu_status_queue.read_available()>0);
-    if(_imu_status_queue.read_available()>0){
-        _imu_status_queue.consume_all([this](auto *ptr) {
-            _imu_status_map = *ptr;
+        queue.consume_all([&destination](auto* ptr) {
+            destination = std::move(*ptr);
         });
-    }
 
-    read_ok &= _valve_status_map.empty() | 
-              (_valve_status_queue.read_available()>0);
-    if(_valve_status_queue.read_available()>0){
-        _valve_status_queue.consume_all([this](auto *ptr) { 
-            _valve_status_map = *ptr;
-        });
-    }
+        return true;
+    };
 
-    read_ok &= _pump_status_map.empty() | 
-              (_pump_status_queue.read_available()>0);
-    if(_pump_status_queue.read_available()>0){
-        _pump_status_queue.consume_all([this](auto *ptr) { 
-            _pump_status_map = *ptr;
-        });
-    }
+    bool read_ok = consume_status(_motor_status_queue, _motor_status_map);
+
+    read_ok &= consume_status(_pow_status_queue, _pow_status_map);
+
+    read_ok &= consume_status(_ft_status_queue, _ft_status_map);
+
+    read_ok &= consume_status(_imu_status_queue, _imu_status_map);
+
+    read_ok &= consume_status(_valve_status_queue, _valve_status_map);
+
+    read_ok &= consume_status(_pump_status_queue, _pump_status_map);
 
     // add verbose read option
     if(!read_ok){
@@ -150,12 +135,10 @@ void EcIface::set_reference_flag(uint32_t reference_flag)
     _reference_flag=reference_flag;
 }
 
-void EcIface::set_motor_reference(const MotorReferenceMap motor_reference_map)
+void EcIface::set_motor_reference(const MotorReferenceMap &motor_reference_map)
 {
-    if(check_maps(_motor_reference_map,motor_reference_map,"motor")){
-        _motor_reference_map = motor_reference_map;
-        _write_device[DeviceCtrlType::MOTOR]=true;
-    }
+    copy_map_values(_motor_reference_map,motor_reference_map);
+    _write_device[DeviceCtrlType::MOTOR]=true;
 }
 
 void EcIface::get_ft_status(FtStatusMap &ft_status_map)
@@ -179,12 +162,10 @@ void EcIface::get_valve_status(ValveStatusMap &valve_status_map)
     valve_status_map= _valve_status_map;
 }
 
-void EcIface::set_valve_reference(const ValveReferenceMap valve_reference_map)
+void EcIface::set_valve_reference(const ValveReferenceMap &valve_reference_map)
 {
-    if(check_maps(_valve_reference_map,valve_reference_map,"valve")){
-        _valve_reference_map=valve_reference_map;
-        _write_device[DeviceCtrlType::VALVE]=true;
-    }
+    copy_map_values(_valve_reference_map,valve_reference_map);
+    _write_device[DeviceCtrlType::VALVE]=true;
 }
 
 void EcIface::get_pump_status(PumpStatusMap &pump_status_map)
@@ -192,12 +173,10 @@ void EcIface::get_pump_status(PumpStatusMap &pump_status_map)
     pump_status_map= _pump_status_map;
 }
 
-void EcIface::set_pump_reference(const PumpReferenceMap pump_reference_map)
+void EcIface::set_pump_reference(const PumpReferenceMap &pump_reference_map)
 {
-    if(check_maps(_pump_reference_map,pump_reference_map,"pump")){
-        _pump_reference_map=pump_reference_map;
-        _write_device[DeviceCtrlType::PUMP]=true;
-    }
+    copy_map_values(_pump_reference_map,pump_reference_map);
+    _write_device[DeviceCtrlType::PUMP]=true;
 }
  
 bool EcIface::pdo_aux_cmd_sts(const PAC & pac)
@@ -310,27 +289,53 @@ bool EcIface::updt_client_thread()
 }
 
 template <typename T>
-bool EcIface::check_maps(const std::map<int32_t,T>& map1,const std::map<int32_t,T>& map2,std::string map_type)
+bool EcIface::check_maps(const std::map<int32_t, T>& map1,const std::map<int32_t, T>& map2,const char* map_type)
 {
-    if(map1.size()==0){
-        DPRINTF("No %s detected!\n",map_type.c_str());
+    if (map1.empty()) {
+        DPRINTF("No %s detected!\n", map_type);
         return false;
     }
-    else if(map2.size()==0){
-        DPRINTF("Got an empy %s references map\n",map_type.c_str());
+
+    if (map2.empty()) {
+        DPRINTF("Got an empty %s references map\n", map_type);
         return false;
     }
-    else if(map1.size()!=map2.size()){
-        DPRINTF("Got a different %s references size\n",map_type.c_str());
+
+    if (map1.size() != map2.size()) {
+        DPRINTF("Got a different %s references size\n", map_type);
         return false;
     }
-    else{
-        for ( const auto &[esc_id,tx_pdo] : map2) {
-            if(map1.count(esc_id)==0){
-                DPRINTF("Esc id [%d] is not a %s\n",esc_id,map_type.c_str());
-                return false; 
-            }
+
+    auto first = map1.begin();
+    auto second = map2.begin();
+
+    while (first != map1.end()) {
+        if (first->first != second->first) {
+            DPRINTF(
+                "ESC id [%d] is not a %s\n",
+                second->first,
+                map_type
+            );
+            return false;
         }
+
+        ++first;
+        ++second;
     }
+
     return true;
+}
+
+template <typename DestinationMap, typename SourceMap>
+inline void EcIface::copy_map_values(DestinationMap& destination,const SourceMap& source)
+{
+    auto dst = destination.begin();
+    auto src = source.begin();
+
+    while (dst != destination.end()) {
+        dst->second = src->second;
+
+        ++dst;
+        ++src;
+    }
 }
