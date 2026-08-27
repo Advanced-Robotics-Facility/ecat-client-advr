@@ -281,6 +281,7 @@ bool EcIface::updt_client_thread()
        if(ret!=0){
             if(ret!=ETIMEDOUT){
                 DPRINTF("Error on pthread_cond_timedwait reason: %d\n",ret);
+                pthread_mutex_unlock(&_mutex_update);
                 return false;
             }
        }
