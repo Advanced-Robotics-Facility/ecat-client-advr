@@ -89,12 +89,22 @@ int main(int argc, char * const argv[])
             }
         }
 
-        auto start_time = std::chrono::high_resolution_clock::now();
+        using Clock = std::chrono::steady_clock;
+        using us = std::chrono::microseconds;
+
+        auto start_time = Clock::now();
         auto time = start_time;
         const auto period = std::chrono::nanoseconds(ec_cfg.period_ms * 1000000);
+
+        auto to_us = [](auto duration) -> int64_t {
+            return std::chrono::duration_cast<us>(duration).count();
+        };
         
         while (run_loop && client->get_client_status().run_loop){
+            const auto scheduled_release = time;
+            const auto t0 = Clock::now();
             client->read();
+            const auto t1 = Clock::now();
             
             time_elapsed_ms = std::chrono::duration<float, std::milli>(time - start_time).count();
             //DPRINTF("Time elapsed ms: [%f]\n",time_elapsed_ms);
@@ -120,10 +130,12 @@ int main(int argc, char * const argv[])
                 }else{
                     std::get<2>(motor_reference_map[esc_id]) = motor_trj.set_ref;
                 }
-            }        
+            }  
+            const auto t2 = Clock::now();
             // ************************* SEND ALWAYS REFERENCES***********************************//
             client->set_motor_reference(motor_reference_map);
             // ************************* SEND ALWAYS REFERENCES***********************************//
+            const auto t3 = Clock::now();
 
             time = time + period;
 
@@ -158,17 +170,31 @@ int main(int argc, char * const argv[])
                     tau = alpha = 0;
                 }
             } 
-
+            const auto t4 = Clock::now();
             client->write();
+            const auto t5 = Clock::now();
             ec_wrapper.log_ec_sys();
-            
+            const auto t6 = Clock::now();
             const auto now = std::chrono::high_resolution_clock::now();
 
 #if defined(PREEMPT_RT) || defined(__COBALT__)
             // if less than threshold, print warning (only on rt threads)
-            if (now > time && ec_cfg.protocol == "iddp"){
+            if (t6 > time && ec_cfg.protocol == "iddp"){
                 ++overruns;
-                DPRINTF("main process overruns: %d\n", overruns);
+                DPRINTF(
+                    "OVR #%d wake=%lld read=%lld trj=%lld set_ref=%lld "
+                    "SM=%lld write=%lld log=%lld total=%lld late=%lld us\n",
+                    overruns,
+                    static_cast<long long>(to_us(t0 - scheduled_release)),
+                    static_cast<long long>(to_us(t1 - t0)),
+                    static_cast<long long>(to_us(t2 - t1)),
+                    static_cast<long long>(to_us(t3 - t2)),
+                    static_cast<long long>(to_us(t4 - t3)),
+                    static_cast<long long>(to_us(t5 - t4)),
+                    static_cast<long long>(to_us(t6 - t5)),
+                    static_cast<long long>(to_us(t6 - t0)),
+                    static_cast<long long>(to_us(t6 - time))
+                );
             }
 #endif
             std::this_thread::sleep_until(time);

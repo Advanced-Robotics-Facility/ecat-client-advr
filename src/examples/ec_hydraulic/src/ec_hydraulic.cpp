@@ -94,7 +94,7 @@ int main(int argc, char *const argv[])
             run_loop=false;
         }
 
-        auto start_time = std::chrono::high_resolution_clock::now();
+        auto start_time = std::chrono::steady_clock::now();
         auto time = start_time;
         const auto period = std::chrono::nanoseconds(ec_cfg.period_ms * 1000000);
 
@@ -262,7 +262,7 @@ int main(int argc, char *const argv[])
             client->write();
             ec_wrapper.log_ec_sys();
             
-            const auto now = std::chrono::high_resolution_clock::now();
+            const auto now = std::chrono::steady_clock::now();
 
 #if defined(PREEMPT_RT) || defined(__COBALT__)
             // if less than threshold, print warning (only on rt threads)
