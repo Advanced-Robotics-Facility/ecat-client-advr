@@ -174,12 +174,11 @@ int main(int argc, char * const argv[])
             client->write();
             const auto t5 = Clock::now();
             ec_wrapper.log_ec_sys();
-            const auto t6 = Clock::now();
-            const auto now = std::chrono::high_resolution_clock::now();
+            const auto end = Clock::now();
 
 #if defined(PREEMPT_RT) || defined(__COBALT__)
             // if less than threshold, print warning (only on rt threads)
-            if (t6 > time && ec_cfg.protocol == "iddp"){
+            if (end > time && ec_cfg.protocol == "iddp"){
                 ++overruns;
                 DPRINTF(
                     "OVR #%d wake=%lld read=%lld trj=%lld set_ref=%lld "
@@ -191,9 +190,9 @@ int main(int argc, char * const argv[])
                     static_cast<long long>(to_us(t3 - t2)),
                     static_cast<long long>(to_us(t4 - t3)),
                     static_cast<long long>(to_us(t5 - t4)),
-                    static_cast<long long>(to_us(t6 - t5)),
-                    static_cast<long long>(to_us(t6 - t0)),
-                    static_cast<long long>(to_us(t6 - time))
+                    static_cast<long long>(to_us(end - t5)),
+                    static_cast<long long>(to_us(end - t0)),
+                    static_cast<long long>(to_us(end - time))
                 );
             }
 #endif
