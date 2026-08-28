@@ -117,10 +117,8 @@ protected:
     bool updt_client_thread();
     
 private:
-    template <typename T>
-    bool check_maps(const std::map<int32_t, T>& map1,const std::map<int32_t, T>& map2,const char* map_type);
     template <typename DestinationMap, typename SourceMap>
-    void copy_map_values(DestinationMap& destination,const SourceMap& source);
+    bool copy_map_values(DestinationMap& destination,const SourceMap& source);
     pthread_mutex_t _mutex_update,_mutex_client_thread;
     pthread_cond_t _update_cond,_client_thread_cond;
     pthread_condattr_t _update_attr;

@@ -103,12 +103,16 @@ void EcIface::read()
         for (std::size_t i = 1; i < pending; ++i) {
             queue.pop();
         }
-    
-        return queue.consume_one(
-            [this, &destination](const auto* ptr){
-                this->copy_map_values(destination,*ptr);
+
+
+        bool copy_success = false;
+
+        const bool consumed = queue.consume_one(
+            [this, &destination, &copy_success](const auto* ptr) {
+                copy_success = this->copy_map_values(destination, *ptr);
             });
 
+        return consumed && copy_success;
     };
 
     bool read_ok = consume_status(_motor_status_queue, _motor_status_map);
@@ -141,8 +145,9 @@ void EcIface::set_reference_flag(uint32_t reference_flag)
 
 void EcIface::set_motor_reference(const MotorReferenceMap &motor_reference_map)
 {
-    copy_map_values(_motor_reference_map,motor_reference_map);
-    _write_device[DeviceCtrlType::MOTOR]=true;
+    if(copy_map_values(_motor_reference_map,motor_reference_map)){
+        _write_device[DeviceCtrlType::MOTOR]=true;
+    }
 }
 
 void EcIface::get_ft_status(FtStatusMap &ft_status_map)
@@ -168,8 +173,9 @@ void EcIface::get_valve_status(ValveStatusMap &valve_status_map)
 
 void EcIface::set_valve_reference(const ValveReferenceMap &valve_reference_map)
 {
-    copy_map_values(_valve_reference_map,valve_reference_map);
-    _write_device[DeviceCtrlType::VALVE]=true;
+    if(copy_map_values(_valve_reference_map,valve_reference_map)){
+        _write_device[DeviceCtrlType::VALVE]=true;
+    }
 }
 
 void EcIface::get_pump_status(PumpStatusMap &pump_status_map)
@@ -179,8 +185,9 @@ void EcIface::get_pump_status(PumpStatusMap &pump_status_map)
 
 void EcIface::set_pump_reference(const PumpReferenceMap &pump_reference_map)
 {
-    copy_map_values(_pump_reference_map,pump_reference_map);
-    _write_device[DeviceCtrlType::PUMP]=true;
+    if(copy_map_values(_pump_reference_map,pump_reference_map)){
+        _write_device[DeviceCtrlType::PUMP]=true;
+    }
 }
  
 bool EcIface::pdo_aux_cmd_sts(const PAC & pac)
@@ -293,54 +300,36 @@ bool EcIface::updt_client_thread()
     return true;
 }
 
-template <typename T>
-bool EcIface::check_maps(const std::map<int32_t, T>& map1,const std::map<int32_t, T>& map2,const char* map_type)
-{
-    if (map1.empty()) {
-        DPRINTF("No %s detected!\n", map_type);
-        return false;
-    }
-
-    if (map2.empty()) {
-        DPRINTF("Got an empty %s references map\n", map_type);
-        return false;
-    }
-
-    if (map1.size() != map2.size()) {
-        DPRINTF("Got a different %s references size\n", map_type);
-        return false;
-    }
-
-    auto first = map1.begin();
-    auto second = map2.begin();
-
-    while (first != map1.end()) {
-        if (first->first != second->first) {
-            DPRINTF(
-                "ESC id [%d] is not a %s\n",
-                second->first,
-                map_type
-            );
-            return false;
-        }
-
-        ++first;
-        ++second;
-    }
-
-    return true;
-}
-
 template <typename DestinationMap, typename SourceMap>
-inline void EcIface::copy_map_values(DestinationMap& destination,const SourceMap& source)
+inline bool EcIface::copy_map_values(DestinationMap& destination,const SourceMap& source)
 {
+
+    if (destination.empty() || source.empty()) {
+        DPRINTF("Empty %s map!\n",destination.empty() ? 
+                                 "destination" : "source");
+        return false;
+    }
+
+    if (destination.size() != source.size()) {
+        DPRINTF("Got different size of destination and source maps\n");
+        return false;
+    }
+
     auto dst = destination.begin();
     auto src = source.begin();
 
     while (dst != destination.end()) {
+        
+        if (dst->first != src->first) {
+            DPRINTF("ESC id [%d] is not the destination map\n",src->first);
+            return false;
+        }
+
         dst->second = src->second;
 
         ++dst;
         ++src;
     }
+
+    return true;
 }
