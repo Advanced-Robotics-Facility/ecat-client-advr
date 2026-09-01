@@ -9,7 +9,7 @@ network:
 
 general:
   period_ms: 1
-  logging: true
+  logging: false
 
 robot:
   robot_id_map_path: &robot_id_map_path '${PWD}/robot_id_map/robot_id_map.yaml' 
