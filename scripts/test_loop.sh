@@ -1,15 +1,17 @@
 #!/bin/sh
-set -e
+
 while true
 do
-    ec_hydraulic  &  
-    pid=$(pgrep ec_hydraulic)
-    wait $pid
-    if [ $? -eq 0 ]; then
-    	echo "Success!!"
+    ec_simple_trajectory &
+    pid=$!
+
+    wait "$pid"
+    status=$?
+
+    if [ "$status" -eq 0 ]; then
+        echo "Success!! Restarting..."
     else
-    	echo "Error:" $?
-    	exit
+        echo "Error: $status"
+        exit "$status"
     fi
 done
-
