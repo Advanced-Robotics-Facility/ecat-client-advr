@@ -30,13 +30,13 @@ int main(int argc, char * const argv[])
         return 1;
     }
 
-    std::map<int,double> homing,trajectory;
+    std::map<int,double> moto_homing,grp_homing;
     if(ec_cfg.trj_config_map.count("motor")>0){
-        homing=ec_cfg.trj_config_map["motor"].homing;    
-        trajectory=ec_cfg.trj_config_map["motor"].trajectory;    
+        moto_homing=ec_cfg.trj_config_map["motor"].homing;    
+        grp_homing=ec_cfg.trj_config_map["gripper"].trajectory;    
     }
 
-    if(homing.empty()){
+    if(moto_homing.empty() && grp_homing.empty()){
         DPRINTF("Got an empty homing position map\n");
         return 1;
     }
@@ -62,8 +62,8 @@ int main(int argc, char * const argv[])
         int trajectory_counter=0;
         float tau=0,alpha=0;
 
-        if(motor_trj_map.empty()){
-            fatal_error="fatal error: motors references structure empty!";
+        if(motor_trj_map.empty() && gripper_trj_map.empty()){
+            fatal_error="fatal error: devices references structure empty!";
             run_loop=false;
         }else{           
             if (ec_cfg.protocol == "iddp"){
@@ -131,11 +131,26 @@ int main(int argc, char * const argv[])
                     std::get<2>(motor_reference_map[esc_id]) = motor_trj.set_ref;
                 }
             }  
+            // ************************* SEND ALWAYS REFERENCES***********************************//
+            if(!motor_trj_map.empty()){
+                client->set_motor_reference(motor_reference_map);
+            }
+            // ************************* SEND ALWAYS REFERENCES***********************************//
+
+            for (auto &[esc_id, gripper_trj] : gripper_trj_map){
+                int ctrl_mode= ec_cfg.device_config_map[esc_id].control_mode_type;
+                gripper_trj.set_target(gripper_trj.start + alpha * (gripper_trj.set_trj - gripper_trj.start));
+                if(ctrl_mode == iit::advr::Gains_Type_POSITION){
+                    std::get<1>(gripper_reference_map[esc_id]) = gripper_trj.set_ref;
+                }
+            }  
+            // ************************* SEND ALWAYS REFERENCES***********************************//
+            if(!gripper_trj_map.empty()){
+                client->set_gripper_reference(gripper_reference_map);
+            }
+            // ************************* SEND ALWAYS REFERENCES***********************************//
+
             const auto t2 = Clock::now();
-            // ************************* SEND ALWAYS REFERENCES***********************************//
-            client->set_motor_reference(motor_reference_map);
-            // ************************* SEND ALWAYS REFERENCES***********************************//
-            const auto t3 = Clock::now();
 
             time = time + period;
 
@@ -146,9 +161,11 @@ int main(int argc, char * const argv[])
 
                 if (trajectory_counter == ec_cfg.repeat_trj - 1){
                     set_esc_trj(motor_trj_map,TrjType::zero);
+                    set_esc_trj(gripper_trj_map,TrjType::zero);
 
                 }else{
                     set_esc_trj(motor_trj_map,TrjType::trj2);
+                    set_esc_trj(gripper_trj_map,TrjType::trj2);
                 }
 
                 tau = alpha = 0;
@@ -166,22 +183,23 @@ int main(int argc, char * const argv[])
                     set_trj_time_ms = hm_time_ms;
                     
                     set_esc_trj(motor_trj_map,TrjType::trj1);
+                    set_esc_trj(gripper_trj_map,TrjType::trj1);
 
                     tau = alpha = 0;
                 }
             } 
-            const auto t4 = Clock::now();
+            const auto t3 = Clock::now();
             client->write();
-            const auto t5 = Clock::now();
+            const auto t4 = Clock::now();
             ec_wrapper.log_ec_sys();
             const auto end = Clock::now();
 
-#if defined(PREEMPT_RT) || defined(__COBALT__)
+//#if defined(PREEMPT_RT) || defined(__COBALT__)
             // if less than threshold, print warning (only on rt threads)
             if (end > time && ec_cfg.protocol == "iddp"){
                 ++overruns;
                 DPRINTF(
-                    "OVR #%d wake=%lld read=%lld trj=%lld set_ref=%lld "
+                    "OVR #%d wake=%lld read=%lld trj + set_ref=%lld "
                     "SM=%lld write=%lld log=%lld total=%lld late=%lld us\n",
                     overruns,
                     static_cast<long long>(to_us(t0 - scheduled_release)),
@@ -189,13 +207,12 @@ int main(int argc, char * const argv[])
                     static_cast<long long>(to_us(t2 - t1)),
                     static_cast<long long>(to_us(t3 - t2)),
                     static_cast<long long>(to_us(t4 - t3)),
-                    static_cast<long long>(to_us(t5 - t4)),
-                    static_cast<long long>(to_us(end - t5)),
+                    static_cast<long long>(to_us(end - t4)),
                     static_cast<long long>(to_us(end - t0)),
                     static_cast<long long>(to_us(end - time))
                 );
             }
-#endif
+//#endif
             std::this_thread::sleep_until(time);
         }           
     }

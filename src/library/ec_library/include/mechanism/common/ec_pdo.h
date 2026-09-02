@@ -33,6 +33,9 @@ class EcPdo: public virtual EcIface
         
         void read_pump_pdo();
         void write_pump_pdo();
+
+        void read_gripper_pdo();
+        void write_gripper_pdo();
         
         std::map<int, std::shared_ptr<MotorPdo<T>>> _moto_pdo_map;
         std::map<int, std::shared_ptr<FtPdo<T>>> _ft_pdo_map;
@@ -40,6 +43,7 @@ class EcPdo: public virtual EcIface
         std::map<int, std::shared_ptr<ImuPdo<T>>> _imu_pdo_map;
         std::map<int, std::shared_ptr<ValvePdo<T>>> _valve_pdo_map;
         std::map<int, std::shared_ptr<PumpPdo<T>>> _pump_pdo_map;
+        std::map<int, std::shared_ptr<GripperPdo<T>>> _gripper_pdo_map;
         
         std::string _protocol;
         std::string _host_address;

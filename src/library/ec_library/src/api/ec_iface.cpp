@@ -50,7 +50,7 @@ EcIface::EcIface()
         createLogger("console","client");
         _consoleLog=spdlog::get("console");
     }
-    _write_device={false,false,false};
+    _write_device={false,false,false,false};
     
     _consoleLog->info("EtherCAT Client initialized");
 }
@@ -127,6 +127,8 @@ void EcIface::read()
 
     read_ok &= consume_status(_pump_status_queue, _pump_status_map);
 
+    read_ok &= consume_status(_gripper_status_queue, _gripper_status_map);
+
     // add verbose read option
     if(!read_ok){
         //DPRINTF("No new data to read for some slave...\n");
@@ -187,6 +189,18 @@ void EcIface::set_pump_reference(const PumpReferenceMap &pump_reference_map)
 {
     if(copy_map_values(_pump_reference_map,pump_reference_map)){
         _write_device[DeviceCtrlType::PUMP]=true;
+    }
+}
+
+void EcIface::get_gripper_status(GripperStatusMap &gripper_status_map)
+{
+    gripper_status_map = _gripper_status_map;
+}
+
+void EcIface::set_gripper_reference(const GripperReferenceMap &gripper_reference_map)
+{
+    if(copy_map_values(_gripper_reference_map,gripper_reference_map)){
+        _write_device[DeviceCtrlType::GRIPPER] = true;
     }
 }
  

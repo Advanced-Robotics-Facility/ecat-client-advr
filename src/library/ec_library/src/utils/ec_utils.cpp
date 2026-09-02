@@ -32,6 +32,14 @@ const std::map<std::string, TrjInfoMap> esc_trj_map = {
             { iit::advr::Gains_Type_VELOCITY,  { "velocity", {} } },
             { iit::advr::Gains_Type_IMPEDANCE, { "pressure", {} } }
         }
+    }},
+
+    {"gripper",{
+        {
+            { iit::advr::Gains_Type_POSITION,  {"position", {"Min_pos", "Max_pos"}} },
+            { iit::advr::Gains_Type_VELOCITY,  {"velocity", {"Max_vel"}} },
+            { iit::advr::Gains_Type_IMPEDANCE, {"force",    {"Max_tor"}} }
+        }
     }}
 };
 
@@ -273,7 +281,7 @@ void EcUtils::device_config_map(const YAML::Node & device_config_node,std::strin
                             _ec_cfg.device_config_map[esc_id].type=iit::ecat::NOVANTA;
                         } else if(type_str=="Amc"){
                             _ec_cfg.device_config_map[esc_id].type=iit::ecat::AMC;
-                        }else{
+                        } else{
                             _ec_cfg.device_config_map[esc_id].type=iit::ecat::CENTAC_v15;
                         }
                     }
@@ -283,6 +291,16 @@ void EcUtils::device_config_map(const YAML::Node & device_config_node,std::strin
                 }
                 else if(device_type=="pump"){
                     _ec_cfg.device_config_map[esc_id].type=iit::ecat::HYQ_HPU;
+                }
+                else if(device_type=="gripper"){
+                    _ec_cfg.device_config_map[esc_id].type = iit::ecat::SCHUNKGRIPPER_v29;
+    
+                    if(device_config_node[esc_name]["gripper_type"]){
+                        std::string type_str = device_config_node[esc_name]["gripper_type"].as<std::string>();
+                        if(type_str == "Schunk"){
+                            _ec_cfg.device_config_map[esc_id].type = iit::ecat::SCHUNKGRIPPER_v29;
+                        }
+                    }
                 }
                 else{
                     throw std::runtime_error("Error: cannot find a device type for id: "+std::to_string(esc_id));
