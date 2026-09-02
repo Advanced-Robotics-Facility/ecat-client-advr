@@ -104,12 +104,11 @@ void EcIface::read()
             queue.pop();
         }
 
-
         bool copy_success = false;
 
         const bool consumed = queue.consume_one(
-            [this, &destination, &copy_success](const auto* ptr) {
-                copy_success = this->copy_map_values(destination, *ptr);
+            [this, &destination, &copy_success](const auto ptr) {
+                copy_success = this->copy_map_values(destination, ptr);
             });
 
         return consumed && copy_success;
