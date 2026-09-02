@@ -12,9 +12,9 @@ motor:
 
 gripper:
   config_path: ${PWD}/gripper/robot_pos3b.yaml
-  id: [10]
+  id: [9]
   set_point: {position: 1.0} 
-  homing: [1.0]
+  homing: [0.5]
   trajectory: [2.0] 
 
 valve:
