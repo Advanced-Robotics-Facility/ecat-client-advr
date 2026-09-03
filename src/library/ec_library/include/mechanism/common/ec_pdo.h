@@ -21,22 +21,6 @@ class EcPdo: public virtual EcIface
         template<typename MapPdo>
         void get_init_rx_pdo(const MapPdo& pdo_map);
         
-        void read_motor_pdo();
-        void write_motor_pdo();
-        
-        void read_ft_pdo();
-        void read_imu_pdo();
-        void read_pow_pdo();
-        
-        void read_valve_pdo();
-        void write_valve_pdo();
-        
-        void read_pump_pdo();
-        void write_pump_pdo();
-
-        void read_gripper_pdo();
-        void write_gripper_pdo();
-        
         std::map<int, std::shared_ptr<MotorPdo<T>>> _moto_pdo_map;
         std::map<int, std::shared_ptr<FtPdo<T>>> _ft_pdo_map;
         std::map<int, std::shared_ptr<PowPdo<T>>> _pow_pdo_map;

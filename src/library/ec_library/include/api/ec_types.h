@@ -53,17 +53,30 @@ inline const std::map<uint32_t,std::string>& ec_grippers(){
     return instance;
 }  
 
-using MotorStatusMap =    std::map<int32_t, MotorPdoRx::pdo_t>;
-using MotorReferenceMap=  std::map<int32_t, MotorPdoTx::pdo_t>; 
-using PwrStatusMap=       std::map<int32_t, PowPdoRx::pdo_t>;
-using FtStatusMap=        std::map<int32_t, FtPdoRx::pdo_t>;
-using ImuStatusMap=       std::map<int32_t, ImuPdoRx::pdo_t>;
-using ValveStatusMap=     std::map<int32_t, ValvePdoRx::pdo_t>;
-using ValveReferenceMap=  std::map<int32_t, ValvePdoTx::pdo_t>;    
-using PumpStatusMap =     std::map<int32_t, PumpPdoRx::pdo_t>;
-using PumpReferenceMap=   std::map<int32_t, PumpPdoTx::pdo_t >;     
-using GripperStatusMap=   std::map<int32_t, GripperPdoRx::pdo_t>;
-using GripperReferenceMap=std::map<int32_t, GripperPdoTx::pdo_t >;     
+using MotorStatusMap =      std::map<int32_t, MotorPdoRx::pdo_t>;
+using MotorStatus=          std::vector<MotorPdoRx::pdo_t>;
+using MotorReferenceMap=    std::map<int32_t, MotorPdoTx::pdo_t>; 
+
+using PwrStatusMap=         std::map<int32_t, PowPdoRx::pdo_t>;
+using PwrStatus=            std::vector<PowPdoRx::pdo_t>;
+
+using FtStatusMap=          std::map<int32_t, FtPdoRx::pdo_t>;
+using FtStatus=             std::vector<FtPdoRx::pdo_t>;
+
+using ImuStatusMap=         std::map<int32_t, ImuPdoRx::pdo_t>;
+using ImuStatus=            std::vector<ImuPdoRx::pdo_t>;
+
+using ValveStatusMap=       std::map<int32_t, ValvePdoRx::pdo_t>;
+using ValveStatus=          std::vector<ValvePdoRx::pdo_t>;
+using ValveReferenceMap=    std::map<int32_t, ValvePdoTx::pdo_t>;    
+
+using PumpStatusMap =       std::map<int32_t, PumpPdoRx::pdo_t>;
+using PumpStatus=           std::vector<PumpPdoRx::pdo_t>;
+using PumpReferenceMap=     std::map<int32_t, PumpPdoTx::pdo_t >;     
+
+using GripperStatusMap=     std::map<int32_t, GripperPdoRx::pdo_t>;
+using GripperStatus=        std::vector<GripperPdoRx::pdo_t>;
+using GripperReferenceMap=  std::map<int32_t, GripperPdoTx::pdo_t >;     
                       
 // DevicesStarT
 using DST = std::vector<std::tuple<int32_t, int32_t, std::vector<float>>>;

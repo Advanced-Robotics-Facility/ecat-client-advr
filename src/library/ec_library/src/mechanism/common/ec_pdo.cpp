@@ -54,53 +54,62 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                 case iit::ecat::LP:{
                     auto advrf_pdo = std::make_shared<AdvrfPdo<T>>(_ec_pdo_start, id, esc_type);
                     _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(advrf_pdo);
-                    _internal_motor_status_map[id]=_motor_status_map[id]=  advrf_pdo->rx_pdo;
+                    _motor_status_map[id]=  advrf_pdo->rx_pdo;
                     _motor_reference_map[id]= advrf_pdo->tx_pdo;
                 }break;
                 default:{ //default cia402
                     auto cia402_pdo = std::make_shared<Cia402Pdo<T>>(_ec_pdo_start, id, esc_type);
                     _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(cia402_pdo);
-                    _internal_motor_status_map[id]=_motor_status_map[id]=  cia402_pdo->rx_pdo;
+                    _motor_status_map[id]=  cia402_pdo->rx_pdo;
                     _motor_reference_map[id]= cia402_pdo->tx_pdo;
                 }break;
             }
         } else if(ec_valves().count(esc_type)>0){
             auto valve_pdo = std::make_shared<ValvePdo<T>>(_ec_pdo_start, id, esc_type);
             _valve_pdo_map[id]=valve_pdo;
-            _internal_valve_status_map[id]=_valve_status_map[id]=  valve_pdo->rx_pdo;
+            _valve_status_map[id]=  valve_pdo->rx_pdo;
             _valve_reference_map[id]= valve_pdo->tx_pdo;
         } else if(ec_pumps().count(esc_type)>0){
             auto pump_pdo = std::make_shared<PumpPdo<T>>(_ec_pdo_start, id, esc_type);
             _pump_pdo_map[id]=pump_pdo;
-            _internal_pump_status_map[id]=_pump_status_map[id]= pump_pdo->rx_pdo;
+            _pump_status_map[id]= pump_pdo->rx_pdo;
             _pump_reference_map[id]= pump_pdo->tx_pdo;
         } else if(ec_grippers().count(esc_type)>0){
             auto gripper_pdo = std::make_shared<GripperPdo<T>>(_ec_pdo_start, id, esc_type);
             _gripper_pdo_map[id]=gripper_pdo;
-            _internal_gripper_status_map[id]=_gripper_status_map[id]= gripper_pdo->rx_pdo;
+            _gripper_status_map[id]= gripper_pdo->rx_pdo;
             _gripper_reference_map[id]= gripper_pdo->tx_pdo;
         } else{
             switch ( esc_type ){
                 case iit::ecat::FT6MSP432_v24:{
                     auto ft_pdo = std::make_shared<FtPdo<T>>(_ec_pdo_start, id, esc_type);
                     _ft_pdo_map[id]=ft_pdo;
-                    _internal_ft_status_map[id]=_ft_status_map[id]= ft_pdo->rx_pdo;
+                    _ft_status_map[id]= ft_pdo->rx_pdo;
                 }break;   
                 case iit::ecat::IMUVN :{
                     auto imu_pdo = std::make_shared<ImuPdo<T>>(_ec_pdo_start, id, esc_type);
                     _imu_pdo_map[id]=imu_pdo;
-                    _internal_imu_status_map[id]=_imu_status_map[id]= imu_pdo->rx_pdo;
+                    _imu_status_map[id]= imu_pdo->rx_pdo;
                 }break;
                 case iit::ecat::POWF28M36 :{
                     auto pow_pdo = std::make_shared<PowPdo<T>>(_ec_pdo_start, id, esc_type);
                     _pow_pdo_map[id]=pow_pdo;
-                    _internal_pow_status_map[id]=_pow_status_map[id]= pow_pdo->rx_pdo;
+                    _pow_status_map[id]= pow_pdo->rx_pdo;
                 }break;
                 default:
                     break;
             }
         }               
     }
+
+    _internal_motor_status.resize(_motor_status_map.size());
+    _internal_valve_status.resize(_valve_status_map.size());
+    _internal_pump_status.resize(_pump_status_map.size());
+    _internal_gripper_status.resize(_gripper_status_map.size());
+
+    _internal_ft_status.resize(_ft_status_map.size());
+    _internal_imu_status.resize(_imu_status_map.size());
+    _internal_pow_status.resize(_pow_status_map.size());
 } 
 
 template < class T >
@@ -144,47 +153,6 @@ bool EcPdo<T>::init_read_pdo()
     return _init_read_pdo;
 }
 
-template < class T >
-void EcPdo<T>::read_pdo()
-{
-    read_motor_pdo();
-    
-    read_ft_pdo();
-    
-    read_imu_pdo();
-    
-    read_pow_pdo();
-    
-    read_valve_pdo();
-    
-    read_pump_pdo();
-
-    read_gripper_pdo();
-}
-
-template < class T >
-void EcPdo<T>::write_pdo()
-{
-    if(_write_device[DeviceCtrlType::MOTOR]){
-        write_motor_pdo();
-        _write_device[DeviceCtrlType::MOTOR]=false;
-    }
-    
-    if(_write_device[DeviceCtrlType::VALVE]){
-        write_valve_pdo();
-        _write_device[DeviceCtrlType::VALVE]=false;
-    }
-
-    if(_write_device[DeviceCtrlType::PUMP]){
-        write_pump_pdo();
-        _write_device[DeviceCtrlType::PUMP]=false;
-    }
-
-    if(_write_device[DeviceCtrlType::GRIPPER]){ 
-        write_gripper_pdo();
-        _write_device[DeviceCtrlType::GRIPPER]=false;
-    }
-}
 
 template <class T > 
 template <typename MapPdo>
@@ -204,223 +172,95 @@ void EcPdo<T>::get_init_rx_pdo(const MapPdo& pdo_map)
 }
 
 template < class T >
-void EcPdo<T>::read_motor_pdo()
+void EcPdo<T>::read_pdo()
 {
-    for (auto const &[id,motor_pdo] : _moto_pdo_map )  {
-        try { 
-            ///////////////////////////////////////////////////////////////
-            // read
-            int nbytes=0;
-            do {
-                // read protobuf data
-                nbytes = motor_pdo->read();
-            } while ( nbytes > 0);
+    const auto read_esc_pdo =
+    [this](auto& pdo_map, auto& pdo_status,auto& queue) -> void
+    {
 
-            _internal_motor_status_map[id]=motor_pdo->rx_pdo;
-            //////////////////////////////////////////////////////////////
+        if(pdo_map.empty()){
+            return;
         }
-        
-        catch ( const std::out_of_range &e) {};   
-    }
 
-    get_init_rx_pdo(_moto_pdo_map);
-    if(!_internal_motor_status_map.empty()){
-        _motor_status_queue.push(&_internal_motor_status_map);
-    }
-}
+        std::size_t index = 0;
 
-template < class T >
-void EcPdo<T>::write_motor_pdo()
-{
-    for (auto &[id,motor_pdo] : _moto_pdo_map ) {
-        motor_pdo->tx_pdo=_motor_reference_map[id];
+        for (auto const &[id,pdo] : pdo_map )  {
+            try { 
+                ///////////////////////////////////////////////////////////////
+                // read
+                int nbytes=0;
+                do {
+                    // read protobuf data
+                    nbytes = pdo->read();
+                } while ( nbytes > 0);
 
-        auto ctrl_type=std::get<0>(motor_pdo->tx_pdo);
-        if(ctrl_type!=0x00){
-            if (iit::advr::Gains_Type_IsValid(ctrl_type) ) {
-                //write 
-                motor_pdo->write();
+                pdo_status[index]=pdo->rx_pdo;
+                //////////////////////////////////////////////////////////////
             }
-            else{
-                DPRINTF("Control mode not recognized for id 0x%04X \n", id);
-            }
-        }
-    }
-}
-
-template < class T >
-void EcPdo<T>::read_ft_pdo()
-{
-    for (auto const &[id,ft_pdo] : _ft_pdo_map )  {
-        try { 
-            ///////////////////////////////////////////////////////////////
-            // read
-            int nbytes=0;
-            do {
-                // read protobuf data
-                nbytes = ft_pdo->read();
-            } while ( nbytes > 0);
-
-            _internal_ft_status_map[id]=ft_pdo->rx_pdo;
-            //////////////////////////////////////////////////////////////
-        }
-        catch ( const std::out_of_range &e) {};   
-    }
-
-    get_init_rx_pdo(_ft_pdo_map);
-    if(!_internal_ft_status_map.empty()){
-        _ft_status_queue.push(&_internal_ft_status_map);
-    }
-}
-template < class T >
-void EcPdo<T>::read_imu_pdo()
-{
-    for (auto const &[id,imu_pdo] : _imu_pdo_map )  {
-        try { 
-            ///////////////////////////////////////////////////////////////
-            // read
-            int nbytes=0;
-            do {
-                // read protobuf data
-                nbytes = imu_pdo->read();
-            } while ( nbytes > 0);
-
-            _internal_imu_status_map[id]=imu_pdo->rx_pdo;
-            //////////////////////////////////////////////////////////////
-        }
-        catch ( const std::out_of_range &e) {}; 
-    }
-
-    get_init_rx_pdo(_imu_pdo_map);
-    if(!_internal_imu_status_map.empty()){
-        _imu_status_queue.push(&_internal_imu_status_map);
-    }
-}
-
-template < class T >
-void EcPdo<T>::read_pow_pdo()
-{
-    for (auto const &[id,pow_pdo] : _pow_pdo_map )  {
-        try { 
-            ///////////////////////////////////////////////////////////////
-            // read
-            int nbytes=0;
-            do {
-                // read protobuf data
-                nbytes = pow_pdo->read();
-            } while ( nbytes > 0);
-
-            _internal_pow_status_map[id]=pow_pdo->rx_pdo;
-            //////////////////////////////////////////////////////////////
-        }
-        catch ( const std::out_of_range &e) {};     
-    }
-
-    get_init_rx_pdo(_pow_pdo_map);
-    if(!_internal_pow_status_map.empty()){
-        _pow_status_queue.push(&_internal_pow_status_map);
-    }
-}
-
-template < class T >
-void EcPdo<T>::read_valve_pdo()
-{
-    for (auto const &[id,valve_pdo] : _valve_pdo_map )  {
-        try { 
-            ///////////////////////////////////////////////////////////////
-            // read
-            int nbytes=0,count_read=0;
-            do {
-                // read protobuf data
-                nbytes = valve_pdo->read();
-                if(nbytes>0){
-                    count_read++;
-                }
-            } while ( nbytes > 0);
             
-            _internal_valve_status_map[id]=valve_pdo->rx_pdo;
-            //////////////////////////////////////////////////////////////
+            catch ( const std::out_of_range &e) {};  
+
+            ++index;
         }
-        catch ( const std::out_of_range &e) {};  
-    }
 
-    get_init_rx_pdo(_valve_pdo_map);
-    if(!_internal_valve_status_map.empty()){
-        _valve_status_queue.push(&_internal_valve_status_map);
-    }
-}
-
-template < class T >
-void EcPdo<T>::write_valve_pdo()
-{
-    for (auto &[id,valve_pdo] : _valve_pdo_map ) {
-        valve_pdo->tx_pdo=_valve_reference_map[id];
-        //write 
-        valve_pdo->write();
-    }
-}
-
-template < class T >
-void EcPdo<T>::read_pump_pdo()
-{
-    for (auto const &[id,pump_pdo] : _pump_pdo_map )  {
-        try { 
-            ///////////////////////////////////////////////////////////////
-            // read
-            int nbytes=0;
-            do {
-                // read protobuf data
-                nbytes = pump_pdo->read();
-            } while ( nbytes > 0);
-
-            _internal_pump_status_map[id]=pump_pdo->rx_pdo;
-            //////////////////////////////////////////////////////////////
+        get_init_rx_pdo(pdo_map);
+        if(!pdo_status.empty()){
+            queue.push(pdo_status);
         }
-        catch ( const std::out_of_range &e) {};  
-    }
 
-    get_init_rx_pdo(_pump_pdo_map);
-    if(!_internal_pump_status_map.empty()){
-        _pump_status_queue.push(&_internal_pump_status_map);
-    }
+    };
+
+    read_esc_pdo(_moto_pdo_map,_internal_motor_status,_motor_status_queue);
+    read_esc_pdo(_ft_pdo_map,_internal_ft_status,_ft_status_queue);
+    read_esc_pdo(_imu_pdo_map,_internal_imu_status,_imu_status_queue);
+    read_esc_pdo(_pow_pdo_map,_internal_pow_status,_pow_status_queue);
+    read_esc_pdo(_valve_pdo_map,_internal_valve_status,_valve_status_queue);
+    read_esc_pdo(_pump_pdo_map,_internal_pump_status,_pump_status_queue);
+    read_esc_pdo(_gripper_pdo_map,_internal_gripper_status,_gripper_status_queue);
 }
 
-template < class T >
-void EcPdo<T>::write_pump_pdo()
-{
-    for (auto &[id,pump_pdo] : _pump_pdo_map)  {
-        pump_pdo->tx_pdo=_pump_reference_map[id];
-        //write 
-        pump_pdo->write();
-    }
-}
+
+template<int Index>
+using CtrlIndex = std::integral_constant<int, Index>;
 
 template < class T >
-void EcPdo<T>::read_gripper_pdo()
+void EcPdo<T>::write_pdo()
 {
-    for (auto const &[id, gripper_pdo] : _gripper_pdo_map) {
-        try {
-            int nbytes = 0;
-            do {
-                nbytes = gripper_pdo->read();
-            } while (nbytes > 0);
-            _internal_gripper_status_map[id] = gripper_pdo->rx_pdo;
+    const auto write_esc_pdo =
+    [this](const auto& dev_type,auto& pdo_map,const auto& ref_map,auto ctrl_index)
+    {
+        constexpr int index = decltype(ctrl_index)::value;
+
+        if (!_write_device[dev_type]) {
+            return;
         }
-        catch (const std::out_of_range &e) {};
-    }
-    get_init_rx_pdo(_gripper_pdo_map);
-    if (!_internal_gripper_status_map.empty()) {
-        _gripper_status_queue.push(&_internal_gripper_status_map);
-    }
-}
 
-template < class T >
-void EcPdo<T>::write_gripper_pdo()
-{
-    for (auto &[id, gripper_pdo] : _gripper_pdo_map) {
-        gripper_pdo->tx_pdo = _gripper_reference_map[id];
-        gripper_pdo->write();
-    }
+        for (auto& [id, pdo] : pdo_map) {
+            pdo->tx_pdo = ref_map.at(id);
+
+            if constexpr (index >= 0) {
+                const auto ctrl_type = std::get<index>(pdo->tx_pdo);
+
+                if (ctrl_type == 0x00) {
+                    continue;
+                }
+
+                if (!iit::advr::Gains_Type_IsValid(ctrl_type)) {
+                    DPRINTF("Control mode not recognized for id 0x%04X\n",id);
+                    continue;
+                }
+            }
+
+            pdo->write();
+        }
+
+        _write_device[dev_type] = false;
+    };
+
+    write_esc_pdo(DeviceCtrlType::MOTOR,   _moto_pdo_map,    _motor_reference_map,   CtrlIndex<0>{});   // motor ctrl mode--> index 0
+    write_esc_pdo(DeviceCtrlType::VALVE,   _valve_pdo_map,   _valve_reference_map,   CtrlIndex<-1>{});  // no ctrl mode
+    write_esc_pdo(DeviceCtrlType::PUMP,    _pump_pdo_map,    _pump_reference_map,    CtrlIndex<-1>{});  // no ctrl mode
+    write_esc_pdo(DeviceCtrlType::GRIPPER, _gripper_pdo_map, _gripper_reference_map, CtrlIndex<-1>{});  // no ctrl mode
 }
 
 template class EcPdo<EcPipePdo>;

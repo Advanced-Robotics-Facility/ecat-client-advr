@@ -108,9 +108,23 @@ void EcIface::read()
         bool copy_success = false;
 
         const bool consumed = queue.consume_one(
-            [this, &destination, &copy_success](const auto* ptr) {
-                copy_success = this->copy_map_values(destination, *ptr);
-            });
+            [this, &destination, &copy_success](const auto pdo_sts) {
+                
+                if(pdo_sts.size() != destination.size()){
+                    DPRINTF("Got different size of destination map and pdo status\n");
+                    return;
+                }
+
+                std::size_t index = 0;
+
+                for (auto& entry : destination) {
+                    entry.second = pdo_sts[index];
+                    ++index;
+                }
+    
+                copy_success = true;
+        });
+
 
         return consumed && copy_success;
     };
