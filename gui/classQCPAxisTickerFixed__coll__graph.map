@@ -1,0 +1,5 @@
+<map id="QCPAxisTickerFixed" name="QCPAxisTickerFixed">
+<area shape="rect" id="Node000001" title="Specialized axis ticker with a fixed tick step." alt="" coords="9,519,174,704"/>
+<area shape="rect" id="Node000002" href="$classQCPAxisTicker.html" title="The base class tick generator used by QCPAxis to create tick positions and tick labels." alt="" coords="5,5,177,471"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="94,484,94,518,89,518,89,484"/>
+</map>

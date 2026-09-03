@@ -1,0 +1,15 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$classQCPAxisTicker.html" title="The base class tick generator used by QCPAxis to create tick positions and tick labels." alt="" coords="5,129,120,155"/>
+<area shape="rect" id="Node000001" href="$classQCPAxisTickerDateTime.html" title="Specialized axis ticker for calendar dates and times as axis ticks." alt="" coords="168,5,347,31"/>
+<area shape="poly" id="edge2_Node000000_Node000001" title=" " alt="" coords="81,117,118,77,141,57,167,40,193,28,195,33,169,44,144,61,121,81,84,120"/>
+<area shape="rect" id="Node000002" href="$classQCPAxisTickerFixed.html" title="Specialized axis ticker with a fixed tick step." alt="" coords="183,55,332,80"/>
+<area shape="poly" id="edge3_Node000000_Node000002" title=" " alt="" coords="98,120,167,89,202,78,204,83,169,94,100,125"/>
+<area shape="rect" id="Node000003" href="$classQCPAxisTickerLog.html" title="Specialized axis ticker suited for logarithmic axes." alt="" coords="188,104,327,129"/>
+<area shape="poly" id="edge4_Node000000_Node000003" title=" " alt="" coords="133,130,188,123,188,128,134,135"/>
+<area shape="rect" id="Node000004" href="$classQCPAxisTickerPi.html" title="Specialized axis ticker to display ticks in units of an arbitrary constant, for example pi." alt="" coords="194,153,321,179"/>
+<area shape="poly" id="edge5_Node000000_Node000004" title=" " alt="" coords="134,148,194,156,193,161,133,153"/>
+<area shape="rect" id="Node000005" href="$classQCPAxisTickerText.html" title="Specialized axis ticker which allows arbitrary labels at specified coordinates." alt="" coords="186,203,329,228"/>
+<area shape="poly" id="edge6_Node000000_Node000005" title=" " alt="" coords="102,158,169,188,208,200,206,205,167,192,100,163"/>
+<area shape="rect" id="Node000006" href="$classQCPAxisTickerTime.html" title="Specialized axis ticker for time spans in units of milliseconds to days." alt="" coords="183,252,331,277"/>
+<area shape="poly" id="edge7_Node000000_Node000006" title=" " alt="" coords="85,163,122,201,169,237,198,249,196,254,167,242,118,205,81,167"/>
+</map>

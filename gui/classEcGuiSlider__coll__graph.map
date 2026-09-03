@@ -1,0 +1,9 @@
+<map id="EcGuiSlider" name="EcGuiSlider">
+<area shape="rect" id="Node000001" title=" " alt="" coords="75,188,257,813"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,33,76,98"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="56,111,78,187,73,188,51,112"/>
+<area shape="rect" id="Node000003" href="$structEcGuiSlider_1_1slider__map__t.html" title=" " alt="" coords="100,5,232,125"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="169,125,169,171,163,171,163,125"/>
+<area shape="rect" id="Node000004" href="$structEcGuiSlider_1_1device__ctrl__t.html" title=" " alt="" coords="257,15,395,115"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="310,116,265,240,260,238,305,115"/>
+</map>

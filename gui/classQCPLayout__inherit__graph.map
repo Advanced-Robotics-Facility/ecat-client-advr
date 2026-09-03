@@ -1,0 +1,15 @@
+<map id="QCPLayout" name="QCPLayout">
+<area shape="rect" id="Node000001" title="The abstract base class for layouts." alt="" coords="104,1395,324,1800"/>
+<area shape="rect" id="Node000005" href="$classQCPLayoutGrid.html" title="A layout that arranges child elements in a grid." alt="" coords="5,1848,215,2273"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="168,1814,160,1848,155,1847,163,1813"/>
+<area shape="rect" id="Node000007" href="$classQCPLayoutInset.html" title="A layout that places child elements aligned to the border or arbitrarily positioned." alt="" coords="239,1898,399,2223"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="266,1813,285,1897,280,1898,260,1814"/>
+<area shape="rect" id="Node000002" href="$classQCPLayoutElement.html" title="The abstract base class for all objects that form the layout system." alt="" coords="119,787,309,1347"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="217,1360,217,1395,211,1395,211,1360"/>
+<area shape="rect" id="Node000003" href="$classQCPLayerable.html" title="Base class for all drawable objects." alt="" coords="119,119,309,739"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="217,752,217,787,211,787,211,752"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="181,5,247,71"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="217,85,217,118,211,118,211,85"/>
+<area shape="rect" id="Node000006" href="$classQCPLegend.html" title="Manages a legend inside a QCustomPlot." alt="" coords="14,2321,206,3021"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="113,2287,113,2321,107,2321,107,2287"/>
+</map>
