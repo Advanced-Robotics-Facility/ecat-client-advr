@@ -194,7 +194,7 @@ int main(int argc, char * const argv[])
             ec_wrapper.log_ec_sys();
             const auto end = Clock::now();
 
-//#if defined(PREEMPT_RT) || defined(__COBALT__)
+#if defined(PREEMPT_RT) || defined(__COBALT__)
             // if less than threshold, print warning (only on rt threads)
             if (end > time && ec_cfg.protocol == "iddp"){
                 ++overruns;
@@ -212,7 +212,7 @@ int main(int argc, char * const argv[])
                     static_cast<long long>(to_us(end - time))
                 );
             }
-//#endif
+#endif
             std::this_thread::sleep_until(time);
         }           
     }
