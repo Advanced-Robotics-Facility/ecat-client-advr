@@ -223,13 +223,13 @@ void EcPdo<T>::write_motor_pdo()
 {
     for (auto &[id,motor_pdo] : _moto_pdo_map ) {
         motor_pdo->tx_pdo=_motor_reference_map.at(id);
-        _log_motor_reference_map.at(id) = motor_pdo->tx_pdo;
 
         auto ctrl_type=std::get<0>(motor_pdo->tx_pdo);
         if(ctrl_type!=0x00){
             if (iit::advr::Gains_Type_IsValid(ctrl_type) ) {
                 //write 
                 motor_pdo->write();
+                _log_motor_reference_map.at(id) = motor_pdo->log_tx_pdo;
             }
             else{
                 DPRINTF("Control mode not recognized for id 0x%04X \n", id);

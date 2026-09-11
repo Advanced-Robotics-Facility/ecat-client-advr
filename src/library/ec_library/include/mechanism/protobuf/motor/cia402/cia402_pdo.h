@@ -79,5 +79,15 @@ inline void Cia402Pdo<T>::set_to_pb()
     T::pb_tx_pdos.mutable_cia402_tx_pdo()->set_gain_2(std::get<6>(MotorPdo<T>::tx_pdo));
     T::pb_tx_pdos.mutable_cia402_tx_pdo()->set_gain_3(std::get<7>(MotorPdo<T>::tx_pdo));
     T::pb_tx_pdos.mutable_cia402_tx_pdo()->set_gain_4(std::get<8>(MotorPdo<T>::tx_pdo));
+
+    std::get<1>(MotorPdo<T>::log_tx_pdo) = T::pb_tx_pdos.mutable_cia402_tx_pdo()->target_pos();
+    std::get<2>(MotorPdo<T>::log_tx_pdo) = T::pb_tx_pdos.mutable_cia402_tx_pdo()->target_vel();
+    std::get<3>(MotorPdo<T>::log_tx_pdo) = T::pb_tx_pdos.mutable_cia402_tx_pdo()->target_torque();
+
+    std::get<4>(MotorPdo<T>::log_tx_pdo) = T::pb_tx_pdos.mutable_cia402_tx_pdo()->gain_0();
+    std::get<5>(MotorPdo<T>::log_tx_pdo) = T::pb_tx_pdos.mutable_cia402_tx_pdo()->gain_1();
+    std::get<6>(MotorPdo<T>::log_tx_pdo) = T::pb_tx_pdos.mutable_cia402_tx_pdo()->gain_2();
+    std::get<7>(MotorPdo<T>::log_tx_pdo) = T::pb_tx_pdos.mutable_cia402_tx_pdo()->gain_3();
+    std::get<8>(MotorPdo<T>::log_tx_pdo) = T::pb_tx_pdos.mutable_cia402_tx_pdo()->gain_4();
 }
 #endif

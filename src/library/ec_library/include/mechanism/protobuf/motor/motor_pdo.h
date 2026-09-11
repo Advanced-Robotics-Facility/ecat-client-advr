@@ -80,6 +80,7 @@ public:
     bool init_rx_pdo=false;
 
     MotorPdoTx::pdo_t tx_pdo={0,0,0,0,0,0,0,0,0,0,0,0};
+    MotorPdoTx::pdo_t log_tx_pdo={0,0,0,0,0,0,0,0,0,0,0,0};
 protected:
     iit::advr::Gains_Type _ctrl_type_cast=static_cast<iit::advr::Gains_Type>(0x00);
     virtual void init_pb();
