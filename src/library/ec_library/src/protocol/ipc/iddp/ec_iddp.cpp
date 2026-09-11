@@ -12,7 +12,7 @@ EcIDDP::EcIDDP(std::string host_address,uint32_t host_port):
     priority = 0;
 #if defined(PREEMPT_RT) || defined(__COBALT__)       
     schedpolicy = SCHED_FIFO;
-    priority_inc = 61;
+    priority = 61;
 #endif
     // non-periodic
     period.period = {0,1}; 
