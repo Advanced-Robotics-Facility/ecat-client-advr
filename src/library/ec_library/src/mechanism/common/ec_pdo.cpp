@@ -213,9 +213,9 @@ void EcPdo<T>::read_motor_pdo()
     }
 
     get_init_rx_pdo(_moto_pdo_map);
-    //if(!_internal_motor_status_map.empty()){
-        //_motor_status_queue.push(&_internal_motor_status_map);
-    //}
+    if(!_internal_motor_status_map.empty() && _protocol!="pipe"){
+        _motor_status_queue.push(&_internal_motor_status_map);
+    }
 }
 
 template < class T >
