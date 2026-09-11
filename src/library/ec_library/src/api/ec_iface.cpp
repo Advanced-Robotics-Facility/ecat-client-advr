@@ -138,6 +138,11 @@ void EcIface::get_motor_status(MotorStatusMap &motor_status_map)
     motor_status_map= _motor_status_map;
 }
 
+const MotorReferenceMap& EcIface::get_motor_refernce() const
+{
+    return _log_motor_reference_map;
+}
+
 void EcIface::set_reference_flag(uint32_t reference_flag)
 {
     _reference_flag=reference_flag;

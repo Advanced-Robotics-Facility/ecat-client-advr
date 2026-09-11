@@ -583,7 +583,8 @@ void EcWrapper::log_ec_sys()
     _ec_logger->log_pump_status(pump_status_map);
 
 
-    _ec_logger->log_motor_reference(motor_reference_map); 
+    //_ec_logger->log_motor_reference(motor_reference_map); 
+    _ec_logger->log_motor_reference(_client->get_motor_refernce()); 
     _ec_logger->log_valve_reference(valve_reference_map);
     _ec_logger->log_pump_reference(pump_reference_map);
 }

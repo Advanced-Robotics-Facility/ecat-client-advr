@@ -44,6 +44,7 @@ public:
     
     // EtherCAT Client ADVR Facilty getters
     void get_motor_status(MotorStatusMap &motor_status_map);
+    const MotorReferenceMap& get_motor_refernce() const;
     void get_ft_status(FtStatusMap &ft_status_map);
     void get_pow_status(PwrStatusMap &pow_status_map);
     void get_imu_status(ImuStatusMap &imu_status_map);
@@ -104,7 +105,7 @@ protected:
     PumpStatusMap _pump_status_map,_internal_pump_status_map;
     spsc_queue<PumpStatusMap*,fixed_sized<true>> _pump_status_queue{MAX_QUEUE_PDO};
     
-    MotorReferenceMap _motor_reference_map;
+    MotorReferenceMap _motor_reference_map,_log_motor_reference_map;
     ValveReferenceMap _valve_reference_map;
     PumpReferenceMap _pump_reference_map;
     std::vector<bool> _write_device;

@@ -56,12 +56,14 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                     _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(advrf_pdo);
                     _internal_motor_status_map[id]=_motor_status_map[id]=  advrf_pdo->rx_pdo;
                     _motor_reference_map[id]= advrf_pdo->tx_pdo;
+                    _log_motor_reference_map[id]= advrf_pdo->tx_pdo; 
                 }break;
                 default:{ //default cia402
                     auto cia402_pdo = std::make_shared<Cia402Pdo<T>>(_ec_pdo_start, id, esc_type);
                     _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(cia402_pdo);
                     _internal_motor_status_map[id]=_motor_status_map[id]=  cia402_pdo->rx_pdo;
                     _motor_reference_map[id]= cia402_pdo->tx_pdo;
+                    _log_motor_reference_map[id]= cia402_pdo->tx_pdo;
                 }break;
             }
         } else if(ec_valves().count(esc_type)>0){
@@ -203,7 +205,7 @@ void EcPdo<T>::read_motor_pdo()
                 nbytes = motor_pdo->read();
             } while ( nbytes > 0);
 
-            _internal_motor_status_map[id]=motor_pdo->rx_pdo;
+            _internal_motor_status_map.at(id)=motor_pdo->rx_pdo;
             //////////////////////////////////////////////////////////////
         }
         
@@ -220,7 +222,8 @@ template < class T >
 void EcPdo<T>::write_motor_pdo()
 {
     for (auto &[id,motor_pdo] : _moto_pdo_map ) {
-        motor_pdo->tx_pdo=_motor_reference_map[id];
+        motor_pdo->tx_pdo=_motor_reference_map.at(id);
+        _log_motor_reference_map.at(id) = motor_pdo->tx_pdo;
 
         auto ctrl_type=std::get<0>(motor_pdo->tx_pdo);
         if(ctrl_type!=0x00){
