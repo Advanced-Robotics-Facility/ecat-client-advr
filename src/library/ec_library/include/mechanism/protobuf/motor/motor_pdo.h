@@ -90,11 +90,14 @@ template < class T >
 inline void MotorPdo<T>::init_pb() 
 {
     uint8_t  pb_buf[MAX_PB_SIZE];
+    uint8_t  pb_buf_log[MAX_PB_SIZE];
     uint32_t msg_size=0;
 
     set_to_pb();
     msg_size = T::pb_tx_pdos.ByteSizeLong();
     T::pb_tx_pdos.SerializeToArray( (void*)(pb_buf+sizeof(msg_size)), msg_size);
+    T::pb_tx_log_pdos = T::pb_tx_pdos;
+    T::pb_tx_log_pdos.SerializeToArray( (void*)(pb_buf_log+sizeof(msg_size)), msg_size);
 }
 
 template < class T >

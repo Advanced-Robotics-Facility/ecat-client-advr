@@ -47,7 +47,30 @@ int EcPipePdo::read(void)  {
 int EcPipePdo::write(void) {
     pb_tx_pdos.Clear();
     set_to_pb();
-    return write_pb_to (wr_iddp, pb_buf_wr, sizeof(pb_buf_wr), &pb_tx_pdos, name );
+    int n_byte = write_pb_to (wr_iddp, pb_buf_wr, sizeof(pb_buf_wr), &pb_tx_pdos, name );
+    
+    
+    uint32_t msg_size = pb_tx_pdos.ByteSize();
+
+    if (msg_size <= sizeof(pb_buf_wr) &&
+        msg_size <= sizeof(pb_buf_log_wr)) {
+        memcpy(pb_buf_log_wr, pb_buf_wr, msg_size);
+    } else {
+        DPRINTF("message-too-large error\n");
+        return n_byte;
+    }
+
+    pb_tx_log_pdos.Clear();
+    pb_tx_log_pdos.ParseFromArray(pb_buf_log_wr+sizeof(msg_size), msg_size);
+    if ( ! pb_tx_log_pdos.IsInitialized() ) {
+        DPRINTF("write log msg is NOT initialized\n");
+        return -EBADMSG;
+    }
+    log_set_to_pb();
+    
+
+    return n_byte;
+
 }
 
 int EcPipePdo::write_dummy(void) {

@@ -43,11 +43,12 @@ public:
     std::string get_zmq_pdo_uri();
 
 protected:    
-    iit::advr::Ec_slave_pdo pb_rx_pdos,  pb_tx_pdos;  
+    iit::advr::Ec_slave_pdo pb_rx_pdos,  pb_tx_pdos,pb_tx_log_pdos;  
     std::string name;
 
     virtual void get_from_pb(void) = 0;
     virtual void set_to_pb(void) = 0;
+    virtual void log_set_to_pb() {};
 
 private:
     int32_t _id; 
