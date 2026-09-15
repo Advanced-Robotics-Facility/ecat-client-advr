@@ -102,8 +102,18 @@ int main(int argc, char * const argv[])
         
         while (run_loop && client->get_client_status().run_loop){
             const auto scheduled_release = time;
+            
             const auto t0 = Clock::now();
-            client->read();
+
+            bool read_ok =  client->read();
+            uint8_t count_read = 0;
+
+            while(!read_ok && count_read < 5){
+                std::this_thread::sleep_for(std::chrono::microseconds(50));
+                ++count_read;
+                read_ok =  client->read();
+            }
+            
             const auto t1 = Clock::now();
             
             time_elapsed_ms = std::chrono::duration<float, std::milli>(time - start_time).count();

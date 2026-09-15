@@ -81,7 +81,7 @@ void EcIface::set_slaves_info(SSI slave_info)
     _fake_slave_info=slave_info;
 }
 
-void EcIface::read()
+bool EcIface::read()
 {
     wake_client_thread();
 
@@ -131,6 +131,8 @@ void EcIface::read()
     if(!read_ok){
         //DPRINTF("No new data to read for some slave...\n");
     }
+
+    return read_ok;
 }
 
 void EcIface::get_motor_status(MotorStatusMap &motor_status_map)

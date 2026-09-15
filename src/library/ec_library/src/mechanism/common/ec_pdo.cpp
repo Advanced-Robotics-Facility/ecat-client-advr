@@ -143,17 +143,18 @@ bool EcPdo<T>::init_read_pdo()
 template < class T >
 void EcPdo<T>::read_pdo()
 {
+    _read_op = true;
     read_motor_pdo();
     
-    read_ft_pdo();
+    //read_ft_pdo();
     
-    read_imu_pdo();
+    //read_imu_pdo();
     
-    read_pow_pdo();
+    //read_pow_pdo();
     
-    read_valve_pdo();
+    //read_valve_pdo();
     
-    read_pump_pdo();
+    //read_pump_pdo();
 }
 
 template < class T >
@@ -199,11 +200,18 @@ void EcPdo<T>::read_motor_pdo()
         try { 
             ///////////////////////////////////////////////////////////////
             // read
-            int nbytes=0;
+            int nbytes=0,count_read = 0;
             do {
                 // read protobuf data
                 nbytes = motor_pdo->read();
+                if(nbytes > 0){
+                    count_read++;
+                }
             } while ( nbytes > 0);
+
+            if(count_read==0){
+                _read_op = false;
+            }
 
             _internal_motor_status_map.at(id)=motor_pdo->rx_pdo;
             //////////////////////////////////////////////////////////////

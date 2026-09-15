@@ -39,7 +39,7 @@ public:
     CLIENT_THREAD_INFO get_client_thread_info();
     
     // EtherCAT Client ADVR Facilty update getters/setters
-    virtual void read(void);
+    virtual bool read(void);
     virtual void write(void) = 0;
     
     // EtherCAT Client ADVR Facilty getters
@@ -112,6 +112,7 @@ protected:
     
     uint64_t _period_ns;
     uint32_t _reference_flag=1; // default multi-ref value.
+    bool _read_op = false;
     
     void sync_client_thread();
     void wake_client_thread();
