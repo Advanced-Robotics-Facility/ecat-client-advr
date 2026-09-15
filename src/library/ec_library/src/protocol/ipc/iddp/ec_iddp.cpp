@@ -1,5 +1,6 @@
 #include <cassert>
 #include <tuple>
+#include <sys/sysinfo.h>
 
 #include "protocol/ipc/iddp/ec_iddp.h"
 
@@ -71,6 +72,7 @@ void EcIDDP::start_client(uint32_t period_ms)
                 stop_client();
             }
             _client_status.run_loop=true;
+            _client_thread_info.cpu=get_nprocs() -1 ;
             //create(true,0); // real time thread
             //sync_client_thread();
         } catch ( std::exception &e ) {
