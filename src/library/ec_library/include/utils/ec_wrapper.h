@@ -8,6 +8,8 @@
 extern PwrStatusMap pow_status_map;
 //IMU
 extern ImuStatusMap imu_status_map;
+extern ImuReferenceMap imu_reference_map;
+extern EscTrjMap imu_trj_map;
 //Force-Torque sensor
 extern FtStatusMap ft_status_map;
 // Pump

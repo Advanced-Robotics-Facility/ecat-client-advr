@@ -90,6 +90,7 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                     auto imu_pdo = std::make_shared<ImuPdo<T>>(_ec_pdo_start, id, esc_type);
                     _imu_pdo_map[id]=imu_pdo;
                     _imu_status_map[id]= imu_pdo->rx_pdo;
+                    _imu_reference_map[id]= imu_pdo->tx_pdo;
                 }break;
                 case iit::ecat::POWF28M36 :{
                     auto pow_pdo = std::make_shared<PowPdo<T>>(_ec_pdo_start, id, esc_type);
@@ -261,6 +262,7 @@ void EcPdo<T>::write_pdo()
     write_esc_pdo(DeviceCtrlType::VALVE,   _valve_pdo_map,   _valve_reference_map,   CtrlIndex<-1>{});  // no ctrl mode
     write_esc_pdo(DeviceCtrlType::PUMP,    _pump_pdo_map,    _pump_reference_map,    CtrlIndex<-1>{});  // no ctrl mode
     write_esc_pdo(DeviceCtrlType::GRIPPER, _gripper_pdo_map, _gripper_reference_map, CtrlIndex<-1>{});  // no ctrl mode
+    write_esc_pdo(DeviceCtrlType::IMU,     _imu_pdo_map,     _imu_reference_map,     CtrlIndex<-1>{});  // no ctrl mode
 }
 
 template class EcPdo<EcPipePdo>;

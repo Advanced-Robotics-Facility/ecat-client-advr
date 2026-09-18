@@ -176,7 +176,6 @@ void EcIface::get_pow_status(PwrStatusMap &pow_status_map)
     pow_status_map= _pow_status_map;
 }
 
-
 void EcIface::get_imu_status(ImuStatusMap &imu_status_map)
 {
     imu_status_map= _imu_status_map;
@@ -217,7 +216,26 @@ void EcIface::set_gripper_reference(const GripperReferenceMap &gripper_reference
         _write_device[DeviceCtrlType::GRIPPER] = true;
     }
 }
- 
+
+void EcIface::set_imu_reference(const ImuReferenceMap &imu_reference)
+{
+    if(copy_map_values(_imu_reference_map,imu_reference)){
+        _write_device[DeviceCtrlType::IMU] = true;
+    }
+}
+
+void EcIface::stop_imu_reference(){
+    
+    for (auto &[esc_id, imu_tx_pdo] : _imu_reference_map){
+        std::get<0>(imu_tx_pdo) = 0;
+    }
+
+    std::fill(_write_device.begin(), _write_device.end(), false);
+    _write_device[DeviceCtrlType::IMU] = true;
+
+    write();
+}
+
 bool EcIface::pdo_aux_cmd_sts(const PAC & pac)
 {    
     for( const auto &[esc_id,pdo_aux_cmd] : pac)

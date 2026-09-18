@@ -58,6 +58,8 @@ public:
     void set_valve_reference(const ValveReferenceMap &valve_reference);
     void set_pump_reference(const PumpReferenceMap &pump_reference);
     void set_gripper_reference(const GripperReferenceMap &gripper_reference);
+    void set_imu_reference(const ImuReferenceMap &imu_reference);
+    void stop_imu_reference();
     
     // EtherCAT Client ADVR Facilty manager
     virtual void start_client(uint32_t period_ms) = 0;
@@ -119,6 +121,7 @@ protected:
     ValveReferenceMap _valve_reference_map;
     PumpReferenceMap _pump_reference_map;
     GripperReferenceMap _gripper_reference_map;
+    ImuReferenceMap     _imu_reference_map;
     std::vector<bool> _write_device;
     
     uint64_t _period_ns;

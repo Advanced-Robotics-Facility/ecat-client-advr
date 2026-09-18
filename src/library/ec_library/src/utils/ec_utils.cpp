@@ -366,12 +366,14 @@ void EcUtils::config_trajectory()
             if(_robot_control_node[device_type]["id"]){
                 auto id_vector = _robot_control_node[device_type]["id"].as<std::vector<int>>();
 
-                for(const auto &id: id_vector){
-                    if(_ec_cfg.device_config_map.count(id)==0){
-                        throw std::runtime_error("The ID: " + std::to_string(id) + " hasn't a " +  device_type + " configuration, please setup the control mode");
+                if(device_type!="imu"){
+                    for(const auto &id: id_vector){
+                        if(_ec_cfg.device_config_map.count(id)==0){
+                            throw std::runtime_error("The ID: " + std::to_string(id) + " hasn't a " +  device_type + " configuration, please setup the control mode");
+                        }
                     }
                 }
-                
+                    
                 if(_ec_cfg.trj_type!="none"){
                     std::map<std::string,double> set_point;
                     if(_robot_control_node[device_type]["set_point"]){

@@ -65,6 +65,7 @@ using FtStatus=             std::vector<FtPdoRx::pdo_t>;
 
 using ImuStatusMap=         std::map<int32_t, ImuPdoRx::pdo_t>;
 using ImuStatus=            std::vector<ImuPdoRx::pdo_t>;
+using ImuReferenceMap=      std::map<int32_t, ImuPdoTx::pdo_t>; 
 
 using ValveStatusMap=       std::map<int32_t, ValvePdoRx::pdo_t>;
 using ValveStatus=          std::vector<ValvePdoRx::pdo_t>;
@@ -135,6 +136,7 @@ enum DeviceCtrlType{
     VALVE   = 1,
     PUMP    = 2,
     GRIPPER = 3,
+    IMU     = 4,
 };
 
 

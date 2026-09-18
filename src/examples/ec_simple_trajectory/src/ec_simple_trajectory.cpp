@@ -150,6 +150,16 @@ int main(int argc, char * const argv[])
             }
             // ************************* SEND ALWAYS REFERENCES***********************************//
 
+
+            for (auto &[esc_id, imu_trj] : imu_trj_map){
+                std::get<0>(imu_reference_map[esc_id]) = static_cast<uint16_t>(imu_trj.set_trj);
+            }  
+            // ************************* SEND ALWAYS REFERENCES***********************************//
+            if(!imu_trj_map.empty()){
+                client->set_imu_reference(imu_reference_map);
+            }
+            // ************************* SEND ALWAYS REFERENCES***********************************//
+
             const auto t2 = Clock::now();
 
             time = time + period;
@@ -162,10 +172,12 @@ int main(int argc, char * const argv[])
                 if (trajectory_counter == ec_cfg.repeat_trj - 1){
                     set_esc_trj(motor_trj_map,TrjType::zero);
                     set_esc_trj(gripper_trj_map,TrjType::zero);
+                    set_esc_trj(imu_trj_map,TrjType::zero);
 
                 }else{
                     set_esc_trj(motor_trj_map,TrjType::trj2);
                     set_esc_trj(gripper_trj_map,TrjType::trj2);
+                    set_esc_trj(imu_trj_map,TrjType::trj2);
                 }
 
                 tau = alpha = 0;
@@ -184,6 +196,7 @@ int main(int argc, char * const argv[])
                     
                     set_esc_trj(motor_trj_map,TrjType::trj1);
                     set_esc_trj(gripper_trj_map,TrjType::trj1);
+                    set_esc_trj(imu_trj_map,TrjType::trj1);
 
                     tau = alpha = 0;
                 }
