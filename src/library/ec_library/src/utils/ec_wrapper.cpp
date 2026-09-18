@@ -451,6 +451,10 @@ bool EcWrapper::safe_init()
         }
     }
 
+    if(!motor_reference_map.empty()){
+        _client->set_motor_reference(motor_reference_map);
+    }
+
     // init valve reference map 
     _client->get_valve_status(valve_status_map);
     for (const auto &[esc_id, valve_rx_pdo] : valve_status_map){
@@ -477,6 +481,10 @@ bool EcWrapper::safe_init()
                 }
             }
         }
+    }
+
+    if(!valve_reference_map.empty()){
+        _client->set_valve_reference(valve_reference_map);
     }
 
     // init pump reference map
@@ -507,7 +515,11 @@ bool EcWrapper::safe_init()
             }
         }
     }
-    
+
+    if(!pump_reference_map.empty()){
+        _client->set_pump_reference(pump_reference_map);
+    }
+
     // init gripper reference map
     _client->get_gripper_status(gripper_status_map);
     for (const auto &[esc_id, gripper_rx_pdo] : gripper_status_map){
@@ -542,6 +554,9 @@ bool EcWrapper::safe_init()
             }
     }
 
+    if(!gripper_reference_map.empty()){
+        _client->set_gripper_reference(gripper_reference_map);
+    }
     _client->write();
     return true;
 }
