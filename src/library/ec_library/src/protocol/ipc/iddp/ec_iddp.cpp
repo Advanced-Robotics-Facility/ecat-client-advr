@@ -9,10 +9,11 @@ EcIDDP::EcIDDP(std::string host_address,uint32_t host_port):
   EcPdo<EcPipePdo>("NoNe")
 { 
     schedpolicy = SCHED_OTHER;
+    priority = 0;
 #if defined(PREEMPT_RT) || defined(__COBALT__)       
     schedpolicy = SCHED_FIFO;
+    priority = 61;
 #endif
-    priority = sched_get_priority_max ( schedpolicy ) / 2;
     // non-periodic
     period.period = {0,1}; 
     stacksize = 0; // not set stak size !!!! YOU COULD BECAME CRAZY !!!!!!!!!!!!
@@ -64,8 +65,14 @@ void EcIDDP::start_client(uint32_t period_ms)
     if(retrieve_slaves_info(slave_info)){
         try{
             esc_factory(slave_info);
-            create(true,0); // real time thread
-            sync_client_thread();
+            if(!init_read_pdo()){
+                DPRINTF("Client not initialized!\n");
+                _client_status.run_loop=false;
+                stop_client();
+            }else{
+                _client_thread_info.cpu=0;
+                _client_status.run_loop=true;
+            }
         } catch ( std::exception &e ) {
             DPRINTF ( "Fatal Error: %s\n", e.what() );
             stop_client();
@@ -101,7 +108,7 @@ void EcIDDP::th_loop( void * )
 
     if(updt_client_thread()){
         // read motors, imu, ft, power board and others pdo information
-        read_pdo();
+        //read_pdo();
     }
     else{
         _run_loop = false;
@@ -109,6 +116,12 @@ void EcIDDP::th_loop( void * )
     }
 }
 //******************************* Periodic Activity *****************************************************//
+
+void EcIDDP::read()
+{
+    // read motors, imu, ft, power board and others pdo information
+    read_pdo();
+}
 
 void EcIDDP::write()
 {

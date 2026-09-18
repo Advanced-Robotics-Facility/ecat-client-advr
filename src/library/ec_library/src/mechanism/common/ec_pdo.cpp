@@ -103,14 +103,16 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
         }               
     }
 
-    _internal_motor_status.resize(_motor_status_map.size());
-    _internal_valve_status.resize(_valve_status_map.size());
-    _internal_pump_status.resize(_pump_status_map.size());
-    _internal_gripper_status.resize(_gripper_status_map.size());
+    if(_protocol!="pipe"){
+        _internal_motor_status.resize(_motor_status_map.size());
+        _internal_valve_status.resize(_valve_status_map.size());
+        _internal_pump_status.resize(_pump_status_map.size());
+        _internal_gripper_status.resize(_gripper_status_map.size());
 
-    _internal_ft_status.resize(_ft_status_map.size());
-    _internal_imu_status.resize(_imu_status_map.size());
-    _internal_pow_status.resize(_pow_status_map.size());
+        _internal_ft_status.resize(_ft_status_map.size());
+        _internal_imu_status.resize(_imu_status_map.size());
+        _internal_pow_status.resize(_pow_status_map.size());
+    }
 } 
 
 template < class T >
@@ -176,7 +178,7 @@ template < class T >
 void EcPdo<T>::read_pdo()
 {
     const auto read_esc_pdo =
-    [this](auto& pdo_map, auto& pdo_status,auto& queue) -> void
+    [this](auto& pdo_map, auto& pdo_status_map, auto& pdo_status,auto& queue) -> void
     {
 
         if(pdo_map.empty()){
@@ -195,7 +197,11 @@ void EcPdo<T>::read_pdo()
                     nbytes = pdo->read();
                 } while ( nbytes > 0);
 
-                pdo_status[index]=pdo->rx_pdo;
+                if(!pdo_status.empty()){
+                    pdo_status.at(index) = pdo->rx_pdo;
+                }else{
+                    pdo_status_map.at(id) = pdo->rx_pdo;
+                }
                 //////////////////////////////////////////////////////////////
             }
             
@@ -208,9 +214,30 @@ void EcPdo<T>::read_pdo()
         if(!pdo_status.empty()){
             queue.push(pdo_status);
         }
-
     };
 
+    read_esc_pdo(_moto_pdo_map, _motor_status_map,
+                 _internal_motor_status, _motor_status_queue);
+
+    read_esc_pdo(_ft_pdo_map, _ft_status_map,
+                 _internal_ft_status, _ft_status_queue);
+
+    read_esc_pdo(_imu_pdo_map, _imu_status_map,
+                 _internal_imu_status, _imu_status_queue);
+
+    read_esc_pdo(_pow_pdo_map, _pow_status_map,
+                 _internal_pow_status, _pow_status_queue);
+
+    read_esc_pdo(_valve_pdo_map, _valve_status_map,
+                 _internal_valve_status, _valve_status_queue);
+
+    read_esc_pdo(_pump_pdo_map, _pump_status_map,
+                 _internal_pump_status, _pump_status_queue);
+
+    read_esc_pdo(_gripper_pdo_map, _gripper_status_map,
+                 _internal_gripper_status, _gripper_status_queue);
+
+    /*
     read_esc_pdo(_moto_pdo_map,_internal_motor_status,_motor_status_queue);
     read_esc_pdo(_ft_pdo_map,_internal_ft_status,_ft_status_queue);
     read_esc_pdo(_imu_pdo_map,_internal_imu_status,_imu_status_queue);
@@ -218,6 +245,8 @@ void EcPdo<T>::read_pdo()
     read_esc_pdo(_valve_pdo_map,_internal_valve_status,_valve_status_queue);
     read_esc_pdo(_pump_pdo_map,_internal_pump_status,_pump_status_queue);
     read_esc_pdo(_gripper_pdo_map,_internal_gripper_status,_gripper_status_queue);
+    */
+
 }
 
 
