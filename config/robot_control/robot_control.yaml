@@ -26,6 +26,10 @@ pump:
   config_path: ${PWD}/pump/robot_pressured4.yaml
   id: [210]
   set_point:  {pressure: 128.0, velocity: 10.0, pwm: 30.0} #bar,RPM,Duty Cycle %
+
+#imu:
+  #id: [11]
+  #set_point:  {digital_out: 4} # digital out
   
 simulation:
   imu_id: [102]
