@@ -49,6 +49,7 @@ public:
     void get_imu_status(ImuStatusMap &imu_status_map);
     void get_valve_status(ValveStatusMap &valve_status_map);
     void get_pump_status(PumpStatusMap &pump_status_map);
+    void get_gripper_status(GripperStatusMap &gripper_status_map);
     bool pdo_aux_cmd_sts(const PAC & pac);
     
     // EtherCAT Client ADVR Facilty setters
@@ -56,6 +57,9 @@ public:
     void set_motor_reference(const MotorReferenceMap &motor_references);
     void set_valve_reference(const ValveReferenceMap &valve_reference);
     void set_pump_reference(const PumpReferenceMap &pump_reference);
+    void set_gripper_reference(const GripperReferenceMap &gripper_reference);
+    void set_imu_reference(const ImuReferenceMap &imu_reference);
+    void stop_imu_reference();
     
     // EtherCAT Client ADVR Facilty manager
     virtual void start_client(uint32_t period_ms) = 0;
@@ -85,27 +89,39 @@ protected:
 
     SSI _fake_slave_info;
     // last received motor data
-    MotorStatusMap _motor_status_map,_internal_motor_status_map;
-    spsc_queue<MotorStatusMap,fixed_sized<true>> _motor_status_queue{MAX_QUEUE_PDO};
+    MotorStatusMap _motor_status_map;
+    MotorStatus _internal_motor_status;
+    spsc_queue<MotorStatus,fixed_sized<true>> _motor_status_queue{MAX_QUEUE_PDO};
     // last received ft data
-    FtStatusMap _ft_status_map,_internal_ft_status_map;
-    spsc_queue<FtStatusMap,fixed_sized<true>> _ft_status_queue{MAX_QUEUE_PDO};
+    FtStatusMap _ft_status_map;
+    FtStatus _internal_ft_status;
+    spsc_queue<FtStatus,fixed_sized<true>> _ft_status_queue{MAX_QUEUE_PDO};
     // last received pow data
-    PwrStatusMap _pow_status_map,_internal_pow_status_map;
-    spsc_queue<PwrStatusMap,fixed_sized<true>> _pow_status_queue{MAX_QUEUE_PDO};
+    PwrStatusMap _pow_status_map;
+    PwrStatus _internal_pow_status;
+    spsc_queue<PwrStatus,fixed_sized<true>> _pow_status_queue{MAX_QUEUE_PDO};
     // last received imu data
-    ImuStatusMap _imu_status_map,_internal_imu_status_map;
-    spsc_queue<ImuStatusMap,fixed_sized<true>> _imu_status_queue{MAX_QUEUE_PDO};
+    ImuStatusMap _imu_status_map;
+    ImuStatus _internal_imu_status;
+    spsc_queue<ImuStatus,fixed_sized<true>> _imu_status_queue{MAX_QUEUE_PDO};
     // last received valve data
-    ValveStatusMap _valve_status_map,_internal_valve_status_map;
-    spsc_queue<ValveStatusMap,fixed_sized<true>> _valve_status_queue{MAX_QUEUE_PDO};
+    ValveStatusMap _valve_status_map;
+    ValveStatus _internal_valve_status;
+    spsc_queue<ValveStatus,fixed_sized<true>> _valve_status_queue{MAX_QUEUE_PDO};
     // last received pump data
-    PumpStatusMap _pump_status_map,_internal_pump_status_map;
-    spsc_queue<PumpStatusMap,fixed_sized<true>> _pump_status_queue{MAX_QUEUE_PDO};
-    
+    PumpStatusMap _pump_status_map;
+    PumpStatus _internal_pump_status;
+    spsc_queue<PumpStatus,fixed_sized<true>> _pump_status_queue{MAX_QUEUE_PDO};
+    // last received gripper data
+    GripperStatusMap _gripper_status_map;
+    GripperStatus _internal_gripper_status;
+    spsc_queue<GripperStatus, fixed_sized<true>> _gripper_status_queue{MAX_QUEUE_PDO};
+
     MotorReferenceMap _motor_reference_map;
     ValveReferenceMap _valve_reference_map;
     PumpReferenceMap _pump_reference_map;
+    GripperReferenceMap _gripper_reference_map;
+    ImuReferenceMap     _imu_reference_map;
     std::vector<bool> _write_device;
     
     uint64_t _period_ns;

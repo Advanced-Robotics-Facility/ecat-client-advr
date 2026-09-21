@@ -8,6 +8,8 @@
 extern PwrStatusMap pow_status_map;
 //IMU
 extern ImuStatusMap imu_status_map;
+extern ImuReferenceMap imu_reference_map;
+extern EscTrjMap imu_trj_map;
 //Force-Torque sensor
 extern FtStatusMap ft_status_map;
 // Pump
@@ -18,6 +20,10 @@ extern EscTrjMap pump_trj_map;
 extern ValveStatusMap valve_status_map;
 extern ValveReferenceMap valve_reference_map;
 extern EscTrjMap valve_trj_map;
+// Gripper
+extern GripperStatusMap gripper_status_map;
+extern GripperReferenceMap gripper_reference_map;
+extern EscTrjMap gripper_trj_map;
 // Motor
 extern MotorStatusMap motor_status_map;
 extern MotorReferenceMap motor_reference_map;

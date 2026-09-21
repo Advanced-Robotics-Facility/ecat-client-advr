@@ -18,6 +18,7 @@ public:
       std::map<int, SliderWidget*> motor_sw_map;
       std::map<int, SliderWidget*> valve_sw_map;
       std::map<int, SliderWidget*> pump_sw_map;
+      std::map<int, SliderWidget*> gripper_sw_map;
     };
 
     struct device_ctrl_t{
@@ -57,7 +58,7 @@ private:
   QTabWidget *_devicecontrol;
   std::map<std::string,SliderWindow *> _sliders_window_map;
   QVBoxLayout *_sliders_motorlayout;
-  QVBoxLayout *_sliders_valvelayout,*_sliders_pumplayout;
+  QVBoxLayout *_sliders_valvelayout,*_sliders_pumplayout,*_sliders_gripperlayout;
   QListWidget* _device_list_wid;
   std::map<int32_t,std::map<int32_t,std::vector<float>>> _device_gains;
   void delete_items(QLayout * layout);

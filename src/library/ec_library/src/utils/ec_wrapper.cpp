@@ -4,6 +4,8 @@
 PwrStatusMap pow_status_map;
 //IMU
 ImuStatusMap imu_status_map;
+ImuReferenceMap imu_reference_map;
+EscTrjMap imu_trj_map;
 //Force-Torque sensor
 FtStatusMap ft_status_map;
 // Pump
@@ -14,6 +16,10 @@ EscTrjMap pump_trj_map;
 ValveStatusMap valve_status_map;
 ValveReferenceMap valve_reference_map;
 EscTrjMap valve_trj_map;
+// Gripper
+GripperStatusMap gripper_status_map;
+GripperReferenceMap gripper_reference_map;
+EscTrjMap gripper_trj_map;
 // Motor
 MotorStatusMap motor_status_map;
 MotorReferenceMap motor_reference_map;
@@ -134,60 +140,72 @@ void EcWrapper::create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg)
 
         for (const auto& [device_type, trj_cfg] : _ec_cfg.trj_config_map) {
             for (const auto& [id, set_point] : trj_cfg.set_point) {
-                const auto cfg_it = _ec_cfg.device_config_map.find(id);
-                if (cfg_it == _ec_cfg.device_config_map.end()) continue;             //  unknown configuration for the device (control mode)
-                auto ctrl_mode = cfg_it->second.control_mode_type;
-        
-                const auto trj_esc_type_it = esc_trj_map.find(device_type);     
-                if (trj_esc_type_it == esc_trj_map.end()) continue;                   //  unknown device type (motor,valve,pump...)
-     
-                const auto trj_info_it = trj_esc_type_it->second.find(ctrl_mode);
-                if (trj_info_it == trj_esc_type_it->second.end()) continue;           //  unsupported control mode
-        
-                const auto sp_it = set_point.find(trj_info_it->second.type);
-                if (sp_it == set_point.end()) continue;                               //  missing set point
 
                 ESC_TRJ esc_trj{};                                                  
                 esc_trj.esc_id = id;
 
-                // set trajectory
-                esc_trj.trj1 =  static_cast<double>(sp_it->second);
-                esc_trj.trj2 = -static_cast<double>(sp_it->second);
-                
-                if(trj_info_it->second.type == "position"){
-                    const auto homing_it = trj_cfg.homing.find(id);
-                    if (homing_it != trj_cfg.homing.end()){
-                        esc_trj.trj1 = homing_it->second;
-                        esc_trj.trj2 = trj_cfg.trajectory.at(id);
-                    }
-                }
+                if(device_type!="imu"){
+                    const auto cfg_it = _ec_cfg.device_config_map.find(id);
+                    if (cfg_it == _ec_cfg.device_config_map.end()) continue;             //  unknown configuration for the device (control mode)
+                    auto ctrl_mode = cfg_it->second.control_mode_type;
+            
+                    const auto trj_esc_type_it = esc_trj_map.find(device_type);     
+                    if (trj_esc_type_it == esc_trj_map.end()) continue;                   //  unknown device type (motor,valve,pump...)
+        
+                    const auto trj_info_it = trj_esc_type_it->second.find(ctrl_mode);
+                    if (trj_info_it == trj_esc_type_it->second.end()) continue;           //  unsupported control mode
+            
+                    const auto sp_it = set_point.find(trj_info_it->second.type);
+                    if (sp_it == set_point.end()) continue;                               //  missing set point
 
-                // check and set trajectory limit
-                std::vector<double> limits_value;
-                get_limits(id,device_type,ctrl_mode,limits_value);
-                if(!limits_value.empty()){
-                    esc_trj.set_trj_limit(limits_value);
-                }
-
-                // set actual trajectory
-                esc_trj.set_trj = esc_trj.trj1;
-                const auto trj_gen_it = trj_cfg.trj_generator.find(id);
-                if (trj_gen_it != trj_cfg.trj_generator.end()){
-                    esc_trj.general_trj = trj_gen_it->second.at(trj_info_it->second.type);
-                }
-
-                if(device_type=="motor"){
+                    // set trajectory
+                    esc_trj.trj1 =  static_cast<double>(sp_it->second);
+                    esc_trj.trj2 = -static_cast<double>(sp_it->second);
+                    
                     if(trj_info_it->second.type == "position"){
-                        esc_trj.set_zero = esc_trj.trj1;
+                        const auto homing_it = trj_cfg.homing.find(id);
+                        if (homing_it != trj_cfg.homing.end()){
+                            esc_trj.trj1 = homing_it->second;
+                            esc_trj.trj2 = trj_cfg.trajectory.at(id);
+                        }
                     }
-                    motor_trj_map[id] = esc_trj;
-                }else if(device_type=="valve"){
-                    if(trj_info_it->second.type == "position"){
-                        esc_trj.set_zero = esc_trj.trj1;
+
+                    // check and set trajectory limit
+                    std::vector<double> limits_value;
+                    get_limits(id,device_type,ctrl_mode,limits_value);
+                    if(!limits_value.empty()){
+                        esc_trj.set_trj_limit(limits_value);
                     }
-                    valve_trj_map[id] = esc_trj;
-                }else if(device_type=="pump"){
-                    pump_trj_map[id] = esc_trj;
+
+                    // set actual trajectory
+                    esc_trj.set_trj = esc_trj.trj1;
+                    const auto trj_gen_it = trj_cfg.trj_generator.find(id);
+                    if (trj_gen_it != trj_cfg.trj_generator.end()){
+                        esc_trj.general_trj = trj_gen_it->second.at(trj_info_it->second.type);
+                    }
+
+                    if(device_type=="motor"){
+                        if(trj_info_it->second.type == "position"){
+                            esc_trj.set_zero = esc_trj.trj1;
+                        }
+                        motor_trj_map[id] = esc_trj;
+                    }else if(device_type=="valve"){
+                        if(trj_info_it->second.type == "position"){
+                            esc_trj.set_zero = esc_trj.trj1;
+                        }
+                        valve_trj_map[id] = esc_trj;
+                    }else if(device_type=="pump"){
+                        pump_trj_map[id] = esc_trj;
+                    }else if(device_type=="gripper"){
+                        if(trj_info_it->second.type == "position"){
+                            esc_trj.set_zero = esc_trj.trj1;
+                        }
+                        gripper_trj_map[id] = esc_trj;
+                    }
+                }else{
+                    esc_trj.trj1 =  static_cast<double>(set_point.begin()->second);
+                    esc_trj.set_trj = esc_trj.trj1;
+                    imu_trj_map[id] = esc_trj;
                 }
             }
         }
@@ -223,6 +241,7 @@ void EcWrapper::find_devices()
         for ( auto &[id, type, pos] : _slave_info ) {
             if(ec_motors().count(type)>0 || 
                ec_valves().count(type)>0 ||
+               ec_grippers().count(type)>0 ||
                ec_pumps().count(type)>0){
                 if(id == device_id){
                     device_found=true;
@@ -297,9 +316,12 @@ void EcWrapper::stop_devices(void)
         }
         else{
             DPRINTF("Devices stopped\n");
-        }
-            
+        }   
     }
+
+    // stop imu digital out
+    _client->stop_imu_reference();
+
 }
 
 
@@ -441,6 +463,10 @@ bool EcWrapper::safe_init()
         }
     }
 
+    if(!motor_reference_map.empty()){
+        _client->set_motor_reference(motor_reference_map);
+    }
+
     // init valve reference map 
     _client->get_valve_status(valve_status_map);
     for (const auto &[esc_id, valve_rx_pdo] : valve_status_map){
@@ -469,7 +495,11 @@ bool EcWrapper::safe_init()
         }
     }
 
-    // init valve reference map
+    if(!valve_reference_map.empty()){
+        _client->set_valve_reference(valve_reference_map);
+    }
+
+    // init pump reference map
     _client->get_pump_status(pump_status_map);
     for (const auto &[esc_id, pump_rx_pdo] : pump_status_map){
         float pump_target=0.0;
@@ -498,6 +528,58 @@ bool EcWrapper::safe_init()
         }
     }
 
+    if(!pump_reference_map.empty()){
+        _client->set_pump_reference(pump_reference_map);
+    }
+
+    // init gripper reference map
+    _client->get_gripper_status(gripper_status_map);
+    for (const auto &[esc_id, gripper_rx_pdo] : gripper_status_map){
+
+        auto motor_pos =    std::get<1>(gripper_rx_pdo);
+        gripper_reference_map[esc_id] = std::make_tuple(0, 0.0f, motor_pos, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0.0f);
+        
+        if(_ec_cfg.device_config_map.count(esc_id) > 0){
+            gripper_reference_map[esc_id] = std::make_tuple(
+                _ec_cfg.device_config_map[esc_id].control_mode_type,
+                motor_pos,
+                0.0f,
+                0.0f,                                       
+                _ec_cfg.device_config_map[esc_id].gains[0],          
+                _ec_cfg.device_config_map[esc_id].gains[1],
+                _ec_cfg.device_config_map[esc_id].gains[2],
+                _ec_cfg.device_config_map[esc_id].gains[3],
+                _ec_cfg.device_config_map[esc_id].gains[4],
+                1,
+                0,
+                0.0f
+            );
+
+            if(_ec_cfg.device_config_map[esc_id].control_mode_type==iit::advr::Gains_Type_POSITION ||
+                _ec_cfg.device_config_map[esc_id].control_mode_type==iit::advr::Gains_Type_IMPEDANCE){
+                    if(gripper_trj_map.count(esc_id)>0){
+                    gripper_trj_map[esc_id].start = motor_pos;
+                    gripper_trj_map[esc_id].set_ref = motor_pos;
+                    gripper_trj_map[esc_id].general_trj->set_start_point(motor_pos);
+                    }
+                }
+            }
+    }
+
+    if(!gripper_reference_map.empty()){
+        _client->set_gripper_reference(gripper_reference_map);
+    }
+
+    // init imu reference map
+    _client->get_imu_status(imu_status_map);
+    for (const auto &[esc_id, imu_rx_pdo] : imu_status_map){
+        imu_reference_map[esc_id] = std::make_tuple(0);
+    }
+
+    if(!imu_reference_map.empty()){
+        _client->set_imu_reference(imu_reference_map);
+    }
+
     _client->write();
     return true;
 }
@@ -510,6 +592,7 @@ void EcWrapper::read_devices_status()
     _client->get_pow_status(pow_status_map);
     _client->get_valve_status(valve_status_map);
     _client->get_pump_status(pump_status_map);
+    _client->get_gripper_status(gripper_status_map);
 }
 
 
@@ -581,11 +664,13 @@ void EcWrapper::log_ec_sys()
     _ec_logger->log_imu_status(imu_status_map);
     _ec_logger->log_valve_status(valve_status_map);
     _ec_logger->log_pump_status(pump_status_map);
+    _ec_logger->log_gripper_status(gripper_status_map);
 
 
     _ec_logger->log_motor_reference(motor_reference_map); 
     _ec_logger->log_valve_reference(valve_reference_map);
     _ec_logger->log_pump_reference(pump_reference_map);
+    _ec_logger->log_gripper_reference(gripper_reference_map);
 }
 
 

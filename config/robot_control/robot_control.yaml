@@ -10,6 +10,13 @@ motor:
   homing:     [-0.75,-1.0,-1.0,-0.75, 1.0,-0.75,-1.0,-1.0]
   trajectory: [ 0.00,-1.9,-2.3, 0.00,-0.4, 0.00,-1.9,-2.3]
 
+gripper:
+  config_path: ${PWD}/gripper/robot_pos3b.yaml
+  id: [9]
+  set_point: {position: 1.0} 
+  homing: [0.5]
+  trajectory: [2.0] 
+
 valve:
   config_path: ${PWD}/valve/robot_forced4.yaml 
   id: [120,121,122,123]
@@ -19,6 +26,10 @@ pump:
   config_path: ${PWD}/pump/robot_pressured4.yaml
   id: [210]
   set_point:  {pressure: 128.0, velocity: 10.0, pwm: 30.0} #bar,RPM,Duty Cycle %
+
+#imu:
+  #id: [11]
+  #set_point:  {digital_out: 4} # digital out
   
 simulation:
   imu_id: [102]

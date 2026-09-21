@@ -50,7 +50,7 @@ EcIface::EcIface()
         createLogger("console","client");
         _consoleLog=spdlog::get("console");
     }
-    _write_device={false,false,false};
+    _write_device={false,false,false,false};
     
     _consoleLog->info("EtherCAT Client initialized");
 }
@@ -104,12 +104,27 @@ void EcIface::read()
             queue.pop();
         }
 
+
         bool copy_success = false;
 
         const bool consumed = queue.consume_one(
-            [this, &destination, &copy_success](const auto map) {
-                copy_success = this->copy_map_values(destination, map);
-            });
+            [this, &destination, &copy_success](const auto pdo_sts) {
+                
+                if(pdo_sts.size() != destination.size()){
+                    DPRINTF("Got different size of destination map and pdo status\n");
+                    return;
+                }
+
+                std::size_t index = 0;
+
+                for (auto& entry : destination) {
+                    entry.second = pdo_sts[index];
+                    ++index;
+                }
+    
+                copy_success = true;
+        });
+
 
         return consumed && copy_success;
     };
@@ -125,6 +140,8 @@ void EcIface::read()
     read_ok &= consume_status(_valve_status_queue, _valve_status_map);
 
     read_ok &= consume_status(_pump_status_queue, _pump_status_map);
+
+    read_ok &= consume_status(_gripper_status_queue, _gripper_status_map);
 
     // add verbose read option
     if(!read_ok){
@@ -159,7 +176,6 @@ void EcIface::get_pow_status(PwrStatusMap &pow_status_map)
     pow_status_map= _pow_status_map;
 }
 
-
 void EcIface::get_imu_status(ImuStatusMap &imu_status_map)
 {
     imu_status_map= _imu_status_map;
@@ -188,7 +204,38 @@ void EcIface::set_pump_reference(const PumpReferenceMap &pump_reference_map)
         _write_device[DeviceCtrlType::PUMP]=true;
     }
 }
- 
+
+void EcIface::get_gripper_status(GripperStatusMap &gripper_status_map)
+{
+    gripper_status_map = _gripper_status_map;
+}
+
+void EcIface::set_gripper_reference(const GripperReferenceMap &gripper_reference_map)
+{
+    if(copy_map_values(_gripper_reference_map,gripper_reference_map)){
+        _write_device[DeviceCtrlType::GRIPPER] = true;
+    }
+}
+
+void EcIface::set_imu_reference(const ImuReferenceMap &imu_reference)
+{
+    if(copy_map_values(_imu_reference_map,imu_reference)){
+        _write_device[DeviceCtrlType::IMU] = true;
+    }
+}
+
+void EcIface::stop_imu_reference(){
+    
+    for (auto &[esc_id, imu_tx_pdo] : _imu_reference_map){
+        std::get<0>(imu_tx_pdo) = 0;
+    }
+
+    std::fill(_write_device.begin(), _write_device.end(), false);
+    _write_device[DeviceCtrlType::IMU] = true;
+
+    write();
+}
+
 bool EcIface::pdo_aux_cmd_sts(const PAC & pac)
 {    
     for( const auto &[esc_id,pdo_aux_cmd] : pac)
