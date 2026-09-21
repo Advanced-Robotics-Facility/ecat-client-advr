@@ -1,0 +1,7 @@
+<map id="QCPAxis" name="QCPAxis">
+<area shape="rect" id="Node000001" title="Manages a single axis inside a QCustomPlot." alt="" coords="5,787,195,1547"/>
+<area shape="rect" id="Node000002" href="$classQCPLayerable.html" title="Base class for all drawable objects." alt="" coords="5,119,195,739"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="103,753,103,787,97,787,97,753"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="67,5,133,71"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="103,85,103,118,97,118,97,85"/>
+</map>
