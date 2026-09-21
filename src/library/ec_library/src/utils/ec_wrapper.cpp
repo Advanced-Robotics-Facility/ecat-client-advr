@@ -645,10 +645,9 @@ void EcWrapper::stop_ec_sys(void)
     if(_ec_sys_started){
         stop_devices();
 
-        _ec_logger->stop_mat_logger();
-
         // STOP CLIENT
         _client->stop_client();
+        _ec_logger->stop_mat_logger();
 
         _ec_sys_started=false;
     }
@@ -704,6 +703,12 @@ void EcWrapper::ec_self_sched(std::string thread_name)
         
         DPRINTF("%s initialized, ",thread_name.c_str());
         DPRINTF("id: %ld cpu: %d, priority %d\n",pthread_self(),sched_getcpu(),priority);
+        
+        int count=0;
+        while(count<3){
+            _client->read();
+            count++;
+        }
     }
     else{
         throw std::runtime_error("fatal error on ec_self_sched function got an empty client!");
