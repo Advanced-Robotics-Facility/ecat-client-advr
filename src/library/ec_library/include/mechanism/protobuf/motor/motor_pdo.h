@@ -76,10 +76,10 @@ public:
 
     virtual void set_to_pb(void)=0;
     
-    MotorPdoRx::pdo_t rx_pdo={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    MotorPdoRx::pdo_t rx_pdo{};
+    MotorPdoTx::pdo_t tx_pdo{};
     bool init_rx_pdo=false;
 
-    MotorPdoTx::pdo_t tx_pdo={0,0,0,0,0,0,0,0,0,0,0,0};
 protected:
     iit::advr::Gains_Type _ctrl_type_cast=static_cast<iit::advr::Gains_Type>(0x00);
     virtual void init_pb();

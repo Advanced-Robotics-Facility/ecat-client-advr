@@ -77,8 +77,8 @@ public:
     void get_from_pb();
     void set_to_pb();
 
-    GripperPdoRx::pdo_t rx_pdo = {0, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0};
-    GripperPdoTx::pdo_t tx_pdo = {0, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0.0f};
+    GripperPdoRx::pdo_t rx_pdo{};
+    GripperPdoTx::pdo_t tx_pdo{};
     bool init_rx_pdo = false;
 private:
     void init_pb();

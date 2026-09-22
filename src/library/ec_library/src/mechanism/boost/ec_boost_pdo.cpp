@@ -4,27 +4,27 @@ void EcBoostPdo::esc_factory(SSI slave_descr)
 {
     for ( auto &[id, esc_type, pos] : slave_descr ) {
         if(ec_motors().count(esc_type)>0){
-            _motor_status_map[id]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-            _motor_reference_map[id]={0,0,0,0,0,0,0,0,0,0,0,0};
+            _motor_status_map[id] = {};
+            _motor_reference_map[id] = {};
         } else if(ec_valves().count(esc_type)>0){
-            _valve_status_map[id]={0,0,0,0,0,0,0,0,0,0,0,0,0};
-            _valve_reference_map[id]={0,0,0,0,0,0,0,0,0,0,0,0};
+            _valve_status_map[id] = {};
+            _valve_reference_map[id] = {};
         } else if(ec_pumps().count(esc_type)>0){
-            _pump_status_map[id]={0,0,0,0,0,0,0,0,0,0,0};
-            _pump_reference_map[id]={0,0,0,0,0,0,0,0,0,0};
+            _pump_status_map[id] = {};
+            _pump_reference_map[id] = {};
         } else if(ec_grippers().count(esc_type)>0){
-            _gripper_status_map[id]={0,0,0,0,0,0,0};
-            _gripper_reference_map[id]={0,0,0,0,0,0,0,0,0,0,0,0};
+            _gripper_status_map[id] = {};
+            _gripper_reference_map[id] = {};
         } else{
             switch ( esc_type ){
                 case iit::ecat::FT6MSP432_v24:{
-                    _ft_status_map[id]={0,0,0,0,0,0,0,0};
+                    _ft_status_map[id] = {};
                 }break;   
                 case iit::ecat::IMUVN :{
-                    _imu_status_map[id]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+                    _imu_status_map[id] = {};
                 }break;
                 case iit::ecat::POWF28M36 :{
-                    _pow_status_map[id]={0,0,0,0,0,0,0,0,0,0};
+                    _pow_status_map[id] = {};
                 }break;
                 default:
                     break;

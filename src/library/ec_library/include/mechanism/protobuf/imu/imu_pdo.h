@@ -60,8 +60,8 @@ public:
 
     void set_to_pb();
 
-    ImuPdoRx::pdo_t rx_pdo={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-    ImuPdoTx::pdo_t tx_pdo={0};
+    ImuPdoRx::pdo_t rx_pdo{};
+    ImuPdoTx::pdo_t tx_pdo{};
     bool init_rx_pdo=false;
 private:
     void init_pb();

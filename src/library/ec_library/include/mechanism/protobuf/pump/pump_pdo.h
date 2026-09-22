@@ -73,8 +73,8 @@ public:
 
     void set_to_pb();
 
-    PumpPdoRx::pdo_t rx_pdo={0,0,0,0,0,0,0,0,0,0,0};
-    PumpPdoTx::pdo_t tx_pdo={0,0,0,0,0,0,0,0,0,0};
+    PumpPdoRx::pdo_t rx_pdo{};
+    PumpPdoTx::pdo_t tx_pdo{};
     bool init_rx_pdo=false;
 private:
     void init_pb();

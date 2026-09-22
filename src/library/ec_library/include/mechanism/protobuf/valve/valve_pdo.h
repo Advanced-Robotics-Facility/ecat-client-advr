@@ -72,8 +72,8 @@ public:
 
     void set_to_pb();
     
-    ValvePdoRx::pdo_t rx_pdo={0,0,0,0,0,0,0,0,0,0,0,0,0};
-    ValvePdoTx::pdo_t tx_pdo={0,0,0,0,0,0,0,0,0,0,0,0};
+    ValvePdoRx::pdo_t rx_pdo{};
+    ValvePdoTx::pdo_t tx_pdo{};
     bool init_rx_pdo=false;
 private:
     void init_pb();

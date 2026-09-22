@@ -41,7 +41,7 @@ public:
 
     void set_to_pb();
     
-    PowPdoRx::pdo_t rx_pdo={0,0,0,0,0,0,0,0,0,0};
+    PowPdoRx::pdo_t rx_pdo{};
     bool init_rx_pdo=false;
 };
 

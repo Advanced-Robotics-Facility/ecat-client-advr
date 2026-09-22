@@ -37,7 +37,7 @@ public:
 
     void set_to_pb();
     
-    FtPdoRx::pdo_t rx_pdo={0,0,0,0,0,0,0,0};
+    FtPdoRx::pdo_t rx_pdo{};
     bool init_rx_pdo=false;
 };
 
