@@ -105,7 +105,7 @@ void EcBoostPdo::motor_status_handler(char *buf, size_t size)
             _internal_motor_status[index] = std::make_tuple(status_word,
                                                             link_pos,motor_pos,link_vel,motor_vel,
                                                             torque,current,motor_temp,board_temp,
-                                                            fault,rtt,
+                                                            fault,"",rtt,
                                                             pos_ref_fb,vel_ref_fb,tor_ref_fb,curr_ref_fb);
         }
         else{

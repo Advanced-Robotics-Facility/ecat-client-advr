@@ -51,11 +51,12 @@ inline void Cia402Pdo<T>::get_from_pb()
     std::get<7>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_cia402_rx_pdo()->motor_temp();
     std::get<8>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_cia402_rx_pdo()->drive_temp()*0.001;
     std::get<9>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_cia402_rx_pdo()->error_code();
-    std::get<10>(MotorPdo<T>::rx_pdo)   = 0;
-    std::get<11>(MotorPdo<T>::rx_pdo)   = T::pb_rx_pdos.mutable_cia402_rx_pdo()->demanded_pos();
-    std::get<12>(MotorPdo<T>::rx_pdo)   = T::pb_rx_pdos.mutable_cia402_rx_pdo()->demanded_vel();
-    std::get<13>(MotorPdo<T>::rx_pdo)   = T::pb_rx_pdos.mutable_cia402_rx_pdo()->demanded_torque();
-    std::get<14>(MotorPdo<T>::rx_pdo)   = T::pb_rx_pdos.mutable_cia402_rx_pdo()->demanded_current();
+    std::get<10>(MotorPdo<T>::rx_pdo)   = T::pb_rx_pdos.mutable_cia402_rx_pdo()->error_report();
+    std::get<11>(MotorPdo<T>::rx_pdo)   = 0;
+    std::get<12>(MotorPdo<T>::rx_pdo)   = T::pb_rx_pdos.mutable_cia402_rx_pdo()->demanded_pos();
+    std::get<13>(MotorPdo<T>::rx_pdo)   = T::pb_rx_pdos.mutable_cia402_rx_pdo()->demanded_vel();
+    std::get<14>(MotorPdo<T>::rx_pdo)   = T::pb_rx_pdos.mutable_cia402_rx_pdo()->demanded_torque();
+    std::get<15>(MotorPdo<T>::rx_pdo)   = T::pb_rx_pdos.mutable_cia402_rx_pdo()->demanded_current();
 
     if(!MotorPdo<T>::init_rx_pdo){
         MotorPdo<T>::init_rx_pdo=true;   

@@ -9,10 +9,10 @@ namespace MotorPdoRx{
     static const std::vector<std::string>name = {"status_word",
                                                  "link_pos", "motor_pos", "link_vel",
                                                  "motor_vel", "torque","current","motor_temp",
-                                                 "board_temp","fault","rtt",
+                                                 "board_temp","fault","fault_info","rtt",
                                                  "pos_ref_fb","vel_ref_fb","tor_ref_fb","curr_ref_fb"};
-    static const int pdo_size=15;
-    using pdo_t= std::tuple<uint32_t,float, float, float, float,float,float,float,float,uint32_t, uint32_t,float, float, float,float>;
+    static const int pdo_size=16;
+    using pdo_t= std::tuple<uint32_t,float, float, float, float,float,float,float,float,uint32_t,std::string, uint32_t,float, float, float,float>;
     template <typename T>
     inline bool make_vector_from_tuple(const pdo_t &pdo_tuple,std::vector<T> &pdo_vector){
         if(pdo_vector.size()!=pdo_size){
@@ -28,11 +28,12 @@ namespace MotorPdoRx{
         pdo_vector[7]= static_cast<T>(std::get<7>(pdo_tuple));
         pdo_vector[8]= static_cast<T>(std::get<8>(pdo_tuple));
         pdo_vector[9]= static_cast<T>(std::get<9>(pdo_tuple));
-        pdo_vector[10]= static_cast<T>(std::get<10>(pdo_tuple));
+        pdo_vector[10]= 0; // cannot cast std::string
         pdo_vector[11]= static_cast<T>(std::get<11>(pdo_tuple));
         pdo_vector[12]= static_cast<T>(std::get<12>(pdo_tuple));
         pdo_vector[13]= static_cast<T>(std::get<13>(pdo_tuple));
         pdo_vector[14]= static_cast<T>(std::get<14>(pdo_tuple));
+        pdo_vector[15]= static_cast<T>(std::get<15>(pdo_tuple));
         return true;
     }
 };
