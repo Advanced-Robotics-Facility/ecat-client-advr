@@ -47,7 +47,6 @@ private:
       QLabel *_time_pdo;
       std::map<int,QTreeWidgetItem *> _esc_pdo_map;
       std::map<int,std::vector<QCPGraph *>> _graph_pdo_map;
-      std::map<int,std::vector<float>>  _pdo_v;
       std::map<int,std::vector<QVector<double>>> _buffer_pdo_map;
       QVector<double> _buffer_time;
       bool _update_plot,_first_update;
@@ -83,10 +82,12 @@ private:
                                               const std::string &esc_type,
                                               const std::vector<std::string> &pdo_fields,
                                               const std::string direction);
+      template<typename... Types>                                        
       void fill_data(const int &esc_id,
                      QTreeWidgetItem * topLevel,
                      const std::vector<std::string> &pdo_fields,
-                     const std::vector<float> &pdo);
+                     const std::tuple<Types...>& pdo,
+                     const std::vector<std::string>& hex_pdo_fields = {});
       void onStopPlotting();
 
       void update_plot();
