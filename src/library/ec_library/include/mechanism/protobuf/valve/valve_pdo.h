@@ -2,7 +2,7 @@
 #define __VALVE_PDO__
 
 #include <pb_utils.h>
-#include "mechanism/pipe/ec_pipe_pdo.h"
+#include "mechanism/shm/ec_shm_pdo.h"
 #include "mechanism/zmq/ec_zmq_pdo.h"
 
 namespace ValvePdoRx{
@@ -149,7 +149,7 @@ inline void ValvePdo<T>::set_to_pb()
     T::pb_tx_pdos.mutable_hyqknee_tx_pdo()->set_aux(std::get<11>(tx_pdo));
 }
 
-template class ValvePdo<EcPipePdo>;
+template class ValvePdo<EcShmPdo>;
 template class ValvePdo<EcZmqPdo>;
 
 #endif

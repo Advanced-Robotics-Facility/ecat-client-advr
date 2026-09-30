@@ -25,12 +25,12 @@ ENDIF(TEST_LIBRARY)
 
 # compile ecat mechanism library
 add_library(ec_api_library STATIC
-            src/mechanism/boost/ec_boost_cmd.cpp
-            src/mechanism/boost/ec_boost_pdo.cpp
+            #src/mechanism/boost/ec_boost_cmd.cpp
+            #src/mechanism/boost/ec_boost_pdo.cpp
             src/mechanism/zmq/ec_repl_cmd.cpp
             src/mechanism/zmq/ec_zmq_cmd.cpp
             src/mechanism/zmq/ec_zmq_pdo.cpp
-            src/mechanism/pipe/ec_pipe_pdo.cpp
+            src/mechanism/shm/ec_shm_pdo.cpp
             src/mechanism/common/ec_pdo.cpp
             src/logger/ec_logger.cpp
             src/api/ec_iface.cpp)
@@ -44,9 +44,8 @@ target_include_directories(ec_api_library
 
 target_link_libraries(ec_api_library
     PUBLIC
-    ecat_master::ecat_core${LIB_TYPE}
+    ecat_master::ecat_core
     ecat_master::ecat_master_pb
-    ecat_master::msgpck_proto
     ${ZeroMQ_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
     matlogger2::matlogger2
@@ -56,7 +55,7 @@ target_link_libraries(ec_api_library
 
 # compile ecat library test
 add_library(${PROJECT_NAME} STATIC
-            src/protocol/udp/ec_udp.cpp
+            #src/protocol/udp/ec_udp.cpp
             src/protocol/tcp/ec_tcp.cpp
             src/protocol/ipc/zipc/ec_zipc.cpp
             src/protocol/ipc/iddp/ec_iddp.cpp

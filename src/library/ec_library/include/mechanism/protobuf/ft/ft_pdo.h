@@ -2,7 +2,7 @@
 #define __FT_PDO__
 
 #include <pb_utils.h>
-#include "mechanism/pipe/ec_pipe_pdo.h"
+#include "mechanism/shm/ec_shm_pdo.h"
 #include "mechanism/zmq/ec_zmq_pdo.h"
 namespace FtPdoRx{
     static const std::vector<std::string>name = {"force_x", "force_y", "force_z","torque_x", "torque_y","torque_z","fault","rtt"};
@@ -77,7 +77,7 @@ inline void FtPdo<T>::set_to_pb()
 {
 }
 
-template class FtPdo<EcPipePdo>;
+template class FtPdo<EcShmPdo>;
 template class FtPdo<EcZmqPdo>;
 
 

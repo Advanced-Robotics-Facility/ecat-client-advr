@@ -50,8 +50,7 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
         if(ec_motors().count(esc_type)>0){
             switch ( esc_type ){
                 case iit::ecat::CENTAC_v15 :
-                case iit::ecat::CENTAC_v17 :
-                case iit::ecat::LP:{
+                case iit::ecat::CENTAC_v17 :{  //case iit::ecat::LP:{
                     auto advrf_pdo = std::make_shared<AdvrfPdo<T>>(_ec_pdo_start, id, esc_type);
                     _moto_pdo_map[id]=std::static_pointer_cast<MotorPdo<T>>(advrf_pdo);
                     _motor_status_map[id]=  advrf_pdo->rx_pdo;
@@ -80,6 +79,7 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
             _gripper_status_map[id]= gripper_pdo->rx_pdo;
             _gripper_reference_map[id]= gripper_pdo->tx_pdo;
         } else{
+            /*
             switch ( esc_type ){
                 case iit::ecat::FT6MSP432_v24:{
                     auto ft_pdo = std::make_shared<FtPdo<T>>(_ec_pdo_start, id, esc_type);
@@ -100,6 +100,7 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                 default:
                     break;
             }
+            */
         }               
     }
 
@@ -265,5 +266,5 @@ void EcPdo<T>::write_pdo()
     write_esc_pdo(DeviceCtrlType::IMU,     _imu_pdo_map,     _imu_reference_map,     CtrlIndex<-1>{});  // no ctrl mode
 }
 
-template class EcPdo<EcPipePdo>;
+template class EcPdo<EcShmPdo>;
 template class EcPdo<EcZmqPdo>;

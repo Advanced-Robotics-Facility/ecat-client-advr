@@ -2,7 +2,7 @@
 #define __PUMP_PDO__
 
 #include <pb_utils.h>
-#include "mechanism/pipe/ec_pipe_pdo.h"
+#include "mechanism/shm/ec_shm_pdo.h"
 #include "mechanism/zmq/ec_zmq_pdo.h"
 
 namespace PumpPdoRx{
@@ -146,7 +146,7 @@ inline void PumpPdo<T>::set_to_pb()
     T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_aux(std::get<9>(tx_pdo));
 }
 
-template class PumpPdo<EcPipePdo>;
+template class PumpPdo<EcShmPdo>;
 template class PumpPdo<EcZmqPdo>;
 
 #endif

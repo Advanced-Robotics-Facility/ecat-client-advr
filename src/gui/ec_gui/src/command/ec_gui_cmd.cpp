@@ -121,7 +121,7 @@ void EcGuiCmd::fill_start_stop_motor()
             _motors_selected |= true;
             if(_ctrl_cmd_type==ClientCmdType::STOP){
                 if(false){
-                    _brake_cmds.push_back(std::make_tuple(slave_id,to_underlying(PdoAuxCmdType::BRAKE_ENGAGE)));
+                    //_brake_cmds.push_back(std::make_tuple(slave_id,to_underlying(PdoAuxCmdType::BRAKE_ENGAGE)));
                 }
             }
             else{
@@ -137,7 +137,7 @@ void EcGuiCmd::fill_start_stop_motor()
                 }
                 
                 if(false){
-                    _brake_cmds.push_back(std::make_tuple(slave_id,to_underlying(PdoAuxCmdType::BRAKE_RELEASE)));
+                    //_brake_cmds.push_back(std::make_tuple(slave_id,to_underlying(PdoAuxCmdType::BRAKE_RELEASE)));
                 }
             }
         }
@@ -214,7 +214,10 @@ bool EcGuiCmd::braking_cmd_req()
 {
     //********** USE SDO /***********
     bool braking_cmd_ack=false;
+    
+    
     RD_SDO rd_sdo{};
+    /*
     for(const auto &brake_cmd:_brake_cmds){
         int esc_id; 
         int brake_req;
@@ -234,8 +237,9 @@ bool EcGuiCmd::braking_cmd_req()
         braking_cmd_ack &= _client->set_wr_sdo(esc_id,rd_sdo,wr_sdo);
     }
     
-    //********** USE PDO /***********
     //braking_cmd_ack=_client->pdo_aux_cmd(_brake_cmds);
+
+    */
     
     return braking_cmd_ack;
 }

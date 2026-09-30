@@ -278,21 +278,22 @@ void EcUtils::device_config_map(const YAML::Node & device_config_node,std::strin
                         }else if(type_str=="Synapticon"){
                             _ec_cfg.device_config_map[esc_id].type=iit::ecat::SYNAPTICON_v301;
                         } else if(type_str=="Novanta"){
-                            _ec_cfg.device_config_map[esc_id].type=iit::ecat::NOVANTA;
+                            //_ec_cfg.device_config_map[esc_id].type=iit::ecat::NOVANTA;
                         } else if(type_str=="Amc"){
-                            _ec_cfg.device_config_map[esc_id].type=iit::ecat::AMC;
+                            //_ec_cfg.device_config_map[esc_id].type=iit::ecat::AMC;
                         } else{
                             _ec_cfg.device_config_map[esc_id].type=iit::ecat::CENTAC_v15;
                         }
                     }
                 }
                 else if(device_type=="valve"){
-                    _ec_cfg.device_config_map[esc_id].type=iit::ecat::HYQ_KNEE;
+                    //_ec_cfg.device_config_map[esc_id].type=iit::ecat::HYQ_KNEE;
                 }
                 else if(device_type=="pump"){
-                    _ec_cfg.device_config_map[esc_id].type=iit::ecat::HYQ_HPU;
+                    //_ec_cfg.device_config_map[esc_id].type=iit::ecat::HYQ_HPU;
                 }
                 else if(device_type=="gripper"){
+                    /*
                     _ec_cfg.device_config_map[esc_id].type = iit::ecat::SCHUNKGRIPPER_v29;
     
                     if(device_config_node[esc_name]["gripper_type"]){
@@ -301,6 +302,7 @@ void EcUtils::device_config_map(const YAML::Node & device_config_node,std::strin
                             _ec_cfg.device_config_map[esc_id].type = iit::ecat::SCHUNKGRIPPER_v29;
                         }
                     }
+                    */
                 }
                 else{
                     throw std::runtime_error("Error: cannot find a device type for id: "+std::to_string(esc_id));
@@ -493,36 +495,6 @@ void EcUtils::generate_fake_slave_info()
         _ec_cfg.fake_slave_info.push_back(std::make_tuple(id,device_config.type,slave_pos));
         slave_pos++;
     }
-
-
-    if(_robot_control_node["simulation"]) {
-        if(_robot_control_node["simulation"]["imu_id"]){
-            // IMU
-            auto imu_id_v=_robot_control_node["simulation"]["imu_id"].as<std::vector<int>>();
-            for(const auto &imu_id:imu_id_v){
-                _ec_cfg.fake_slave_info.push_back(std::make_tuple(imu_id,iit::ecat::IMUVN,slave_pos));
-                slave_pos++;
-            }
-        }
-
-        if(_robot_control_node["simulation"]["ft_id"]){
-            // FT
-            auto ft_id_v=_robot_control_node["simulation"]["ft_id"].as<std::vector<int>>();
-            for(const auto &ft_id:ft_id_v){
-                _ec_cfg.fake_slave_info.push_back(std::make_tuple(ft_id,iit::ecat::FT6MSP432_v24,slave_pos));
-                slave_pos++;
-            }
-        }
-        
-        if(_robot_control_node["simulation"]["pow_id"]){
-            // POW
-            auto pow_id_v=_robot_control_node["simulation"]["pow_id"].as<std::vector<int>>();
-            for(const auto &pow_id:pow_id_v){
-                _ec_cfg.fake_slave_info.push_back(std::make_tuple(pow_id,iit::ecat::POWF28M36,slave_pos));
-                slave_pos++;
-            }
-        }
-    }
 }
 
 EcUtils::EC_CONFIG EcUtils::get_ec_cfg()
@@ -539,8 +511,8 @@ EcIface::Ptr EcUtils::make_ec_iface()
 {
     EcIface::Ptr ec_iface_ptr;
     if(_ec_cfg.protocol == "udp"){
-       auto ec_udp_ptr = std::make_shared<EcUDP>(_ec_cfg.host_name,_ec_cfg.host_port);
-       ec_iface_ptr = ec_udp_ptr;
+       //auto ec_udp_ptr = std::make_shared<EcUDP>(_ec_cfg.host_name,_ec_cfg.host_port);
+       //ec_iface_ptr = ec_udp_ptr;
        
     }else if(_ec_cfg.protocol == "tcp"){
        auto ec_tcp_ptr = std::make_shared<EcTCP>(_ec_cfg.host_name,_ec_cfg.host_port);

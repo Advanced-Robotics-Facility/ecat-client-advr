@@ -16,6 +16,7 @@ void EcBoostPdo::esc_factory(SSI slave_descr)
             _gripper_status_map[id] = {};
             _gripper_reference_map[id] = {};
         } else{
+            /*
             switch ( esc_type ){
                 case iit::ecat::FT6MSP432_v24:{
                     _ft_status_map[id] = {};
@@ -29,6 +30,7 @@ void EcBoostPdo::esc_factory(SSI slave_descr)
                 default:
                     break;
             } 
+            */
         }             
     }
 

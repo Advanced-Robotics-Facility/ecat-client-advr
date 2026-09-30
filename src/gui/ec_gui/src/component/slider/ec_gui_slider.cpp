@@ -142,6 +142,7 @@ void EcGuiSlider::create_sliders(SSI device_info,device_ctrl_t device_ctrl)
                     std::bind(&EcGuiSlider::on_checkbox_clicked, this, slider_enabled,device_list_index));
             device_list_index++;
         }
+        /*
         else if(device_type==iit::ecat::HYQ_KNEE){
             std::string valve_name_s="valve_"+std::to_string(device_id);
             QString valve_name = QString::fromStdString(valve_name_s);
@@ -196,6 +197,7 @@ void EcGuiSlider::create_sliders(SSI device_info,device_ctrl_t device_ctrl)
                     std::bind(&EcGuiSlider::on_checkbox_clicked, this, slider_enabled,device_list_index));
             device_list_index++;
         }
+        */
     }
     for(int i=0;i<_device_list_wid->count();i++){
         _device_list_wid->item(i)->setHidden(true);

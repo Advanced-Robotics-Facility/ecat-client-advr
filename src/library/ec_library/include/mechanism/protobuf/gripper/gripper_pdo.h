@@ -2,7 +2,7 @@
 #define __GRIPPER_PDO__
 
 #include <pb_utils.h>
-#include "mechanism/pipe/ec_pipe_pdo.h"
+#include "mechanism/shm/ec_shm_pdo.h"
 #include "mechanism/zmq/ec_zmq_pdo.h"
 
 namespace GripperPdoRx {
@@ -142,7 +142,7 @@ inline void GripperPdo<T>::set_to_pb()
     T::pb_tx_pdos.mutable_gripper_tx_pdo()->set_gain_4(std::get<8>(tx_pdo));
 }
 
-template class GripperPdo<EcPipePdo>;
+template class GripperPdo<EcShmPdo>;
 template class GripperPdo<EcZmqPdo>;
 
 #endif

@@ -2,7 +2,7 @@
 #define __IMU_PDO__
 
 #include <pb_utils.h>
-#include "mechanism/pipe/ec_pipe_pdo.h"
+#include "mechanism/shm/ec_shm_pdo.h"
 #include "mechanism/zmq/ec_zmq_pdo.h"
 
 namespace ImuPdoRx{
@@ -131,7 +131,7 @@ inline void ImuPdo<T>::set_to_pb()
     T::pb_tx_pdos.mutable_imuvn_tx_pdo()->set_digital_out(std::get<0>(tx_pdo));
 }
 
-template class ImuPdo<EcPipePdo>;
+template class ImuPdo<EcShmPdo>;
 template class ImuPdo<EcZmqPdo>;
 
 

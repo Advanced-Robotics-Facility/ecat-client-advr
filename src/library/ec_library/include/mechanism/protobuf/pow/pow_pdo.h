@@ -2,7 +2,7 @@
 #define __POW_PDO__
 
 #include <pb_utils.h>
-#include "mechanism/pipe/ec_pipe_pdo.h"
+#include "mechanism/shm/ec_shm_pdo.h"
 #include "mechanism/zmq/ec_zmq_pdo.h"
 
 namespace PowPdoRx{
@@ -83,7 +83,7 @@ inline void PowPdo<T>::set_to_pb()
 {
 }
 
-template class PowPdo<EcPipePdo>;
+template class PowPdo<EcShmPdo>;
 template class PowPdo<EcZmqPdo>;
 
 #endif

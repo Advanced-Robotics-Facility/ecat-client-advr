@@ -5,7 +5,7 @@
 #include <QWidget>
 #include <QMainWindow>
 
-#include "cmn_utils.h"
+#include "utils/cmn_utils.h"
 #include "utils/ec_utils.h"
 
 #include "ec_gui_net.h"

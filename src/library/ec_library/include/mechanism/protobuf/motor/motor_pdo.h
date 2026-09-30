@@ -3,7 +3,7 @@
 
 #include<tuple>
 #include <pb_utils.h>
-#include "mechanism/pipe/ec_pipe_pdo.h"
+#include "mechanism/shm/ec_shm_pdo.h"
 #include "mechanism/zmq/ec_zmq_pdo.h"
 namespace MotorPdoRx{
     static const std::vector<std::string>name = {"status_word",
@@ -112,7 +112,7 @@ inline MotorPdo<T>::~MotorPdo()
 };
 
 
-template class MotorPdo<EcPipePdo>;
+template class MotorPdo<EcShmPdo>;
 template class MotorPdo<EcZmqPdo>;
 
 #endif

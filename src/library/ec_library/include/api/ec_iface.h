@@ -7,7 +7,7 @@
 #include <map>
 #include "ec_types.h"
 #include "logger/ec_logger.h"
-#include "cmn_utils.h"
+#include "utils/cmn_utils.h"
 #include <boost/lockfree/spsc_queue.hpp>
 #include <boost/lockfree/queue.hpp>
 #include <boost/lockfree/stack.hpp>

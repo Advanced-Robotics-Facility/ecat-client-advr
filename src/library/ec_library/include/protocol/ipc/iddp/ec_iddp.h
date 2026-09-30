@@ -5,7 +5,7 @@
 #include "mechanism/zmq/ec_zmq_cmd.h"
 #include "mechanism/common/ec_pdo.h"
 
-class EcIDDP : public EcZmqCmd,EcPdo<EcPipePdo>,EcThread
+class EcIDDP : public EcZmqCmd,EcPdo<EcShmPdo>,EcThread
 {
 public:
 

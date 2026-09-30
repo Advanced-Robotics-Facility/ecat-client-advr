@@ -265,8 +265,8 @@ void EcWrapper::prepare_devices()
         
         if(_ec_cfg.device_config_map[id].brake_present){
             // queue release/engage brake commands for all motors 
-            _release_brake_cmds.push_back(std::make_tuple(id,to_underlying(PdoAuxCmdType::BRAKE_RELEASE)));
-            _engage_brake_cmds.push_back(std::make_tuple(id,to_underlying(PdoAuxCmdType::BRAKE_ENGAGE)));
+            //_release_brake_cmds.push_back(std::make_tuple(id,to_underlying(PdoAuxCmdType::BRAKE_RELEASE)));
+            //_engage_brake_cmds.push_back(std::make_tuple(id,to_underlying(PdoAuxCmdType::BRAKE_ENGAGE)));
         }
     }
 }
