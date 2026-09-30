@@ -28,6 +28,8 @@ public:
     virtual ~EcZmqPdo(){
         
     };
+
+    void set_dev_type(uint8_t dev_type) {}
     
     int read(void);
     int write(void);

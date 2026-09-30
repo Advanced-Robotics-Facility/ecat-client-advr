@@ -22,6 +22,7 @@ protected:
     iit::advr::Ec_slave_pdo pb_rx_pdos,  pb_tx_pdos;    
     uint8_t                 pb_buf_rd[MAX_PB_SIZE];
     uint8_t                 pb_buf_wr[MAX_PB_SIZE];
+    DeviceInfo              dev_info = {};
 
     virtual void get_from_pb(void) = 0;
     virtual void set_to_pb(void) = 0;
@@ -46,6 +47,8 @@ public:
 
     std::string get_name() const    { return name; }
     uint32_t get_type() const       { return type; }
+
+    void set_dev_type(uint8_t dev_type) {dev_info.type = static_cast<DeviceType>(dev_type);}
 
     int read(void);
     int write(void);

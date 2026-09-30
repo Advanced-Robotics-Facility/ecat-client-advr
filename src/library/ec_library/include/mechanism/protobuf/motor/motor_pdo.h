@@ -101,6 +101,9 @@ template < class T >
 inline MotorPdo<T>::MotorPdo(const std::string value,int32_t id, uint32_t type):
                            T(id, type, value)
 {
+    DeviceType dev_type = DeviceType::MOTOR;
+    T::set_dev_type(static_cast<uint8_t>(dev_type));
+
     T::init();
     T::write_connect();
 };

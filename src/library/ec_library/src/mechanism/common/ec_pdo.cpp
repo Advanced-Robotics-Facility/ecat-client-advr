@@ -17,7 +17,7 @@ _host_port(host_port)
     _ec_pdo_start="";
     _init_read_pdo=_init_rx_pdo=false;
 
-    if(_protocol!="pipe"){
+    if(_protocol!="shm"){
         EcZmqPdoContext::start_context();
     }   
 }
@@ -26,7 +26,7 @@ EcPdo<T>::EcPdo(std::string robot_name):
 _robot_name(robot_name)
 {
      _ec_pdo_start=_robot_name;
-     _protocol="pipe";
+     _protocol="shm";
     _init_read_pdo=_init_rx_pdo=false;
 }
 
@@ -38,9 +38,13 @@ EcPdo<T>::~EcPdo()
 template < class T >
 void EcPdo<T>::esc_factory(SSI slave_descr)
 {
+    if(_protocol=="shm"){
+        client_transport().initialize(true);
+    }
+
     for ( auto &[id, esc_type, pos] : slave_descr ) {
         
-        if(_protocol!="pipe"){
+        if(_protocol!="shm"){
             std::string host_port_cmd = std::to_string(_host_port+id);
             // zmq setup
             std::string zmq_uri = _protocol+"://" + _host_address + ":"+host_port_cmd;
@@ -125,7 +129,7 @@ void EcPdo<T>::stop_pdo()
     _pump_pdo_map.clear();
     _gripper_pdo_map.clear();
     
-    if(_protocol!="pipe"){
+    if(_protocol!="shm"){
         EcZmqPdoContext::stop_context();
     }
 }
@@ -212,13 +216,42 @@ void EcPdo<T>::read_pdo()
 
     };
 
-    read_esc_pdo(_moto_pdo_map,_internal_motor_status,_motor_status_queue);
-    read_esc_pdo(_ft_pdo_map,_internal_ft_status,_ft_status_queue);
-    read_esc_pdo(_imu_pdo_map,_internal_imu_status,_imu_status_queue);
-    read_esc_pdo(_pow_pdo_map,_internal_pow_status,_pow_status_queue);
-    read_esc_pdo(_valve_pdo_map,_internal_valve_status,_valve_status_queue);
-    read_esc_pdo(_pump_pdo_map,_internal_pump_status,_pump_status_queue);
-    read_esc_pdo(_gripper_pdo_map,_internal_gripper_status,_gripper_status_queue);
+
+    const auto dispatch_to_slave = [&](std::uint32_t slave_id) {
+
+        std::size_t index = 0;
+        for (auto const &[id,pdo] : _moto_pdo_map )  {
+            try { 
+                ///////////////////////////////////////////////////////////////
+                if(id==static_cast<int>(slave_id)){
+                    pdo->read();
+                    _internal_motor_status[index]=pdo->rx_pdo;
+                    return;
+                }
+                //////////////////////////////////////////////////////////////
+            }
+            
+            catch ( const std::out_of_range &e) {};  
+
+            ++index;
+        }
+    };
+
+    if(_protocol=="shm"){
+        client_transport().drain_rx_queues(dispatch_to_slave);
+        get_init_rx_pdo(_moto_pdo_map);
+        if(!_internal_motor_status.empty()){
+            _motor_status_queue.push(_internal_motor_status);
+        }
+    }else{
+        read_esc_pdo(_moto_pdo_map,_internal_motor_status,_motor_status_queue);
+        read_esc_pdo(_ft_pdo_map,_internal_ft_status,_ft_status_queue);
+        read_esc_pdo(_imu_pdo_map,_internal_imu_status,_imu_status_queue);
+        read_esc_pdo(_pow_pdo_map,_internal_pow_status,_pow_status_queue);
+        read_esc_pdo(_valve_pdo_map,_internal_valve_status,_valve_status_queue);
+        read_esc_pdo(_pump_pdo_map,_internal_pump_status,_pump_status_queue);
+        read_esc_pdo(_gripper_pdo_map,_internal_gripper_status,_gripper_status_queue);
+    }
 }
 
 

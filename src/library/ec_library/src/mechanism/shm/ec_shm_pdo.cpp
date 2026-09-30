@@ -19,17 +19,26 @@ EcShmPdo::EcShmPdo( int32_t id, uint32_t type, std::string rd_pp_name, std::stri
     name = std::string("iface_id_") + std::to_string(id);
 }
 
-void EcShmPdo::init(void)
-{
+void EcShmPdo::init(void){
 
 }
 
 int EcShmPdo::read(void)  {
-    return 0;
+    int32_t nbytes = client_transport().extract_rx_pdo(pb_rx_pdos);
+    if(client_transport().get_proto() == PROTOBUFF ){
+        if(nbytes>0){
+            get_from_pb();
+        }
+    }
+    return nbytes;
 }
 
 int EcShmPdo::write(void) {
-    return 0;
+    if(client_transport().get_proto() == PROTOBUFF){
+        set_to_pb();
+    }
+
+    return client_transport().push_tx_queue(dev_info,pb_tx_pdos);
 }
 
 int EcShmPdo::write_dummy(void) {
