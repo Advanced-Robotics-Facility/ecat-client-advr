@@ -99,6 +99,9 @@ template <class T>
 inline GripperPdo<T>::GripperPdo(const std::string value, int32_t id, uint32_t type) :
     T(id, type, value)
 {
+    DeviceType dev_type = DeviceType::GRIPPER;
+    T::set_dev_type(static_cast<uint8_t>(dev_type));
+    
     T::init();
     init_pb();
     T::write_connect();

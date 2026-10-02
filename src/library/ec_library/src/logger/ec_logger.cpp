@@ -95,7 +95,7 @@ void EcLogger::start_mat_logger()
             create_logger("gripper_status_logger",esc_id,"gripper_sts_id",GripperPdoRx::pdo_size);
             create_logger("gripper_reference_logger",esc_id,"gripper_ref_id",GripperPdoTx::pdo_size);
         } else{
-            /*
+            
             switch ( esc_type ){
                 case iit::ecat::FT6MSP432_v24:{
                     create_logger("ft_status_logger",esc_id,"ft_id",FtPdoRx::pdo_size);
@@ -109,7 +109,7 @@ void EcLogger::start_mat_logger()
                 default:
                     break;
             }
-            */
+            
         }
     }
 

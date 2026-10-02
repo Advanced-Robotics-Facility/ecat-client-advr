@@ -142,8 +142,7 @@ void EcGuiSlider::create_sliders(SSI device_info,device_ctrl_t device_ctrl)
                     std::bind(&EcGuiSlider::on_checkbox_clicked, this, slider_enabled,device_list_index));
             device_list_index++;
         }
-        /*
-        else if(device_type==iit::ecat::HYQ_KNEE){
+        else if(ec_valves().count(device_type)>0){
             std::string valve_name_s="valve_"+std::to_string(device_id);
             QString valve_name = QString::fromStdString(valve_name_s);
             auto wid_valve=new SliderWidget(valve_name,valve_info,this);
@@ -160,7 +159,7 @@ void EcGuiSlider::create_sliders(SSI device_info,device_ctrl_t device_ctrl)
                     std::bind(&EcGuiSlider::on_checkbox_clicked, this, slider_enabled,device_list_index));
             device_list_index++;
         }
-        else if(device_type==iit::ecat::HYQ_HPU){
+        else if(ec_pumps().count(device_type)>0){
             std::string pump_name_s="pump_"+std::to_string(device_id);
             QString pump_name = QString::fromStdString(pump_name_s);
             auto wid_pump=new SliderWidget(pump_name,pump_info,this);
@@ -178,8 +177,7 @@ void EcGuiSlider::create_sliders(SSI device_info,device_ctrl_t device_ctrl)
                     std::bind(&EcGuiSlider::on_checkbox_clicked, this, slider_enabled,device_list_index));
             device_list_index++;
         }
-        else if(device_type==iit::ecat::SCHUNKGRIPPER_v28 ||
-                device_type == iit::ecat::SCHUNKGRIPPER_v29) {
+        else if(ec_grippers().count(device_type)>0){
             std::string gripper_name_s="gripper_"+std::to_string(device_id);
             QString gripper_name = QString::fromStdString(gripper_name_s);
             auto wid_gripper=new SliderWidget(gripper_name,gripper_info,this);
@@ -197,7 +195,6 @@ void EcGuiSlider::create_sliders(SSI device_info,device_ctrl_t device_ctrl)
                     std::bind(&EcGuiSlider::on_checkbox_clicked, this, slider_enabled,device_list_index));
             device_list_index++;
         }
-        */
     }
     for(int i=0;i<_device_list_wid->count();i++){
         _device_list_wid->item(i)->setHidden(true);

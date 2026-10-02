@@ -83,7 +83,7 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
             _gripper_status_map[id]= gripper_pdo->rx_pdo;
             _gripper_reference_map[id]= gripper_pdo->tx_pdo;
         } else{
-            /*
+
             switch ( esc_type ){
                 case iit::ecat::FT6MSP432_v24:{
                     auto ft_pdo = std::make_shared<FtPdo<T>>(_ec_pdo_start, id, esc_type);
@@ -104,7 +104,7 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                 default:
                     break;
             }
-            */
+            
         }               
     }
 
