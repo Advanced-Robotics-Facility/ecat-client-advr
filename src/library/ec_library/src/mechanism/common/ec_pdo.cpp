@@ -183,75 +183,53 @@ void EcPdo<T>::read_pdo()
     const auto read_esc_pdo =
     [this](auto& pdo_map, auto& pdo_status,auto& queue) -> void
     {
-
         if(pdo_map.empty()){
             return;
         }
 
         std::size_t index = 0;
-
         for (auto const &[id,pdo] : pdo_map )  {
-            try { 
-                ///////////////////////////////////////////////////////////////
-                // read
-                int nbytes=0;
-                do {
-                    // read protobuf data
-                    nbytes = pdo->read();
-                } while ( nbytes > 0);
-
-                pdo_status[index]=pdo->rx_pdo;
-                //////////////////////////////////////////////////////////////
-            }
-            
-            catch ( const std::out_of_range &e) {};  
-
-            ++index;
+            pdo_status[index++] = pdo->rx_pdo;
         }
 
         get_init_rx_pdo(pdo_map);
         if(!pdo_status.empty()){
             queue.push(pdo_status);
         }
-
     };
 
-
-    const auto dispatch_to_slave = [&](std::uint32_t slave_id) {
-
-        std::size_t index = 0;
-        for (auto const &[id,pdo] : _moto_pdo_map )  {
-            try { 
-                ///////////////////////////////////////////////////////////////
-                if(id==static_cast<int>(slave_id)){
-                    pdo->read();
-                    _internal_motor_status[index]=pdo->rx_pdo;
-                    return;
-                }
-                //////////////////////////////////////////////////////////////
-            }
-            
-            catch ( const std::out_of_range &e) {};  
-
-            ++index;
-        }
+    const auto dispatch_to_slave = [this](std::uint32_t slave_id) {
+        const auto update_slave = [slave_id](auto const& pdo_map) -> bool {
+            const auto it = pdo_map.find(slave_id);
+    
+            if (it == pdo_map.end())
+                return false;
+    
+            it->second->read();
+            return true;
+        };
+    
+        if (update_slave(_moto_pdo_map))  return;
+        if (update_slave(_ft_pdo_map))    return;
+        if (update_slave(_imu_pdo_map))   return;
+        if (update_slave(_pow_pdo_map))   return;
+        if (update_slave(_valve_pdo_map)) return;
+        if (update_slave(_pump_pdo_map))  return;
+    
+        update_slave(_gripper_pdo_map);
     };
 
     if(_protocol=="shm"){
         client_transport().drain_rx_queues(dispatch_to_slave);
-        get_init_rx_pdo(_moto_pdo_map);
-        if(!_internal_motor_status.empty()){
-            _motor_status_queue.push(_internal_motor_status);
-        }
-    }else{
-        read_esc_pdo(_moto_pdo_map,_internal_motor_status,_motor_status_queue);
-        read_esc_pdo(_ft_pdo_map,_internal_ft_status,_ft_status_queue);
-        read_esc_pdo(_imu_pdo_map,_internal_imu_status,_imu_status_queue);
-        read_esc_pdo(_pow_pdo_map,_internal_pow_status,_pow_status_queue);
-        read_esc_pdo(_valve_pdo_map,_internal_valve_status,_valve_status_queue);
-        read_esc_pdo(_pump_pdo_map,_internal_pump_status,_pump_status_queue);
-        read_esc_pdo(_gripper_pdo_map,_internal_gripper_status,_gripper_status_queue);
     }
+
+    read_esc_pdo(_moto_pdo_map,_internal_motor_status,_motor_status_queue);
+    read_esc_pdo(_ft_pdo_map,_internal_ft_status,_ft_status_queue);
+    read_esc_pdo(_imu_pdo_map,_internal_imu_status,_imu_status_queue);
+    read_esc_pdo(_pow_pdo_map,_internal_pow_status,_pow_status_queue);
+    read_esc_pdo(_valve_pdo_map,_internal_valve_status,_valve_status_queue);
+    read_esc_pdo(_pump_pdo_map,_internal_pump_status,_pump_status_queue);
+    read_esc_pdo(_gripper_pdo_map,_internal_gripper_status,_gripper_status_queue);
 }
 
 
