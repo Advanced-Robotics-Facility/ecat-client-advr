@@ -20,7 +20,7 @@ EcShmPdo::EcShmPdo( int32_t id, uint32_t type, std::string rd_pp_name, std::stri
 }
 
 void EcShmPdo::init(void){
-
+    dev_info.id = id;
 }
 
 int EcShmPdo::read(void)  {
