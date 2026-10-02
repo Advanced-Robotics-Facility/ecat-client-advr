@@ -82,7 +82,7 @@ public:
     bool init_rx_pdo=false;
 
 protected:
-    iit::advr::Gains_Type _ctrl_type_cast=static_cast<iit::advr::Gains_Type>(0x00);
+    iit::advrf::Gains_Type _ctrl_type_cast=static_cast<iit::advrf::Gains_Type>(0x00);
     virtual void init_pb();
 };
 

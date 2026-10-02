@@ -70,7 +70,7 @@ bool EcZmqCmd::retrieve_slaves_info(SSI &slave_info)
         
         std::map<std::string,std::string> args;
         
-        auto fault=_ec_repl_cmd->Ecat_Master_cmd(iit::advr::Ecat_Master_cmd_Type::Ecat_Master_cmd_Type_GET_SLAVES_DESCR,
+        auto fault=_ec_repl_cmd->Ecat_Master_cmd(iit::advrf::Ecat_Master_cmd_Type::Ecat_Master_cmd_Type_GET_SLAVES_DESCR,
                                                 args,
                                                 slave_descr_info);
         
@@ -125,7 +125,7 @@ bool EcZmqCmd::retrieve_all_sdo(uint32_t esc_id,RR_SDOS &rr_sdo)
     int attemps_cnt = 0; 
     while(_client_status.status!=ClientStatusEnum::NOT_ALIVE && attemps_cnt < _max_cmd_attemps){
         std::string msg,rd_all_sdo_name;
-        auto fault=_ec_repl_cmd->Slave_SDO_info(iit::advr::Slave_SDO_info_Type::Slave_SDO_info_Type_SDO_NAME, 
+        auto fault=_ec_repl_cmd->Slave_SDO_info(iit::advrf::Slave_SDO_info_Type::Slave_SDO_info_Type_SDO_NAME, 
                                                 esc_id,
                                                 rd_all_sdo_name);
         
@@ -280,7 +280,7 @@ bool EcZmqCmd::start_devices(const DST &devices_start)
         bool devices_started=true;
         for (auto &[device_id ,ctrl_type, gains] : devices_start) {
             std::string msg="";
-            auto fault=_ec_repl_cmd->Ctrl_cmd(iit::advr::Ctrl_cmd_Type::Ctrl_cmd_Type_CTRL_CMD_START,
+            auto fault=_ec_repl_cmd->Ctrl_cmd(iit::advrf::Ctrl_cmd_Type::Ctrl_cmd_Type_CTRL_CMD_START,
                                              device_id,
                                              ctrl_type,
                                              gains,
@@ -316,7 +316,7 @@ bool EcZmqCmd::stop_devices()
             bool devices_stopped=true;
             for (auto &[device_id ,ctrl_type, gains] : _devices_started) {
                 std::string msg="";
-                auto fault=_ec_repl_cmd->Ctrl_cmd(iit::advr::Ctrl_cmd_Type::Ctrl_cmd_Type_CTRL_CMD_STOP,
+                auto fault=_ec_repl_cmd->Ctrl_cmd(iit::advrf::Ctrl_cmd_Type::Ctrl_cmd_Type_CTRL_CMD_STOP,
                                                   device_id,
                                                   0.0,  // ignored
                                                   {},  // ignored
@@ -352,7 +352,7 @@ bool EcZmqCmd::pdo_aux_cmd(const PAC & pac)
 
         // prepare message for releasing or engaging the brake
         aux_cmd.board_id = esc_id;
-        aux_cmd.type=static_cast<iit::advr::PDOs_aux_cmd_Aux_cmd_Type>(cmd_type);
+        aux_cmd.type=static_cast<iit::advrf::PDOs_aux_cmd_Aux_cmd_Type>(cmd_type);
         aux_cmds.push_back(aux_cmd);
     }
 

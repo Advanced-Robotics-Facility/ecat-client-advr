@@ -452,8 +452,8 @@ bool EcWrapper::safe_init()
                                                             0,                                                    // idx
                                                             0                                                     // aux
                                                         );
-            if(_ec_cfg.device_config_map[esc_id].control_mode_type==iit::advr::Gains_Type_POSITION ||
-               _ec_cfg.device_config_map[esc_id].control_mode_type==iit::advr::Gains_Type_IMPEDANCE){
+            if(_ec_cfg.device_config_map[esc_id].control_mode_type==iit::advrf::Gains_Type_POSITION ||
+               _ec_cfg.device_config_map[esc_id].control_mode_type==iit::advrf::Gains_Type_IMPEDANCE){
                 if(motor_trj_map.count(esc_id)>0){
                     motor_trj_map[esc_id].start = motor_pos;
                     motor_trj_map[esc_id].set_ref = motor_pos;
@@ -485,7 +485,7 @@ bool EcWrapper::safe_init()
                                                             0,                                                    // ts
                                                             0,                                                    // op_idx_aux
                                                             0);                                                   // aux
-            if(_ec_cfg.device_config_map[esc_id].control_mode_type==iit::advr::Gains_Type_POSITION){
+            if(_ec_cfg.device_config_map[esc_id].control_mode_type==iit::advrf::Gains_Type_POSITION){
                 if(valve_trj_map.count(esc_id)>0){
                     valve_trj_map[esc_id].start = enc_pos;
                     valve_trj_map[esc_id].set_ref = enc_pos;
@@ -518,7 +518,7 @@ bool EcWrapper::safe_init()
                                                             0,                                                    // ts
                                                             0,                                                    // op_idx_aux
                                                             0);                                                   // aux
-            if(_ec_cfg.device_config_map[esc_id].control_mode_type==iit::advr::Gains_Type_IMPEDANCE){
+            if(_ec_cfg.device_config_map[esc_id].control_mode_type==iit::advrf::Gains_Type_IMPEDANCE){
                 if(pump_trj_map.count(esc_id)>0){
                     pump_trj_map[esc_id].start = pump_target;
                     pump_trj_map[esc_id].set_ref = pump_target;
@@ -555,8 +555,8 @@ bool EcWrapper::safe_init()
                 0.0f
             );
 
-            if(_ec_cfg.device_config_map[esc_id].control_mode_type==iit::advr::Gains_Type_POSITION ||
-                _ec_cfg.device_config_map[esc_id].control_mode_type==iit::advr::Gains_Type_IMPEDANCE){
+            if(_ec_cfg.device_config_map[esc_id].control_mode_type==iit::advrf::Gains_Type_POSITION ||
+                _ec_cfg.device_config_map[esc_id].control_mode_type==iit::advrf::Gains_Type_IMPEDANCE){
                     if(gripper_trj_map.count(esc_id)>0){
                     gripper_trj_map[esc_id].start = motor_pos;
                     gripper_trj_map[esc_id].set_ref = motor_pos;

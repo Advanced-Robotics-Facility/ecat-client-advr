@@ -118,13 +118,13 @@ int main(int argc, char * const argv[])
             for (auto &[esc_id, motor_trj] : motor_trj_map){
                 int ctrl_mode= ec_cfg.device_config_map[esc_id].control_mode_type;
                 motor_trj.set_target(motor_trj.start + alpha * (motor_trj.set_trj - motor_trj.start));
-                if(ctrl_mode != iit::advr::Gains_Type_VELOCITY){
-                    if(ctrl_mode == iit::advr::Gains_Type_POSITION ||
-                    ctrl_mode == iit::advr::Gains_Type_IMPEDANCE){
+                if(ctrl_mode != iit::advrf::Gains_Type_VELOCITY){
+                    if(ctrl_mode == iit::advrf::Gains_Type_POSITION ||
+                    ctrl_mode == iit::advrf::Gains_Type_IMPEDANCE){
                         std::get<1>(motor_reference_map[esc_id]) = motor_trj.set_ref;
                     }
-                    if(ctrl_mode != iit::advr::Gains_Type_POSITION &&
-                    ctrl_mode != iit::advr::Gains_Type_IMPEDANCE){
+                    if(ctrl_mode != iit::advrf::Gains_Type_POSITION &&
+                    ctrl_mode != iit::advrf::Gains_Type_IMPEDANCE){
                         std::get<3>(motor_reference_map[esc_id]) = motor_trj.set_ref; // current mode (0xCC or oxDD) or impedance
                     }
                 }else{
@@ -140,7 +140,7 @@ int main(int argc, char * const argv[])
             for (auto &[esc_id, gripper_trj] : gripper_trj_map){
                 int ctrl_mode= ec_cfg.device_config_map[esc_id].control_mode_type;
                 gripper_trj.set_target(gripper_trj.start + alpha * (gripper_trj.set_trj - gripper_trj.start));
-                if(ctrl_mode == iit::advr::Gains_Type_POSITION){
+                if(ctrl_mode == iit::advrf::Gains_Type_POSITION){
                     std::get<1>(gripper_reference_map[esc_id]) = gripper_trj.set_ref;
                 }
             }  

@@ -10,35 +10,35 @@ using namespace std::chrono;
 const std::map<std::string, TrjInfoMap> esc_trj_map = {
     { "motor", {
         {
-            { iit::advr::Gains_Type_POSITION,  {"position", {"Min_pos", "Max_pos"}} },
-            { iit::advr::Gains_Type_VELOCITY,  {"velocity", {"Max_vel"}} },
-            { iit::advr::Gains_Type_IMPEDANCE, {"position", {"Min_pos", "Max_pos"}} },
-            { iit::advr::Gains_Type_TORQUE,    {"torque",   {"Max_tor"}} },
-            { iit::advr::Gains_Type_CURRENT,   {"current",  {"Max_ref"}} }
+            { iit::advrf::Gains_Type_POSITION,  {"position", {"Min_pos", "Max_pos"}} },
+            { iit::advrf::Gains_Type_VELOCITY,  {"velocity", {"Max_vel"}} },
+            { iit::advrf::Gains_Type_IMPEDANCE, {"position", {"Min_pos", "Max_pos"}} },
+            { iit::advrf::Gains_Type_TORQUE,    {"torque",   {"Max_tor"}} },
+            { iit::advrf::Gains_Type_CURRENT,   {"current",  {"Max_ref"}} }
         }
     }},
 
     { "valve", {
         {
-            { iit::advr::Gains_Type_POSITION,  { "position", {} } },
-            { iit::advr::Gains_Type_IMPEDANCE, { "force",    {} } },
-            { iit::advr::Gains_Type_CURRENT,   { "current",  {} } }
+            { iit::advrf::Gains_Type_POSITION,  { "position", {} } },
+            { iit::advrf::Gains_Type_IMPEDANCE, { "force",    {} } },
+            { iit::advrf::Gains_Type_CURRENT,   { "current",  {} } }
         }
     }},
 
     {"pump",{
         {
             { 0x39,                            { "pwm",      {} } },
-            { iit::advr::Gains_Type_VELOCITY,  { "velocity", {} } },
-            { iit::advr::Gains_Type_IMPEDANCE, { "pressure", {} } }
+            { iit::advrf::Gains_Type_VELOCITY,  { "velocity", {} } },
+            { iit::advrf::Gains_Type_IMPEDANCE, { "pressure", {} } }
         }
     }},
 
     {"gripper",{
         {
-            { iit::advr::Gains_Type_POSITION,  {"position", {"Min_pos", "Max_pos"}} },
-            { iit::advr::Gains_Type_VELOCITY,  {"velocity", {"Max_vel"}} },
-            { iit::advr::Gains_Type_IMPEDANCE, {"force",    {"Max_tor"}} }
+            { iit::advrf::Gains_Type_POSITION,  {"position", {"Min_pos", "Max_pos"}} },
+            { iit::advrf::Gains_Type_VELOCITY,  {"velocity", {"Max_vel"}} },
+            { iit::advrf::Gains_Type_IMPEDANCE, {"force",    {"Max_tor"}} }
         }
     }}
 };

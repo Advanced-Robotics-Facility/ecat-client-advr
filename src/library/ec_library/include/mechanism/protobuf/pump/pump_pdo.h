@@ -132,7 +132,7 @@ inline void PumpPdo<T>::set_to_pb()
 {
     set_pbHeader(T::pb_tx_pdos.mutable_header(), T::name, 0);
     // Type
-    T::pb_tx_pdos.set_type(iit::advr::Ec_slave_pdo::TX_HYQ_HPU);
+    T::pb_tx_pdos.set_type(iit::advrf::Ec_slave_pdo::TX_HYQ_HPU);
     
     T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_pump_target(std::get<0>(tx_pdo));   
     T::pb_tx_pdos.mutable_hyqhpu_tx_pdo()->set_pressure_p_gain(std::get<1>(tx_pdo));

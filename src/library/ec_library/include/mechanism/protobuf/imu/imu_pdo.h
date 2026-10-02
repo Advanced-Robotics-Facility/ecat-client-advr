@@ -127,7 +127,7 @@ inline void ImuPdo<T>::set_to_pb()
 {
     set_pbHeader(T::pb_tx_pdos.mutable_header(), T::name, 0);
     // Type
-    T::pb_tx_pdos.set_type(iit::advr::Ec_slave_pdo::TX_IMU_VN);
+    T::pb_tx_pdos.set_type(iit::advrf::Ec_slave_pdo::TX_IMU_VN);
     T::pb_tx_pdos.mutable_imuvn_tx_pdo()->set_digital_out(std::get<0>(tx_pdo));
 }
 

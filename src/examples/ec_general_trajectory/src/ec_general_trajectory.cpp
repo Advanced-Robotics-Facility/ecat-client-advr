@@ -102,14 +102,14 @@ int main(int argc, char * const argv[])
                 if(valve_reference_map.count(esc_id)>0){
                     if(!run_loop){
                         target=valve_trj_map[esc_id].set_zero;
-                        if(target == iit::advr::Gains_Type_POSITION){
+                        if(target == iit::advrf::Gains_Type_POSITION){
                             client->get_valve_status(valve_status_map);
                             target=std::get<0>(valve_status_map[esc_id]); // actual encoder position
                         }
                     }
-                    if(ctrl_mode == iit::advr::Gains_Type_POSITION){
+                    if(ctrl_mode == iit::advrf::Gains_Type_POSITION){
                     std::get<1>(valve_reference_map[esc_id]) = target;
-                    }else if(ctrl_mode == iit::advr::Gains_Type_IMPEDANCE){
+                    }else if(ctrl_mode == iit::advrf::Gains_Type_IMPEDANCE){
                         std::get<2>(valve_reference_map[esc_id]) = target;
                     }else{
                         std::get<0>(valve_reference_map[esc_id]) = target;
@@ -118,19 +118,19 @@ int main(int argc, char * const argv[])
                 else if(motor_reference_map.count(esc_id)>0){
                     if(!run_loop){
                         target=motor_trj_map[esc_id].set_zero;
-                        if(ctrl_mode == iit::advr::Gains_Type_POSITION ||
-                            ctrl_mode == iit::advr::Gains_Type_IMPEDANCE){
+                        if(ctrl_mode == iit::advrf::Gains_Type_POSITION ||
+                            ctrl_mode == iit::advrf::Gains_Type_IMPEDANCE){
                             client->get_motor_status(motor_status_map);
                             target=std::get<2>(motor_status_map[esc_id]); // actual motor pos
                         }
                     }
-                    if(ctrl_mode != iit::advr::Gains_Type_VELOCITY){
-                        if(ctrl_mode == iit::advr::Gains_Type_POSITION ||
-                            ctrl_mode == iit::advr::Gains_Type_IMPEDANCE){
+                    if(ctrl_mode != iit::advrf::Gains_Type_VELOCITY){
+                        if(ctrl_mode == iit::advrf::Gains_Type_POSITION ||
+                            ctrl_mode == iit::advrf::Gains_Type_IMPEDANCE){
                             std::get<1>(motor_reference_map[esc_id]) = target;
                         }
-                        if(ctrl_mode != iit::advr::Gains_Type_POSITION &&
-                            ctrl_mode != iit::advr::Gains_Type_IMPEDANCE){
+                        if(ctrl_mode != iit::advrf::Gains_Type_POSITION &&
+                            ctrl_mode != iit::advrf::Gains_Type_IMPEDANCE){
                             std::get<3>(motor_reference_map[esc_id]) = target; // current mode (0xCC or oxDD) or impedance
                         }
                     }else{

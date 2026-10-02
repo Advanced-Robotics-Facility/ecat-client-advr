@@ -133,7 +133,7 @@ inline void ValvePdo<T>::set_to_pb()
 {
     set_pbHeader(T::pb_tx_pdos.mutable_header(), T::name, 0);
     // Type
-    T::pb_tx_pdos.set_type(iit::advr::Ec_slave_pdo::TX_HYQ_KNEE);
+    T::pb_tx_pdos.set_type(iit::advrf::Ec_slave_pdo::TX_HYQ_KNEE);
     
     T::pb_tx_pdos.mutable_hyqknee_tx_pdo()->set_current_ref(std::get<0>(tx_pdo));
     T::pb_tx_pdos.mutable_hyqknee_tx_pdo()->set_position_ref(std::get<1>(tx_pdo));  

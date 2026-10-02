@@ -19,7 +19,7 @@ protected:
     uint32_t                type;    
     std::string             rd_pp_name, wr_pp_name;
 
-    iit::advr::Ec_slave_pdo pb_rx_pdos,  pb_tx_pdos;    
+    iit::advrf::Ec_slave_pdo pb_rx_pdos,  pb_tx_pdos;    
     uint8_t                 pb_buf_rd[MAX_PB_SIZE];
     uint8_t                 pb_buf_wr[MAX_PB_SIZE];
     DeviceInfo              dev_info = {};
@@ -42,8 +42,8 @@ public:
     
     virtual void init(void);
 
-    iit::advr::Ec_slave_pdo* pb_rx() { return &pb_rx_pdos; }
-    iit::advr::Ec_slave_pdo* pb_tx() { return &pb_tx_pdos; }
+    iit::advrf::Ec_slave_pdo* pb_rx() { return &pb_rx_pdos; }
+    iit::advrf::Ec_slave_pdo* pb_tx() { return &pb_tx_pdos; }
 
     std::string get_name() const    { return name; }
     uint32_t get_type() const       { return type; }

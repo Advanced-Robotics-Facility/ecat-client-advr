@@ -2,7 +2,7 @@
 #include <iostream>
 
 using namespace zmq;
-using namespace iit::advr;
+using namespace iit::advrf;
 using namespace std;
 
 std::unique_ptr<zmq::context_t> EcZmqCmdContext::cmd_context;
@@ -27,7 +27,7 @@ void EcReplCmd::set_zmq_timeout(int timeout)
     _timeout=timeout;
 }
 
-void EcReplCmd::zmq_do_cmd(iit::advr::Repl_cmd  pb_cmd,
+void EcReplCmd::zmq_do_cmd(iit::advrf::Repl_cmd  pb_cmd,
                            std::string& msg,
                            int timeout,
                            EcReplFault &fault)
@@ -64,7 +64,7 @@ void EcReplCmd::zmq_do_cmd(iit::advr::Repl_cmd  pb_cmd,
     }
 }
 
-bool EcReplCmd::zmq_cmd_send(iit::advr::Repl_cmd  pb_cmd,
+bool EcReplCmd::zmq_cmd_send(iit::advrf::Repl_cmd  pb_cmd,
                              zmq::socket_t& socket,
                              EcReplFault &fault
                              )
@@ -80,8 +80,8 @@ bool EcReplCmd::zmq_cmd_send(iit::advr::Repl_cmd  pb_cmd,
         return false;
     }
 
-    if ( pb_cmd.type() == iit::advr::CmdType::ECAT_MASTER_CMD || 
-         pb_cmd.type() == iit::advr::CmdType::FOE_MASTER ) {
+    if ( pb_cmd.type() == iit::advrf::CmdType::ECAT_MASTER_CMD || 
+         pb_cmd.type() == iit::advrf::CmdType::FOE_MASTER ) {
             m_cmd="MASTER_CMD";
     } else {
             m_cmd="ESC_CMD";   
@@ -112,14 +112,14 @@ bool EcReplCmd::zmq_cmd_send(iit::advr::Repl_cmd  pb_cmd,
 }
 
 void EcReplCmd::zmq_cmd_recv(string& msg,
-                             iit::advr::CmdType cmd_sent,
+                             iit::advrf::CmdType cmd_sent,
                              zmq::socket_t& socket,
                              EcReplFault &fault)
 {
     msg.clear();
     
     message_t msg_recv;
-    iit::advr::Cmd_reply pb_reply;
+    iit::advrf::Cmd_reply pb_reply;
     try{
         if(socket.recv(&msg_recv))
         {
@@ -180,7 +180,7 @@ EcReplFault EcReplCmd::Ecat_Master_cmd(Ecat_Master_cmd_Type type,
                                        std::string &msg)
 {
 
-    iit::advr::Repl_cmd  pb_cmd;
+    iit::advrf::Repl_cmd  pb_cmd;
     EcReplFault fault;
     int new_timeout=_timeout;
          
@@ -216,7 +216,7 @@ EcReplFault EcReplCmd::FOE_Master(std::string filename,
                                   long int board_id,
                                   std::string &msg)
 {
-    iit::advr::Repl_cmd  pb_cmd;
+    iit::advrf::Repl_cmd  pb_cmd;
     EcReplFault fault;
     
     if((filename=="")||(password==0))
@@ -259,7 +259,7 @@ EcReplFault EcReplCmd::Slave_SDO_info(Slave_SDO_info_Type type,
                                       long int board_id,
                                       std::string &msg)
 {
-    iit::advr::Repl_cmd  pb_cmd;
+    iit::advrf::Repl_cmd  pb_cmd;
     EcReplFault fault;
     
      /***** set protocol buffer command */////
@@ -277,7 +277,7 @@ EcReplFault EcReplCmd::Slave_SDO_cmd(long int board_id,
                                      std::map<std::string ,std::string> wr_sdo,
                                      std::string &msg)
 {
-    iit::advr::Repl_cmd  pb_cmd;
+    iit::advrf::Repl_cmd  pb_cmd;
     EcReplFault fault;
     
     if((!rd_sdo.empty()) && (!wr_sdo.empty()))
@@ -334,7 +334,7 @@ EcReplFault EcReplCmd::Flash_cmd(Flash_cmd_Type type,
                                  long int board_id,
                                  std::string &msg)
 {
-    iit::advr::Repl_cmd  pb_cmd;
+    iit::advrf::Repl_cmd  pb_cmd;
     EcReplFault fault;
 
      /***** set protocol buffer command */////
@@ -347,10 +347,10 @@ EcReplFault EcReplCmd::Flash_cmd(Flash_cmd_Type type,
     return fault;
 }
 
-void EcReplCmd::check_advrf_motor_gains(iit::advr::Gains_Type ctrl_type,std::vector<float> &gains)
+void EcReplCmd::check_advrf_motor_gains(iit::advrf::Gains_Type ctrl_type,std::vector<float> &gains)
 {
-    if((ctrl_type == iit::advr::Gains_Type_POSITION ||
-        ctrl_type == iit::advr::Gains_Type_VELOCITY)) {
+    if((ctrl_type == iit::advrf::Gains_Type_POSITION ||
+        ctrl_type == iit::advrf::Gains_Type_VELOCITY)) {
         auto copy_gains=gains;
         gains[0]=copy_gains[0];
         gains[1]=copy_gains[2];
@@ -366,7 +366,7 @@ EcReplFault EcReplCmd::Ctrl_cmd(Ctrl_cmd_Type type,
                                 std::vector<float> gains,
                                 std::string &msg)
 {
-    iit::advr::Repl_cmd  pb_cmd;
+    iit::advrf::Repl_cmd  pb_cmd;
     EcReplFault fault;
 
      
@@ -387,7 +387,7 @@ EcReplFault EcReplCmd::Ctrl_cmd(Ctrl_cmd_Type type,
 
     if(!gains.empty())   //OPTIONAL VALUE
     {
-        if ( ! iit::advr::Gains_Type_IsValid(value) ) {
+        if ( ! iit::advrf::Gains_Type_IsValid(value) ) {
             fault.set_zmq_cmd(get_cmd_type(CmdType::CTRL_CMD));
             fault.set_type(EC_REPL_CMD_STATUS::WRONG_CMD_TYPE);
             fault.set_info("Bad command: Wrong control type detected");
@@ -396,7 +396,7 @@ EcReplFault EcReplCmd::Ctrl_cmd(Ctrl_cmd_Type type,
         }
         
         Gains *gains_send = new Gains();
-        auto ctrl_type_cast = static_cast<iit::advr::Gains_Type>(value);
+        auto ctrl_type_cast = static_cast<iit::advrf::Gains_Type>(value);
         
         gains_send->set_type(ctrl_type_cast);
         if(_advrf_motor_map.count(board_id)>0){
@@ -425,7 +425,7 @@ EcReplFault EcReplCmd::Trajectory_Cmd(Trajectory_cmd_Type type,
                                       smooth_par_t smooth_par,
                                       std::string &msg)
 {
-    iit::advr::Repl_cmd  pb_cmd;
+    iit::advrf::Repl_cmd  pb_cmd;
     EcReplFault fault;
 
      /***** set protocol buffer command */////
@@ -506,7 +506,7 @@ EcReplFault EcReplCmd::Trj_queue_cmd(Trj_queue_cmd_Type type,
                                      std::vector<std::string> trj_names,
                                      std::string &msg)
 {   
-    iit::advr::Repl_cmd  pb_cmd;
+    iit::advrf::Repl_cmd  pb_cmd;
     EcReplFault fault;
      
     /***** set protocol buffer command */////
@@ -538,7 +538,7 @@ EcReplFault EcReplCmd::Trj_queue_cmd(Trj_queue_cmd_Type type,
 EcReplFault EcReplCmd::PDOs_aux_cmd(std::vector<aux_cmd_message_t> aux_cmds,
                                     std::string &msg)
 {
-    iit::advr::Repl_cmd  pb_cmd;
+    iit::advrf::Repl_cmd  pb_cmd;
     EcReplFault fault;
     
     if(aux_cmds.empty())
@@ -570,7 +570,7 @@ EcReplFault EcReplCmd::PDOs_aux_cmd(std::vector<aux_cmd_message_t> aux_cmds,
 
 EcReplFault EcReplCmd::Motors_PDO_cmd(motors_ref_map motors_references)
 {
-    iit::advr::Repl_cmd  pb_cmd;
+    iit::advrf::Repl_cmd  pb_cmd;
     EcReplFault fault;
     fault.set_type(1);
      
@@ -582,7 +582,7 @@ EcReplFault EcReplCmd::Motors_PDO_cmd(motors_ref_map motors_references)
         const auto &[ctrl_type,pos,vel,tor,g0,g1,g2,g3,g4,op,idx,aux]= motor_ref;
         if(ctrl_type!=0x00){
             send_motor_ref=true;
-            if ( ! iit::advr::Gains_Type_IsValid(ctrl_type) ) {
+            if ( ! iit::advrf::Gains_Type_IsValid(ctrl_type) ) {
                 fault.set_zmq_cmd(get_cmd_type(CmdType::MOTOR_PDO_CMD));
                 fault.set_type(EC_REPL_CMD_STATUS::WRONG_CMD_TYPE);
                 fault.set_info("Bad command: Wrong control type detected");
@@ -597,7 +597,7 @@ EcReplFault EcReplCmd::Motors_PDO_cmd(motors_ref_map motors_references)
             motor_pdo_cmd->set_vel_ref(vel);
             motor_pdo_cmd->set_tor_ref(tor);
                 
-            auto ctrl_type_cast = static_cast<iit::advr::Gains_Type>(ctrl_type);
+            auto ctrl_type_cast = static_cast<iit::advrf::Gains_Type>(ctrl_type);
             motor_pdo_cmd->mutable_gains()->set_type(ctrl_type_cast);
             
             std::vector<float> gains_check={g0,g1,g2,g3,g4};
@@ -611,7 +611,7 @@ EcReplFault EcReplCmd::Motors_PDO_cmd(motors_ref_map motors_references)
             motor_pdo_cmd->mutable_gains()->set_tor_ki(gains_check[3]);
             motor_pdo_cmd->mutable_gains()->set_tor_kd(gains_check[4]);
             
-            auto op_msg = static_cast<iit::advr::AuxPDO_Op>(op);
+            auto op_msg = static_cast<iit::advrf::AuxPDO_Op>(op);
             motor_pdo_cmd->mutable_aux_pdo()->set_op(op_msg);
             motor_pdo_cmd->mutable_aux_pdo()->set_idx(idx);
             motor_pdo_cmd->mutable_aux_pdo()->set_value(aux);

@@ -131,7 +131,7 @@ inline void GripperPdo<T>::set_to_pb()
 {
     set_pbHeader(T::pb_tx_pdos.mutable_header(), T::name, 0);
 
-    T::pb_tx_pdos.set_type(iit::advr::Ec_slave_pdo::TX_GRIPPER_PDO);
+    T::pb_tx_pdos.set_type(iit::advrf::Ec_slave_pdo::TX_GRIPPER);
     T::pb_tx_pdos.mutable_gripper_tx_pdo()->set_target_pos(std::get<1>(tx_pdo));
     T::pb_tx_pdos.mutable_gripper_tx_pdo()->set_target_vel(std::get<2>(tx_pdo));
     T::pb_tx_pdos.mutable_gripper_tx_pdo()->set_target_torque(std::get<3>(tx_pdo));

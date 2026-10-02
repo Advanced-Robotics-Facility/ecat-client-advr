@@ -56,7 +56,7 @@ inline void AdvrfPdo<T>::get_from_pb()
     std::get<12>(MotorPdo<T>::rx_pdo)   = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->pos_ref();
     std::get<13>(MotorPdo<T>::rx_pdo)   = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->vel_ref();
     std::get<14>(MotorPdo<T>::rx_pdo)   = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->tor_ref();
-    if(MotorPdo<T>::_ctrl_type_cast == iit::advr::Gains_Type_CURRENT){
+    if(MotorPdo<T>::_ctrl_type_cast == iit::advrf::Gains_Type_CURRENT){
         std::get<14>(MotorPdo<T>::rx_pdo)   = 0;
         std::get<15>(MotorPdo<T>::rx_pdo)   = T::pb_rx_pdos.mutable_motor_xt_rx_pdo()->tor_ref();
     }
@@ -71,7 +71,7 @@ inline void AdvrfPdo<T>::set_to_pb()
 {
     set_pbHeader(T::pb_tx_pdos.mutable_header(), T::name, 0);
     // Type
-    T::pb_tx_pdos.set_type(iit::advr::Ec_slave_pdo::TX_XT_MOTOR);
+    T::pb_tx_pdos.set_type(iit::advrf::Ec_slave_pdo::TX_XT_MOTOR);
     //
     T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_pos_ref(std::get<1>(MotorPdo<T>::tx_pdo));
     T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_vel_ref(std::get<2>(MotorPdo<T>::tx_pdo));
@@ -83,10 +83,10 @@ inline void AdvrfPdo<T>::set_to_pb()
     T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_gain_3(std::get<7>(MotorPdo<T>::tx_pdo));
     T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_gain_4(std::get<8>(MotorPdo<T>::tx_pdo));
     
-    MotorPdo<T>::_ctrl_type_cast = static_cast<iit::advr::Gains_Type>(std::get<0>(MotorPdo<T>::tx_pdo));
+    MotorPdo<T>::_ctrl_type_cast = static_cast<iit::advrf::Gains_Type>(std::get<0>(MotorPdo<T>::tx_pdo));
 
-    if((MotorPdo<T>::_ctrl_type_cast == iit::advr::Gains_Type_POSITION ||
-        MotorPdo<T>::_ctrl_type_cast == iit::advr::Gains_Type_VELOCITY)) {
+    if((MotorPdo<T>::_ctrl_type_cast == iit::advrf::Gains_Type_POSITION ||
+        MotorPdo<T>::_ctrl_type_cast == iit::advrf::Gains_Type_VELOCITY)) {
         T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_gain_0(std::get<4>(MotorPdo<T>::tx_pdo));
         T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_gain_1(std::get<6>(MotorPdo<T>::tx_pdo));
         T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_gain_2(0.0);
@@ -97,18 +97,20 @@ inline void AdvrfPdo<T>::set_to_pb()
     T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_ts(uint32_t(iit::ecat::get_time_ns()/1000));
     T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_fault_ack(0);
                 
-    auto _op = static_cast<iit::advr::AuxPDO_Op>(std::get<9>(MotorPdo<T>::tx_pdo));
+    auto _op = static_cast<iit::advrf::AuxPDO_Op>(std::get<9>(MotorPdo<T>::tx_pdo));
 
     switch (_op)
     {
-        case iit::advr::AuxPDO_Op_SET:{
+        case iit::advrf::AuxPDO_Op_SET:{
             T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_op_idx_aux(std::get<10>(MotorPdo<T>::tx_pdo));
             T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_aux(std::get<11>(MotorPdo<T>::tx_pdo));
         }break;
-        case iit::advr::AuxPDO_Op_GET:
+        case iit::advrf::AuxPDO_Op_GET:
             T::pb_tx_pdos.mutable_motor_xt_tx_pdo()->set_op_idx_aux(std::get<10>(MotorPdo<T>::tx_pdo));
             break;
-        case iit::advr::AuxPDO_Op_NOP:
+        case iit::advrf::AuxPDO_Op_NOP:
+            break;
+        default:
             break;
     }
 }

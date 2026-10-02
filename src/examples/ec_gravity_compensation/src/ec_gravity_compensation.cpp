@@ -58,7 +58,7 @@ int main(int argc, char * const argv[])
     bool all_motor_imp_mode=true;
     std::map<int,bool> exclude_motors;
     for(const auto &[id,device_cg]:ec_cfg.device_config_map){
-        if(device_cg.control_mode_type!=iit::advr::Gains_Type_IMPEDANCE){
+        if(device_cg.control_mode_type!=iit::advrf::Gains_Type_IMPEDANCE){
             if(exclude_motors.count(id)==0){
                 all_motor_imp_mode=false;
             }

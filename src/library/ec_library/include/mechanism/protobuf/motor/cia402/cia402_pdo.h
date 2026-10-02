@@ -68,7 +68,7 @@ inline void Cia402Pdo<T>::set_to_pb()
 {
     set_pbHeader(T::pb_tx_pdos.mutable_header(), T::name, 0);
     // Type
-    T::pb_tx_pdos.set_type(iit::advr::Ec_slave_pdo::TX_CIA402);
+    T::pb_tx_pdos.set_type(iit::advrf::Ec_slave_pdo::TX_CIA402);
 
     T::pb_tx_pdos.mutable_cia402_tx_pdo()->set_target_pos(std::get<1>(MotorPdo<T>::tx_pdo));
     T::pb_tx_pdos.mutable_cia402_tx_pdo()->set_target_vel(std::get<2>(MotorPdo<T>::tx_pdo));

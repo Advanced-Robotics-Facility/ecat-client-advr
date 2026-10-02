@@ -258,7 +258,7 @@ void EcPdo<T>::write_pdo()
                     continue;
                 }
 
-                if (!iit::advr::Gains_Type_IsValid(ctrl_type)) {
+                if (!iit::advrf::Gains_Type_IsValid(ctrl_type)) {
                     DPRINTF("Control mode not recognized for id 0x%04X\n",id);
                     continue;
                 }

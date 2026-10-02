@@ -14,20 +14,20 @@ enum EC_REPL_CMD_STATUS : int {
     
 };
 
-inline const char* get_cmd_type(iit::advr::CmdType type)
+inline const char* get_cmd_type(iit::advrf::CmdType type)
 {
     switch (type)
     {
-        case iit::advr::CmdType::TRJ_CMD: return "TRJ_CMD";
-        case iit::advr::CmdType::CTRL_CMD: return "CTRL_CMD";
-        case iit::advr::CmdType::FLASH_CMD: return "FLASH_CMD";
-        case iit::advr::CmdType::ECAT_MASTER_CMD: return "ECAT_MASTER_CMD";
-        case iit::advr::CmdType::FOE_MASTER: return "FOE_MASTER";
-        case iit::advr::CmdType::TRJ_QUEUE_CMD: return "TRJ_QUEUE_CMD";
-        case iit::advr::CmdType::SLAVE_SDO_CMD: return "SLAVE_SDO_CMD";
-        case iit::advr::CmdType::SLAVE_SDO_INFO: return "SLAVE_SDO_INFO";
-        case iit::advr::CmdType::MOTOR_PDO_CMD: return "MOTOR_PDO_CMD";
-        case iit::advr::CmdType::PDO_AUX_CMD: return "PDO_AUX_CMD";
+        case iit::advrf::CmdType::TRJ_CMD: return "TRJ_CMD";
+        case iit::advrf::CmdType::CTRL_CMD: return "CTRL_CMD";
+        case iit::advrf::CmdType::FLASH_CMD: return "FLASH_CMD";
+        case iit::advrf::CmdType::ECAT_MASTER_CMD: return "ECAT_MASTER_CMD";
+        case iit::advrf::CmdType::FOE_MASTER: return "FOE_MASTER";
+        case iit::advrf::CmdType::TRJ_QUEUE_CMD: return "TRJ_QUEUE_CMD";
+        case iit::advrf::CmdType::SLAVE_SDO_CMD: return "SLAVE_SDO_CMD";
+        case iit::advrf::CmdType::SLAVE_SDO_INFO: return "SLAVE_SDO_INFO";
+        case iit::advrf::CmdType::MOTOR_PDO_CMD: return "MOTOR_PDO_CMD";
+        case iit::advrf::CmdType::PDO_AUX_CMD: return "PDO_AUX_CMD";
         default: return("UNKNOWN COMMAND");
     }
 }
@@ -171,7 +171,7 @@ public:
 
     struct aux_cmd_message_t{
     
-        iit::advr::PDOs_aux_cmd_Aux_cmd_Type type;
+        iit::advrf::PDOs_aux_cmd_Aux_cmd_Type type;
         long int board_id;
         
     };
@@ -209,7 +209,7 @@ public:
     * @param msg  string msg: return feedback message from ZMQ communication.
     * @return fault
     */
-    EcReplFault Ecat_Master_cmd(iit::advr::Ecat_Master_cmd_Type type,
+    EcReplFault Ecat_Master_cmd(iit::advrf::Ecat_Master_cmd_Type type,
                                std::map<std::string,std::string> args,
                                std::string &msg);
     
@@ -240,7 +240,7 @@ public:
     * @param msg p_msg: return feedback message from ZMQ communication.
     * @return fault
     */
-    EcReplFault Slave_SDO_info(iit::advr::Slave_SDO_info_Type type,
+    EcReplFault Slave_SDO_info(iit::advrf::Slave_SDO_info_Type type,
                               long int board_id,
                               std::string &msg);
     
@@ -269,7 +269,7 @@ public:
     * @param msg p_msg: return feedback message from ZMQ communication.
     * @return fault
     */
-    EcReplFault Flash_cmd(iit::advr::Flash_cmd_Type type,
+    EcReplFault Flash_cmd(iit::advrf::Flash_cmd_Type type,
                         long int board_id,
                         std::string &msg);
     
@@ -284,7 +284,7 @@ public:
     * @param msg p_msg: return feedback message from ZMQ communication.
     * @return fault
     */
-    EcReplFault Ctrl_cmd(iit::advr::Ctrl_cmd_Type type,
+    EcReplFault Ctrl_cmd(iit::advrf::Ctrl_cmd_Type type,
                         long int board_id,
                         float value,
                         std::vector<float> gains,
@@ -302,7 +302,7 @@ public:
     * @param msg p_msg: return feedback message from ZMQ communication.
     * @return fault
     */
-    EcReplFault Trajectory_Cmd(iit::advr::Trajectory_cmd_Type type,
+    EcReplFault Trajectory_Cmd(iit::advrf::Trajectory_cmd_Type type,
                              std::string name,
                              long int board_id,
                              homing_par_t homing_par,
@@ -318,7 +318,7 @@ public:
     * @param msg p_msg: return feedback message from ZMQ communication.
     * @return fault
     */
-    EcReplFault Trj_queue_cmd(iit::advr::Trj_queue_cmd_Type type,
+    EcReplFault Trj_queue_cmd(iit::advrf::Trj_queue_cmd_Type type,
                              std::vector<std::string> trj_names,
                              std::string &msg);
     
@@ -369,7 +369,7 @@ private:
     std::string _zmq_uri;
     int _timeout;
     std::map<int32_t,std::string> _advrf_motor_map;
-    void check_advrf_motor_gains(iit::advr::Gains_Type ctrl_type,std::vector<float> &gains);
+    void check_advrf_motor_gains(iit::advrf::Gains_Type ctrl_type,std::vector<float> &gains);
 
 
     /** 
@@ -380,20 +380,20 @@ private:
     * @param fault fault detected. 
     */
 
-    void zmq_do_cmd(iit::advr::Repl_cmd  pb_cmd,
+    void zmq_do_cmd(iit::advrf::Repl_cmd  pb_cmd,
                     std::string& msg,
                     int timeout,
                     EcReplFault &fault);
 
 
     void zmq_cmd_recv(std::string& msg,
-                      iit::advr::CmdType cmd_sent,
+                      iit::advrf::CmdType cmd_sent,
                       zmq::socket_t& socket,
                       EcReplFault &fault);
 
 
 
-    bool zmq_cmd_send(iit::advr::Repl_cmd  pb_cmd,
+    bool zmq_cmd_send(iit::advrf::Repl_cmd  pb_cmd,
                       zmq::socket_t& socket,
                       EcReplFault &fault
                      );
