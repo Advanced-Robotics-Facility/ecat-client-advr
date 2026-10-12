@@ -40,6 +40,14 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
 {
     if(_protocol=="shm"){
         client_transport().initialize(true);
+    }else{
+        std::string subscriber_port = std::to_string(_host_port + 1);
+        std::string subscriber_uri = _protocol+"://" + _host_address + ":"+subscriber_port;
+
+        std::string dealer_port     = std::to_string(_host_port + 2);
+        std::string dealer_uri = _protocol+"://" + _host_address + ":"+dealer_port;
+
+        zmq_client().initialize(subscriber_uri,dealer_uri);
     }
 
     for ( auto &[id, esc_type, pos] : slave_descr ) {
@@ -130,6 +138,7 @@ void EcPdo<T>::stop_pdo()
     _gripper_pdo_map.clear();
     
     if(_protocol!="shm"){
+        zmq_client().stop();
         EcZmqPdoContext::stop_context();
     }
 }
@@ -198,7 +207,10 @@ void EcPdo<T>::read_pdo()
         }
     };
 
-    const auto dispatch_to_slave = [this](std::uint32_t slave_id) {
+    const auto dispatch_to_slave = [this](const auto& slot)  {
+        
+        const std::uint32_t slave_id = slot.slave_id;
+
         const auto update_slave = [slave_id](auto const& pdo_map) -> bool {
             const auto it = pdo_map.find(slave_id);
     
@@ -221,6 +233,8 @@ void EcPdo<T>::read_pdo()
 
     if(_protocol=="shm"){
         client_transport().drain_rx_queues(dispatch_to_slave);
+    }else{
+        zmq_client().recv(dispatch_to_slave);
     }
 
     read_esc_pdo(_moto_pdo_map,_internal_motor_status,_motor_status_queue);
