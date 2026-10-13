@@ -109,6 +109,6 @@ void EcZipc::th_loop( void * )
 
 void EcZipc::write()
 {
-    // send motors and others pdo
-    send_pdo();
+    // write motors and others pdo
+    write_pdo();
 }

@@ -56,6 +56,8 @@ void EcZmqClient::init_dealer(const std::string& uri)
 
         dealer->set(zmq::sockopt::rcvtimeo,100);
 
+        dealer->set(zmq::sockopt::routing_id, "zmq_client");
+
         printf("...connecting to dealer zmq uri: [%s]\n",uri.c_str());
         dealer->connect(uri);
 
@@ -75,7 +77,7 @@ void EcZmqClient::initialize(std::string subscriber_uri,std::string dealer_uri){
     _dealer_uri = dealer_uri;
 
     init_subscriber(_subscriber_uri);
-    //init_dealer(_dealer_uri);
+    init_dealer(_dealer_uri);
 }
 
 void EcZmqClient::stop(){
@@ -127,7 +129,7 @@ _zmq_uri(zmq_uri)
 
 void EcZmqPdo::init(void)
 {
-    
+    _id_str = std::to_string(_id);
 }
 
 int EcZmqPdo::write_connect(void)
@@ -158,6 +160,10 @@ int EcZmqPdo::read()
 int EcZmqPdo::write()
 {
     set_to_pb();
-    // publish to zmq socket
-    return 0;
+
+    auto* header = pb_tx_pdos.mutable_header();
+    header->set_str_id(_id_str);
+    header->set_index(_id);
+
+    return zmq_client().send(_id,pb_tx_pdos);
 }

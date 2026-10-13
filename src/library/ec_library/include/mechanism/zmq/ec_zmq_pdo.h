@@ -5,6 +5,7 @@
 #include "mechanism/zmq/ec_zmq_context.h"
 
 inline constexpr std::size_t PROTO_HEADER_BYTES = sizeof(std::uint32_t);
+static constexpr size_t PB_MAX_BYTES = 512;
 
 class EcZmqClient {
     public:
@@ -86,6 +87,45 @@ class EcZmqClient {
             return static_cast<int>(payload_size);
         }
 
+        template<typename ProtoPdo>
+        bool send(std::uint32_t slave_id,const ProtoPdo& pb_tx_pdo)
+        {
+            if (!_dealer) {
+                return false;
+            }
+
+            const std::size_t payload_size = pb_tx_pdo.ByteSizeLong();
+            const std::size_t frame_size = PROTO_HEADER_BYTES + payload_size;
+
+            if (payload_size == 0 || frame_size > PB_MAX_BYTES) {
+                return false;
+            }
+
+            zmq::message_t payload_frame(frame_size);
+
+            auto* buffer = static_cast<std::uint8_t*>(payload_frame.data());
+
+            const auto payload_u32 = static_cast<std::uint32_t>(payload_size);
+
+            // Four-byte little-endian payload length.
+            buffer[0] = static_cast<std::uint8_t>(payload_u32 & 0xFFu);
+            buffer[1] = static_cast<std::uint8_t>((payload_u32 >> 8u) & 0xFFu);
+            buffer[2] = static_cast<std::uint8_t>((payload_u32 >> 16u) & 0xFFu);
+            buffer[3] = static_cast<std::uint8_t>((payload_u32 >> 24u) & 0xFFu);
+
+            if (!pb_tx_pdo.SerializeToArray(buffer + PROTO_HEADER_BYTES,static_cast<int>(payload_size))) {
+                return false;
+            }
+
+            const std::string topic = std::to_string(slave_id);
+
+            if (!_dealer->send(zmq::buffer(topic),zmq::send_flags::sndmore)) {
+                return false;
+            }
+            
+            return _dealer->send(payload_frame,zmq::send_flags::none).has_value();
+        }
+
     private:
         EcZmqClient();
 
@@ -157,6 +197,7 @@ private:
     uint32_t _type;
     std::string _esc_name,_zmq_uri;
     std::string _msg_id;
+    std::string _id_str;
     zmq::message_t _zmq_msg_id,_zmq_msg;
 };
 

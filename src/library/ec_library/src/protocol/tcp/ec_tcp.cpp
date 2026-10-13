@@ -109,6 +109,6 @@ void EcTCP::th_loop( void * )
 
 void EcTCP::write()
 {
-    // send motors and others pdo
-    send_pdo();
+    // write motors and others pdo
+    write_pdo();
 }
