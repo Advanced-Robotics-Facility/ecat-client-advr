@@ -188,8 +188,8 @@ public:
 
         _reader = previous & index_mask;
 
-        const T& status = _buffers[_reader];
-        callback(status);
+        const T& value = _buffers[_reader];
+        callback(value);
 
         return true;
     }
