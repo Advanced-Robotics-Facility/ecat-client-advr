@@ -8,13 +8,8 @@
 #include "ec_types.h"
 #include "logger/ec_logger.h"
 #include "cmn_utils.h"
-#include <boost/lockfree/spsc_queue.hpp>
-#include <boost/lockfree/queue.hpp>
-#include <boost/lockfree/stack.hpp>
+#define MAX_WAKE_CLIENT 5
 
-#define MAX_QUEUE_PDO 5
-
-using namespace boost::lockfree;
 class EcIface
 {
 public:
@@ -91,31 +86,31 @@ protected:
     // last received motor data
     MotorStatusMap _motor_status_map;
     MotorStatus _internal_motor_status;
-    spsc_queue<MotorStatus,fixed_sized<true>> _motor_status_queue{MAX_QUEUE_PDO};
+    SpscValue<MotorStatus> _motor_status_buffer;
     // last received ft data
     FtStatusMap _ft_status_map;
     FtStatus _internal_ft_status;
-    spsc_queue<FtStatus,fixed_sized<true>> _ft_status_queue{MAX_QUEUE_PDO};
+    SpscValue<FtStatus> _ft_status_buffer;
     // last received pow data
     PwrStatusMap _pow_status_map;
     PwrStatus _internal_pow_status;
-    spsc_queue<PwrStatus,fixed_sized<true>> _pow_status_queue{MAX_QUEUE_PDO};
+    SpscValue<PwrStatus> _pow_status_buffer;
     // last received imu data
     ImuStatusMap _imu_status_map;
     ImuStatus _internal_imu_status;
-    spsc_queue<ImuStatus,fixed_sized<true>> _imu_status_queue{MAX_QUEUE_PDO};
+    SpscValue<ImuStatus> _imu_status_buffer;
     // last received valve data
     ValveStatusMap _valve_status_map;
     ValveStatus _internal_valve_status;
-    spsc_queue<ValveStatus,fixed_sized<true>> _valve_status_queue{MAX_QUEUE_PDO};
+    SpscValue<ValveStatus> _valve_status_buffer;
     // last received pump data
     PumpStatusMap _pump_status_map;
     PumpStatus _internal_pump_status;
-    spsc_queue<PumpStatus,fixed_sized<true>> _pump_status_queue{MAX_QUEUE_PDO};
+    SpscValue<PumpStatus> _pump_status_buffer;
     // last received gripper data
     GripperStatusMap _gripper_status_map;
     GripperStatus _internal_gripper_status;
-    spsc_queue<GripperStatus, fixed_sized<true>> _gripper_status_queue{MAX_QUEUE_PDO};
+    SpscValue<GripperStatus> _gripper_status_buffer;
 
     MotorReferenceMap _motor_reference_map;
     ValveReferenceMap _valve_reference_map;
@@ -130,6 +125,7 @@ protected:
     void sync_client_thread();
     void wake_client_thread();
     bool updt_client_thread();
+    void init_client_buffer();
     
 private:
     template <typename DestinationMap, typename SourceMap>

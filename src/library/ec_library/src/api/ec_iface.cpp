@@ -85,30 +85,19 @@ void EcIface::read()
 {
     wake_client_thread();
 
-    // Only one thread is allowed to consume queue data.
+    // Only one thread is allowed to consume buffer data.
     const auto consume_status =
-        [this](auto& queue, auto& destination) -> bool
+        [this](auto& buffer, auto& destination) -> bool
     {
 
         if (destination.empty()) {
             return true;
         }
     
-        const auto pending = queue.read_available();
-    
-        if (pending == 0) {
-            return false;
-        }
-    
-        for (std::size_t i = 1; i < pending; ++i) {
-            queue.pop();
-        }
-
-
         bool copy_success = false;
 
-        const bool consumed = queue.consume_one(
-            [this, &destination, &copy_success](const auto pdo_sts) {
+        const bool consumed = buffer.consume(
+            [this, &destination, &copy_success](const auto &pdo_sts) {
                 
                 if(pdo_sts.size() != destination.size()){
                     DPRINTF("Got different size of destination map and pdo status\n");
@@ -129,19 +118,19 @@ void EcIface::read()
         return consumed && copy_success;
     };
 
-    bool read_ok = consume_status(_motor_status_queue, _motor_status_map);
+    bool read_ok = consume_status(_motor_status_buffer, _motor_status_map);
 
-    read_ok &= consume_status(_pow_status_queue, _pow_status_map);
+    read_ok &= consume_status(_pow_status_buffer, _pow_status_map);
 
-    read_ok &= consume_status(_ft_status_queue, _ft_status_map);
+    read_ok &= consume_status(_ft_status_buffer, _ft_status_map);
 
-    read_ok &= consume_status(_imu_status_queue, _imu_status_map);
+    read_ok &= consume_status(_imu_status_buffer, _imu_status_map);
 
-    read_ok &= consume_status(_valve_status_queue, _valve_status_map);
+    read_ok &= consume_status(_valve_status_buffer, _valve_status_map);
 
-    read_ok &= consume_status(_pump_status_queue, _pump_status_map);
+    read_ok &= consume_status(_pump_status_buffer, _pump_status_map);
 
-    read_ok &= consume_status(_gripper_status_queue, _gripper_status_map);
+    read_ok &= consume_status(_gripper_status_buffer, _gripper_status_map);
 
     // add verbose read option
     if(!read_ok){
@@ -313,7 +302,7 @@ void EcIface::wake_client_thread()
 {
     pthread_mutex_lock(&_mutex_update);
     _update_count++;
-    _update_count=std::min(_update_count,MAX_QUEUE_PDO);
+    _update_count=std::min(_update_count,MAX_WAKE_CLIENT);
     pthread_cond_signal(&_update_cond);
     pthread_mutex_unlock(&_mutex_update);
 }
@@ -378,4 +367,23 @@ inline bool EcIface::copy_map_values(DestinationMap& destination,const SourceMap
     }
 
     return true;
+}
+
+void EcIface::init_client_buffer()
+{
+    const auto set_size =
+    [this](const auto& map, auto& status,auto& buffer) -> void
+    {
+        status.resize(map.size());
+        buffer.resize(status.size());
+    };
+
+    set_size(_motor_status_map,_internal_motor_status,_motor_status_buffer);
+    set_size(_valve_status_map,_internal_valve_status,_valve_status_buffer);
+    set_size(_pump_status_map,_internal_pump_status, _pump_status_buffer);
+    set_size(_gripper_status_map, _internal_gripper_status, _gripper_status_buffer);
+
+    set_size(_ft_status_map,_internal_ft_status,_ft_status_buffer);
+    set_size(_imu_status_map,_internal_imu_status, _imu_status_buffer);
+    set_size(_pow_status_map, _internal_pow_status, _pow_status_buffer);
 }

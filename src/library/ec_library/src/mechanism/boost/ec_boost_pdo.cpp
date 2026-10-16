@@ -32,14 +32,7 @@ void EcBoostPdo::esc_factory(SSI slave_descr)
         }             
     }
 
-    _internal_motor_status.resize(_motor_status_map.size());
-    _internal_valve_status.resize(_valve_status_map.size());
-    _internal_pump_status.resize(_pump_status_map.size());
-    _internal_gripper_status.resize(_gripper_status_map.size());
-
-    _internal_ft_status.resize(_ft_status_map.size());
-    _internal_imu_status.resize(_imu_status_map.size());
-    _internal_pow_status.resize(_pow_status_map.size());
+    init_client_buffer();
 } 
 
 
@@ -105,7 +98,7 @@ void EcBoostPdo::motor_status_handler(char *buf, size_t size)
             _internal_motor_status[index] = std::make_tuple(status_word,
                                                             link_pos,motor_pos,link_vel,motor_vel,
                                                             torque,current,motor_temp,board_temp,
-                                                            fault,"",rtt,
+                                                            fault,std::array<char,64>{},rtt,
                                                             pos_ref_fb,vel_ref_fb,tor_ref_fb,curr_ref_fb);
         }
         else{
@@ -114,7 +107,7 @@ void EcBoostPdo::motor_status_handler(char *buf, size_t size)
     }
 
     if(!_internal_motor_status.empty()){
-        _motor_status_queue.push(_internal_motor_status);
+        _motor_status_buffer.write(_internal_motor_status);
     }
 }
 
@@ -147,7 +140,7 @@ void EcBoostPdo::ft6_status_handler(char *buf, size_t size)
     }
 
     if(!_internal_ft_status.empty()){
-        _ft_status_queue.push(_internal_ft_status);
+        _ft_status_buffer.write(_internal_ft_status);
     }
 }
 
@@ -181,7 +174,7 @@ void EcBoostPdo::pwr_status_handler(char *buf, size_t size)
     }
 
     if(!_internal_pow_status.empty()){
-        _pow_status_queue.push(_internal_pow_status);
+        _pow_status_buffer.write(_internal_pow_status);
     }
 }
 //******************************* EVENT HANDLERS *****************************************************//

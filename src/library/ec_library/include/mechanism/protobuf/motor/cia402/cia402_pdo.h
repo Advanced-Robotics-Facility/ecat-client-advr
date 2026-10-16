@@ -51,7 +51,14 @@ inline void Cia402Pdo<T>::get_from_pb()
     std::get<7>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_cia402_rx_pdo()->motor_temp();
     std::get<8>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_cia402_rx_pdo()->drive_temp()*0.001;
     std::get<9>(MotorPdo<T>::rx_pdo)    = T::pb_rx_pdos.mutable_cia402_rx_pdo()->error_code();
-    std::get<10>(MotorPdo<T>::rx_pdo)   = T::pb_rx_pdos.mutable_cia402_rx_pdo()->error_report();
+
+    auto& fault_info = std::get<10>(MotorPdo<T>::rx_pdo);
+    const auto& error_report = T::pb_rx_pdos.mutable_cia402_rx_pdo()->error_report();
+    
+    const auto count = std::min(error_report.size(), fault_info.size() - 1);
+    std::copy_n(error_report.data(), count, fault_info.data());
+    fault_info[count] = '\0';
+
     std::get<11>(MotorPdo<T>::rx_pdo)   = 0;
     std::get<12>(MotorPdo<T>::rx_pdo)   = T::pb_rx_pdos.mutable_cia402_rx_pdo()->demanded_pos();
     std::get<13>(MotorPdo<T>::rx_pdo)   = T::pb_rx_pdos.mutable_cia402_rx_pdo()->demanded_vel();
