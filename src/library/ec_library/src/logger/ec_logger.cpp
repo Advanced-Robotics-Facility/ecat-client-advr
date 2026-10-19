@@ -1,5 +1,37 @@
 #include "logger/ec_logger.h"
 
+enum class LoggerType : std::size_t {
+    MOTOR_STS,
+    MOTOR_REF,
+    VALVE_STS,
+    VALVE_REF,
+    PUMP_STS,
+    PUMP_REF,
+    GRIPPER_STS,
+    GRIPPER_REF,
+    FT_STS,
+    IMU_STS,
+    POW_STS,
+    COUNT
+};
+
+inline const std::array<
+    std::string,
+    static_cast<std::size_t>(LoggerType::COUNT)
+    > logger_names = {
+        "motor_status_logger",
+        "motor_reference_logger",
+        "valve_status_logger",
+        "valve_reference_logger",
+        "pump_status_logger",
+        "pump_reference_logger",
+        "gripper_status_logger",
+        "gripper_reference_logger",
+        "ft_status_logger",
+        "imu_status_logger",
+        "pow_status_logger"
+};
+
 EcLogger::EcLogger(LOGGER_OPT log_opt):
 _log_opt(log_opt)
 {
@@ -133,8 +165,11 @@ void EcLogger::stop_mat_logger()
 
 void EcLogger::log_motor_status(const MotorStatusMap& motor_status_map)
 {
-    if(_logger_map.count("motor_status_logger")>0){
-        auto logger_info = _logger_map["motor_status_logger"];
+    auto const& logger_name =
+    logger_names[static_cast<std::size_t>(LoggerType::MOTOR_STS)];
+
+    if(_logger_map.count(logger_name)>0){
+        auto logger_info = _logger_map[logger_name];
         for ( const auto &[esc_id,motor_rx_pdo] : motor_status_map) {
             if(logger_info->logger_entry.count(esc_id)>0){
                 if(MotorPdoRx::make_vector_from_tuple(motor_rx_pdo,logger_info->logger_row[esc_id])){
@@ -147,8 +182,11 @@ void EcLogger::log_motor_status(const MotorStatusMap& motor_status_map)
 
 void EcLogger::log_motor_reference(const MotorReferenceMap& motor_reference_map)
 {
-    if(_logger_map.count("motor_reference_logger")>0){
-        auto logger_info = _logger_map["motor_reference_logger"];
+    auto const& logger_name =
+    logger_names[static_cast<std::size_t>(LoggerType::MOTOR_REF)];
+
+    if(_logger_map.count(logger_name)>0){
+        auto logger_info = _logger_map[logger_name];
         for ( const auto &[esc_id,motor_tx_pdo] : motor_reference_map) {
             if(logger_info->logger_entry.count(esc_id)>0){
                 if(MotorPdoTx::make_vector_from_tuple(motor_tx_pdo,logger_info->logger_row[esc_id])){
@@ -162,8 +200,11 @@ void EcLogger::log_motor_reference(const MotorReferenceMap& motor_reference_map)
 
 void EcLogger::log_pow_status(const PwrStatusMap& pow_status_map)
 {
-    if(_logger_map.count("pow_status_logger")>0){
-        auto logger_info = _logger_map["pow_status_logger"];
+    auto const& logger_name =
+    logger_names[static_cast<std::size_t>(LoggerType::POW_STS)];
+
+    if(_logger_map.count(logger_name)>0){
+        auto logger_info = _logger_map[logger_name];
         for ( const auto &[esc_id,pow_rx_pdo] : pow_status_map) {
             if(logger_info->logger_entry.count(esc_id)>0){
                 if(PowPdoRx::make_vector_from_tuple(pow_rx_pdo,logger_info->logger_row[esc_id])){
@@ -176,8 +217,11 @@ void EcLogger::log_pow_status(const PwrStatusMap& pow_status_map)
 
 void EcLogger::log_ft_status(const FtStatusMap& ft_status_map)
 {
-    if(_logger_map.count("ft_status_logger")>0){
-        auto logger_info = _logger_map["ft_status_logger"];
+    auto const& logger_name =
+    logger_names[static_cast<std::size_t>(LoggerType::FT_STS)];
+
+    if(_logger_map.count(logger_name)>0){
+        auto logger_info = _logger_map[logger_name];
         for ( const auto &[esc_id,ft_rx_pdo] : ft_status_map) {
             if(logger_info->logger_entry.count(esc_id)>0){
                 if(FtPdoRx::make_vector_from_tuple(ft_rx_pdo,logger_info->logger_row[esc_id])){
@@ -190,8 +234,11 @@ void EcLogger::log_ft_status(const FtStatusMap& ft_status_map)
 
 void EcLogger::log_imu_status(const ImuStatusMap& imu_status_map)
 {
-    if(_logger_map.count("imu_status_logger")>0){
-        auto logger_info = _logger_map["imu_status_logger"];
+    auto const& logger_name =
+    logger_names[static_cast<std::size_t>(LoggerType::IMU_STS)];
+
+    if(_logger_map.count(logger_name)>0){
+        auto logger_info = _logger_map[logger_name];
         for ( const auto &[esc_id,imu_rx_pdo] : imu_status_map) {
             if(logger_info->logger_entry.count(esc_id)>0){
                 if(ImuPdoRx::make_vector_from_tuple(imu_rx_pdo,logger_info->logger_row[esc_id])){
@@ -204,8 +251,11 @@ void EcLogger::log_imu_status(const ImuStatusMap& imu_status_map)
 
 void EcLogger::log_valve_status(const ValveStatusMap& valve_status_map)
 {
-    if(_logger_map.count("valve_status_logger")>0){
-        auto logger_info = _logger_map["valve_status_logger"];
+    auto const& logger_name =
+    logger_names[static_cast<std::size_t>(LoggerType::VALVE_STS)];
+
+    if(_logger_map.count(logger_name)>0){
+        auto logger_info = _logger_map[logger_name];
         for ( const auto &[esc_id,valve_rx_pdo] : valve_status_map) {
             if(logger_info->logger_entry.count(esc_id)>0){
                 if(ValvePdoRx::make_vector_from_tuple(valve_rx_pdo,logger_info->logger_row[esc_id])){
@@ -218,8 +268,11 @@ void EcLogger::log_valve_status(const ValveStatusMap& valve_status_map)
 
 void EcLogger::log_valve_reference(const ValveReferenceMap& valve_reference_map)
 {
-    if(_logger_map.count("valve_reference_logger")>0){
-        auto logger_info = _logger_map["valve_reference_logger"];
+    auto const& logger_name =
+    logger_names[static_cast<std::size_t>(LoggerType::VALVE_REF)];
+
+    if(_logger_map.count(logger_name)>0){
+        auto logger_info = _logger_map[logger_name];
         for ( const auto &[esc_id,valve_tx_pdo] : valve_reference_map) {
             if(logger_info->logger_entry.count(esc_id)>0){
                 if(ValvePdoTx::make_vector_from_tuple(valve_tx_pdo,logger_info->logger_row[esc_id])){
@@ -232,8 +285,11 @@ void EcLogger::log_valve_reference(const ValveReferenceMap& valve_reference_map)
 
 void EcLogger::log_pump_status(const PumpStatusMap& pump_status_map)
 {
-    if(_logger_map.count("pump_status_logger")>0){
-        auto logger_info = _logger_map["pump_status_logger"];
+    auto const& logger_name =
+    logger_names[static_cast<std::size_t>(LoggerType::PUMP_STS)];
+
+    if(_logger_map.count(logger_name)>0){
+        auto logger_info = _logger_map[logger_name];
         for ( const auto &[esc_id,pump_rx_pdo] : pump_status_map) {
             if(logger_info->logger_entry.count(esc_id)>0){
                 if(PumpPdoRx::make_vector_from_tuple(pump_rx_pdo,logger_info->logger_row[esc_id])){
@@ -246,8 +302,11 @@ void EcLogger::log_pump_status(const PumpStatusMap& pump_status_map)
 
 void EcLogger::log_pump_reference(const PumpReferenceMap& pump_reference_map)
 {
-    if(_logger_map.count("pump_reference_logger")>0){
-        auto logger_info = _logger_map["pump_reference_logger"];
+    auto const& logger_name =
+    logger_names[static_cast<std::size_t>(LoggerType::PUMP_REF)];
+
+    if(_logger_map.count(logger_name)>0){
+        auto logger_info = _logger_map[logger_name];
         for ( const auto &[esc_id,pump_tx_pdo] : pump_reference_map) {
             if(logger_info->logger_entry.count(esc_id)>0){
                 if(PumpPdoTx::make_vector_from_tuple(pump_tx_pdo,logger_info->logger_row[esc_id])){
@@ -260,8 +319,11 @@ void EcLogger::log_pump_reference(const PumpReferenceMap& pump_reference_map)
 
 void EcLogger::log_gripper_status(const GripperStatusMap& gripper_status_map)
 {
-    if(_logger_map.count("gripper_status_logger")>0){
-        auto logger_info = _logger_map["gripper_status_logger"];
+    auto const& logger_name =
+    logger_names[static_cast<std::size_t>(LoggerType::GRIPPER_STS)];
+
+    if(_logger_map.count(logger_name)>0){
+        auto logger_info = _logger_map[logger_name];
         for ( const auto &[esc_id,gripper_rx_pdo] : gripper_status_map) {
             if(logger_info->logger_entry.count(esc_id)>0){
                 if(GripperPdoRx::make_vector_from_tuple(gripper_rx_pdo,logger_info->logger_row[esc_id])){
@@ -274,8 +336,11 @@ void EcLogger::log_gripper_status(const GripperStatusMap& gripper_status_map)
 
 void EcLogger::log_gripper_reference(const GripperReferenceMap& gripper_reference_map)
 {
-    if(_logger_map.count("gripper_reference_logger")>0){
-        auto logger_info = _logger_map["gripper_reference_logger"];
+    auto const& logger_name =
+    logger_names[static_cast<std::size_t>(LoggerType::GRIPPER_REF)];
+
+    if(_logger_map.count(logger_name)>0){
+        auto logger_info = _logger_map[logger_name];
         for ( const auto &[esc_id,gripper_tx_pdo] : gripper_reference_map) {
             if(logger_info->logger_entry.count(esc_id)>0){
                 if(GripperPdoTx::make_vector_from_tuple(gripper_tx_pdo,logger_info->logger_row[esc_id])){
