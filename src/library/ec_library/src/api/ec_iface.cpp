@@ -1,5 +1,7 @@
 #include "api/ec_iface.h"
 
+using namespace std::chrono_literals;
+
 EcIface::EcIface()
 {
      _client_status.status=ClientStatusEnum::IDLE;
@@ -223,6 +225,8 @@ void EcIface::stop_imu_reference(){
     _write_device[DeviceCtrlType::IMU] = true;
 
     write();
+    // add this sleep useful for during the closing phase.
+    std::this_thread::sleep_for(50ms);
 }
 
 bool EcIface::pdo_aux_cmd_sts(const PAC & pac)
