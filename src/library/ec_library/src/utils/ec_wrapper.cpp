@@ -406,10 +406,9 @@ bool EcWrapper::safe_init()
 
     while (count_op_en < max_attempts) {
         _client->read();
+        read_devices_status();
 
         operation_enabled = true;
-        _client->get_motor_status(motor_status_map);
-
         for (const auto& [motor_id, motor_rx_pdo] : motor_status_map){
             if (_ec_cfg.device_config_map.count(motor_id) == 0) continue;
 
@@ -468,7 +467,6 @@ bool EcWrapper::safe_init()
     }
 
     // init valve reference map 
-    _client->get_valve_status(valve_status_map);
     for (const auto &[esc_id, valve_rx_pdo] : valve_status_map){
         auto enc_pos =    std::get<0>(valve_rx_pdo);  
         valve_reference_map[esc_id] = {0,enc_pos,0,0,0,0,0,0,0,0,0,0};          
@@ -500,7 +498,6 @@ bool EcWrapper::safe_init()
     }
 
     // init pump reference map
-    _client->get_pump_status(pump_status_map);
     for (const auto &[esc_id, pump_rx_pdo] : pump_status_map){
         float pump_target=0.0;
         pump_reference_map[esc_id] = {pump_target,0,0,0,0,0,0,0,0,0};
@@ -533,7 +530,6 @@ bool EcWrapper::safe_init()
     }
 
     // init gripper reference map
-    _client->get_gripper_status(gripper_status_map);
     for (const auto &[esc_id, gripper_rx_pdo] : gripper_status_map){
 
         auto motor_pos =    std::get<1>(gripper_rx_pdo);
@@ -571,7 +567,6 @@ bool EcWrapper::safe_init()
     }
 
     // init imu reference map
-    _client->get_imu_status(imu_status_map);
     for (const auto &[esc_id, imu_rx_pdo] : imu_status_map){
         imu_reference_map[esc_id] = std::make_tuple(0);
     }
