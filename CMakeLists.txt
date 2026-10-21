@@ -16,7 +16,7 @@ set(ENABLE_PREEMPT_RT OFF CACHE BOOL "Enable preempt-rt real-time features")
 option(COMPILE_EXAMPLE "Enable to compile examples" ON)
 option(COMPILE_GUI "Enable to compile the GUI" OFF)
 option(COMPILE_MATLAB "Enable to compile the matlab" OFF)
-
+option(ENABLE_ALLOCATION_MONITOR "Enable allocation/deallocation diagnostics" OFF)
 
 add_compile_options(-Wall -Wextra -Werror)
 #add_compile_options(-Wno-unused)
@@ -63,6 +63,10 @@ endif()
 if(ENABLE_PREEMPT_RT)
     ADD_DEFINITIONS(-DPREEMPT_RT)
 endif(ENABLE_PREEMPT_RT)
+
+IF(ENABLE_ALLOCATION_MONITOR)
+    ADD_DEFINITIONS(-DENABLE_ALLOCATION_MONITOR)
+ENDIF(ENABLE_ALLOCATION_MONITOR)
 
 find_package(magic_enum)
 if(NOT ${magic_enum_FOUND})

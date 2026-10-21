@@ -63,6 +63,22 @@ add_library(${PROJECT_NAME} STATIC
             src/utils/ec_utils.cpp
             src/utils/ec_wrapper.cpp)
 
+if(ENABLE_ALLOCATION_MONITOR)
+    target_sources(${PROJECT_NAME} PRIVATE src/utils/ec_alloc_monitor.cpp)
+
+    target_compile_definitions(${PROJECT_NAME} PUBLIC ENABLE_ALLOCATION_MONITOR
+    )
+
+    target_link_options(${PROJECT_NAME} INTERFACE
+        -Wl,--wrap=malloc
+        -Wl,--wrap=calloc
+        -Wl,--wrap=realloc
+        -Wl,--wrap=aligned_alloc
+        -Wl,--wrap=posix_memalign
+    )
+    
+endif()
+
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                   "$<INSTALL_INTERFACE:include/ecat-client-advr/${PROJECT_NAME}>")            
             

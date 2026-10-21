@@ -1,4 +1,5 @@
 #include "utils/ec_wrapper.h"
+#include "utils/ec_alloc_monitor.h"
 
 //Power board
 PwrStatusMap pow_status_map;
@@ -26,6 +27,7 @@ MotorReferenceMap motor_reference_map;
 EscTrjMap motor_trj_map;
 
 using namespace std::chrono;
+using namespace alloc_monitor;
 
 void adjust_limits(const std::string device_type,
                    const std::vector<std::string>& sdo_limits,
@@ -637,6 +639,9 @@ bool EcWrapper::start_ec_sys(void)
 
 void EcWrapper::stop_ec_sys(void)
 {
+#ifdef ENABLE_ALLOCATION_MONITOR
+    monitor_allocations.store(false, std::memory_order_relaxed);  
+#endif
     if(_ec_sys_started){
         stop_devices();
 
@@ -699,6 +704,13 @@ void EcWrapper::ec_self_sched(std::string thread_name)
         
         DPRINTF("%s initialized, ",thread_name.c_str());
         DPRINTF("id: %ld cpu: %d, priority %d\n",pthread_self(),sched_getcpu(),priority);
+
+#ifdef ENABLE_ALLOCATION_MONITOR
+        if(_ec_cfg.protocol == "iddp"){ 
+            allocation_count.store(0, std::memory_order_relaxed);
+            monitor_allocations.store(true, std::memory_order_relaxed);
+        }
+#endif        
     }
     else{
         throw std::runtime_error("fatal error on ec_self_sched function got an empty client!");

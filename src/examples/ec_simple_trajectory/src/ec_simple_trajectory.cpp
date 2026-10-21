@@ -17,41 +17,6 @@ static void sig_handler(int sig)
     run_loop=false;
 }
 
-std::atomic<bool> monitor_allocations{false};
-std::atomic<unsigned long> allocation_count{0};
-
-static_assert(std::atomic<bool>::is_always_lock_free);
-static_assert(std::atomic<unsigned long>::is_always_lock_free);
-
-__attribute__((noinline))
-void* operator new(std::size_t size)
-{
-    if (monitor_allocations.load(std::memory_order_relaxed)){
-        allocation_count.fetch_add(1, std::memory_order_relaxed);
-        
-        std::cout << "Allocation attempts: "
-        << allocation_count.load(std::memory_order_relaxed)
-        << '\n';
-    }
-
-    if (void* p = std::malloc(size ? size : 1))
-        return p;
-
-    throw std::bad_alloc();
-}
-
-__attribute__((noinline))
-void operator delete(void* p) noexcept
-{
-    std::free(p);
-}
-
-__attribute__((noinline))
-void operator delete(void* p, std::size_t) noexcept
-{
-    std::free(p);
-}
-
 int main(int argc, char * const argv[])
 {
     EcUtils::EC_CONFIG ec_cfg;
@@ -134,9 +99,6 @@ int main(int argc, char * const argv[])
         auto to_us = [](auto duration) -> int64_t {
             return std::chrono::duration_cast<us>(duration).count();
         };
-
-        allocation_count.store(0, std::memory_order_relaxed);
-        monitor_allocations.store(true, std::memory_order_relaxed);
         
         while (run_loop && client->get_client_status().run_loop){
             const auto scheduled_release = time;
@@ -268,8 +230,6 @@ int main(int argc, char * const argv[])
         }           
     }
 
-    monitor_allocations.store(false, std::memory_order_relaxed);
-    
     ec_wrapper.stop_ec_sys();
 
     if(fatal_error!=""){
