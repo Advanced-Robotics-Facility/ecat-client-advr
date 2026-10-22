@@ -61,7 +61,7 @@ class EcZmqClient {
                     continue;
                 }
         
-                dispatch_to_slave(_zmq_sub_slot);
+                dispatch_to_slave(_zmq_sub_slot.slave_id);
             }
         }
 

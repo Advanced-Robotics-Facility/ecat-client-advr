@@ -207,10 +207,7 @@ void EcPdo<T>::read_pdo()
         }
     };
 
-    const auto dispatch_to_slave = [this](const auto& slot)  {
-        
-        const std::uint32_t slave_id = slot.slave_id;
-
+    const auto dispatch_to_slave = [this](std::uint32_t slave_id) {
         const auto update_slave = [slave_id](auto const& pdo_map) -> bool {
             const auto it = pdo_map.find(slave_id);
     
