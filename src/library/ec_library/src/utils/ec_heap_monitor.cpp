@@ -1,7 +1,7 @@
 /*
  * Diagnostic heap-allocation and deallocation monitor.
  *
- * When monitor_allocations is true, shared atomic counters record intercepted
+ * When track_heap is true, shared atomic counters record intercepted
  * allocation attempts and non-null deallocation calls from all threads.
  *
  * Covered paths:
@@ -148,9 +148,9 @@
 #include <execinfo.h>
 #include <unistd.h>
  
-namespace alloc_monitor {
+namespace heap_monitor {
 
-std::atomic<bool> monitor_allocations{false};
+std::atomic<bool> track_heap{false};
 std::atomic<unsigned long> allocation_count{0};
 std::atomic<unsigned long> deallocation_count{0};
 
@@ -173,7 +173,7 @@ enum class Event {
  void record_event(Event event) noexcept
  {
      if (inside_record ||
-         !monitor_allocations.load(std::memory_order_relaxed))
+         !track_heap.load(std::memory_order_relaxed))
          return;
  
      // Diagnostic output must not change the caller's errno.
@@ -217,7 +217,7 @@ enum class Event {
      record_event(Event::Deallocation);
  }
  
- } // namespace alloc_monitor
+ } // namespace heap_monitor
  
  // Resolved by GNU linker --wrap options.
  extern "C" {
@@ -232,25 +232,25 @@ enum class Event {
  // C allocation wrappers.
  void* __wrap_malloc(std::size_t size)
  {
-     alloc_monitor::record_allocation();
+     heap_monitor::record_allocation();
      return __real_malloc(size);
  }
  
  void* __wrap_calloc(std::size_t count, std::size_t size)
  {
-     alloc_monitor::record_allocation();
+     heap_monitor::record_allocation();
      return __real_calloc(count, size);
  }
  
  void* __wrap_realloc(void* p, std::size_t size)
  {
-     alloc_monitor::record_allocation();
+     heap_monitor::record_allocation();
      return __real_realloc(p, size);
  }
  
  void* __wrap_aligned_alloc(std::size_t alignment, std::size_t size)
  {
-     alloc_monitor::record_allocation();
+     heap_monitor::record_allocation();
      return __real_aligned_alloc(alignment, size);
  }
  
@@ -258,7 +258,7 @@ enum class Event {
                           std::size_t alignment,
                           std::size_t size)
  {
-     alloc_monitor::record_allocation();
+     heap_monitor::record_allocation();
      return __real_posix_memalign(p, alignment, size);
  }
  
@@ -266,7 +266,7 @@ enum class Event {
  void __wrap_free(void* p)
  {
      if (p)
-         alloc_monitor::record_deallocation();
+         heap_monitor::record_deallocation();
  
      __real_free(p);
  }
@@ -278,7 +278,7 @@ enum class Event {
  void* allocate_cpp(std::size_t size, std::size_t alignment)
  {
      // Count once per C++ request, before any new_handler retries.
-     alloc_monitor::record_allocation();
+     heap_monitor::record_allocation();
  
      if (size == 0)
          size = 1;
@@ -307,7 +307,7 @@ enum class Event {
  void deallocate_cpp(void* p) noexcept
  {
      if (p)
-         alloc_monitor::record_deallocation();
+         heap_monitor::record_deallocation();
  
      // Bypass __wrap_free: this delete has already been counted.
      __real_free(p);
