@@ -1,5 +1,5 @@
 #include "utils/ec_wrapper.h"
-#include "utils/ec_alloc_monitor.h"
+#include "utils/ec_heap_monitor.h"
 
 //Power board
 PwrStatusMap pow_status_map;
@@ -639,7 +639,7 @@ bool EcWrapper::start_ec_sys(void)
 
 void EcWrapper::stop_ec_sys(void)
 {
-#ifdef ENABLE_ALLOCATION_MONITOR
+#ifdef ENABLE_HEAP_MONITOR
     monitor_allocations.store(false, std::memory_order_relaxed);  
 #endif
     if(_ec_sys_started){
@@ -674,7 +674,7 @@ void EcWrapper::log_ec_sys()
 }
 
 
-void EcWrapper::ec_self_sched(std::string thread_name)
+void EcWrapper::ec_self_sched(std::string_view thread_name)
 {
     if(_ec_cfg.protocol == "iddp"){
         #if defined(PREEMPT_RT) || defined(__COBALT__)
@@ -701,19 +701,23 @@ void EcWrapper::ec_self_sched(std::string thread_name)
         if (ret < 0){
             throw std::runtime_error("fatal error on ec_self_sched, got an error on pthread_setaffinity_np");
         }
-        
-        DPRINTF("%s initialized, ",thread_name.c_str());
-        DPRINTF("id: %ld cpu: %d, priority %d\n",pthread_self(),sched_getcpu(),priority);
 
-#ifdef ENABLE_ALLOCATION_MONITOR
-        if(_ec_cfg.protocol == "iddp"){ 
-            allocation_count.store(0, std::memory_order_relaxed);
-            monitor_allocations.store(true, std::memory_order_relaxed);
-        }
-#endif        
+        DPRINTF("%.*s initialized, ",
+            static_cast<int>(thread_name.size()),
+            thread_name.data());
+        
+        DPRINTF("id: %ld cpu: %d, priority %d\n",pthread_self(),sched_getcpu(),priority);   
     }
     else{
         throw std::runtime_error("fatal error on ec_self_sched function got an empty client!");
     }
+
+#ifdef ENABLE_HEAP_MONITOR
+    if(_ec_cfg.protocol == "iddp"){ 
+        allocation_count.store(0, std::memory_order_relaxed);
+        deallocation_count.store(0, std::memory_order_relaxed);
+        monitor_allocations.store(true, std::memory_order_relaxed);
+    }
+#endif     
     
 }

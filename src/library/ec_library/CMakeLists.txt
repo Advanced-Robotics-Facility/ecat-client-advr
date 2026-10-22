@@ -63,10 +63,10 @@ add_library(${PROJECT_NAME} STATIC
             src/utils/ec_utils.cpp
             src/utils/ec_wrapper.cpp)
 
-if(ENABLE_ALLOCATION_MONITOR)
-    target_sources(${PROJECT_NAME} PRIVATE src/utils/ec_alloc_monitor.cpp)
+if(ENABLE_HEAP_MONITOR)
+    target_sources(${PROJECT_NAME} PRIVATE src/utils/ec_heap_monitor.cpp)
 
-    target_compile_definitions(${PROJECT_NAME} PUBLIC ENABLE_ALLOCATION_MONITOR
+    target_compile_definitions(${PROJECT_NAME} PUBLIC ENABLE_HEAP_MONITOR
     )
 
     target_link_options(${PROJECT_NAME} INTERFACE
@@ -75,6 +75,7 @@ if(ENABLE_ALLOCATION_MONITOR)
         -Wl,--wrap=realloc
         -Wl,--wrap=aligned_alloc
         -Wl,--wrap=posix_memalign
+        -Wl,--wrap=free
     )
     
 endif()
