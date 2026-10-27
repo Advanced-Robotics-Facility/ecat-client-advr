@@ -7,9 +7,12 @@
 
 namespace ImuPdoRx{
     static const std::vector<std::string>name = {"x_rate", "y_rate", "z_rate","x_acc", "y_acc","z_acc",
-                                                 "x_quat","y_quat","z_quat","w_quat","imu_ts","temperature","digital_in","fault","rtt"};
-    static const int pdo_size=15;
-    using pdo_t=std::tuple<float, float, float, float, float,float,float,float,float,float,uint32_t,uint16_t,uint16_t,uint16_t,uint16_t>;
+                                                 "x_quat","y_quat","z_quat","w_quat","x_mag","y_mag","z_mag",
+                                                 "imu_ts","temperature","digital_in","fault","rtt"};
+    static const int pdo_size=18;
+    using pdo_t=std::tuple<float, float, float, float, float,float,
+                           float,float,float,float,float,float,float,
+                           uint32_t,uint16_t,uint16_t,uint16_t,uint16_t>;
     template <typename T>
     inline bool make_vector_from_tuple(const pdo_t &pdo_tuple,std::vector<T> &pdo_vector){
         if(pdo_vector.size()!=pdo_size){
@@ -25,11 +28,14 @@ namespace ImuPdoRx{
         pdo_vector[7]= static_cast<T>(std::get<7>(pdo_tuple));
         pdo_vector[8]= static_cast<T>(std::get<8>(pdo_tuple));
         pdo_vector[9]= static_cast<T>(std::get<9>(pdo_tuple));
-        pdo_vector[10]= static_cast<T>(std::get<10>(pdo_tuple));
-        pdo_vector[11]= static_cast<T>(std::get<11>(pdo_tuple));
-        pdo_vector[12]= static_cast<T>(std::get<12>(pdo_tuple));
-        pdo_vector[13]= static_cast<T>(std::get<13>(pdo_tuple));
-        pdo_vector[14]= static_cast<T>(std::get<14>(pdo_tuple));
+        pdo_vector[10]= static_cast<T>(std::get<7>(pdo_tuple));
+        pdo_vector[11]= static_cast<T>(std::get<8>(pdo_tuple));
+        pdo_vector[12]= static_cast<T>(std::get<9>(pdo_tuple));
+        pdo_vector[13]= static_cast<T>(std::get<10>(pdo_tuple));
+        pdo_vector[14]= static_cast<T>(std::get<11>(pdo_tuple));
+        pdo_vector[15]= static_cast<T>(std::get<12>(pdo_tuple));
+        pdo_vector[16]= static_cast<T>(std::get<13>(pdo_tuple));
+        pdo_vector[17]= static_cast<T>(std::get<14>(pdo_tuple));
         return true;
     }
 };
@@ -111,11 +117,17 @@ inline void ImuPdo<T>::get_from_pb()
         std::get<9>(rx_pdo) = T::pb_rx_pdos.mutable_imuvn_rx_pdo()->w_quat();
     }
 
-    std::get<10>(rx_pdo)    = T::pb_rx_pdos.mutable_imuvn_rx_pdo()->imu_ts();
-    std::get<11>(rx_pdo)    = T::pb_rx_pdos.mutable_imuvn_rx_pdo()->temperature();
-    std::get<12>(rx_pdo)    = T::pb_rx_pdos.mutable_imuvn_rx_pdo()->digital_in();
-    std::get<13>(rx_pdo)    = T::pb_rx_pdos.mutable_imuvn_rx_pdo()->fault();
-    std::get<14>(rx_pdo)    = T::pb_rx_pdos.mutable_imuvn_rx_pdo()->rtt();
+    if(T::pb_rx_pdos.mutable_imuvn_rx_pdo()->has_x_mag()){
+        std::get<10>(rx_pdo) = T::pb_rx_pdos.mutable_imuvn_rx_pdo()->x_mag();
+        std::get<11>(rx_pdo) = T::pb_rx_pdos.mutable_imuvn_rx_pdo()->y_mag();
+        std::get<12>(rx_pdo) = T::pb_rx_pdos.mutable_imuvn_rx_pdo()->z_mag();
+    }
+
+    std::get<13>(rx_pdo)    = T::pb_rx_pdos.mutable_imuvn_rx_pdo()->imu_ts();
+    std::get<14>(rx_pdo)    = T::pb_rx_pdos.mutable_imuvn_rx_pdo()->temperature();
+    std::get<15>(rx_pdo)    = T::pb_rx_pdos.mutable_imuvn_rx_pdo()->digital_in();
+    std::get<16>(rx_pdo)    = T::pb_rx_pdos.mutable_imuvn_rx_pdo()->fault();
+    std::get<17>(rx_pdo)    = T::pb_rx_pdos.mutable_imuvn_rx_pdo()->rtt();
 
     if(!init_rx_pdo){
         init_rx_pdo=true;   
