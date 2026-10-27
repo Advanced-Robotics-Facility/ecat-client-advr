@@ -3,6 +3,7 @@
 
 //Power board
 PwrStatusMap pow_status_map;
+PwrReferenceMap pow_reference_map;
 //IMU
 ImuStatusMap imu_status_map;
 ImuReferenceMap imu_reference_map;
@@ -320,8 +321,8 @@ void EcWrapper::stop_devices(void)
         }   
     }
 
-    // stop imu digital out
-    _client->stop_imu_reference();
+    // stop imu digital out and pow
+    _client->stop_esc_reference();
 
 }
 
@@ -574,6 +575,15 @@ bool EcWrapper::safe_init()
 
     if(!imu_reference_map.empty()){
         _client->set_imu_reference(imu_reference_map);
+    }
+
+    // init pow reference map
+    for (const auto &[esc_id, pow_rx_pdo] : pow_status_map){
+        pow_reference_map[esc_id] = std::make_tuple(7,0,0,0); // all LEDs ON
+    }
+
+    if(!pow_reference_map.empty()){
+        _client->set_pow_reference(pow_reference_map);
     }
 
     _client->write();

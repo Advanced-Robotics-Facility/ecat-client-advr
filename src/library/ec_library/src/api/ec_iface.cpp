@@ -208,21 +208,36 @@ void EcIface::set_gripper_reference(const GripperReferenceMap &gripper_reference
     }
 }
 
-void EcIface::set_imu_reference(const ImuReferenceMap &imu_reference)
+void EcIface::set_imu_reference(const ImuReferenceMap &imu_reference_map)
 {
-    if(copy_map_values(_imu_reference_map,imu_reference)){
+    if(copy_map_values(_imu_reference_map,imu_reference_map)){
         _write_device[DeviceCtrlType::IMU] = true;
     }
 }
 
-void EcIface::stop_imu_reference(){
+void EcIface::set_pow_reference(const PwrReferenceMap &pow_reference_map)
+{
+    if(copy_map_values(_pow_reference_map,pow_reference_map)){
+        _write_device[DeviceCtrlType::POW] = true;
+    }
+}
+
+void EcIface::stop_esc_reference(){
     
     for (auto &[esc_id, imu_tx_pdo] : _imu_reference_map){
         std::get<0>(imu_tx_pdo) = 0;
     }
 
+    for (auto &[esc_id, pow_tx_pdo] : _pow_reference_map){
+        std::get<0>(pow_tx_pdo) = 0;
+        std::get<1>(pow_tx_pdo) = 0;
+        std::get<2>(pow_tx_pdo) = 0;
+        std::get<3>(pow_tx_pdo) = 0;
+    }
+
     std::fill(_write_device.begin(), _write_device.end(), false);
     _write_device[DeviceCtrlType::IMU] = true;
+    _write_device[DeviceCtrlType::POW] = true;
 
     write();
     // add this sleep useful for during the closing phase.

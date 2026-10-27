@@ -96,6 +96,7 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                     auto pow_pdo = std::make_shared<PowPdo<T>>(_ec_pdo_start, id, esc_type);
                     _pow_pdo_map[id]=pow_pdo;
                     _pow_status_map[id]= pow_pdo->rx_pdo;
+                    _pow_reference_map[id]= pow_pdo->tx_pdo;
                 }break;
                 default:
                     break;
@@ -256,6 +257,7 @@ void EcPdo<T>::write_pdo()
     write_esc_pdo(DeviceCtrlType::PUMP,    _pump_pdo_map,    _pump_reference_map,    CtrlIndex<-1>{});  // no ctrl mode
     write_esc_pdo(DeviceCtrlType::GRIPPER, _gripper_pdo_map, _gripper_reference_map, CtrlIndex<-1>{});  // no ctrl mode
     write_esc_pdo(DeviceCtrlType::IMU,     _imu_pdo_map,     _imu_reference_map,     CtrlIndex<-1>{});  // no ctrl mode
+    write_esc_pdo(DeviceCtrlType::POW,     _pow_pdo_map,     _pow_reference_map,     CtrlIndex<-1>{});  // no ctrl mode
 }
 
 template class EcPdo<EcPipePdo>;

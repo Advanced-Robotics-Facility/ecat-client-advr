@@ -28,6 +28,22 @@ namespace PowPdoRx{
     }
 };
 
+namespace PowPdoTx{
+    static const std::vector<std::string>name = {"master_command", "fault_ack", "op_idx_aux","aux"};
+    static const int pdo_size=4;
+    using pdo_t=std::tuple<uint16_t,uint16_t,uint16_t,float>;
+    template <typename T>
+    inline bool make_vector_from_tuple(const pdo_t &pdo_tuple,std::vector<T> &pdo_vector){
+        if(pdo_vector.size()!=pdo_size){
+           return false;
+        }
+        pdo_vector[0]= static_cast<T>(std::get<0>(pdo_tuple));
+        pdo_vector[1]= static_cast<T>(std::get<1>(pdo_tuple));
+        pdo_vector[2]= static_cast<T>(std::get<2>(pdo_tuple));
+        pdo_vector[3]= static_cast<T>(std::get<3>(pdo_tuple));
+        return true;
+    }
+};
 
 template <class T>
 class PowPdo: public T{
@@ -42,13 +58,28 @@ public:
     void set_to_pb();
     
     PowPdoRx::pdo_t rx_pdo{};
+    PowPdoTx::pdo_t tx_pdo{};
     bool init_rx_pdo=false;
+private:
+    void init_pb();
 };
+
+template < class T >
+inline void PowPdo<T>::init_pb() 
+{
+   uint8_t  pb_buf[MAX_PB_SIZE];
+   uint32_t msg_size=0;
+
+   set_to_pb();
+   msg_size = T::pb_tx_pdos.ByteSizeLong();
+   T::pb_tx_pdos.SerializeToArray( (void*)(pb_buf+sizeof(msg_size)), msg_size);
+}
 
 template < class T >
 inline PowPdo<T>::PowPdo(const std::string value,int32_t id, uint32_t type):
                        T(id, type, value)
 {
+    init_pb();
     T::init();
     T::write_connect();
 };
@@ -81,6 +112,13 @@ inline void PowPdo<T>::get_from_pb()
 template < class T >
 inline void PowPdo<T>::set_to_pb() 
 {
+    set_pbHeader(T::pb_tx_pdos.mutable_header(), T::name, 0);
+    // Type
+    T::pb_tx_pdos.set_type(iit::advr::Ec_slave_pdo::TX_POW_F28M36);
+    T::pb_tx_pdos.mutable_powf28m36_tx_pdo()->set_master_command(std::get<0>(tx_pdo));
+    T::pb_tx_pdos.mutable_powf28m36_tx_pdo()->set_fault_ack(std::get<1>(tx_pdo));
+    T::pb_tx_pdos.mutable_powf28m36_tx_pdo()->set_op_idx_aux(std::get<2>(tx_pdo));
+    T::pb_tx_pdos.mutable_powf28m36_tx_pdo()->set_aux(std::get<3>(tx_pdo));
 }
 
 template class PowPdo<EcPipePdo>;

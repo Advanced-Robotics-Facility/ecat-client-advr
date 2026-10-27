@@ -49,12 +49,13 @@ public:
     
     // EtherCAT Client ADVR Facilty setters
     void set_reference_flag(uint32_t reference_flag);
-    void set_motor_reference(const MotorReferenceMap &motor_references);
-    void set_valve_reference(const ValveReferenceMap &valve_reference);
-    void set_pump_reference(const PumpReferenceMap &pump_reference);
-    void set_gripper_reference(const GripperReferenceMap &gripper_reference);
-    void set_imu_reference(const ImuReferenceMap &imu_reference);
-    void stop_imu_reference();
+    void set_motor_reference(const MotorReferenceMap &motor_reference_map);
+    void set_valve_reference(const ValveReferenceMap &valve_reference_map);
+    void set_pump_reference(const PumpReferenceMap &pump_reference_map);
+    void set_gripper_reference(const GripperReferenceMap &gripper_reference_map);
+    void set_imu_reference(const ImuReferenceMap &imu_reference_map);
+    void set_pow_reference(const PwrReferenceMap &pow_reference_map);
+    void stop_esc_reference();
     
     // EtherCAT Client ADVR Facilty manager
     virtual void start_client(uint32_t period_ms) = 0;
@@ -117,6 +118,7 @@ protected:
     PumpReferenceMap _pump_reference_map;
     GripperReferenceMap _gripper_reference_map;
     ImuReferenceMap     _imu_reference_map;
+    PwrReferenceMap     _pow_reference_map;
     std::vector<bool> _write_device;
     
     uint64_t _period_ns;

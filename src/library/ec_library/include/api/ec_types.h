@@ -59,6 +59,7 @@ using MotorReferenceMap=    std::map<int32_t, MotorPdoTx::pdo_t>;
 
 using PwrStatusMap=         std::map<int32_t, PowPdoRx::pdo_t>;
 using PwrStatus=            std::vector<PowPdoRx::pdo_t>;
+using PwrReferenceMap=      std::map<int32_t, PowPdoTx::pdo_t>;
 
 using FtStatusMap=          std::map<int32_t, FtPdoRx::pdo_t>;
 using FtStatus=             std::vector<FtPdoRx::pdo_t>;
@@ -137,6 +138,7 @@ enum DeviceCtrlType{
     PUMP    = 2,
     GRIPPER = 3,
     IMU     = 4,
+    POW     = 5, 
 };
 
 template <typename T>
