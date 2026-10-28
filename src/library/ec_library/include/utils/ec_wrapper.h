@@ -6,6 +6,7 @@
 
 //Power board
 extern PwrStatusMap pow_status_map;
+extern PwrReferenceMap pow_reference_map;
 //IMU
 extern ImuStatusMap imu_status_map;
 extern ImuReferenceMap imu_reference_map;
