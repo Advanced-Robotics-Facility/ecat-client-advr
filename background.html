@@ -1,0 +1,670 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Background &mdash; EtherCAT Client 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=2709fde1"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="installation.html" />
+    <link rel="prev" title="Welcome to ADVR-F EtherCAT Client’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            EtherCAT Client
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Background</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#zmq-mechanism">ZMQ Mechanism</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#protocol-buffer-mechanism">Protocol Buffer Mechanism</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#message-pack-mechanism">Message Pack Mechanism</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#boost-asio-mechanism">Boost ASIO Mechanism</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ethercat-protocol">EtherCAT Protocol</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#protocol-introduction">Protocol Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#protocol-functional-principle">Protocol functional principle</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#object-dictionary">Object Dictionary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#service-data-objects-sdo">Service Data Objects (SDO)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#process-data-objects-pdo">Process Data Objects(PDO)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pdo-mapping">PDO mapping</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ethercat-slave-architecture">EtherCAT Slave Architecture</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#esc-ethercat-slave-controller">ESC: EtherCAT Slave Controller</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fmmu">FMMU</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#syncmanager">SyncManager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#distributed-clocks-for-high-precision-synchronization">Distributed Clocks for High-Precision Synchronization</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ethercat-master-state-machine">EtherCAT Master State Machine</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ethercat-libraries">EtherCAT Libraries</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#ethercat-master-server">EtherCAT Master Server</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ethercat-master-command-request-and-reply">EtherCAT Master Command Request and Reply</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#command-request">Command Request</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ecat-master-cmd">Ecat_Master_cmd</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#foe-master-file-access-over-ethercat">FOE_Master (File Access over EtherCAT)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slave-sdo-info">Slave_SDO_info</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slave-sdo-cmd">Slave_SDO_cmd</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#flash-cmd">Flash_cmd</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ctrl-cmd">Ctrl_cmd</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#trajectory-cmd">Trajectory_Cmd</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#trj-queue-cmd">Trj_queue_cmd</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#real-time-programming">Real Time Programming</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#inter-process-communication">Inter Process Communication</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#kernel-debugging">Kernel Debugging</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#ethecat-udp-server">EtheCAT UDP Server</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wsl.html">WSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ec_client.html">EtherCAT Client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ec_client_gui.html">EtherCAT Client GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ec_client_block.html">EtherCAT Client Block (Matlab/Simulink)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">EtherCAT Client</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Background</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/background.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="background">
+<span id="id1"></span><h1>Background<a class="headerlink" href="#background" title="Link to this heading"></a></h1>
+<section id="zmq-mechanism">
+<span id="zeromq"></span><h2>ZMQ Mechanism<a class="headerlink" href="#zmq-mechanism" title="Link to this heading"></a></h2>
+<p><a class="reference external" href="https://zeromq.org">ZeroMQ</a> (also spelled ØMQ, 0MQ or ZMQ) is a high-performance asynchronous messaging library, aimed at use in distributed or concurrent applications. It provides a message queue, but unlike message-oriented middleware, a ZeroMQ system can run without a dedicated message broker.</p>
+</section>
+<section id="protocol-buffer-mechanism">
+<span id="protocol-buffer"></span><h2>Protocol Buffer Mechanism<a class="headerlink" href="#protocol-buffer-mechanism" title="Link to this heading"></a></h2>
+<p><a class="reference external" href="https://developers.google.com/protocol-buffers">Protocol buffers</a> are a flexible, efficient, automated mechanism for serializing structured data – think XML, but smaller, faster, and simpler. You define how you want your data to be structured once, then you can use special generated source code to easily write and read your structured data to and from a variety of data streams and using a variety of languages. You can even update your data structure without breaking deployed programs that are compiled against the “old” format.</p>
+</section>
+<section id="message-pack-mechanism">
+<span id="message-pack"></span><h2>Message Pack Mechanism<a class="headerlink" href="#message-pack-mechanism" title="Link to this heading"></a></h2>
+<p><a class="reference external" href="https://msgpack.org/">Message Pack</a> is an efficient binary serialization format. It lets you exchange data among multiple languages like JSON. But it’s faster and smaller. Small integers are encoded into a single byte, and typical short strings require only one extra byte in addition to the strings themselves.</p>
+</section>
+<section id="boost-asio-mechanism">
+<span id="boost-asio"></span><h2>Boost ASIO Mechanism<a class="headerlink" href="#boost-asio-mechanism" title="Link to this heading"></a></h2>
+<p><a class="reference external" href="https://www.boost.org/doc/libs/1_84_0/doc/html/boost_asio/overview/basics.html">Boost ASIO</a> may be used to perform both synchronous and asynchronous operations on I/O objects such as sockets.</p>
+</section>
+<section id="ethercat-protocol">
+<span id="ethercat"></span><h2>EtherCAT Protocol<a class="headerlink" href="#ethercat-protocol" title="Link to this heading"></a></h2>
+<section id="protocol-introduction">
+<h3>Protocol Introduction<a class="headerlink" href="#protocol-introduction" title="Link to this heading"></a></h3>
+<p>EtherCAT is a fast, low cost, and flexible Ethernet network protocol. It consists of a master with several slaves. The computer on which the controller runs is the Master, while devices that make data of connected I/O devices available for the master are called slaves.</p>
+</section>
+<section id="protocol-functional-principle">
+<h3>Protocol functional principle<a class="headerlink" href="#protocol-functional-principle" title="Link to this heading"></a></h3>
+<p>Going on analysing the protocol we have to know that EtherCAT commands are transported in the data area of an Ethernet telegram and can either be coded via a special Ether type or via UDP/IP. While the first variant is limited to an Ethernet subnet the second one, designed for less time-critical applications, enables normal IP routing.</p>
+<p>Each EtherCAT command consists of an EtherCAT header, the data area and a subsequent counter area (working counter). This working counter is incremented by all EtherCAT devices that were addressed by the EtherCAT command and have exchanged associated data.</p>
+<img alt="_images/EtherCAT_Protocol_img_0.png" src="_images/EtherCAT_Protocol_img_0.png" />
+<p>In order to configure and diagnose slave devices, it is possible to access the variables provided for the network with the help of acyclic communication. This is based on a reliable mailbox protocol with an auto-recover function for erroneous messages.
+In order to support a wide variety of devices and application layers, the following EtherCAT communication profiles have been established:</p>
+<ul class="simple">
+<li><p>CAN application protocol over EtherCAT (CoE).</p></li>
+<li><p>Servo drive profile, according to IEC 61800-7-204 (SoE).</p></li>
+<li><p>Ethernet over EtherCAT (EoE).</p></li>
+<li><p>File Access over EtherCAT (FoE).</p></li>
+<li><p>Automation Device Protocol over EtherCAT (ADS over EtherCAT, AoE).</p></li>
+</ul>
+<img alt="_images/EtherCAT_Protocol_img_1.png" src="_images/EtherCAT_Protocol_img_1.png" />
+</section>
+<section id="object-dictionary">
+<h3>Object Dictionary<a class="headerlink" href="#object-dictionary" title="Link to this heading"></a></h3>
+<p>The CANopen Object Dictionary (OD) is an ordered grouping of objects; each object is addressed using a 16-bit index. To allow individual elements of structures of data to be accessed an 8-bit subindex has been defined as well. For every slave in the network an OD exists. The OD contains all parameters describing the device and its network behaviour.</p>
+<img alt="_images/EtherCAT_Protocol_img_2.png" src="_images/EtherCAT_Protocol_img_2.png" />
+</section>
+<section id="service-data-objects-sdo">
+<h3>Service Data Objects (SDO)<a class="headerlink" href="#service-data-objects-sdo" title="Link to this heading"></a></h3>
+<p>The Service Data Object (SDO) are used to access the Object Dictionary of a device. The requester of the OD access is called the Client and the EtherCAT device, whose OD is accessed and services the request, is called the Server. A Client request is always confirmed by a reply from the Server:</p>
+<img alt="_images/EtherCAT_Protocol_img_3.png" src="_images/EtherCAT_Protocol_img_3.png" />
+</section>
+<section id="process-data-objects-pdo">
+<h3>Process Data Objects(PDO)<a class="headerlink" href="#process-data-objects-pdo" title="Link to this heading"></a></h3>
+<p>Process Data Objects are used to transfer real-time data among various nodes. Data are transferred from one (and only one) producer to one or more consumers.One PDO can contain multiple object dictionary entries. The objects within a PDO are configurable using the mapping and the parameter object dictionary entries. There is a maximum of 64 bits for PDO. There are two kinds of PDO:</p>
+<ul class="simple">
+<li><p>Transmit PDO: reads data from device</p></li>
+<li><p>Receive PDO: sends data to device</p></li>
+</ul>
+<img alt="_images/EtherCAT_Protocol_img_4.png" src="_images/EtherCAT_Protocol_img_4.png" />
+<section id="pdo-mapping">
+<h4>PDO mapping<a class="headerlink" href="#pdo-mapping" title="Link to this heading"></a></h4>
+<p>To configure how many and which object dictionary entries have to be cyclically updated using PDO, the user has to send a sequence of SDO that “map” all the desired variables in the objects that would be transmitted using PDO. The PDO mapping procedure could be performed only when the slave is in pre-operational state. The objects mapped in the PDO input could be different from the objects of the PDO output:</p>
+<img alt="_images/EtherCAT_Protocol_img_5.png" src="_images/EtherCAT_Protocol_img_5.png" />
+</section>
+</section>
+<section id="ethercat-slave-architecture">
+<h3>EtherCAT Slave Architecture<a class="headerlink" href="#ethercat-slave-architecture" title="Link to this heading"></a></h3>
+<img alt="_images/EtherCAT_Protocol_img_10.png" src="_images/EtherCAT_Protocol_img_10.png" />
+<section id="esc-ethercat-slave-controller">
+<h4>ESC: EtherCAT Slave Controller<a class="headerlink" href="#esc-ethercat-slave-controller" title="Link to this heading"></a></h4>
+<p>The ESC is a chip for EtherCAT communication. The ESC handles the EtherCAT protocol in real-time by processing the EtherCAT frames on the fly and providing the interface for data exchange between EtherCAT master and the slave’s local application controller via registers and a DPRAM. The ESC can either be implemented as FPGA (Field Programmable Gate Array) or as ASIC (Application Specific Integrated Circuit). The performance of the EtherCAT communication does not depend on the implementation of the application software in the host controller. In turn, the performance of the application in the host controller does not depend on the EtherCAT communication speed.</p>
+<p>Another feature of the ESC is to provide data for a local host controller or digital I/Os via the Process Data Interface (PDI).Process data and parameters are exchanged via a DPRAM in the ESC. To ensure data consistency, appropriate mechanisms are provided by the ESC hardware such as SyncManagers.</p>
+<img alt="_images/EtherCAT_Protocol_img_6.png" src="_images/EtherCAT_Protocol_img_6.png" />
+<img alt="_images/EtherCAT_Protocol_img_9.png" src="_images/EtherCAT_Protocol_img_9.png" />
+</section>
+<section id="fmmu">
+<h4>FMMU<a class="headerlink" href="#fmmu" title="Link to this heading"></a></h4>
+<p>Fieldbus Memory Management Units (FMMU) convert logical addresses into physical addresses by means of internal address mapping. Thus, FMMUs allow to use logical addressing for data segments that span several slave devices: one datagram addresses data within several arbitrarily distributed ESCs. Each FMMU channel maps one continuous logical address space to one continuous physical address space of the slave. The access type supported by an FMMU is configurable to be either readable, writable, or readable/writable.</p>
+</section>
+<section id="syncmanager">
+<h4>SyncManager<a class="headerlink" href="#syncmanager" title="Link to this heading"></a></h4>
+<p>Since both the EtherCAT network (master) and the PDI access the DPRAM in the ESC, the DPRAM access needs to ensure data consistency. The SyncManager is a mechanism to protect data in the DPRAM from being accessed simultaneously.</p>
+</section>
+<section id="distributed-clocks-for-high-precision-synchronization">
+<h4>Distributed Clocks for High-Precision Synchronization<a class="headerlink" href="#distributed-clocks-for-high-precision-synchronization" title="Link to this heading"></a></h4>
+<p>In applications with spatially distributed processes requiring simultaneous actions, exact synchronization is particularly important. For example, this is the case for applications in which multiple servo axes execute coordinated movements.
+In contrast to completely synchronous communication, whose quality suffers immediately from communication errors, distributed synchronized clocks have a high degree of tolerance for jitter in the communication system. Therefore, the EtherCAT solution for synchronizing nodes is based on such distributed clocks (DC).</p>
+<img alt="_images/EtherCAT_Protocol_img_7.png" src="_images/EtherCAT_Protocol_img_7.png" />
+</section>
+</section>
+<section id="ethercat-master-state-machine">
+<h3>EtherCAT Master State Machine<a class="headerlink" href="#ethercat-master-state-machine" title="Link to this heading"></a></h3>
+<p>Before to work with EtherCAT is important to understand which communication protocols are used and where can be used.
+As the Ingenia devices are based on CANopen over EtherCAT, two different communication protocols are used:</p>
+<blockquote>
+<div><ul>
+<li><p>SDO - Service Data Object (Mailbox communication). SDO allows a peer-to-peer communication between master and slave.</p></li>
+<li><p>PDO - Process Data Object (Process Data communication). PDO allows real time communication. There are two types depending on the direction:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Process Data Input (PDI). Slave to master.</p></li>
+<li><p>Process Data Output (PDO). Master to slave.</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+<p>Every EtherCAT device has an internal communication state machine that defines which kind of communication are allowed every time.
+Following there is a diagram of all defined states:</p>
+<img alt="_images/EtherCAT_Protocol_img_8.png" src="_images/EtherCAT_Protocol_img_8.png" />
+</section>
+<section id="ethercat-libraries">
+<h3>EtherCAT Libraries<a class="headerlink" href="#ethercat-libraries" title="Link to this heading"></a></h3>
+<p><a class="reference external" href="https://openethercatsociety.github.io/doc/soem/index.html">Simple Open EtherCAT Master or SOEM</a></p>
+<p><a class="reference external" href="https://openethercatsociety.github.io/doc/soes/index.html">Simple Open EtherCAT Slave or SOES</a></p>
+</section>
+</section>
+<section id="ethercat-master-server">
+<span id="ethecat-master-server"></span><h2>EtherCAT Master Server<a class="headerlink" href="#ethercat-master-server" title="Link to this heading"></a></h2>
+<img alt="_images/EtherCAT_Master_Img_00.png" src="_images/EtherCAT_Master_Img_00.png" />
+<section id="ethercat-master-command-request-and-reply">
+<h3>EtherCAT Master Command Request and Reply<a class="headerlink" href="#ethercat-master-command-request-and-reply" title="Link to this heading"></a></h3>
+<img alt="_images/EtherCAT_Master_Img_1.png" src="_images/EtherCAT_Master_Img_1.png" />
+</section>
+<section id="command-request">
+<h3>Command Request<a class="headerlink" href="#command-request" title="Link to this heading"></a></h3>
+<img alt="_images/EtherCAT_Master_Img_0.png" src="_images/EtherCAT_Master_Img_0.png" />
+<section id="ecat-master-cmd">
+<h4>Ecat_Master_cmd<a class="headerlink" href="#ecat-master-cmd" title="Link to this heading"></a></h4>
+<img alt="_images/EtherCAT_Master_Img_2.png" src="_images/EtherCAT_Master_Img_2.png" />
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Command Name</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>START_MASTER</p></td>
+<td><p>start the EtherCAT Master (ec_board base/ctrl ,ec_master_iface, zmq_pub_thread).</p></td>
+</tr>
+<tr class="row-odd"><td><p>STOP_MASTER</p></td>
+<td><p>stop the EtherCAT Master (ec_board base/ctrl ,ec_master_iface, zmq_pub_thread).</p></td>
+</tr>
+<tr class="row-even"><td><p>GET_SLAVES_DESCR</p></td>
+<td><p>get the slaves informations and ids.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>GET_SLAVES_DESCR</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Topology</p></td>
+<td><p>Number Port actives (see EtherCAT Frame session). (1…4) i.e 3.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Active Ports</p></td>
+<td><p>Which ports (1…4) i.e 2,3,4.</p></td>
+</tr>
+<tr class="row-even"><td><p>Position</p></td>
+<td><p>Slave position (first, second, etc…).</p></td>
+</tr>
+<tr class="row-odd"><td><p>Esc_Type</p></td>
+<td><p>value saved into ESC EEPROM that identify the slave type.</p></td>
+</tr>
+<tr class="row-even"><td><p>Robot ID</p></td>
+<td><p>Slave ID.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Model Type</p></td>
+<td><p>“”</p></td>
+</tr>
+<tr class="row-even"><td><p>Model Size</p></td>
+<td><p>“”</p></td>
+</tr>
+<tr class="row-odd"><td><p>Model ID</p></td>
+<td><p>“”</p></td>
+</tr>
+<tr class="row-even"><td><p>Model Revision</p></td>
+<td><p>“”</p></td>
+</tr>
+</tbody>
+</table>
+<p>For this command type the key value mechanism is used to change the YAML file used by EtherCAT master:</p>
+<blockquote>
+<div><p>({‘app_mode’:’run_mode’,’use_ecat_pos_as_id’:’false’})
+({‘app_mode’:’config_mode’,’use_ecat_pos_as_id’:’true’})</p>
+</div></blockquote>
+</section>
+<section id="foe-master-file-access-over-ethercat">
+<h4>FOE_Master (File Access over EtherCAT)<a class="headerlink" href="#foe-master-file-access-over-ethercat" title="Link to this heading"></a></h4>
+<img alt="_images/EtherCAT_Master_Img_3.png" src="_images/EtherCAT_Master_Img_3.png" />
+<p>i.e</p>
+<blockquote>
+<div><p>filename=”cent_AC_c28.bin”
+password=”0xDAD0”
+mcu=”c28”</p>
+</div></blockquote>
+<p><strong>PreCondition</strong>: EtherCAT master should be in Pre-operation state.</p>
+</section>
+<section id="slave-sdo-info">
+<h4>Slave_SDO_info<a class="headerlink" href="#slave-sdo-info" title="Link to this heading"></a></h4>
+<img alt="_images/EtherCAT_Master_Img_4.png" src="_images/EtherCAT_Master_Img_4.png" />
+<p>i.e</p>
+<p>link_pos ,motor_pos, link_vel, motor_vel, torque, temperature, fault,
+tx_rtt, op_idx_ack, tx_aux, pos_ref, vel_ref, tor_ref, gain_0,1,2,3,4,
+fault_ack, rx_ts, op_idx_aux, rx_aux, Hardware_config, Motor_gear_ratio,
+Motor_el_ph_angle, Torsion_bar_stiff, …</p>
+</section>
+<section id="slave-sdo-cmd">
+<h4>Slave_SDO_cmd<a class="headerlink" href="#slave-sdo-cmd" title="Link to this heading"></a></h4>
+<img alt="_images/EtherCAT_Master_Img_5.png" src="_images/EtherCAT_Master_Img_5.png" />
+<dl class="simple">
+<dt>i.e</dt><dd><p>‘slave_sdo_cmd’: {‘board_id’: 12, ‘rd_sdo’: [‘Joint_robot_id’, ‘m3_fw_ver’, ‘c28_fw_ver’, ‘Min_pos’, ‘Max_pos’], ‘wr_sdo’: []}, ‘type’: ‘SLAVE_SDO_CMD’}</p>
+</dd>
+</dl>
+<p><strong>PreCondition</strong>: EtherCAT master should be in Pre-operation state.</p>
+</section>
+<section id="flash-cmd">
+<h4>Flash_cmd<a class="headerlink" href="#flash-cmd" title="Link to this heading"></a></h4>
+<img alt="_images/EtherCAT_Master_Img_6.png" src="_images/EtherCAT_Master_Img_6.png" />
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Command Name</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>SAVE_PARAMS_TO_FLASH</p></td>
+<td><p>Save parameters to the flash.</p></td>
+</tr>
+<tr class="row-odd"><td><p>LOAD_PARAMS_FROM_FLASH</p></td>
+<td><p>Load parameters from the flash.</p></td>
+</tr>
+<tr class="row-even"><td><p>LOAD_DEFAULT_PARAMS</p></td>
+<td><p>Load default parameters.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>PreCondition</strong>: EtherCAT master should be in Pre-operation state.</p>
+</section>
+<section id="ctrl-cmd">
+<h4>Ctrl_cmd<a class="headerlink" href="#ctrl-cmd" title="Link to this heading"></a></h4>
+<img alt="_images/EtherCAT_Master_Img_7.png" src="_images/EtherCAT_Master_Img_7.png" />
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Command Name</p></th>
+<th class="head"><p>Value</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>CTRL_TEST DONE</p></td>
+<td><p>NULL</p></td>
+<td><p>“”</p></td>
+</tr>
+<tr class="row-odd"><td><p>CTRL_TEST ERROR</p></td>
+<td><p>NULL</p></td>
+<td><p>“”</p></td>
+</tr>
+<tr class="row-even"><td><p>CTRL_DAC_TUNE</p></td>
+<td><p>NULL</p></td>
+<td><p>Only for force torque sensor and set analogical offset).
+Note: Reply in process during the calibration.</p></td>
+</tr>
+<tr class="row-odd"><td><p>CTRL_REMOVE_TORQUE_OFFS</p></td>
+<td><p>ON/OFF</p></td>
+<td><p>Remove torque offset.</p></td>
+</tr>
+<tr class="row-even"><td><p>CTRL_SET_ZERO_POSITION</p></td>
+<td><p>ON/OFF</p></td>
+<td><p>Set “zero” position of joints.</p></td>
+</tr>
+<tr class="row-odd"><td><p>CTRL_SANDBOX</p></td>
+<td><p>ON/OFF</p></td>
+<td><p>Set on/off of mechanical end stop.</p></td>
+</tr>
+<tr class="row-even"><td><p>CTRL_POWER_MOD</p></td>
+<td><p>ON/OFF</p></td>
+<td><p>Set on/off of power modulator.</p></td>
+</tr>
+<tr class="row-odd"><td><p>CTRL_SET_MIN_POSITION</p></td>
+<td><p>ON/OFF</p></td>
+<td><p>Set min position limit (rad).</p></td>
+</tr>
+<tr class="row-even"><td><p>CTRL_SET_MAX_POSITION</p></td>
+<td><p>ON/OFF</p></td>
+<td><p>Set max position limit (rad).</p></td>
+</tr>
+<tr class="row-odd"><td><p>CTRL_RUN_TORQUE_CALIB</p></td>
+<td><p>NULL</p></td>
+<td><p>Torque Calibration
+Note: Reply in process during the calibration.</p></td>
+</tr>
+<tr class="row-even"><td><p>CTRL_REF_FILTER</p></td>
+<td><p>ON/OFF</p></td>
+<td><p>Set on/off the filter for position reference.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>PreCondition</strong>: EtherCAT master should be in Pre-operation state.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Command Name</p></th>
+<th class="head"><p>Value</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>CTRL_FAN</p></td>
+<td><p>ON/OFF</p></td>
+<td><p>On/off of the FAN.</p></td>
+</tr>
+<tr class="row-odd"><td><p>CTRL_LED</p></td>
+<td><p>ON/OFF</p></td>
+<td><p>On/off of the LED</p></td>
+</tr>
+<tr class="row-even"><td><p>CTRL_CMD_START</p></td>
+<td><p>Control Mode</p></td>
+<td><p>Start control command. (i.e start trajectory cmd).</p></td>
+</tr>
+<tr class="row-odd"><td><p>CTRL_CMD_STOP</p></td>
+<td><p>NULL</p></td>
+<td><p>Stop control command.</p></td>
+</tr>
+<tr class="row-even"><td><p>CTRL_SET_HOME</p></td>
+<td><p>Rad</p></td>
+<td><p>Set homing position.</p></td>
+</tr>
+<tr class="row-odd"><td><p>CTRL_SET_GAINS</p></td>
+<td><p>Gains [0…4]</p></td>
+<td><p>Set gains.</p></td>
+</tr>
+<tr class="row-even"><td><p>CTRL_SET_POSITION</p></td>
+<td><p>Rad</p></td>
+<td><p>Set position.</p></td>
+</tr>
+<tr class="row-odd"><td><p>CTRL_SET_VELOCITY</p></td>
+<td><p>Rad/s</p></td>
+<td><p>Set velocity.</p></td>
+</tr>
+<tr class="row-even"><td><p>CTRL_SET_TORQUE</p></td>
+<td><p>Nm</p></td>
+<td><p>Set torque.</p></td>
+</tr>
+<tr class="row-odd"><td><p>CTRL_SET_CURRENT</p></td>
+<td><p>A</p></td>
+<td><p>Set current.</p></td>
+</tr>
+</tbody>
+</table>
+<section id="gains">
+<h5>Gains<a class="headerlink" href="#gains" title="Link to this heading"></a></h5>
+<img alt="_images/EtherCAT_Master_Img_8.png" src="_images/EtherCAT_Master_Img_8.png" />
+<p><strong>Position Control</strong>:</p>
+<img alt="_images/EtherCAT_Master_Img_9.png" src="_images/EtherCAT_Master_Img_9.png" />
+<p><strong>Velocity Control</strong>:</p>
+<img alt="_images/EtherCAT_Master_Img_10.png" src="_images/EtherCAT_Master_Img_10.png" />
+<p><strong>Impedance Control</strong>:</p>
+<img alt="_images/EtherCAT_Master_Img_11.png" src="_images/EtherCAT_Master_Img_11.png" />
+</section>
+</section>
+<section id="trajectory-cmd">
+<h4>Trajectory_Cmd<a class="headerlink" href="#trajectory-cmd" title="Link to this heading"></a></h4>
+<img alt="_images/EtherCAT_Master_Img_12.png" src="_images/EtherCAT_Master_Img_12.png" />
+<section id="homing">
+<h5>Homing<a class="headerlink" href="#homing" title="Link to this heading"></a></h5>
+<img alt="_images/EtherCAT_Master_Img_13.png" src="_images/EtherCAT_Master_Img_13.png" />
+<p>i.e x=[0,3]  y=0.6.</p>
+</section>
+<section id="sine">
+<h5>Sine<a class="headerlink" href="#sine" title="Link to this heading"></a></h5>
+<img alt="_images/EtherCAT_Master_Img_14.png" src="_images/EtherCAT_Master_Img_14.png" />
+<p>i.e freq= 0.2, mpl= 1.0, teta= 0, secs=500</p>
+</section>
+<section id="smoother">
+<h5>Smoother<a class="headerlink" href="#smoother" title="Link to this heading"></a></h5>
+<img alt="_images/EtherCAT_Master_Img_15.png" src="_images/EtherCAT_Master_Img_15.png" />
+<p>i.e x=[0,1,2,3,4]sec ,y=[0,-0.3,0,-0.3,0].</p>
+</section>
+</section>
+<section id="trj-queue-cmd">
+<h4>Trj_queue_cmd<a class="headerlink" href="#trj-queue-cmd" title="Link to this heading"></a></h4>
+<img alt="_images/EtherCAT_Master_Img_16.png" src="_images/EtherCAT_Master_Img_16.png" />
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Command Name</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>PUSH_QUE</p></td>
+<td><p>Push the trajectory for the master.</p></td>
+</tr>
+<tr class="row-odd"><td><p>EMPTY_QUE</p></td>
+<td><p>Clear trajectory.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="real-time-programming">
+<h3>Real Time Programming<a class="headerlink" href="#real-time-programming" title="Link to this heading"></a></h3>
+<p><a class="reference external" href="https://source.denx.de/Xenomai/xenomai/-/wikis/home">Xenomani</a>  is a Free Software project in which engineers from a widebackground collaborate to build a robust and resource-efficient real-time core for Linux© following the dual kernel approach, for applications with stringent latency requirements.</p>
+<img alt="_images/EtherCAT_Master_Img_18.png" src="_images/EtherCAT_Master_Img_18.png" />
+<section id="inter-process-communication">
+<h4>Inter Process Communication<a class="headerlink" href="#inter-process-communication" title="Link to this heading"></a></h4>
+<section id="cross-domain-datagram-protocol-xddp">
+<h5>Cross-Domain Datagram protocol (XDDP)<a class="headerlink" href="#cross-domain-datagram-protocol-xddp" title="Link to this heading"></a></h5>
+<p>Cross-domain datagram protocol or XDDP is a type of RT inter- process communication (RTIPC) mechanism offered by Xenomai. It is a message-passing interface based on the RTDM that exports a socket interface and allows a two-way channel communication to exchange datagrams between Xenomai RT tasks and standard Linux threads/processes using regular file operations for simplicity. It connects a socket to a pseudo device file in the standard Linux located in the root filesystem device (/dev) directory.</p>
+<p>XDDP stands for “cross-domain datagram protocol”, i.e. to exchange datagrams between the Xenomai (primary) real-time domain, and the Linux realm. This is what the message pipe fans may want to have a look at. Basically, it connects a real-time RTDM socket to one of the /dev/rtp pseudo-devices. The network port used on the socket side matches the minor device number used on the non RT side. The added bonus of XDDP is that people relying on the POSIX skin may now have access to the message pipe feature, without dragging in bits of the native skin API for that purpose.</p>
+<img alt="_images/EtherCAT_Master_Img_17.png" src="_images/EtherCAT_Master_Img_17.png" />
+</section>
+<section id="intra-domain-datagram-protocol-iddp">
+<h5>Intra-domain datagram protocol (IDDP)<a class="headerlink" href="#intra-domain-datagram-protocol-iddp" title="Link to this heading"></a></h5>
+<p>IDDP stands for “intra-domain datagram protocol”, i.e. a
+Xenomai-to-Xenomai real-time datagram channel. This protocol may not be as flexible as POSIX message queues (does not support message priority but does out-of-bound sending though), but exports a socket interface, which is surely better for your brain than mq_*() (ask Gilles). The basic idea behind it is that anything you could do based on AF_UNIX sockets in the Linux realm, should be (mostly) doable with AF_RTIPC+IDDP in the Xenomai domain. However, we use numeric port numbers or label strings, and not socket paths to bind sockets in the Xenomai namespace.</p>
+</section>
+</section>
+<section id="kernel-debugging">
+<h4>Kernel Debugging<a class="headerlink" href="#kernel-debugging" title="Link to this heading"></a></h4>
+<p>The next steps will help to setup the OS with the serial port (RS-232) to log kernel.</p>
+<section id="linux-serial-console">
+<h5>Linux Serial Console<a class="headerlink" href="#linux-serial-console" title="Link to this heading"></a></h5>
+<p><a class="reference external" href="https://kernel.org/doc/html/v5.10/admin-guide/serial-console.html">Select kernel version (i.e v5.10)</a>. To use a serial port as console you need to compile the support into your kernel.</p>
+<ul class="simple">
+<li><p>i.e <strong>cd /usr/src/linux-32324</strong>.</p></li>
+<li><p><strong>sudo make menuconfig</strong></p></li>
+</ul>
+</section>
+<section id="install-minicom">
+<h5>Install Minicom<a class="headerlink" href="#install-minicom" title="Link to this heading"></a></h5>
+<img alt="_images/Minicom_Img_1.png" src="_images/Minicom_Img_1.png" />
+<ul class="simple">
+<li><p><strong>sudo apt-get install minicom</strong>.</p></li>
+<li><p><strong>sudo usermod -a -G dialout USERNAME</strong> (replace USERNAME with your username).</p></li>
+<li><p><strong>sudo minicom -s</strong>:</p></li>
+</ul>
+<img alt="_images/Minicom_Img_2.png" src="_images/Minicom_Img_2.png" />
+<ul class="simple">
+<li><p>Press the down arrow twice:</p></li>
+</ul>
+<img alt="_images/Minicom_Img_3.png" src="_images/Minicom_Img_3.png" />
+<ul class="simple">
+<li><p>Press Enter:</p></li>
+</ul>
+<img alt="_images/Minicom_Img_4.png" src="_images/Minicom_Img_4.png" />
+<ul class="simple">
+<li><p>Press A, and set the serial device to /dev/ttyUSB0 and press Enter.</p></li>
+<li><p>Press E and set the Bps/Par/Bits to 9600 8N1 and press Enter.</p></li>
+<li><p>Press F until Hardware Flow Control in No.</p></li>
+<li><p>Press G until Software Flow Control is No.</p></li>
+<li><p>Press Enter:</p></li>
+</ul>
+<img alt="_images/Minicom_Img_5.png" src="_images/Minicom_Img_5.png" />
+<ul class="simple">
+<li><p>Press the down arrow 3 times:</p></li>
+</ul>
+<img alt="_images/Minicom_Img_6.png" src="_images/Minicom_Img_6.png" />
+<ul class="simple">
+<li><p>Press Enter:</p></li>
+</ul>
+<img alt="_images/Minicom_Img_7.png" src="_images/Minicom_Img_7.png" />
+<ul class="simple">
+<li><p>Press the down arrow 3 times:</p></li>
+</ul>
+<img alt="_images/Minicom_Img_8.png" src="_images/Minicom_Img_8.png" />
+<ul class="simple">
+<li><p>Press Enter.</p></li>
+</ul>
+</section>
+<section id="run-minicom">
+<h5>Run Minicom<a class="headerlink" href="#run-minicom" title="Link to this heading"></a></h5>
+<ul class="simple">
+<li><p>Plug your USB-to-Serial cable in.</p></li>
+<li><p>Type ls -l /dev/ttyUSB0
+<strong>crw-rw—- 1 root dialout 188, 0 Nov 18 21:06 /dev/ttyUSB0</strong></p></li>
+<li><p>Type <strong>minicom</strong></p></li>
+</ul>
+<img alt="_images/Minicom_Img_9.png" src="_images/Minicom_Img_9.png" />
+<ul class="simple">
+<li><p>Type Control-a x to exit from minicom:</p></li>
+</ul>
+<img alt="_images/Minicom_Img_10.png" src="_images/Minicom_Img_10.png" />
+</section>
+<section id="configuring-grub">
+<h5>Configuring grub<a class="headerlink" href="#configuring-grub" title="Link to this heading"></a></h5>
+<ul class="simple">
+<li><p><strong>sudo gedit /etc/default/grub</strong>.</p></li>
+<li><p><strong>add to GRUB_DEFAULT = “console=tty0 console=ttyS0,9600”</strong></p></li>
+<li><p><strong>sudo update-grub</strong></p></li>
+<li><p><strong>sudo reboot</strong></p></li>
+</ul>
+</section>
+<section id="avoiding-to-insert-username-and-password-for-logging">
+<h5>Avoiding to insert username and password for logging<a class="headerlink" href="#avoiding-to-insert-username-and-password-for-logging" title="Link to this heading"></a></h5>
+<p>Note: this operation must be done once.</p>
+<ul class="simple">
+<li><p><strong>systemctl stop serial-getty&#64;ttyS0.service</strong>.</p></li>
+<li><p><strong>systemctl disable serial-getty&#64;ttyS0.service”</strong></p></li>
+<li><p><strong>systemctl mask serial-getty&#64;ttyS0.services</strong></p></li>
+</ul>
+</section>
+</section>
+</section>
+</section>
+<section id="ethecat-udp-server">
+<h2>EtheCAT UDP Server<a class="headerlink" href="#ethecat-udp-server" title="Link to this heading"></a></h2>
+<p>EtheCAT UDP Server is a ZMQ client that uses the ZMQ inter process (ZmqIPC) protocol for the communication with EtherCAT Master Server and udp boost asio and message pack libraries for communicating with an external UDP Client.</p>
+<img alt="_images/EtherCAT_Master_Img_19.png" src="_images/EtherCAT_Master_Img_19.png" />
+<p><a class="reference external" href="https://advanced-robotics-facility.github.io/ecat-client-advr/paper/ASTRA2023_MIRROR_Real_Time_Software_architecture_Paper.pdf">Link to the paper for more information</a></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to ADVR-F EtherCAT Client’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Davide Antonucci.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

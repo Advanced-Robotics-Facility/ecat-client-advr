@@ -1,0 +1,11 @@
+<map id="QCPErrorBars" name="QCPErrorBars">
+<area shape="rect" id="Node000001" title="A plottable that adds a set of error bars to other plottables." alt="" coords="126,1489,309,2035"/>
+<area shape="rect" id="Node000002" href="$classQCPAbstractPlottable.html" title="The abstract base class for all data representing objects in a plot." alt="" coords="5,787,203,1441"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="166,1455,172,1488,167,1489,161,1456"/>
+<area shape="rect" id="Node000003" href="$classQCPLayerable.html" title="Base class for all drawable objects." alt="" coords="9,119,199,739"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="107,753,107,786,101,786,101,753"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="71,5,137,71"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="107,85,107,118,101,118,101,85"/>
+<area shape="rect" id="Node000005" href="$classQCPPlottableInterface1D.html" title="Defines an abstract interface for one&#45;dimensional plottables." alt="" coords="227,981,437,1247"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="309,1260,268,1489,263,1488,304,1260"/>
+</map>

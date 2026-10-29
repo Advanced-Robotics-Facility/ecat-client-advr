@@ -1,0 +1,9 @@
+<map id="QCPItemStraightLine" name="QCPItemStraightLine">
+<area shape="rect" id="Node000001" title="A straight line that spans infinitely in both directions." alt="" coords="5,1415,221,1720"/>
+<area shape="rect" id="Node000002" href="$classQCPAbstractItem.html" title="The abstract base class for all items in a plot." alt="" coords="19,787,208,1367"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="116,1380,116,1414,111,1414,111,1380"/>
+<area shape="rect" id="Node000003" href="$classQCPLayerable.html" title="Base class for all drawable objects." alt="" coords="19,119,208,739"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="116,752,116,787,111,787,111,752"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="80,5,147,71"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="116,85,116,118,111,118,111,85"/>
+</map>
