@@ -212,7 +212,7 @@ inline void * periodic_thread ( EcThread_Ptr th_hook ) {
     }
 #endif
     
-    auto start_time = std::chrono::high_resolution_clock::now();
+    auto start_time = std::chrono::steady_clock::now();
     auto time = start_time;
     const auto period = std::chrono::nanoseconds(th_hook->period.period.tv_usec * 1000ULL);
 
@@ -229,11 +229,13 @@ inline void * periodic_thread ( EcThread_Ptr th_hook ) {
         th_hook->th_loop ( 0 );
         
         time = time + period;
-        const auto now = std::chrono::high_resolution_clock::now();
+        const auto now = std::chrono::steady_clock::now();
 
         #if defined(PREEMPT_RT) || defined(__COBALT__)
             // if less than threshold, print warning (only on rt threads)
-            if(now > time && th_hook->schedpolicy == SCHED_FIFO){
+            if(now > time && 
+                th_hook->schedpolicy == SCHED_FIFO ||
+                th_hook->schedpolicy == SCHED_RR){
                 ++overruns;
                 DPRINTF("main process overruns: %d\n", overruns);
             }

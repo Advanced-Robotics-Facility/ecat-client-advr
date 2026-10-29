@@ -45,6 +45,7 @@ public:
     EcUtils::EC_CONFIG retrieve_ec_cfg();
     void create_ec(EcIface::Ptr &client,EcUtils::EC_CONFIG &ec_cfg);
     void set_start_devices(std::vector<int> start_devices_vector);
+    void read_devices_status();
     bool start_ec_sys(void);
     void stop_ec_sys(void);
     void log_ec_sys(void);
@@ -66,7 +67,6 @@ private:
     void prepare_devices();
     bool start_devices(void);
     void stop_devices(void);
-    void read_devices_status();
     bool safe_init();
     void get_limits(const int32_t esc_id,
                     const std::string device_type,
