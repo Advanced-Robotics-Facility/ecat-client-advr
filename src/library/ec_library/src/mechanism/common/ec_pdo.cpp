@@ -230,7 +230,7 @@ void EcPdo<T>::write_pdo()
             return;
         }
 
-        for (auto& [id, pdo] : pdo_map) {
+        for (auto const &[id,pdo] : pdo_map )  {
             pdo->tx_pdo = ref_map.at(id);
 
             if constexpr (index >= 0) {

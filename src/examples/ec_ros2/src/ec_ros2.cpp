@@ -11,6 +11,8 @@
 using namespace std::chrono;
 
 EcIface::Ptr client;
+EcUtils::EC_CONFIG ec_cfg;
+
 static bool run_loop = true;
 static pthread_mutex_t reference_mutex;
 static sem_t writer_ready;
@@ -22,24 +24,30 @@ static void sig_handler(int sig)
     run_loop=false;
 }
 
-void init_writer_sync(){
-
-    pthread_mutexattr_t reference_mutex_attr;
-
-    pthread_mutexattr_init(&reference_mutex_attr);
-    pthread_mutexattr_settype(&reference_mutex_attr, PTHREAD_MUTEX_NORMAL);
-    pthread_mutexattr_setpshared(&reference_mutex_attr, PTHREAD_PROCESS_PRIVATE);
-    pthread_mutexattr_setprotocol(&reference_mutex_attr, PTHREAD_PRIO_NONE);
-    
-    int ret=0;
-    bool error=false;
-    ret=pthread_mutex_init(&reference_mutex, &reference_mutex_attr);
-    if (ret != 0){
-        pthread_mutexattr_destroy(&reference_mutex_attr);
-        throw std::runtime_error("fatal error: cannot initialize reference_mutex, reason: "+std::to_string(ret));
+//void on_motor_command(const MotorCommandMsg& msg)
+void on_motor_command()
+{
+    if(ec_cfg.protocol=="iddp"){
+        pthread_mutex_lock(&reference_mutex);
     }
 
-    sem_init(&writer_ready, 0, 0);
+    //motor_reference_map = convert_motors(msg);
+    //gripper_reference_map = convert_grippers(msg);
+
+    if(ec_cfg.protocol=="iddp"){
+        pthread_mutex_unlock(&reference_mutex);
+        sem_post(&writer_ready);
+    }
+}
+
+void set_reference(){
+    if(!motor_reference_map.empty()){
+        client->set_motor_reference(motor_reference_map);
+    }
+
+    if(!gripper_reference_map.empty()){
+        client->set_gripper_reference(gripper_reference_map);
+    }
 }
 
 class EcWriter : public EcThread
@@ -48,7 +56,22 @@ public:
 
     EcWriter(){
 
-        init_writer_sync();
+        pthread_mutexattr_t reference_mutex_attr;
+
+        pthread_mutexattr_init(&reference_mutex_attr);
+        pthread_mutexattr_settype(&reference_mutex_attr, PTHREAD_MUTEX_NORMAL);
+        pthread_mutexattr_setpshared(&reference_mutex_attr, PTHREAD_PROCESS_PRIVATE);
+        pthread_mutexattr_setprotocol(&reference_mutex_attr, PTHREAD_PRIO_NONE);
+        
+        int ret=0;
+        bool error=false;
+        ret=pthread_mutex_init(&reference_mutex, &reference_mutex_attr);
+        if (ret != 0){
+            pthread_mutexattr_destroy(&reference_mutex_attr);
+            throw std::runtime_error("fatal error: cannot initialize reference_mutex, reason: "+std::to_string(ret));
+        }
+
+        sem_init(&writer_ready, 0, 0);
 
         auto client_thread_info = client->get_client_thread_info();
 
@@ -86,8 +109,10 @@ public:
 
                 DPRINTF("Write cmd\n");
                 pthread_mutex_lock(&reference_mutex);
-                client->write();
+                set_reference();
                 pthread_mutex_unlock(&reference_mutex);
+                
+                client->write();
             }
         }
 
@@ -97,7 +122,6 @@ public:
 
 int main(int argc, char * const argv[])
 {
-    EcUtils::EC_CONFIG ec_cfg;
     EcWrapper ec_wrapper;
     std::string fatal_error="";
     try{
@@ -116,22 +140,19 @@ int main(int argc, char * const argv[])
         return 1;
     }
 
-    EcWriter ec_write;
+    EcWriter ec_writer;
 
     if(ec_sys_started){                       
 
         if(motor_trj_map.empty() && gripper_trj_map.empty()){
             fatal_error="fatal error: devices references structure empty!";
             run_loop=false;
-        }else{           
-            bool rt_writer = false;
+        }else{     
             if (ec_cfg.protocol == "iddp"){
-                rt_writer = true;
+                auto writer_cpu = client->get_client_thread_info().cpu;
+                ec_writer.create(true,writer_cpu);
+                std::this_thread::sleep_for(100ms);
             }
-
-            auto writer_cpu = client->get_client_thread_info().cpu;
-            ec_write.create(rt_writer,writer_cpu);
-            std::this_thread::sleep_for(100ms);
 
             struct sigaction sa;
             sa.sa_handler = sig_handler;
@@ -143,7 +164,7 @@ int main(int argc, char * const argv[])
 
         auto start_time = Clock::now();
         auto time = start_time;
-        const auto period = std::chrono::nanoseconds(1000* 1000000);
+        const auto period = std::chrono::nanoseconds(4* 1000000); // 4ms default
 
         while (run_loop && client->get_client_status().run_loop){
 
@@ -155,23 +176,21 @@ int main(int argc, char * const argv[])
             //.......................
             //.......................
             // ros2 subscriber
+            on_motor_command();
 
-            pthread_mutex_lock(&reference_mutex);
-
-            client->set_motor_reference(motor_reference_map);
-            client->set_gripper_reference(gripper_reference_map);
-
-            pthread_mutex_unlock(&reference_mutex);
-
-            sem_post(&writer_ready);
+            if (ec_cfg.protocol != "iddp"){
+                set_reference();
+                client->write();
+            }
 
             ec_wrapper.log_ec_sys();
+
             time = time + period;
             std::this_thread::sleep_until(time);
         }           
     }
 
-    ec_write.stop_writer();
+    ec_writer.stop_writer();
     ec_wrapper.stop_ec_sys();
 
     if(fatal_error!=""){
