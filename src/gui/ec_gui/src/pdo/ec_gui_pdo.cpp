@@ -143,6 +143,12 @@ QTreeWidgetItem * EcGuiPdo::retrieve_treewid_item(const int &esc_id,
 }
 /************************************* RETRIEVE TREE WIDGET ITEM ***************************************/
 
+template<class T>
+struct is_char_array : std::false_type {};
+
+template<std::size_t N>
+struct is_char_array<std::array<char, N>> : std::true_type {};
+
 template<typename T>
 QString format_pdo_value(const T& value)
 {
@@ -151,6 +157,11 @@ QString format_pdo_value(const T& value)
 
     if constexpr (std::is_same_v<ValueType, std::string>) {
         text = QString::fromStdString(value);
+    }
+    else if constexpr (is_char_array<T>::value) {
+        const auto end = std::find(value.begin(), value.end(), '\0');
+        const auto length = static_cast<int>(end - value.begin());
+        text = QString::fromUtf8(value.data(), length);
     }
     else if constexpr (std::is_same_v<ValueType, bool>) {
         text = value ? "true" : "false";

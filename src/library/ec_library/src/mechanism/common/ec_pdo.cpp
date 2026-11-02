@@ -108,22 +108,15 @@ void EcPdo<T>::esc_factory(SSI slave_descr)
                     auto pow_pdo = std::make_shared<PowPdo<T>>(_ec_pdo_start, id, esc_type);
                     _pow_pdo_map[id]=pow_pdo;
                     _pow_status_map[id]= pow_pdo->rx_pdo;
+                    _pow_reference_map[id]= pow_pdo->tx_pdo;
                 }break;
                 default:
                     break;
             }
-            
         }               
     }
-
-    _internal_motor_status.resize(_motor_status_map.size());
-    _internal_valve_status.resize(_valve_status_map.size());
-    _internal_pump_status.resize(_pump_status_map.size());
-    _internal_gripper_status.resize(_gripper_status_map.size());
-
-    _internal_ft_status.resize(_ft_status_map.size());
-    _internal_imu_status.resize(_imu_status_map.size());
-    _internal_pow_status.resize(_pow_status_map.size());
+    
+    init_client_buffer();
 } 
 
 template < class T >
@@ -190,7 +183,7 @@ template < class T >
 void EcPdo<T>::read_pdo()
 {
     const auto read_esc_pdo =
-    [this](auto& pdo_map, auto& pdo_status,auto& queue) -> void
+    [this](auto& pdo_map, auto& pdo_status,auto& buffer) -> void
     {
         if(pdo_map.empty()){
             return;
@@ -203,7 +196,7 @@ void EcPdo<T>::read_pdo()
 
         get_init_rx_pdo(pdo_map);
         if(!pdo_status.empty()){
-            queue.push(pdo_status);
+            buffer.write(pdo_status);
         }
     };
 
@@ -237,13 +230,13 @@ void EcPdo<T>::read_pdo()
         zmq_client().recv(dispatch_to_slave);
     }
 
-    read_esc_pdo(_moto_pdo_map,_internal_motor_status,_motor_status_queue);
-    read_esc_pdo(_ft_pdo_map,_internal_ft_status,_ft_status_queue);
-    read_esc_pdo(_imu_pdo_map,_internal_imu_status,_imu_status_queue);
-    read_esc_pdo(_pow_pdo_map,_internal_pow_status,_pow_status_queue);
-    read_esc_pdo(_valve_pdo_map,_internal_valve_status,_valve_status_queue);
-    read_esc_pdo(_pump_pdo_map,_internal_pump_status,_pump_status_queue);
-    read_esc_pdo(_gripper_pdo_map,_internal_gripper_status,_gripper_status_queue);
+    read_esc_pdo(_moto_pdo_map,_internal_motor_status,_motor_status_buffer);
+    read_esc_pdo(_ft_pdo_map,_internal_ft_status,_ft_status_buffer);
+    read_esc_pdo(_imu_pdo_map,_internal_imu_status,_imu_status_buffer);
+    read_esc_pdo(_pow_pdo_map,_internal_pow_status,_pow_status_buffer);
+    read_esc_pdo(_valve_pdo_map,_internal_valve_status,_valve_status_buffer);
+    read_esc_pdo(_pump_pdo_map,_internal_pump_status,_pump_status_buffer);
+    read_esc_pdo(_gripper_pdo_map,_internal_gripper_status,_gripper_status_buffer);
 }
 
 
@@ -289,6 +282,7 @@ void EcPdo<T>::write_pdo()
     write_esc_pdo(DeviceCtrlType::PUMP,    _pump_pdo_map,    _pump_reference_map,    CtrlIndex<-1>{});  // no ctrl mode
     write_esc_pdo(DeviceCtrlType::GRIPPER, _gripper_pdo_map, _gripper_reference_map, CtrlIndex<-1>{});  // no ctrl mode
     write_esc_pdo(DeviceCtrlType::IMU,     _imu_pdo_map,     _imu_reference_map,     CtrlIndex<-1>{});  // no ctrl mode
+    write_esc_pdo(DeviceCtrlType::POW,     _pow_pdo_map,     _pow_reference_map,     CtrlIndex<-1>{});  // no ctrl mode
 }
 
 template class EcPdo<EcShmPdo>;

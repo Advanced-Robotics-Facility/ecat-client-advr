@@ -6,6 +6,7 @@
 
 //Power board
 extern PwrStatusMap pow_status_map;
+extern PwrReferenceMap pow_reference_map;
 //IMU
 extern ImuStatusMap imu_status_map;
 extern ImuReferenceMap imu_reference_map;
@@ -57,7 +58,7 @@ public:
                    const std::vector<T> &sdo_write);
 
     std::shared_ptr<EcUtils> get_ec_utils();
-    void ec_self_sched(std::string thread_name="Thread"); // Scheduling an external thread/process with same policy, cpu and less priority of the ec client.
+    void ec_self_sched(std::string_view thread_name = "Thread"); // Scheduling an external thread/process with same policy, cpu and less priority of the ec client.
   
 private:
     void autodetection(void);

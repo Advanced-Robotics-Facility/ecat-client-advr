@@ -59,6 +59,7 @@ using MotorReferenceMap=    std::map<int32_t, MotorPdoTx::pdo_t>;
 
 using PwrStatusMap=         std::map<int32_t, PowPdoRx::pdo_t>;
 using PwrStatus=            std::vector<PowPdoRx::pdo_t>;
+using PwrReferenceMap=      std::map<int32_t, PowPdoTx::pdo_t>;
 
 using FtStatusMap=          std::map<int32_t, FtPdoRx::pdo_t>;
 using FtStatus=             std::vector<FtPdoRx::pdo_t>;
@@ -137,8 +138,88 @@ enum DeviceCtrlType{
     PUMP    = 2,
     GRIPPER = 3,
     IMU     = 4,
+    POW     = 5, 
 };
 
+template <typename T>
+class SpscValue {
+    static_assert(ATOMIC_INT_LOCK_FREE == 2,
+                  "Target must provide always-lock-free integer atomics");
+
+public:
+    SpscValue() = default;
+
+    explicit SpscValue(std::size_t size)
+    {
+        resize(size);
+    }
+
+    // Initialization/reconfiguration only.
+    // Both producer and consumer must be stopped.
+    // Discards any pending update.
+    void resize(std::size_t size)
+    {
+        for (auto& buffer : _buffers)
+            buffer.resize(size);
+
+        _writer = 0;
+        _reader = 1;
+        _middle.store(2, std::memory_order_relaxed);
+    }
+
+    // Producer thread only.
+    void write(const T& value)
+    {
+        _buffers[_writer] = value;
+
+        const unsigned previous = _middle.exchange(
+            _writer | dirty_bit, std::memory_order_acq_rel);
+
+        _writer = previous & index_mask;
+    }
+
+    // Consumer thread only.
+    template <typename Func>
+    bool consume(Func&& callback)
+    {
+        if (!(_middle.load(std::memory_order_relaxed) & dirty_bit))
+            return false;
+
+        const unsigned previous = _middle.exchange(
+            _reader, std::memory_order_acq_rel);
+
+        _reader = previous & index_mask;
+
+        const T& value = _buffers[_reader];
+        callback(value);
+
+        return true;
+    }
+
+    // Consumer thread only.
+    bool read(T& value)
+    {
+        if (!(_middle.load(std::memory_order_relaxed) & dirty_bit))
+            return false;
+
+        const unsigned previous = _middle.exchange(
+            _reader, std::memory_order_acq_rel);
+
+        _reader = previous & index_mask;
+        value = _buffers[_reader];
+        return true;
+    }
+
+private:
+    static constexpr unsigned dirty_bit = 4;
+    static constexpr unsigned index_mask = 3;
+
+    T _buffers[3]{};
+
+    unsigned _writer = 0;
+    unsigned _reader = 1;
+    std::atomic<unsigned> _middle{2};
+};
 
 
 #endif // EC_TYPES_H

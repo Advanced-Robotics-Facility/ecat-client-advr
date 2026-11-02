@@ -12,7 +12,7 @@ namespace MotorPdoRx{
                                                  "board_temp","fault","fault_info","rtt",
                                                  "pos_ref_fb","vel_ref_fb","tor_ref_fb","curr_ref_fb"};
     static const int pdo_size=16;
-    using pdo_t= std::tuple<uint32_t,float, float, float, float,float,float,float,float,uint32_t,std::string, uint32_t,float, float, float,float>;
+    using pdo_t= std::tuple<uint32_t,float, float, float, float,float,float,float,float,uint32_t,std::array<char, 64>, uint32_t,float, float, float,float>;
     template <typename T>
     inline bool make_vector_from_tuple(const pdo_t &pdo_tuple,std::vector<T> &pdo_vector){
         if(pdo_vector.size()!=pdo_size){

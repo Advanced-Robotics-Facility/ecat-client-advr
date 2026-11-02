@@ -1,7 +1,9 @@
 #include "utils/ec_wrapper.h"
+#include "utils/ec_heap_monitor.h"
 
 //Power board
 PwrStatusMap pow_status_map;
+PwrReferenceMap pow_reference_map;
 //IMU
 ImuStatusMap imu_status_map;
 ImuReferenceMap imu_reference_map;
@@ -319,8 +321,8 @@ void EcWrapper::stop_devices(void)
         }   
     }
 
-    // stop imu digital out
-    _client->stop_imu_reference();
+    // stop imu digital out and pow
+    _client->stop_esc_reference();
 
 }
 
@@ -406,10 +408,9 @@ bool EcWrapper::safe_init()
 
     while (count_op_en < max_attempts) {
         _client->read();
+        read_devices_status();
 
         operation_enabled = true;
-        _client->get_motor_status(motor_status_map);
-
         for (const auto& [motor_id, motor_rx_pdo] : motor_status_map){
             if (_ec_cfg.device_config_map.count(motor_id) == 0) continue;
 
@@ -468,7 +469,6 @@ bool EcWrapper::safe_init()
     }
 
     // init valve reference map 
-    _client->get_valve_status(valve_status_map);
     for (const auto &[esc_id, valve_rx_pdo] : valve_status_map){
         auto enc_pos =    std::get<0>(valve_rx_pdo);  
         valve_reference_map[esc_id] = {0,enc_pos,0,0,0,0,0,0,0,0,0,0};          
@@ -500,7 +500,6 @@ bool EcWrapper::safe_init()
     }
 
     // init pump reference map
-    _client->get_pump_status(pump_status_map);
     for (const auto &[esc_id, pump_rx_pdo] : pump_status_map){
         float pump_target=0.0;
         pump_reference_map[esc_id] = {pump_target,0,0,0,0,0,0,0,0,0};
@@ -533,7 +532,6 @@ bool EcWrapper::safe_init()
     }
 
     // init gripper reference map
-    _client->get_gripper_status(gripper_status_map);
     for (const auto &[esc_id, gripper_rx_pdo] : gripper_status_map){
 
         auto motor_pos =    std::get<1>(gripper_rx_pdo);
@@ -571,13 +569,21 @@ bool EcWrapper::safe_init()
     }
 
     // init imu reference map
-    _client->get_imu_status(imu_status_map);
     for (const auto &[esc_id, imu_rx_pdo] : imu_status_map){
         imu_reference_map[esc_id] = std::make_tuple(0);
     }
 
     if(!imu_reference_map.empty()){
         _client->set_imu_reference(imu_reference_map);
+    }
+
+    // init pow reference map
+    for (const auto &[esc_id, pow_rx_pdo] : pow_status_map){
+        pow_reference_map[esc_id] = std::make_tuple(7,0,0,0); // all LEDs ON
+    }
+
+    if(!pow_reference_map.empty()){
+        _client->set_pow_reference(pow_reference_map);
     }
 
     _client->write();
@@ -642,6 +648,9 @@ bool EcWrapper::start_ec_sys(void)
 
 void EcWrapper::stop_ec_sys(void)
 {
+#ifdef ENABLE_HEAP_MONITOR
+    heap_monitor::track_heap.store(false, std::memory_order_relaxed);  
+#endif
     if(_ec_sys_started){
         stop_devices();
 
@@ -674,7 +683,7 @@ void EcWrapper::log_ec_sys()
 }
 
 
-void EcWrapper::ec_self_sched(std::string thread_name)
+void EcWrapper::ec_self_sched(std::string_view thread_name)
 {
     if(_ec_cfg.protocol == "iddp"){
         #if defined(PREEMPT_RT) || defined(__COBALT__)
@@ -701,12 +710,23 @@ void EcWrapper::ec_self_sched(std::string thread_name)
         if (ret < 0){
             throw std::runtime_error("fatal error on ec_self_sched, got an error on pthread_setaffinity_np");
         }
+
+        DPRINTF("%.*s initialized, ",
+            static_cast<int>(thread_name.size()),
+            thread_name.data());
         
-        DPRINTF("%s initialized, ",thread_name.c_str());
-        DPRINTF("id: %ld cpu: %d, priority %d\n",pthread_self(),sched_getcpu(),priority);
+        DPRINTF("id: %ld cpu: %d, priority %d\n",pthread_self(),sched_getcpu(),priority);   
     }
     else{
         throw std::runtime_error("fatal error on ec_self_sched function got an empty client!");
     }
+
+#ifdef ENABLE_HEAP_MONITOR
+    if(_ec_cfg.protocol == "iddp"){ 
+        heap_monitor::allocation_count.store(0, std::memory_order_relaxed);
+        heap_monitor::deallocation_count.store(0, std::memory_order_relaxed);
+        heap_monitor::track_heap.store(true, std::memory_order_relaxed);
+    }
+#endif     
     
 }

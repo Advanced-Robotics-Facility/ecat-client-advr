@@ -229,7 +229,7 @@ int main(int argc, char * const argv[])
             std::this_thread::sleep_until(time);
         }           
     }
-    
+
     ec_wrapper.stop_ec_sys();
 
     if(fatal_error!=""){
