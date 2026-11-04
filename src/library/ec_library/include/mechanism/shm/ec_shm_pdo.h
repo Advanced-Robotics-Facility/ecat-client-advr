@@ -46,8 +46,6 @@ public:
     std::string get_name() const    { return name; }
     uint32_t get_type() const       { return type; }
 
-    void set_dev_type(uint8_t dev_type) {dev_info.type = static_cast<DeviceType>(dev_type);}
-
     int read(void);
     int write(void);
     int write_dummy(void);
