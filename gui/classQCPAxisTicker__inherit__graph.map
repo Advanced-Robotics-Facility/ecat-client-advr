@@ -1,0 +1,15 @@
+<map id="QCPAxisTicker" name="QCPAxisTicker">
+<area shape="rect" id="Node000001" title="The base class tick generator used by QCPAxis to create tick positions and tick labels." alt="" coords="493,5,663,524"/>
+<area shape="rect" id="Node000002" href="$classQCPAxisTickerDateTime.html" title="Specialized axis ticker for calendar dates and times as axis ticks." alt="" coords="5,595,199,1069"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="480,329,417,377,345,435,275,501,212,574,197,596,193,594,208,571,271,497,342,431,414,373,483,325"/>
+<area shape="rect" id="Node000003" href="$classQCPAxisTickerFixed.html" title="Specialized axis ticker with a fixed tick step." alt="" coords="223,729,387,935"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="487,411,443,492,402,573,368,652,340,730,335,728,364,650,397,571,439,490,484,415"/>
+<area shape="rect" id="Node000004" href="$classQCPAxisTickerLog.html" title="Specialized axis ticker suited for logarithmic axes." alt="" coords="411,706,564,957"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="536,537,510,707,505,705,533,541"/>
+<area shape="rect" id="Node000005" href="$classQCPAxisTickerPi.html" title="Specialized axis ticker to display ticks in units of an arbitrary constant, for example pi." alt="" coords="588,572,750,1091"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="623,537,630,573,625,572,621,542"/>
+<area shape="rect" id="Node000006" href="$classQCPAxisTickerText.html" title="Specialized axis ticker which allows arbitrary labels at specified coordinates." alt="" coords="773,639,930,1024"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="672,405,720,487,763,571,792,640,787,639,759,573,716,490,670,411"/>
+<area shape="rect" id="Node000007" href="$classQCPAxisTickerTime.html" title="Specialized axis ticker for time spans in units of milliseconds to days." alt="" coords="954,662,1117,1002"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="675,324,743,372,814,430,884,497,945,571,971,614,992,663,987,661,966,617,940,574,880,500,811,434,740,376,676,329"/>
+</map>

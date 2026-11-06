@@ -1,0 +1,9 @@
+<map id="QCPPolarAxisAngular" name="QCPPolarAxisAngular">
+<area shape="rect" id="Node000001" title="The main container for polar plots, representing the angular axis as a circle." alt="" coords="5,1539,214,2321"/>
+<area shape="rect" id="Node000002" href="$classQCPLayoutElement.html" title="The abstract base class for all objects that form the layout system." alt="" coords="16,866,204,1491"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="110,1504,112,1540,107,1539,110,1509"/>
+<area shape="rect" id="Node000003" href="$classQCPLayerable.html" title="Base class for all drawable objects." alt="" coords="16,126,204,818"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="110,830,112,866,107,866,110,835"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="78,5,141,78"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="110,90,112,126,107,126,110,95"/>
+</map>

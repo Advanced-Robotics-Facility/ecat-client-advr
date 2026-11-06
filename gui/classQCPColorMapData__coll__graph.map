@@ -1,0 +1,5 @@
+<map id="QCPColorMapData" name="QCPColorMapData">
+<area shape="rect" id="Node000001" title="Holds the two&#45;dimensional data of a QCPColorMap plottable." alt="" coords="5,530,173,960"/>
+<area shape="rect" id="Node000002" href="$classQCPRange.html" title="Represents the range an axis is encompassing." alt="" coords="32,5,146,413"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="90,410,92,514,87,513,89,415"/>
+</map>

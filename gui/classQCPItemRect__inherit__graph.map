@@ -1,0 +1,9 @@
+<map id="QCPItemRect" name="QCPItemRect">
+<area shape="rect" id="Node000001" title="A rectangle." alt="" coords="17,1562,181,2192"/>
+<area shape="rect" id="Node000002" href="$classQCPAbstractItem.html" title="The abstract base class for all items in a plot." alt="" coords="5,866,193,1514"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="100,1526,102,1562,97,1562,99,1531"/>
+<area shape="rect" id="Node000003" href="$classQCPLayerable.html" title="Base class for all drawable objects." alt="" coords="5,126,193,818"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="99,830,102,867,97,866,99,836"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="68,5,131,78"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="99,90,102,126,97,126,99,95"/>
+</map>

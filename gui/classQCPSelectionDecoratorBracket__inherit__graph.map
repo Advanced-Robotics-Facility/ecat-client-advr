@@ -1,0 +1,5 @@
+<map id="QCPSelectionDecoratorBracket" name="QCPSelectionDecoratorBracket">
+<area shape="rect" id="Node000001" title="A selection decorator which draws brackets around each selected data segment." alt="" coords="5,550,253,1024"/>
+<area shape="rect" id="Node000002" href="$classQCPSelectionDecorator.html" title="Controls how a plottable&#39;s data selection is drawn." alt="" coords="28,5,230,502"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="130,514,132,550,127,550,129,520"/>
+</map>

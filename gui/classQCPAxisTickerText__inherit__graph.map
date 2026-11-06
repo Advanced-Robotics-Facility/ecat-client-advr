@@ -1,0 +1,5 @@
+<map id="QCPAxisTickerText" name="QCPAxisTickerText">
+<area shape="rect" id="Node000001" title="Specialized axis ticker which allows arbitrary labels at specified coordinates." alt="" coords="12,572,169,957"/>
+<area shape="rect" id="Node000002" href="$classQCPAxisTicker.html" title="The base class tick generator used by QCPAxis to create tick positions and tick labels." alt="" coords="5,5,175,524"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="91,537,93,573,88,572,90,542"/>
+</map>

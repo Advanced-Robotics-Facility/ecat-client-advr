@@ -1,0 +1,7 @@
+<map id="WaveWidget" name="WaveWidget">
+<area shape="rect" id="Node000001" title=" " alt="" coords="20,704,204,1401"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,282,72,354"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="44,367,80,704,75,704,43,372"/>
+<area shape="rect" id="Node000003" href="$classSecondOrderFilter.html" title=" " alt="" coords="96,5,278,631"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="155,628,152,687,147,686,155,633"/>
+</map>

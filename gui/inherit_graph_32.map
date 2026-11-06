@@ -1,0 +1,29 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,317,83,345"/>
+<area shape="rect" id="Node000001" href="$classEcGuiCmd.html" title=" " alt="" coords="150,5,238,33"/>
+<area shape="poly" id="edge66_Node000000_Node000001" title=" " alt="" coords="44,301,49,248,62,180,87,108,106,74,129,44,151,30,148,34,133,48,110,77,92,110,67,181,54,248,49,302"/>
+<area shape="rect" id="Node000002" href="$classEcGuiNet.html" title=" " alt="" coords="154,57,235,85"/>
+<area shape="poly" id="edge67_Node000000_Node000002" title=" " alt="" coords="46,302,54,258,69,203,93,146,109,120,129,96,154,80,152,85,132,100,114,123,98,149,74,205,59,259,51,303"/>
+<area shape="rect" id="Node000003" href="$classEcGuiPdo.html" title=" " alt="" coords="153,109,236,137"/>
+<area shape="poly" id="edge68_Node000000_Node000003" title=" " alt="" coords="49,301,60,267,76,226,99,185,129,148,154,133,151,137,132,152,103,188,81,228,65,269,55,303"/>
+<area shape="rect" id="Node000004" href="$classEcGuiSdo.html" title=" " alt="" coords="153,161,236,189"/>
+<area shape="poly" id="edge69_Node000000_Node000004" title=" " alt="" coords="55,302,85,251,105,224,129,200,154,186,151,190,132,204,109,227,89,254,60,304"/>
+<area shape="rect" id="Node000005" href="$classEcGuiSdoWizard.html" title=" " alt="" coords="131,213,258,241"/>
+<area shape="poly" id="edge70_Node000000_Node000005" title=" " alt="" coords="66,305,95,277,129,252,155,240,152,244,132,256,99,281,71,307"/>
+<area shape="rect" id="Node000006" href="$classEcGuiSlider.html" title=" " alt="" coords="147,265,242,293"/>
+<area shape="poly" id="edge71_Node000000_Node000006" title=" " alt="" coords="95,311,154,291,151,296,99,315"/>
+<area shape="rect" id="Node000007" href="$classEcGuiTerminal.html" title=" " alt="" coords="137,317,252,345"/>
+<area shape="poly" id="edge72_Node000000_Node000007" title=" " alt="" coords="97,329,139,329,135,333,100,333"/>
+<area shape="rect" id="Node000008" href="$classEcGuiWrapper.html" title=" " alt="" coords="138,369,251,397"/>
+<area shape="poly" id="edge73_Node000000_Node000008" title=" " alt="" coords="96,347,155,367,150,370,98,352"/>
+<area shape="rect" id="Node000009" href="$classQCustomPlot.html" title="The central class of the library. This is the QWidget which displays the plot and interacts with the ..." alt="" coords="141,421,248,449"/>
+<area shape="poly" id="edge74_Node000000_Node000009" title=" " alt="" coords="68,354,99,381,132,406,156,420,151,422,129,411,95,385,69,359"/>
+<area shape="rect" id="Node000010" href="$classRvizWidget.html" title=" " alt="" coords="147,473,242,501"/>
+<area shape="poly" id="edge75_Node000000_Node000010" title=" " alt="" coords="58,357,89,409,109,435,132,458,153,472,148,474,129,463,105,439,85,412,58,362"/>
+<area shape="rect" id="Node000011" href="$classSliderWidget.html" title=" " alt="" coords="142,525,246,553"/>
+<area shape="poly" id="edge76_Node000000_Node000011" title=" " alt="" coords="52,358,65,394,81,434,103,475,132,511,151,524,146,525,129,514,99,478,76,436,60,396,52,363"/>
+<area shape="rect" id="Node000012" href="$classSliderWindow.html" title=" " alt="" coords="139,577,250,605"/>
+<area shape="poly" id="edge77_Node000000_Node000012" title=" " alt="" coords="49,357,59,404,74,458,98,513,114,539,133,563,150,577,145,577,129,566,109,542,93,516,69,459,54,405,48,363"/>
+<area shape="rect" id="Node000013" href="$classWaveWidget.html" title=" " alt="" coords="143,629,246,657"/>
+<area shape="poly" id="edge78_Node000000_Node000013" title=" " alt="" coords="46,358,54,414,67,481,92,552,110,585,133,615,149,629,144,628,129,618,106,588,87,554,62,483,49,415,46,364"/>
+</map>

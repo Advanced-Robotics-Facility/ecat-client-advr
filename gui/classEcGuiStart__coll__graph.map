@@ -1,0 +1,13 @@
+<map id="EcGuiStart" name="EcGuiStart">
+<area shape="rect" id="Node000001" title=" " alt="" coords="109,531,345,1363"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,288,110,360"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="71,372,117,531,111,532,71,377"/>
+<area shape="rect" id="Node000003" href="$structEcGuiWrapper_1_1ec__wrapper__info__t.html" title=" " alt="" coords="134,257,320,391"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="227,388,230,514,224,514,227,393"/>
+<area shape="rect" id="Node000004" href="$structEcGuiSlider_1_1device__ctrl__t.html" title=" " alt="" coords="159,5,295,117"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="227,114,230,241,224,240,227,119"/>
+<area shape="rect" id="Node000005" href="$classEcGuiFirmware.html" title=" " alt="" coords="344,190,526,458"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="391,456,353,578,348,577,390,460"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="402,25,468,97"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="435,110,438,191,432,190,435,115"/>
+</map>

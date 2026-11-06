@@ -1,0 +1,11 @@
+<map id="QCPColorScaleAxisRectPrivate" name="QCPColorScaleAxisRectPrivate">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,2347,241,2687"/>
+<area shape="rect" id="Node000002" href="$classQCPAxisRect.html" title="Holds multiple axes and arranges them in a rectangular shape." alt="" coords="19,1539,228,2299"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="124,2311,126,2347,121,2346,123,2316"/>
+<area shape="rect" id="Node000003" href="$classQCPLayoutElement.html" title="The abstract base class for all objects that form the layout system." alt="" coords="29,866,217,1491"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="123,1504,126,1539,121,1539,123,1509"/>
+<area shape="rect" id="Node000004" href="$classQCPLayerable.html" title="Base class for all drawable objects." alt="" coords="29,126,217,818"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="123,830,126,866,121,866,123,835"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="92,5,155,78"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="123,90,126,126,121,126,123,95"/>
+</map>
