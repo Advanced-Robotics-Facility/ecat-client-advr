@@ -90,7 +90,11 @@ target_link_libraries(${PROJECT_NAME}
     pthread
     ec_api_library
     )
-    
+
+install(DIRECTORY "${EXTERNAL}/spdlog/include/spdlog"
+    DESTINATION include/
+    COMPONENT headers
+)
 
 install(DIRECTORY include/
     DESTINATION include/ecat-client-advr/${PROJECT_NAME}
