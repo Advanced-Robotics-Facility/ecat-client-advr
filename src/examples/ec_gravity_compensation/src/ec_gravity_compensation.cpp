@@ -9,9 +9,7 @@
 #include "utils/ec_wrapper.h"
 #include <test_common.h>
 
-#include <XBotInterface/ModelInterface.h>
-#include <XBotInterface/ConfigOptions.h>
-
+#include <xbot2_interface/xbotinterface2.h>
 
 using namespace std::chrono;
 
@@ -87,23 +85,38 @@ int main(int argc, char * const argv[])
     if(STM_sts=="Motor_Ctrl_SetGains") {
         // MODEL INTEFACE SETUP
         auto ec_cfg_file=ec_wrapper.get_ec_utils()->get_ec_cfg_file();
-        XBot::ConfigOptions config=XBot::ConfigOptions::FromConfigFile(ec_cfg_file); 
+        //XBot::ConfigOptions config=XBot::ConfigOptions::FromConfigFile(ec_cfg_file); 
         
-        XBot::ModelInterface::Ptr model= XBot::ModelInterface::getModel(config);
+        std::string urdf = {};
+        XBot::ModelInterface::Ptr model= XBot::ModelInterface::getModel(urdf, "pin");
         
         if(model==nullptr){
             DPRINTF("fatal error: Got an empty model\n");
             ec_wrapper.stop_ec_sys();
             return 1;
         }
-        
+    
+        // memory allocation
         float time_elapsed_ms;
         float tau=0,alpha=0;
 
-        XBot::JointIdMap q,q_ref,tau_ref;
+        std::map<std::string,int> name_id_map;
+        std::map<int, std::string> id_name_map;
+        XBot::v2::JointNameMap q,q_ref,tau_ref;
         Eigen::VectorXd tau_g; 
+
+        auto jnames = model->getJointNames();
+        for(auto &name:jnames){
+            auto id = model->getJointId(name);
+            name_id_map[name] = id;
+            id_name_map[id] = name;
+            q[name] = 0.0;
+            q_ref[name] = 0.0;
+            tau_ref[name] = 0.0;
+        }
         
-        // memory allocation
+        float set_gain_time_ms=3000; // Default 3s 
+        std::map<int,std::vector<float>> gain_ref_map,gain_trj_map,gain_start_map;   
         std::map<int,std::vector<float>> imp_gains_map,imp_zero_gains_map;
         for (const auto &[esc_id, motor_rx_pdo] : motor_status_map){
             if(homing.count(esc_id)>0){
@@ -111,10 +124,14 @@ int main(int argc, char * const argv[])
                 imp_zero_gains_map[esc_id]=imp_gains_map[esc_id];
                 imp_zero_gains_map[esc_id][0]=0.0;
                 imp_zero_gains_map[esc_id][1]=0.0;
-                q[esc_id]=std::get<2>(motor_rx_pdo); //motor pos
-                q_ref[esc_id]=q[esc_id];
+                auto jname = id_name_map[esc_id];
+                q[jname]=std::get<2>(motor_rx_pdo); //motor pos
+                q_ref[jname]=q[jname];
+                tau_ref[jname]=0.0;
             }
         }
+        gain_trj_map = imp_zero_gains_map;
+        gain_start_map = imp_gains_map;
 
         if(q_ref.empty()){
             fatal_error="fatal error: motors references structure empty!";
@@ -127,11 +144,7 @@ int main(int argc, char * const argv[])
             if(q.size() != join_num){
                 fatal_error="fatal error: different size of initial position from joint of the model";
                 run_loop=false;
-            }else{
-                float set_gain_time_ms=3000; // Default 3s 
-                std::map<int,std::vector<float>> gain_start_map=imp_gains_map;
-                std::map<int,std::vector<float>> gain_trj_map=imp_zero_gains_map;
-                std::map<int,std::vector<float>> gain_ref_map=gain_start_map;        
+            }else{     
 
                 if (ec_cfg.protocol == "iddp"){
                     // add SIGALRM
@@ -187,20 +200,22 @@ int main(int argc, char * const argv[])
 
             for (const auto &[esc_id, motor_rx_pdo] : motor_status_map){
                 if(homing.count(esc_id)>0){
-                    q[esc_id]=std::get<2>(motor_rx_pdo); //motor pos
-                    q_ref[esc_id]=q[esc_id];
+                    const auto &name = id_name_map[esc_id];
+                    q[name]=std::get<2>(motor_rx_pdo); //motor pos
+                    q_ref[name]=q[name];
                 }
             }   
 
-            model->setJointPosition(q);
+            model->setJointPositionMinimal(q);
             model->update();
             
             model->computeGravityCompensation(tau_g);
-            model->eigenToMap(tau_g,tau_ref);
+            model->vToMap(tau_g,tau_ref);
 
-            for ( const auto &[esc_id, tor_ref] : tau_ref){
+            for ( const auto &[name, tor_ref] : tau_ref){
+                auto esc_id = name_id_map[name];
                 if(homing.count(esc_id)>0){
-                    double pos_ref = q_ref[esc_id];
+                    double pos_ref = q_ref[name];
                     std::get<1>(motor_reference_map[esc_id]) = pos_ref;
                     std::get<3>(motor_reference_map[esc_id]) = tor_ref;
                     std::get<4>(motor_reference_map[esc_id]) = gain_ref_map[esc_id][0];

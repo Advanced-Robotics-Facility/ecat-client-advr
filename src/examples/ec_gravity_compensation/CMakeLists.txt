@@ -1,6 +1,6 @@
 project(ec_gravity_compensation)
 
-find_package(XBotInterface REQUIRED)
+find_package(xbot2_interface REQUIRED)
 
 # compile gravity_compensation
 add_executable(${PROJECT_NAME}
@@ -12,7 +12,7 @@ endif()
                
 target_link_libraries(${PROJECT_NAME}
     PRIVATE 
-    ${XBotInterface_LIBRARIES}
+    xbot2_interface::xbot2_interface
     PUBLIC
     ec_library
     ecat_master::tools_utils

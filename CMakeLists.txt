@@ -1,5 +1,5 @@
 project(ecat-client-advr)
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.16)
 
 # std c++17 flags
 set(CMAKE_CXX_STANDARD 17)
