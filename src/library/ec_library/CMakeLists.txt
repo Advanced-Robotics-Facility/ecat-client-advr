@@ -49,7 +49,6 @@ target_link_libraries(ec_api_library
     ${ZeroMQ_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
     matlogger2::matlogger2
-    magic_enum::magic_enum
     )
 
 

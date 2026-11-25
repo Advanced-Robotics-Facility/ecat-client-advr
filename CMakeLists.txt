@@ -68,17 +68,6 @@ IF(ENABLE_HEAP_MONITOR)
     ADD_DEFINITIONS(-DENABLE_HEAP_MONITOR)
 ENDIF(ENABLE_HEAP_MONITOR)
 
-find_package(magic_enum)
-if(NOT ${magic_enum_FOUND})
-    set(MAGIC_ENUM_OPT_INSTALL ON CACHE BOOL "Enable option to install Magic Enum" FORCE)
-    include(cmake/CPM.cmake)
-    CPMAddPackage(
-        NAME magic_enum
-        GITHUB_REPOSITORY Neargye/magic_enum
-        GIT_TAG v0.8.1 # Where `x.y.z` is the release version you want to use.
-    )
-endif()
-
 find_package(matlogger2 REQUIRED)
 
 find_package(ecat_master REQUIRED COMPONENTS ecat_core)

@@ -5,7 +5,6 @@
 #include "udpSock.h"
 #include "task.h"
 #include "pck_msgs.h"
-#include <magic_enum.hpp>
 using boost::asio::ip::udp;
 
 class EcBoost : public UdpTask<EcBoost, MsgPackProtocol>
