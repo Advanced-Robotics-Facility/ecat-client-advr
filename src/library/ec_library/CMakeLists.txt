@@ -57,7 +57,7 @@ add_library(${PROJECT_NAME} STATIC
             #src/protocol/udp/ec_udp.cpp
             src/protocol/tcp/ec_tcp.cpp
             src/protocol/ipc/zipc/ec_zipc.cpp
-            src/protocol/ipc/iddp/ec_iddp.cpp
+            src/protocol/ipc/shm/ec_shm.cpp
             src/utils/ec_utils.cpp
             src/utils/ec_wrapper.cpp)
 

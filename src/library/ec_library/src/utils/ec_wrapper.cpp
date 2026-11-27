@@ -685,7 +685,7 @@ void EcWrapper::log_ec_sys()
 
 void EcWrapper::ec_self_sched(std::string_view thread_name)
 {
-    if(_ec_cfg.protocol == "iddp"){
+    if(_ec_cfg.protocol == "shm"){
         #if defined(PREEMPT_RT) || defined(__COBALT__)
             DPRINTF("Real-time process....\n");
         #endif
@@ -722,7 +722,7 @@ void EcWrapper::ec_self_sched(std::string_view thread_name)
     }
 
 #ifdef ENABLE_HEAP_MONITOR
-    if(_ec_cfg.protocol == "iddp"){ 
+    if(_ec_cfg.protocol == "shm"){ 
         heap_monitor::allocation_count.store(0, std::memory_order_relaxed);
         heap_monitor::deallocation_count.store(0, std::memory_order_relaxed);
         heap_monitor::track_heap.store(true, std::memory_order_relaxed);

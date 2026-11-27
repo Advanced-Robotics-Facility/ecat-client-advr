@@ -1,10 +1,10 @@
 #include <cassert>
 #include <tuple>
 
-#include "protocol/ipc/iddp/ec_iddp.h"
+#include "protocol/ipc/shm/ec_shm.h"
 
 
-EcIDDP::EcIDDP(std::string host_address,uint32_t host_port):
+EcShm::EcShm(std::string host_address,uint32_t host_port):
   EcZmqCmd("tcp",host_address,host_port),
   EcPdo<EcShmPdo>("NoNe")
 { 
@@ -21,7 +21,7 @@ EcIDDP::EcIDDP(std::string host_address,uint32_t host_port):
     _client_thread_info.policy=schedpolicy;
 }
 
-EcIDDP::~EcIDDP()
+EcShm::~EcShm()
 {
     iit::ecat::print_stat ( s_loop );
     
@@ -30,7 +30,7 @@ EcIDDP::~EcIDDP()
 
 //******************************* INIT *****************************************************//
 
-void EcIDDP::th_init ( void * )
+void EcShm::th_init ( void * )
 {
     if(!init_read_pdo()){
         DPRINTF("Client thread not initialized!\n");
@@ -49,14 +49,14 @@ void EcIDDP::th_init ( void * )
     sync_client_thread();
 }
 
-void EcIDDP::set_loop_time(uint32_t period_ms)
+void EcShm::set_loop_time(uint32_t period_ms)
 {
    stop_client();
    
    start_client(period_ms);
 }
 
-void EcIDDP::start_client(uint32_t period_ms)
+void EcShm::start_client(uint32_t period_ms)
 {
     _period_ns = 1000000*period_ms;
 
@@ -73,7 +73,7 @@ void EcIDDP::start_client(uint32_t period_ms)
     }
 }
 
-void EcIDDP::stop_client()
+void EcShm::stop_client()
 {
     stop();
     
@@ -89,12 +89,12 @@ void EcIDDP::stop_client()
 
 //******************************* Periodic Activity *****************************************************//
 
-void EcIDDP::th_loop( void * )
+void EcShm::th_loop( void * )
 {
     tNow = iit::ecat::get_time_ns(CLOCK_MONOTONIC);
     s_loop ( tNow - tPre );
     float sample_elapsed_ms= (static_cast<float>((tNow-tPre))/1000000);
-    //DPRINTF("IDDP thread sample time %f\n",sample_elapsed_ms);
+    //DPRINTF("Shm thread sample time %f\n",sample_elapsed_ms);
     tPre = tNow;
     
     loop_cnt++;
@@ -110,7 +110,7 @@ void EcIDDP::th_loop( void * )
 }
 //******************************* Periodic Activity *****************************************************//
 
-void EcIDDP::write()
+void EcShm::write()
 {
     // write motors and others pdo
     write_pdo();

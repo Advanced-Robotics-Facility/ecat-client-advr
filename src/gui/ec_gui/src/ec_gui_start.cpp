@@ -116,7 +116,7 @@ bool EcGuiStart::create_ec_iface()
     EcUtils::EC_CONFIG ec_cfg;
     ec_cfg.protocol=ec_net_info.protocol;
     if(ec_net_info.protocol=="ipc"){    
-        ec_cfg.protocol="iddp";
+        ec_cfg.protocol="shm";
     }
     ec_cfg.host_name=ec_net_info.host_name;
     ec_cfg.host_port=ec_net_info.host_port;

@@ -1,16 +1,16 @@
-#ifndef EC_IDDP_H
-#define EC_IDDP_H
+#ifndef EC_SHM_H
+#define EC_SHM_H
 
 #include "utils/ec_thread.h"
 #include "mechanism/zmq/ec_zmq_cmd.h"
 #include "mechanism/common/ec_pdo.h"
 
-class EcIDDP : public EcZmqCmd,EcPdo<EcShmPdo>,EcThread
+class EcShm : public EcZmqCmd,EcPdo<EcShmPdo>,EcThread
 {
 public:
 
-    EcIDDP(std::string host_address,uint32_t host_port);
-    ~EcIDDP();
+    EcShm(std::string host_address,uint32_t host_port);
+    ~EcShm();
 
     void start_client(uint32_t period_ms) final;
     void stop_client() final ;
@@ -28,4 +28,4 @@ private:
     uint64_t            loop_cnt;
 };
 
-#endif // EC_IDDP_H
+#endif // EC_SHM_H

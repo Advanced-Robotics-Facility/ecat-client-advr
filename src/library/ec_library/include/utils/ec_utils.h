@@ -5,7 +5,7 @@
 #include <thread>
 //#include "protocol/udp/ec_udp.h"
 #include "protocol/tcp/ec_tcp.h"
-#include "protocol/ipc/iddp/ec_iddp.h"
+#include "protocol/ipc/shm/ec_shm.h"
 #include "protocol/ipc/zipc/ec_zipc.h"
 #include <ecat_core/trajectory.h>
 

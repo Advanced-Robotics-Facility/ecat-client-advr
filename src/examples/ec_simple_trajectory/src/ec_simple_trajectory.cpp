@@ -66,7 +66,7 @@ int main(int argc, char * const argv[])
             fatal_error="fatal error: devices references structure empty!";
             run_loop=false;
         }else{           
-            if (ec_cfg.protocol == "iddp"){
+            if (ec_cfg.protocol == "shm"){
                 // add SIGALRM
                 signal ( SIGALRM, sig_handler );
                 //avoid map swap
@@ -209,7 +209,7 @@ int main(int argc, char * const argv[])
 
 #if defined(PREEMPT_RT) || defined(__COBALT__)
             // if less than threshold, print warning (only on rt threads)
-            if (end > time && ec_cfg.protocol == "iddp"){
+            if (end > time && ec_cfg.protocol == "shm"){
                 ++overruns;
                 DPRINTF(
                     "OVR #%d wake=%lld read=%lld trj + set_ref=%lld "

@@ -41,7 +41,7 @@ Client file
 --------------------------------------------
 .. image:: _static/EtherCAT_Client_Img/EtherCAT_Client_Img_2_1.png
 
-* **network:** Setup the EtherCAT Client network using the TCP/UDP, IDDP (Real-Time Xenomai IPC Pipes) or ZIPC (ZMQ Inter-process) .
+* **network:** Setup the EtherCAT Client network using the TCP/UDP, Shm (Real-Time Shared memory) or ZIPC (ZMQ Inter-process) .
 * **general:** Setup period and low level logging. **(Optional)**
 * **robot:** Setup the robot_control and robot id map paths. **(Optional)** 
 * **XBotInterface:** Setup the urdf/srdf for the XBotInterface library. **(Optional)**

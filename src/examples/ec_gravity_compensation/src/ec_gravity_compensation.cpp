@@ -133,7 +133,7 @@ int main(int argc, char * const argv[])
                 std::map<int,std::vector<float>> gain_trj_map=imp_zero_gains_map;
                 std::map<int,std::vector<float>> gain_ref_map=gain_start_map;        
 
-                if (ec_cfg.protocol == "iddp"){
+                if (ec_cfg.protocol == "shm"){
                     // add SIGALRM
                     signal ( SIGALRM, sig_handler );
                     //avoid map swap
@@ -239,7 +239,7 @@ int main(int argc, char * const argv[])
 
 #if defined(PREEMPT_RT) || defined(__COBALT__)
             // if less than threshold, print warning (only on rt threads)
-            if (now > time && ec_cfg.protocol == "iddp"){
+            if (now > time && ec_cfg.protocol == "shm"){
                 ++overruns;
                 DPRINTF("main process overruns: %d\n", overruns);
             }
